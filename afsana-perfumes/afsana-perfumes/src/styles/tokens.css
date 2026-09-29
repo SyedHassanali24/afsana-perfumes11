@@ -1,0 +1,78 @@
+/*
+  Afsana Perfumes — design tokens
+  Import once in your app entry (e.g. src/main.jsx: import "./styles/tokens.css")
+  Also add these two Google Fonts links to your index.html <head>:
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+*/
+
+:root {
+  /* Light mode */
+  --bg: #F7F5EF;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --border: #E4E0D4;
+  --ink: #14140F;
+  --ink-muted: #6B6A5E;
+  --gold: #9A7B3F;
+  --gold-soft: #EFE6D2;
+  --success: #4D7A55;
+  --success-soft: #E4EEE2;
+  --danger: #A24936;
+  --danger-soft: #F3E3DE;
+  --warning: #92702C;
+  --warning-soft: #F3E7D0;
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --shadow-card: 0 1px 2px rgba(20, 20, 15, 0.04), 0 1px 1px rgba(20, 20, 15, 0.03);
+}
+
+:root[data-theme="dark"] {
+  --bg: #12140F;
+  --surface: #191C15;
+  --surface-raised: #1F231B;
+  --border: #2C3025;
+  --ink: #EDEAE2;
+  --ink-muted: #9B9A8B;
+  --gold: #C6A15B;
+  --gold-soft: #2A2515;
+  --success: #8FB08F;
+  --success-soft: #1E2A1E;
+  --danger: #D08468;
+  --danger-soft: #2E1D17;
+  --warning: #D4AE6A;
+  --warning-soft: #2C2413;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --bg: #12140F;
+    --surface: #191C15;
+    --surface-raised: #1F231B;
+    --border: #2C3025;
+    --ink: #EDEAE2;
+    --ink-muted: #9B9A8B;
+    --gold: #C6A15B;
+    --gold-soft: #2A2515;
+    --success: #8FB08F;
+    --success-soft: #1E2A1E;
+    --danger: #D08468;
+    --danger-soft: #2E1D17;
+    --warning: #D4AE6A;
+    --warning-soft: #2C2413;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
