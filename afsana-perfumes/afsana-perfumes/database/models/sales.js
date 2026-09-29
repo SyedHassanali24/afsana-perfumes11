@@ -32,6 +32,7 @@ const orderSchema = new Schema({
   assignedTo: { type: ObjectId, ref: 'User' },    // for "Assigned Records Only" scope
   createdBy: { type: ObjectId, ref: 'User' },     // for "Created By Me" scope
   cancelledReason: String,
+  stockCommitted: { type: Boolean, default: false }, // true once reserved units have left the shelf (on Shipped)
 }, { timestamps: true });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });

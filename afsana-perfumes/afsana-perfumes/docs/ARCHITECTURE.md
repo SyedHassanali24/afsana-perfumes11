@@ -27,8 +27,9 @@ Key decisions
 - `autoIndex:false` in production; run `npm run db:indexes` after schema changes.
 
 ## 2. Authentication
-- Login → verify bcrypt hash → create `Session` (random token; only its SHA-256 is stored) → set **HTTP-only, Secure, SameSite=Lax cookie** containing a signed JWT `{ uid, sid }` (15 min) refreshed against the session (sliding, max 7 days).
-- Every request: verify JWT → load session → reject if `revokedAt`/expired → load user/staff status (Suspended/Disabled = instant lockout) → check **working hours**.
+- Login → verify bcrypt hash → create `Session` row (only the SHA-256 of a random `jti` is stored) → set **HTTP-only, Secure, SameSite=Lax cookie** (`afsana_staff`) holding a JWT `{ sid, jti }` signed with `JWT_SECRET` (min 32 chars). Session lives 7 days and is checked against the DB on **every** request, so revoking a session, suspending a user or changing a role takes effect immediately.
+- Every request: verify JWT → load session (not revoked/expired, hash matches) → load user + staff (must be Active) → check **working hours** (Owner exempt).
+- CSRF: all non-GET requests must carry `X-Requested-With: afsana` (added by `src/services/api.js`); browsers cannot send it cross-origin without a CORS preflight.
 - Brute force: `failedLoginCount` + `lockedUntil` (5 fails → 15 min) plus IP rate limit on `/auth/*`.
 - Session features: list (device, IP, last active), revoke one, logout-all-devices (`revokedAt` on all).
 - High-risk actions (see `HIGH_RISK` in `constants.js`) require password re-entry (or a fresh login < 5 min) **and** write an AuditLog row.
@@ -90,3 +91,36 @@ cp .env.example .env   # fill MONGODB_URI (DEV cluster/db), MONGODB_DB_NAME=afsa
 npm run db:seed
 ```
 Seed refuses to run when `NODE_ENV=production` or the db name contains "prod".
+
+## 7. Phase 3 — API layer (built)
+Pipeline per request (`middleware/withApi.js`): route match → rate limit → CSRF header → DB → authenticate → permission check → validate (Zod) → password re-auth (high-risk) → handler → centralised safe errors.
+
+| Function | Endpoints |
+|---|---|
+| `auth` | POST `/login` `/logout` `/logout-all`, GET `/me` `/sessions`, DELETE `/sessions/:id` |
+| `products` | public: GET `/`, `/:slug` · admin: GET `/admin/list` `/admin/trash` `/admin/:id`, POST `/admin`, PATCH `/admin/:id`, POST `/admin/:id/variants`, PATCH `/admin/:id/variants/:variantId`, DELETE `/admin/:id`, POST `/admin/:id/restore` |
+| `inventory` | GET `/`, `/history`, POST `/adjust` |
+| `orders` | public: POST `/` (checkout), GET `/track/:orderNumber?phone=` · admin: GET `/admin/list` `/admin/:id`, PATCH `/admin/:id/status` `/admin/:id/payment`, POST `/admin/:id/notes` |
+
+Business rules enforced server-side
+- Checkout recomputes every price from the DB, validates the coupon, reserves stock **atomically** inside a transaction (any unavailable unit → whole order rolls back with `OUT_OF_STOCK`).
+- Stock lifecycle: reserve at checkout → commit (leaves shelf) at **Shipped** → release on cancel before shipping / restock on cancel after shipping.
+- Order status changes follow an allowed-transition table and use compare-and-set (two staff cannot apply the same change twice). Delivered COD orders become Paid.
+- Price changes: need `products.managePrice` **and** password re-auth **and** are audit-logged. Stock adjustments, product delete: re-auth + audit. Cost price is never returned publicly and is stripped for staff with `product.costPrice` denied.
+- Public tracking requires order number **and** the phone used on the order.
+
+Known limits (planned, not forgotten)
+- Rate limiter is per warm function instance — move to a shared store before heavy traffic.
+- Guest customers are matched by phone; customer login/registration arrives in Phase 6.
+- Shipping fee is flat 250 (free ≥ 5000) until the Settings module exists (`Setting` key `shipping` already overrides it).
+- Flash-sale pricing is not applied at checkout yet (Phase 8).
+
+## 8. Run Phase 3 locally
+```bash
+npm i zod jsonwebtoken            # (mongoose bcryptjs dotenv from Phase 2)
+npm i -D netlify-cli
+# .env: JWT_SECRET must be 32+ random chars
+npx netlify dev                   # serves Vite + /api/* functions together on :8888
+node --test tests/core.test.js    # pure-logic tests (no DB needed)
+```
+Then `POST /api/auth/login` with the seeded Owner email/password.
