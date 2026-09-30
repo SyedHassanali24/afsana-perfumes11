@@ -143,7 +143,35 @@ const customerChangePassword = z.object({ currentPassword: z.string().min(1).max
 const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200) });
 const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid link'), newPassword: passwordRule(8) });
 
+// ---------- taxonomy / suppliers / purchase orders ----------
+const slugRule = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and dashes').max(100);
+const optUrl = z.string().trim().url().max(500).or(z.literal(''));
+const taxonomyBody = z.object({
+  name: z.string().trim().min(2).max(80), slug: slugRule.optional(), description: z.string().trim().max(1000).optional(),
+  image: z.object({ url: optUrl.optional(), alt: z.string().max(200).optional() }).optional(),
+  sortOrder: z.number().int().min(0).max(9999).optional(), isActive: z.boolean().optional(),
+  seo: z.object({ title: z.string().max(120).optional(), description: z.string().max(300).optional() }).optional(),
+  parentId: objectId.nullable().optional(), // categories only
+});
+const taxonomyPatch = taxonomyBody.partial();
+const taxonomyQuery = z.object({ q: z.string().trim().max(80).optional(), active: bool, ...paging });
+const supplierBody = z.object({
+  name: z.string().trim().min(2).max(120), contactPerson: z.string().trim().max(100).optional(),
+  phone: z.string().trim().max(30).optional(), email: z.string().trim().email().max(200).optional().or(z.literal('')),
+  address: z.string().trim().max(300).optional(), paymentTerms: z.string().trim().max(200).optional(),
+  notes: z.string().trim().max(1000).optional(), isActive: z.boolean().optional(),
+});
+const supplierPatch = supplierBody.partial();
+const supplierQuery = z.object({ q: z.string().trim().max(80).optional(), active: bool, ...paging });
+const poItems = z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(100000), costPerUnit: z.number().min(0).max(10000000) })).min(1).max(50);
+const poCreate = z.object({ supplierId: objectId, items: poItems, expectedDate: z.coerce.date().optional() });
+const poPatch = z.object({ supplierId: objectId, items: poItems, expectedDate: z.coerce.date().nullable() }).partial();
+const poReceive = z.object({ items: z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(100000) })).min(1).max(50), confirmPassword });
+const poQuery = z.object({ q: z.string().trim().max(40).optional(), status: z.enum(['Draft', 'Ordered', 'Partially Received', 'Received', 'Cancelled']).optional(), supplierId: objectId.optional(), ...paging });
+const thresholdBody = z.object({ lowStockThreshold: z.number().int().min(0).max(100000) });
+
 module.exports = {
+  taxonomyBody, taxonomyPatch, taxonomyQuery, supplierBody, supplierPatch, supplierQuery, poCreate, poPatch, poReceive, poQuery, thresholdBody,
   changePasswordBody, staffQuery, staffCreate, staffPatch, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
   registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, resetBody,
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,

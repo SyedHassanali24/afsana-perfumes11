@@ -26,12 +26,15 @@ export const productsApi = {
   updateVariant: (id, variantId, body) => api(`/products/admin/${id}/variants/${variantId}`, { method: 'PATCH', body }), // price changes need confirmPassword
   remove: (id, confirmPassword) => api(`/products/admin/${id}`, { method: 'DELETE', body: { confirmPassword } }),
   restore: (id) => api(`/products/admin/${id}/restore`, { method: 'POST' }),
+  removeVariant: (id, variantId, confirmPassword) => api(`/products/admin/${id}/variants/${variantId}`, { method: 'DELETE', body: { confirmPassword } }),
 };
 
 export const inventoryApi = {
   list: (query) => api('/inventory', { query }),
   history: (query) => api('/inventory/history', { query }),
   adjust: (body) => api('/inventory/adjust', { method: 'POST', body }), // { variantId, type, quantity, reason, confirmPassword }
+  summary: () => api('/inventory/summary'),
+  setThreshold: (variantId, lowStockThreshold) => api(`/inventory/${variantId}/threshold`, { method: 'PATCH', body: { lowStockThreshold } }),
 };
 
 export const ordersApi = {
@@ -80,4 +83,29 @@ export const accountApi = {
   changePassword: (currentPassword, newPassword) => api('/account/change-password', { method: 'POST', body: { currentPassword, newPassword } }),
   forgotPassword: (identifier) => api('/account/forgot-password', { method: 'POST', body: { identifier } }),
   resetPassword: (token, newPassword) => api('/account/reset-password', { method: 'POST', body: { token, newPassword } }),
+};
+
+// ---- Phase 5: catalog & inventory ----
+// type: 'categories' | 'collections' | 'brands' | 'fragrance-families'
+export const taxonomyApi = (type) => ({
+  list: (query) => api(`/taxonomy/${type}`, { query }),
+  create: (body) => api(`/taxonomy/${type}`, { method: 'POST', body }),
+  update: (id, body) => api(`/taxonomy/${type}/${id}`, { method: 'PATCH', body }),
+  remove: (id) => api(`/taxonomy/${type}/${id}`, { method: 'DELETE' }),
+});
+export const publicTaxonomyApi = { list: (type) => api(`/taxonomy/public/${type}`) };
+export const suppliersApi = {
+  list: (query) => api('/suppliers', { query }),
+  create: (body) => api('/suppliers', { method: 'POST', body }),
+  update: (id, body) => api(`/suppliers/${id}`, { method: 'PATCH', body }),
+  remove: (id) => api(`/suppliers/${id}`, { method: 'DELETE' }),
+};
+export const purchaseOrdersApi = {
+  list: (query) => api('/purchase-orders', { query }),
+  get: (id) => api(`/purchase-orders/${id}`),
+  create: (body) => api('/purchase-orders', { method: 'POST', body }),
+  update: (id, body) => api(`/purchase-orders/${id}`, { method: 'PATCH', body }),
+  markOrdered: (id) => api(`/purchase-orders/${id}/order`, { method: 'POST' }),
+  receive: (id, items, confirmPassword) => api(`/purchase-orders/${id}/receive`, { method: 'POST', body: { items, confirmPassword } }),
+  cancel: (id) => api(`/purchase-orders/${id}/cancel`, { method: 'POST' }),
 };

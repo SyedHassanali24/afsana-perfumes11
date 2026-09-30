@@ -95,3 +95,23 @@ test('phone normalisation', () => {
   assert.equal(normalizePhone('+92 300 1234567'), '+923001234567');
   assert.equal(normalizePhone('+44 20 7946 0958'), '+442079460958');
 });
+
+// ---- Phase 5: purchase-order rules ----
+const PO = require('../services/poRules');
+test('purchase order lifecycle', () => {
+  assert.ok(PO.canTransition('Draft', 'Ordered'));
+  assert.ok(PO.canTransition('Draft', 'Cancelled'));
+  assert.ok(PO.canTransition('Ordered', 'Cancelled'));
+  assert.ok(PO.canTransition('Partially Received', 'Received'));
+  assert.ok(!PO.canTransition('Draft', 'Received'), 'cannot receive a PO that was never ordered');
+  assert.ok(!PO.canTransition('Received', 'Cancelled'));
+  assert.ok(!PO.canTransition('Cancelled', 'Ordered'));
+});
+test('purchase order receiving maths', () => {
+  const items = [{ quantity: 10, receivedQuantity: 4 }, { quantity: 5, receivedQuantity: 0 }];
+  assert.equal(PO.remainingQty(items[0]), 6);
+  assert.equal(PO.poStatusAfterReceive(items), 'Partially Received');
+  assert.equal(PO.poStatusAfterReceive([{ quantity: 3, receivedQuantity: 3 }, { quantity: 2, receivedQuantity: 2 }]), 'Received');
+  assert.equal(PO.remainingQty({ quantity: 3, receivedQuantity: 9 }), 0, 'never negative');
+  assert.equal(PO.poTotal([{ quantity: 10, costPerUnit: 1500 }, { quantity: 2, costPerUnit: 2500.5 }]), 20001);
+});

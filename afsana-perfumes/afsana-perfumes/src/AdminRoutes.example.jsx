@@ -16,6 +16,7 @@ import Dashboard from '../admin/dashboard/Dashboard';
 import ProductsList from '../admin/products/ProductsList';
 import InventoryList from '../admin/inventory/InventoryList';
 import OrdersList from '../admin/orders/OrdersList';
+import CatalogPage from '../admin/catalog/CatalogPage';
 import StaffPage from '../admin/staff/StaffPage';
 import MyAccountPage from '../admin/account/MyAccountPage';
 import RequireCustomer from './customer/RequireCustomer';
@@ -36,6 +37,7 @@ export default function AppRoutes() {
       <Route path="/admin/change-password" element={<ChangePasswordPage />} />
       <Route path="/admin" element={page('dashboard.view', <Dashboard />)} />
       <Route path="/admin/products" element={page('products.view', <ProductsList />)} />
+      <Route path="/admin/catalog" element={page('categories.view', <CatalogPage />)} />
       <Route path="/admin/inventory" element={page('inventory.view', <InventoryList />)} />
       <Route path="/admin/orders" element={page('orders.view', <OrdersList />)} />
       <Route path="/admin/staff" element={page(undefined, <StaffPage />)} />{/* StaffPage hides tabs the user can't open */}

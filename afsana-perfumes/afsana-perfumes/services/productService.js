@@ -1,4 +1,4 @@
-const { Product, ProductVariant, Inventory, InventoryTransaction, Category, Collection } = require('../database/models');
+const { Product, ProductVariant, Inventory, InventoryTransaction, Category, Collection, Brand, FragranceFamily } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { scopeFilter } = require('../middleware/permissions');
@@ -81,9 +81,12 @@ async function listAdmin(q, scopes, uid, { trash = false } = {}) {
     pagination: pageMeta(total, page, limit),
   };
 }
+// Everything the product form needs for its dropdowns (active entries only).
 async function listCategories() {
-  const rows = await Category.find({ isDeleted: false }).select('name slug').sort({ name: 1 }).lean();
-  return { categories: rows.map((c) => ({ id: c._id, name: c.name, slug: c.slug })) };
+  const opts = (M) => M.find({ isDeleted: false, isActive: true }).select('name slug').sort({ sortOrder: 1, name: 1 }).lean()
+    .then((rows) => rows.map((c) => ({ id: c._id, name: c.name, slug: c.slug })));
+  const [categories, brands, collections, families] = await Promise.all([opts(Category), opts(Brand), opts(Collection), opts(FragranceFamily)]);
+  return { categories, brands, collections, families };
 }
 async function getAdmin(id, scopes, uid) {
   const p = await Product.findOne({ _id: id, ...scopeFilter(scopes, uid, SCOPE_MAP) }).lean();
@@ -158,6 +161,21 @@ async function addVariant(ctx, productId, body) {
   });
 }
 
+// Soft-deletes ONE size. Blocked while units are reserved for open orders, and the last remaining size can't be removed.
+async function removeVariant(ctx, productId, variantId) {
+  return withTx(async (session) => {
+    const v = await ProductVariant.findOne({ _id: variantId, productId, isDeleted: false }).session(session);
+    if (!v) throw E.notFound('Size not found.');
+    if ((await ProductVariant.countDocuments({ productId, isDeleted: false }).session(session)) <= 1) throw E.conflict('A product needs at least one size. Delete the product instead.');
+    const inv = await Inventory.findOne({ variantId }).session(session);
+    if (inv && inv.reserved > 0) throw E.conflict(`${inv.reserved} unit(s) of this size are reserved for open orders.`);
+    await ProductVariant.updateOne({ _id: variantId }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id } }, { session });
+    await recomputePriceFrom(productId, session);
+    await audit(ctx, { action: 'variant.deleted', module: 'products', recordId: variantId, oldValue: { sku: v.sku, price: v.price, stock: inv ? inv.current : 0 } }, session);
+    return v;
+  });
+}
+
 async function setDeleted(ctx, id, isDeleted, scopes) {
   return withTx(async (session) => {
     const p = await Product.findOne({ _id: id, isDeleted: !isDeleted, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session);
@@ -169,4 +187,4 @@ async function setDeleted(ctx, id, isDeleted, scopes) {
     return p;
   });
 }
-module.exports = { listPublic, getPublicBySlug, listAdmin, listCategories, getAdmin, createProduct, updateProduct, updateVariant, addVariant, setDeleted };
+module.exports = { listPublic, getPublicBySlug, listAdmin, listCategories, getAdmin, createProduct, updateProduct, updateVariant, addVariant, removeVariant, setDeleted };
