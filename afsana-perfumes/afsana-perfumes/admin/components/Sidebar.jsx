@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../../src/auth/AuthContext";
 import {
   LayoutDashboard,
   BarChart3,
@@ -16,8 +17,8 @@ import {
   ChevronsRight,
 } from "lucide-react";
 
-// Grouped to match the spec's admin_portal.modules. Each item's `permission`
-// is a placeholder key — wire it up to the RBAC permission check in Phase 4.
+// Each item's `permission` is `${module}.${action}` using module names from database/constants.js.
+// Hiding here is UX only; the server enforces permissions.
 const NAV_GROUPS = [
   {
     label: "Overview",
@@ -44,8 +45,8 @@ const NAV_GROUPS = [
   {
     label: "Growth",
     items: [
-      { label: "Marketing", icon: Megaphone, href: "/admin/marketing", permission: "marketing.view" },
-      { label: "CMS", icon: LayoutTemplate, href: "/admin/cms", permission: "cms.view" },
+      { label: "Marketing", icon: Megaphone, href: "/admin/marketing", permission: "coupons.view" },
+      { label: "CMS", icon: LayoutTemplate, href: "/admin/cms", permission: "homepage.view" },
     ],
   },
   {
@@ -64,6 +65,10 @@ const NAV_GROUPS = [
  */
 export default function Sidebar({ activeHref = "/admin", onNavigate }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { can } = useAuth();
+  const groups = NAV_GROUPS
+    .map((g) => ({ ...g, items: g.items.filter((i) => can(i.permission)) }))
+    .filter((g) => g.items.length);
 
   return (
     <aside
@@ -89,7 +94,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4">
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <div key={group.label} className="mb-5 px-3">
             {!collapsed && (
               <p className="px-2 mb-1.5 text-xs text-[color:var(--ink-muted)]">
@@ -98,7 +103,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
             )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
-                const isActive = item.href === activeHref;
+                const isActive = item.href === "/admin" ? activeHref === "/admin" : activeHref.startsWith(item.href);
                 const Icon = item.icon;
                 return (
                   <li key={item.href}>

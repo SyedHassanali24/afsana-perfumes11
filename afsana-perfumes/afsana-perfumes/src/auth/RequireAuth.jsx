@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 // <RequireAuth>            -> any logged-in staff
 // <RequireAuth permission="products.view"> -> also needs that permission (UX only; server re-checks)
 export default function RequireAuth({ permission, children }) {
-  const { status, can } = useAuth();
+  const { status, can, mustChangePassword } = useAuth();
   const location = useLocation();
 
   if (status === 'loading') {
@@ -12,6 +12,9 @@ export default function RequireAuth({ permission, children }) {
   }
   if (status === 'guest') {
     return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
+  }
+  if (mustChangePassword && location.pathname !== '/admin/change-password') {
+    return <Navigate to="/admin/change-password" replace />;
   }
   if (permission && !can(permission)) {
     return (

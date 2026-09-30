@@ -124,3 +124,15 @@ npx netlify dev                   # serves Vite + /api/* functions together on :
 node --test tests/core.test.js    # pure-logic tests (no DB needed)
 ```
 Then `POST /api/auth/login` with the seeded Owner email/password.
+
+
+## Phase 4 addendum — access management
+| Group | Endpoints | Permission |
+|---|---|---|
+| staff | GET /, /:id, /assignable-roles, /:id/sessions; POST /, /:id/reset-password, /:id/overrides; PATCH /:id; DELETE /:id, /:id/overrides/:oid, /:id/sessions | staff.*, temporaryAccess.*, sessions.* (writes need confirmPassword) |
+| roles | GET /, /:id; POST /; PATCH /:id; DELETE /:id | roles.* |
+| permissions | GET /catalog (any staff), /history | permissions.view |
+| audit | GET / (filters: action prefix, module, user, dates) | auditLogs.view |
+| account (customer) | POST register, login, logout, forgot-password, reset-password, change-password; GET/PATCH me | own session (`afsana_customer` cookie, 30 days) |
+
+Guards live in `services/accessRules.js` (pure). Staff and customer cookies are different and a customer session can never pass `authenticate()` (kind check).

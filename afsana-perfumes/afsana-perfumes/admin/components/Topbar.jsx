@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Bell, Sun, Moon, Monitor, ChevronDown } from "lucide-react";
+import { Search, Bell, Sun, Moon, Monitor, LogOut } from "lucide-react";
 
 const THEME_CYCLE = ["system", "light", "dark"];
 const THEME_ICON = { system: Monitor, light: Sun, dark: Moon };
@@ -8,11 +8,15 @@ const THEME_ICON = { system: Monitor, light: Sun, dark: Moon };
  * @param {{name: string, role: string}} [user]
  * @param {number} [notificationCount]
  * @param {(query: string) => void} [onSearch]
+ * @param {() => void} [onLogout]
+ * @param {() => void} [onProfile] - opens "My account"
  */
 export default function Topbar({
   user = { name: "Admin", role: "Owner" },
   notificationCount = 0,
   onSearch,
+  onLogout,
+  onProfile,
 }) {
   const [theme, setTheme] = useState(
     () => localStorage.getItem("afsana-theme") || "system"
@@ -59,7 +63,8 @@ export default function Topbar({
         )}
       </button>
 
-      <button className="flex items-center gap-2.5 pl-3 border-l border-border">
+      <div className="flex items-center gap-2.5 pl-3 border-l border-border">
+        <button onClick={onProfile} className="flex items-center gap-2.5 text-left" aria-label="My account" title="My account">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
           style={{ background: "var(--gold-soft)", color: "var(--gold)" }}
@@ -70,8 +75,13 @@ export default function Topbar({
           <p className="text-sm text-ink leading-tight">{user.name}</p>
           <p className="text-xs text-ink-muted leading-tight">{user.role}</p>
         </div>
-        <ChevronDown className="w-3.5 h-3.5 text-ink-muted" />
-      </button>
+        </button>
+        {onLogout && (
+          <button onClick={onLogout} className="p-2 rounded-sm text-ink-muted hover:bg-bg transition-colors" aria-label="Sign out" title="Sign out">
+            <LogOut className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </header>
   );
 }

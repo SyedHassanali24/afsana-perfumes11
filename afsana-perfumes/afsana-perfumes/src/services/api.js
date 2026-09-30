@@ -18,7 +18,9 @@ export async function api(path, { method = 'GET', body, query } = {}) {
   if (!res.ok || !data || !data.success) {
     const e = (data && data.error) || {};
     // Session expired / revoked -> tell AuthContext (login call itself also returns 401 for bad credentials, so skip it)
-    if (res.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/me')) window.dispatchEvent(new Event('afsana:unauthorized'));
+    const staffPath = !path.startsWith('/account');
+    if (staffPath && res.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/me')) window.dispatchEvent(new Event('afsana:unauthorized'));
+    if (staffPath && e.code === 'PASSWORD_CHANGE_REQUIRED') window.dispatchEvent(new Event('afsana:must-change-password'));
     throw new ApiError(res.status, e.code || 'ERROR', e.message || 'Something went wrong. Please try again.', e.details);
   }
   return data;

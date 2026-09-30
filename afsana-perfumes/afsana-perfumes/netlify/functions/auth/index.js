@@ -4,27 +4,30 @@ const { res } = require('../../../middleware/http');
 const { E } = require('../../../middleware/errors');
 const { Session } = require('../../../database/models');
 const S = require('../../../validation/schemas');
+const { changeOwnPassword } = require('../../../services/staffService');
 
 const routes = [
   { method: 'POST', path: '/login', public: true, body: S.loginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
     async handler({ body, ip, req }) {
       const { cookie, user, staff } = await login({ ...body, ip, userAgent: req.headers['user-agent'] });
-      return res(200, { user: { id: user._id, email: user.email, name: staff.name } }, { 'Set-Cookie': cookie });
+      return res(200, { user: { id: user._id, email: user.email, name: staff.name }, mustChangePassword: !!user.mustChangePassword }, { 'Set-Cookie': cookie });
     } },
-  { method: 'POST', path: '/logout',
+  { method: 'POST', path: '/logout', allowPasswordChange: true,
     async handler({ ctx }) {
       await Session.updateOne({ _id: ctx.session._id }, { revokedAt: new Date(), revokedReason: 'logout' });
       return res(200, {}, { 'Set-Cookie': clearCookie() });
     } },
-  { method: 'POST', path: '/logout-all',
+  { method: 'POST', path: '/logout-all', allowPasswordChange: true,
     async handler({ ctx }) {
       await Session.updateMany({ userId: ctx.user._id, revokedAt: { $exists: false } }, { revokedAt: new Date(), revokedReason: 'logout_all' });
       return res(200, {}, { 'Set-Cookie': clearCookie() });
     } },
-  { method: 'GET', path: '/me',
+  { method: 'GET', path: '/me', allowPasswordChange: true,
     async handler({ ctx }) {
-      return { user: { id: ctx.user._id, email: ctx.user.email, name: ctx.staff.name, role: { key: ctx.role.key, name: ctx.role.name, level: ctx.role.level } }, permissions: ctx.perms.toClient() };
+      return { user: { id: ctx.user._id, email: ctx.user.email, name: ctx.staff.name, role: { key: ctx.role.key, name: ctx.role.name, level: ctx.role.level } }, permissions: ctx.perms.toClient(), mustChangePassword: !!ctx.user.mustChangePassword };
     } },
+  { method: 'POST', path: '/change-password', allowPasswordChange: true, body: S.changePasswordBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
+    handler: ({ ctx, body }) => changeOwnPassword(ctx, body) },
   { method: 'GET', path: '/sessions',
     async handler({ ctx }) {
       const rows = await Session.find({ userId: ctx.user._id, revokedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ lastActiveAt: -1 }).lean();

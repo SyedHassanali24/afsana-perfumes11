@@ -19,6 +19,8 @@ const TONE_BY_STATUS = {
   // generic
   Active: "success",
   Inactive: "danger",
+  Suspended: "warning",
+  Disabled: "danger",
   Draft: "warning",
   Pending: "warning",
   Approved: "success",

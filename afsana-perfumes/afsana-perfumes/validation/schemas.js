@@ -1,5 +1,6 @@
 const { z, objectId, num, bool, paging, confirmPassword } = require('./common');
 const C = require('../database/constants');
+const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
 const loginBody = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200) });
@@ -90,7 +91,61 @@ const statusBody = z.object({ status: z.enum(C.ORDER_STATUSES), note: z.string()
 const noteBody = z.object({ text: z.string().trim().min(1).max(500) });
 const paymentBody = z.object({ paymentStatus: z.enum(['Pending', 'Paid', 'Failed']), reference: z.string().max(100).optional() });
 
+// ---------- passwords ----------
+const passwordRule = (min) => z.string().min(min, `Use at least ${min} characters`).max(128)
+  .refine((p) => /[A-Za-z]/.test(p) && /\d/.test(p), 'Use both letters and numbers');
+const changePasswordBody = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordRule(10) });
+
+// ---------- staff / roles ----------
+const deniedFields = z.array(z.enum(C.RESTRICTABLE_FIELDS)).max(C.RESTRICTABLE_FIELDS.length);
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:MM');
+const workingHours = z.object({
+  enabled: z.boolean(), days: z.array(z.number().int().min(0).max(6)).max(7).optional(),
+  start: hhmm.optional(), end: hhmm.optional(), timezone: z.string().max(60).optional(),
+}).refine((w) => !w.enabled || (w.start && w.end && w.days && w.days.length), 'Choose days, start and end time');
+const staffQuery = z.object({ q: z.string().trim().max(80).optional(), status: z.enum(['Active', 'Suspended', 'Disabled']).optional(), roleId: objectId.optional(), ...paging });
+const staffCreate = z.object({
+  name: z.string().trim().min(2).max(100), email: z.string().trim().email().max(200), roleId: objectId,
+  password: passwordRule(10).optional(), workingHours: workingHours.optional(), deniedFields: deniedFields.optional(),
+});
+const staffPatch = z.object({
+  name: z.string().trim().min(2).max(100), roleId: objectId, status: z.enum(['Active', 'Suspended', 'Disabled']),
+  workingHours, deniedFields,
+}).partial();
+const staffPasswordBody = z.object({ password: passwordRule(10).optional() });
+const scopeIn = z.object({ kind: z.enum(C.SCOPES).default('all'), values: z.array(z.string().max(80)).max(200).default([]) });
+const grantIn = z.object({ module: z.enum(C.MODULES), actions: z.array(z.enum(C.ACTIONS)).min(1).max(C.ACTIONS.length), scope: scopeIn.optional() });
+const overrideBody = z.object({
+  effect: z.enum(['allow', 'deny']), module: z.enum(C.MODULES), actions: z.array(z.enum(C.ACTIONS)).min(1).max(C.ACTIONS.length),
+  scope: scopeIn.optional(), startsAt: z.coerce.date().optional(), expiresAt: z.coerce.date().optional(), reason: z.string().trim().min(3).max(300),
+});
+const roleCreate = z.object({
+  name: z.string().trim().min(2).max(60), description: z.string().trim().max(300).optional(),
+  level: z.number().int().min(1).max(99), grants: z.array(grantIn).max(C.MODULES.length * 2), deniedFields: deniedFields.optional(),
+});
+const roleUpdate = roleCreate.partial();
+const historyQuery2 = z.object({ staffId: objectId.optional(), roleId: objectId.optional(), ...paging });
+const auditQuery = z.object({
+  q: z.string().trim().max(60).optional(), module: z.enum(C.MODULES).optional(), userId: objectId.optional(),
+  from: z.coerce.date().optional(), to: z.coerce.date().optional(), ...paging,
+});
+
+// ---------- customer accounts ----------
+const custPhone = z.string().trim().regex(/^[0-9+\-\s()]{10,18}$/, 'Enter a valid phone number').transform(normalizePhone);
+const registerBody = z.object({
+  name: z.string().trim().min(2).max(100), phone: custPhone,
+  email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined),
+  password: passwordRule(8),
+});
+const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(200), password: z.string().min(1).max(200) });
+const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80) }).partial();
+const customerChangePassword = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordRule(8) });
+const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200) });
+const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid link'), newPassword: passwordRule(8) });
+
 module.exports = {
+  changePasswordBody, staffQuery, staffCreate, staffPatch, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
+  registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, resetBody,
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,
   adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
 };

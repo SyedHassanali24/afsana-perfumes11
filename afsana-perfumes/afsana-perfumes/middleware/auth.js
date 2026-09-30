@@ -80,4 +80,4 @@ async function authenticate(req) {
     },
   };
 }
-module.exports = { login, authenticate, sessionCookie, clearCookie, COOKIE, sha256 };
+module.exports = { login, authenticate, sessionCookie, clearCookie, COOKIE, sha256, secret, secure };

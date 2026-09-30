@@ -12,6 +12,7 @@ const routes = [
     handler: async ({ query, ctx, scopes }) => redact(await P.listAdmin(query, scopes, ctx.user._id), ctx.perms.deniedFields) },
   { method: 'GET', path: '/admin/trash', permission: ['products', 'restore'], query: S.adminProductsQuery,
     handler: async ({ query, ctx, scopes }) => P.listAdmin(query, scopes, ctx.user._id, { trash: true }) },
+  { method: 'GET', path: '/admin/categories', permission: ['products', 'view'], handler: () => P.listCategories() },
   { method: 'GET', path: '/admin/:id', permission: ['products', 'view'],
     handler: async ({ params, ctx, scopes }) => redact(await P.getAdmin(params.id, scopes, ctx.user._id), ctx.perms.deniedFields) },
   { method: 'POST', path: '/admin', permission: ['products', 'create'], body: S.productCreate,

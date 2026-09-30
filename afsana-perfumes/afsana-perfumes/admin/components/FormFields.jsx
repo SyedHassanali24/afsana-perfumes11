@@ -49,3 +49,12 @@ export function Select({ error, className = "", children, ...props }) {
     </select>
   );
 }
+
+export function Check({ label, checked, onChange, disabled, title, className = "" }) {
+  return (
+    <label title={title} className={`inline-flex items-center gap-2 text-sm ${disabled ? "text-ink-muted" : "text-ink"} ${className}`}>
+      <input type="checkbox" checked={!!checked} disabled={disabled} onChange={(e) => onChange?.(e.target.checked)} className="accent-[var(--gold)]" />
+      {label}
+    </label>
+  );
+}

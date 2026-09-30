@@ -81,6 +81,10 @@ async function listAdmin(q, scopes, uid, { trash = false } = {}) {
     pagination: pageMeta(total, page, limit),
   };
 }
+async function listCategories() {
+  const rows = await Category.find({ isDeleted: false }).select('name slug').sort({ name: 1 }).lean();
+  return { categories: rows.map((c) => ({ id: c._id, name: c.name, slug: c.slug })) };
+}
 async function getAdmin(id, scopes, uid) {
   const p = await Product.findOne({ _id: id, ...scopeFilter(scopes, uid, SCOPE_MAP) }).lean();
   if (!p) throw E.notFound('Product not found.');
@@ -165,4 +169,4 @@ async function setDeleted(ctx, id, isDeleted, scopes) {
     return p;
   });
 }
-module.exports = { listPublic, getPublicBySlug, listAdmin, getAdmin, createProduct, updateProduct, updateVariant, addVariant, setDeleted };
+module.exports = { listPublic, getPublicBySlug, listAdmin, listCategories, getAdmin, createProduct, updateProduct, updateVariant, addVariant, setDeleted };

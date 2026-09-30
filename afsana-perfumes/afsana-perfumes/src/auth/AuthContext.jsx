@@ -6,14 +6,14 @@ const AuthContext = createContext(null);
 
 // status: 'loading' (checking session) | 'authed' | 'guest'
 export function AuthProvider({ children }) {
-  const [state, setState] = useState({ status: 'loading', user: null, permissions: null });
+  const [state, setState] = useState({ status: 'loading', user: null, permissions: null, mustChangePassword: false });
 
   const refresh = useCallback(async () => {
     try {
-      const { user, permissions } = await authApi.me();
-      setState({ status: 'authed', user, permissions });
+      const { user, permissions, mustChangePassword } = await authApi.me();
+      setState({ status: 'authed', user, permissions, mustChangePassword: !!mustChangePassword });
     } catch {
-      setState({ status: 'guest', user: null, permissions: null });
+      setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
     }
   }, []);
 
@@ -21,9 +21,11 @@ export function AuthProvider({ children }) {
 
   // Any API call that comes back 401 anywhere in the app -> back to login.
   useEffect(() => {
-    const onUnauthorized = () => setState({ status: 'guest', user: null, permissions: null });
+    const onUnauthorized = () => setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
+    const onMustChange = () => setState((s) => ({ ...s, mustChangePassword: true }));
     window.addEventListener('afsana:unauthorized', onUnauthorized);
-    return () => window.removeEventListener('afsana:unauthorized', onUnauthorized);
+    window.addEventListener('afsana:must-change-password', onMustChange);
+    return () => { window.removeEventListener('afsana:unauthorized', onUnauthorized); window.removeEventListener('afsana:must-change-password', onMustChange); };
   }, []);
 
   const login = useCallback(async (email, password) => {
@@ -33,7 +35,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try { await authApi.logout(); } catch { /* cookie may already be gone */ }
-    setState({ status: 'guest', user: null, permissions: null });
+    setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
   }, []);
 
   const value = useMemo(() => ({

@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 const SIZES = {
   md: "max-w-md",
   lg: "max-w-xl",
+  xl: "max-w-5xl",
 };
 
 /**
@@ -10,7 +11,7 @@ const SIZES = {
  * @param {() => void} onClose
  * @param {string} title
  * @param {React.ReactNode} footer - typically Cancel + Save buttons
- * @param {"md"|"lg"} [size] - md (default) for forms, lg for detail views
+ * @param {"md"|"lg"|"xl"} [size] - md (default) for forms, lg for detail views
  */
 export default function Drawer({ open, onClose, title, children, footer, size = "md" }) {
   if (!open) return null;

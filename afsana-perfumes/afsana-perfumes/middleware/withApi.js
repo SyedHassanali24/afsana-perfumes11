@@ -1,10 +1,11 @@
 // Request pipeline: route -> rate limit -> CSRF guard -> DB -> authenticate -> authorize -> validate -> reauth -> handler -> safe errors
 const { compile, match, stripPrefix } = require('./router');
-const { toResponse, E } = require('./errors');
+const { toResponse, E, ApiError } = require('./errors');
 const { json, lowerKeys, clientIp, parseBody } = require('./http');
 const { hit } = require('./rateLimit');
 const { connectDB } = require('../database/connection');
 const { authenticate } = require('./auth');
+const { authenticateCustomer } = require('./customerAuth');
 
 function createHandler(group, routes) {
   const compiled = compile(routes);
@@ -26,7 +27,11 @@ function createHandler(group, routes) {
       await connectDB();
       let ctx = null; let scopes = null;
       if (!route.public) {
-        ctx = await authenticate(req);
+        ctx = route.audience === 'customer' ? await authenticateCustomer(req) : await authenticate(req);
+        // Staff whose password was set by an admin must change it before doing anything else (enforced here, not just in the UI).
+        if (route.audience !== 'customer' && ctx.user.mustChangePassword && !route.allowPasswordChange) {
+          throw new ApiError(403, 'PASSWORD_CHANGE_REQUIRED', 'Please change your password to continue.');
+        }
         if (route.permission) {
           scopes = ctx.perms.can(route.permission[0], route.permission[1]);
           if (!scopes) throw E.forbidden();

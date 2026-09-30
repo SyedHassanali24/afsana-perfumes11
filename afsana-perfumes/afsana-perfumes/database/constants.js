@@ -16,6 +16,7 @@ const SCOPES = ['all','assigned','createdByMe','cities','categories','products',
 const HIGH_RISK = [
   'products.delete','customers.delete','refunds.refund','orders.refund','products.managePrice','inventory.manageStock',
   'customers.export','orders.export','staff.edit','roles.edit','permissions.edit','payments.edit','security.edit','settings.edit',
+  'staff.create','staff.delete','roles.create','roles.delete','temporaryAccess.create','sessions.delete',
 ];
 const RESTRICTABLE_FIELDS = [
   'customer.phone','customer.address','order.paymentDetails','product.costPrice','order.profit','order.internalNotes',
