@@ -1,5 +1,7 @@
+# The app lives in a subdirectory; publish/functions paths below are relative to it.
 [build]
-  command = "npm run build"
+  base = "afsana-perfumes/afsana-perfumes"
+  command = "npm install --include=dev && npm run build"
   publish = "dist"
 
 [functions]
