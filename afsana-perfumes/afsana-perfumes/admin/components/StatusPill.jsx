@@ -16,6 +16,10 @@ const TONE_BY_STATUS = {
   "In Stock": "success",
   "Low Stock": "warning",
   "Out of Stock": "danger",
+  // purchase orders
+  Ordered: "gold",
+  "Partially Received": "warning",
+  Received: "success",
   // generic
   Active: "success",
   Inactive: "danger",

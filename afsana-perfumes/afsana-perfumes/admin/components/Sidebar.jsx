@@ -5,6 +5,7 @@ import {
   BarChart3,
   Package,
   Warehouse,
+  Tags,
   ShoppingBag,
   Truck,
   Users,
@@ -31,6 +32,7 @@ const NAV_GROUPS = [
     label: "Catalog",
     items: [
       { label: "Products", icon: Package, href: "/admin/products", permission: "products.view" },
+      { label: "Catalog setup", icon: Tags, href: "/admin/catalog", permission: "categories.view" },
       { label: "Inventory", icon: Warehouse, href: "/admin/inventory", permission: "inventory.view" },
     ],
   },

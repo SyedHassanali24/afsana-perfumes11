@@ -148,7 +148,7 @@ export default function ProductsList() {
       <ProductFormDrawer
         open={drawer.open}
         productId={drawer.productId}
-        categories={categories}
+        options={catData || undefined}
         canPrice={can("products.managePrice")}
         onClose={() => setDrawer({ open: false, productId: null })}
         onSaved={() => { setDrawer({ open: false, productId: null }); flash("ok", "Product saved."); reload(); }}

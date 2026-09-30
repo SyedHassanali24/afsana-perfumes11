@@ -4,10 +4,23 @@ const { redact } = require('../../../middleware/redact');
 const { Inventory, InventoryTransaction, Product } = require('../../../database/models');
 const S = require('../../../validation/schemas');
 const { adjustStock } = require('../../../services/inventoryService');
+const { E } = require('../../../middleware/errors');
+const { audit } = require('../../../services/audit');
 
 const stockStatus = (i) => { const a = i.current - i.reserved; return a <= 0 ? 'out' : a <= i.lowStockThreshold ? 'low' : 'ok'; };
 
 const routes = [
+  // Headline numbers for the stock screen.
+  { method: 'GET', path: '/summary', permission: ['inventory', 'view'],
+    async handler() {
+      const [r] = await Inventory.aggregate([
+        { $project: { current: 1, available: { $subtract: ['$current', '$reserved'] }, low: '$lowStockThreshold' } },
+        { $group: { _id: null, sizes: { $sum: 1 }, units: { $sum: '$current' },
+          out: { $sum: { $cond: [{ $lte: ['$available', 0] }, 1, 0] } },
+          low: { $sum: { $cond: [{ $and: [{ $gt: ['$available', 0] }, { $lte: ['$available', '$low'] }] }, 1, 0] } } } },
+      ]);
+      return { summary: { sizes: r ? r.sizes : 0, units: r ? r.units : 0, outOfStock: r ? r.out : 0, lowStock: r ? r.low : 0 } };
+    } },
   { method: 'GET', path: '/', permission: ['inventory', 'view'], query: S.inventoryQuery,
     async handler({ query, ctx }) {
       const { page, limit, skip } = paging(query);
@@ -39,4 +52,11 @@ const routes = [
       return { stock: { current: inv.current, reserved: inv.reserved, available: inv.current - inv.reserved, damaged: inv.damaged } };
     } },
 ];
+routes.push({ method: 'PATCH', path: '/:variantId/threshold', permission: ['inventory', 'edit'], body: S.thresholdBody,
+  async handler({ params, body, ctx }) {
+    const inv = await Inventory.findOneAndUpdate({ variantId: params.variantId }, { $set: { lowStockThreshold: body.lowStockThreshold } }, { new: false });
+    if (!inv) throw E.notFound('No inventory record for this size.');
+    await audit(ctx, { action: 'inventory.threshold_changed', module: 'inventory', recordId: params.variantId, oldValue: { lowStockThreshold: inv.lowStockThreshold }, newValue: { lowStockThreshold: body.lowStockThreshold } });
+    return { lowStockThreshold: body.lowStockThreshold };
+  } });
 exports.handler = createHandler('inventory', routes);

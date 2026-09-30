@@ -1,147 +1,35 @@
 import { useState } from "react";
-import { SlidersHorizontal, AlertTriangle } from "lucide-react";
-import Card from "../components/Card";
-import DataTable from "../components/DataTable";
-import StatusPill from "../components/StatusPill";
-import StockAdjustDrawer from "./StockAdjustDrawer";
-import { mockInventory, mockStockHistory } from "./mockInventoryData";
+import { useAuth } from "../../src/auth/AuthContext";
+import StockTab from "./StockTab";
+import HistoryTab from "./HistoryTab";
+import SuppliersTab from "./SuppliersTab";
+import PurchaseOrdersTab from "./PurchaseOrdersTab";
 
+// Route: /admin/inventory. Tabs the user has no permission for are hidden (the API enforces it as well).
 const TABS = [
-  { key: "stock", label: "Stock" },
-  { key: "history", label: "Stock history" },
+  { id: "stock", label: "Stock", permission: "inventory.view", View: StockTab },
+  { id: "history", label: "Stock history", permission: "inventory.view", View: HistoryTab },
+  { id: "po", label: "Purchase orders", permission: "purchaseOrders.view", View: PurchaseOrdersTab },
+  { id: "suppliers", label: "Suppliers", permission: "suppliers.view", View: SuppliersTab },
 ];
 
-function stockStatus(item) {
-  const available = item.current - item.reserved;
-  if (available <= 0) return "Out of Stock";
-  if (available <= item.lowStockThreshold) return "Low Stock";
-  return "In Stock";
-}
-
 export default function InventoryList() {
-  // Phase 3: GET /api/inventory (stock tab) and GET /api/inventory/history (history tab)
-  const [inventory, setInventory] = useState(mockInventory);
-  const [activeTab, setActiveTab] = useState("stock");
-  const [adjustingProduct, setAdjustingProduct] = useState(null);
-
-  const handleAdjust = ({ productId, quantity }) => {
-    setInventory((prev) =>
-      prev.map((item) =>
-        item.id === productId
-          ? { ...item, current: Math.max(0, item.current + quantity) }
-          : item
-      )
-    );
-    setAdjustingProduct(null);
-  };
-
-  const lowStockCount = inventory.filter((i) => stockStatus(i) !== "In Stock").length;
-
+  const { can } = useAuth();
+  const tabs = TABS.filter((t) => can(t.permission));
+  const [active, setActive] = useState(tabs[0]?.id);
+  const current = tabs.find((t) => t.id === active) || tabs[0];
+  if (!current) return <p className="text-sm text-ink-muted">Your role doesn't include inventory.</p>;
+  const { View } = current;
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl text-ink">Inventory</h1>
-          <p className="text-sm text-ink-muted mt-1 flex items-center gap-1.5">
-            {lowStockCount > 0 && <AlertTriangle className="w-4 h-4 text-warning" />}
-            {lowStockCount > 0
-              ? `${lowStockCount} product${lowStockCount > 1 ? "s" : ""} need attention`
-              : "All products are well stocked"}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex gap-1 border-b border-border">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${
-              activeTab === tab.key
-                ? "border-gold text-ink font-medium"
-                : "border-transparent text-ink-muted hover:text-ink"
-            }`}
-          >
-            {tab.label}
-          </button>
+      <h1 className="font-display text-2xl text-ink">Inventory</h1>
+      <div className="flex gap-1 border-b border-border" role="tablist">
+        {tabs.map((t) => (
+          <button key={t.id} role="tab" aria-selected={t.id === current.id} onClick={() => setActive(t.id)}
+            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${t.id === current.id ? "border-[var(--gold)] text-ink font-medium" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.label}</button>
         ))}
       </div>
-
-      {activeTab === "stock" && (
-        <Card padded={false}>
-          <div className="p-5">
-            <DataTable
-              columns={[
-                { key: "name", header: "Product" },
-                { key: "sku", header: "SKU" },
-                { key: "current", header: "Current", align: "right" },
-                { key: "reserved", header: "Reserved", align: "right" },
-                {
-                  key: "available",
-                  header: "Available",
-                  align: "right",
-                  render: (row) => row.current - row.reserved,
-                },
-                {
-                  key: "status",
-                  header: "Status",
-                  render: (row) => <StatusPill status={stockStatus(row)} />,
-                },
-                {
-                  key: "actions",
-                  header: "",
-                  align: "right",
-                  render: (row) => (
-                    <button
-                      onClick={() => setAdjustingProduct(row)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs text-ink-muted hover:bg-bg hover:text-ink transition-colors"
-                    >
-                      <SlidersHorizontal className="w-3.5 h-3.5" />
-                      Adjust
-                    </button>
-                  ),
-                },
-              ]}
-              rows={inventory}
-            />
-          </div>
-        </Card>
-      )}
-
-      {activeTab === "history" && (
-        <Card padded={false}>
-          <div className="p-5">
-            <DataTable
-              emptyMessage="No stock movements yet."
-              columns={[
-                { key: "product", header: "Product" },
-                { key: "type", header: "Type" },
-                {
-                  key: "change",
-                  header: "Change",
-                  align: "right",
-                  render: (row) => (
-                    <span className={row.change.startsWith("-") ? "text-danger" : "text-success"}>
-                      {row.change}
-                    </span>
-                  ),
-                },
-                { key: "reason", header: "Reason" },
-                { key: "who", header: "By" },
-                { key: "when", header: "When", align: "right" },
-              ]}
-              rows={mockStockHistory}
-            />
-          </div>
-        </Card>
-      )}
-
-      <StockAdjustDrawer
-        open={Boolean(adjustingProduct)}
-        onClose={() => setAdjustingProduct(null)}
-        product={adjustingProduct}
-        onSubmit={handleAdjust}
-      />
+      <View />
     </div>
   );
 }

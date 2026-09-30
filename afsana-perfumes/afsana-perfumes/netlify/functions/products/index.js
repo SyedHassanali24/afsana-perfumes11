@@ -24,6 +24,8 @@ const routes = [
   // permission checks for price fields happen inside the service (managePrice + password re-auth)
   { method: 'PATCH', path: '/admin/:id/variants/:variantId', permission: ['products', 'edit'], body: S.variantPatch,
     handler: async ({ params, body, ctx }) => { const v = await P.updateVariant(ctx, params.id, params.variantId, body); return { id: v._id }; } },
+  { method: 'DELETE', path: '/admin/:id/variants/:variantId', permission: ['products', 'delete'], reauth: true,
+    handler: async ({ params, ctx }) => { await P.removeVariant(ctx, params.id, params.variantId); return {}; } },
   { method: 'DELETE', path: '/admin/:id', permission: ['products', 'delete'], reauth: true,
     handler: async ({ params, ctx, scopes }) => { await P.setDeleted(ctx, params.id, true, scopes); return {}; } },
   { method: 'POST', path: '/admin/:id/restore', permission: ['products', 'restore'],

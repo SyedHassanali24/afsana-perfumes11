@@ -136,3 +136,15 @@ Then `POST /api/auth/login` with the seeded Owner email/password.
 | account (customer) | POST register, login, logout, forgot-password, reset-password, change-password; GET/PATCH me | own session (`afsana_customer` cookie, 30 days) |
 
 Guards live in `services/accessRules.js` (pure). Staff and customer cookies are different and a customer session can never pass `authenticate()` (kind check).
+
+
+## Phase 5 addendum — catalog & inventory
+| Group | Endpoints | Permission |
+|---|---|---|
+| taxonomy | GET/POST `/{type}`, PATCH/DELETE `/{type}/:id`; GET `/public/:type` | categories / collections / brands (`fragrance-families` uses `categories`) |
+| suppliers | GET, POST, PATCH /:id, DELETE /:id | suppliers.* |
+| purchase-orders | GET, GET /:id, POST, PATCH /:id (Draft only), POST /:id/order, POST /:id/receive (password), POST /:id/cancel | purchaseOrders.view / create / edit / manageStock |
+| inventory (added) | GET /summary, PATCH /:variantId/threshold | inventory.view / edit |
+| products (added) | DELETE /admin/:id/variants/:variantId (password) | products.delete |
+
+Stock flow with POs: **Ordered** adds to `incoming`; **receive** moves units `incoming → current` (one atomic pipeline update, `incoming` clamped at 0) and logs `po_receive`; **cancel** returns the un-received remainder of `incoming`. Every step runs in a Mongo transaction with an AuditLog row.
