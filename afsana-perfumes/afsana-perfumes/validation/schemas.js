@@ -50,7 +50,7 @@ const productCreate = z.object({ ...productBase, variants: z.array(variantCreate
 const productPatch = z.object(productBase).partial();
 
 const publicProductsQuery = z.object({
-  q: z.string().trim().max(80).optional(), category: z.string().max(100).optional(), collection: z.string().max(100).optional(),
+  q: z.string().trim().max(80).optional(), category: z.string().max(100).optional(), collection: z.string().max(100).optional(), brand: z.string().max(100).optional(),
   gender: z.enum(['Men', 'Women', 'Unisex']).optional(),
   minPrice: num(z.number().min(0).optional()), maxPrice: num(z.number().min(0).optional()),
   sort: z.enum(['newest', 'price_asc', 'price_desc', 'popular']).optional(), ...paging,
@@ -143,6 +143,18 @@ const customerChangePassword = z.object({ currentPassword: z.string().min(1).max
 const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200) });
 const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid link'), newPassword: passwordRule(8) });
 
+// ---------- storefront: cart, wishlist, addresses, my orders ----------
+const cartItems = z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(20) })).max(30);
+const quoteBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional() });
+const cartBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional().or(z.literal('')).transform((v) => v || undefined) });
+const addressBody = z.object({
+  type: z.enum(['Home', 'Office', 'Other']).default('Home'), fullName: z.string().trim().min(2).max(100), phone,
+  line1: z.string().trim().min(5).max(200), line2: z.string().trim().max(200).optional(), city: z.string().trim().min(2).max(80),
+  postalCode: z.string().trim().max(12).optional(), isDefault: z.boolean().optional(),
+});
+const addressPatch = addressBody.partial();
+const myOrdersQuery = z.object({ ...paging });
+
 // ---------- taxonomy / suppliers / purchase orders ----------
 const slugRule = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and dashes').max(100);
 const optUrl = z.string().trim().url().max(500).or(z.literal(''));
@@ -171,6 +183,7 @@ const poQuery = z.object({ q: z.string().trim().max(40).optional(), status: z.en
 const thresholdBody = z.object({ lowStockThreshold: z.number().int().min(0).max(100000) });
 
 module.exports = {
+  quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,
   taxonomyBody, taxonomyPatch, taxonomyQuery, supplierBody, supplierPatch, supplierQuery, poCreate, poPatch, poReceive, poQuery, thresholdBody,
   changePasswordBody, staffQuery, staffCreate, staffPatch, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
   registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, resetBody,

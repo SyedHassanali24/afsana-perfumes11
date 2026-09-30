@@ -30,6 +30,7 @@ async function listPublic(q) {
   const filter = { status: 'Active', isDeleted: false };
   if (q.category) { const c = await Category.findOne({ slug: q.category, isDeleted: false }); filter.categoryId = c ? c._id : null; }
   if (q.collection) { const c = await Collection.findOne({ slug: q.collection, isDeleted: false }); filter.collectionIds = c ? c._id : null; }
+  if (q.brand) { const b = await Brand.findOne({ slug: q.brand, isDeleted: false }); filter.brandId = b ? b._id : null; }
   if (q.gender) filter['fragrance.gender'] = q.gender;
   if (q.minPrice !== undefined || q.maxPrice !== undefined) filter.priceFrom = { ...(q.minPrice !== undefined && { $gte: q.minPrice }), ...(q.maxPrice !== undefined && { $lte: q.maxPrice }) };
   let sort = { createdAt: -1 };

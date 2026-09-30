@@ -1,4 +1,4 @@
-const { Order, OrderItem, Payment, Customer, Coupon, Product, ProductVariant, Setting, Notification, nextNumber } = require('../database/models');
+const { Order, OrderItem, Payment, Customer, Coupon, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { scopeFilter } = require('../middleware/permissions');
@@ -28,7 +28,8 @@ async function shippingSettings() {
 }
 
 // ---------------- checkout ----------------
-async function placeOrder(input) {
+// `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
+async function placeOrder(input, cust) {
   // 1. merge duplicate lines, load real data from DB
   const qty = new Map();
   for (const it of input.items) qty.set(it.variantId, (qty.get(it.variantId) || 0) + it.quantity);
@@ -47,7 +48,7 @@ async function placeOrder(input) {
   const shippingFee = calcShipping(subtotal, shipCfg);
 
   // 2. customer (guest checkout keyed by phone)
-  const customer = await Customer.findOneAndUpdate({ phone: input.customer.phone, isDeleted: false },
+  const customer = cust ? cust.customer : await Customer.findOneAndUpdate({ phone: input.customer.phone, isDeleted: false },
     { $setOnInsert: { name: input.customer.name, phone: input.customer.phone, email: input.customer.email || undefined, city: input.shippingAddress.city } }, { upsert: true, new: true });
 
   // 3. coupon
@@ -81,6 +82,7 @@ async function placeOrder(input) {
     await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
     return o;
   });
+  if (cust) await Cart.deleteOne({ customerId: customer._id }).catch(() => {}); // saved cart is emptied once the order exists
   await Notification.create({ type: 'new_order', title: 'New order', body: `${orderNumber} · ${total}`, link: '/admin/orders', forPermission: 'orders.view' }).catch(() => {});
   return { orderNumber: order.orderNumber, total, subtotal, shipping, discount, status: order.status, paymentMethod: order.paymentMethod };
 }
@@ -90,6 +92,32 @@ async function trackOrder(orderNumber, phone) {
   const o = await Order.findOne({ orderNumber: orderNumber.toUpperCase(), 'customer.phone': phone }).select('orderNumber status timeline createdAt paymentStatus').lean();
   if (!o) throw E.notFound('We could not find an order with those details.');
   return { order: { orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, placedAt: o.createdAt, timeline: o.timeline.map((t) => ({ event: t.event, at: t.at })) } };
+}
+
+// ---------------- logged-in shopper: own orders only (filtered by customerId, never by URL alone) ----------------
+async function listMine(customerId, q) {
+  const { page, limit, skip } = pg(q);
+  const [orders, total] = await Promise.all([
+    Order.find({ customerId }).select('orderNumber status paymentStatus paymentMethod total createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    Order.countDocuments({ customerId }),
+  ]);
+  const items = orders.length ? await OrderItem.find({ orderId: { $in: orders.map((o) => o._id) } }).select('orderId image quantity').lean() : [];
+  const by = new Map();
+  for (const it of items) { const k = String(it.orderId); const e = by.get(k) || { count: 0, images: [] }; e.count += it.quantity; if (it.image && e.images.length < 3) e.images.push(it.image); by.set(k, e); }
+  return {
+    orders: orders.map((o) => ({ orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, paymentMethod: o.paymentMethod, total: o.total, placedAt: o.createdAt, itemCount: (by.get(String(o._id)) || {}).count || 0, images: (by.get(String(o._id)) || {}).images || [] })),
+    pagination: pageMeta(total, page, limit),
+  };
+}
+async function getMine(customerId, orderNumber) {
+  const o = await Order.findOne({ customerId, orderNumber: orderNumber.toUpperCase() }).lean();
+  if (!o) throw E.notFound('Order not found.');
+  const items = await OrderItem.find({ orderId: o._id }).select('name sku sizeMl image unitPrice quantity lineTotal').lean(); // no costPrice
+  return { order: {
+    orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, paymentMethod: o.paymentMethod, placedAt: o.createdAt,
+    subtotal: o.subtotal, shipping: o.shipping, discount: o.discount, total: o.total, couponCode: o.couponCode,
+    shippingAddress: o.shippingAddress, items, timeline: (o.timeline || []).map((t) => ({ event: t.event, at: t.at })), // internal notes/staff ids stay server-side
+  } };
 }
 
 // ---------------- admin ----------------
@@ -152,4 +180,4 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
     await audit(ctx, { action: 'payment.status_changed', module: 'payments', recordId: id, oldValue: old, newValue: paymentStatus }, session);
   });
 }
-module.exports = { TRANSITIONS, placeOrder, trackOrder, listOrders, getOrder, changeStatus, addNote, setPayment };
+module.exports = { TRANSITIONS, shippingSettings, placeOrder, trackOrder, listMine, getMine, listOrders, getOrder, changeStatus, addNote, setPayment };

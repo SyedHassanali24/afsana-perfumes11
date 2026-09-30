@@ -4,6 +4,7 @@ const { clearCustomerCookie } = require('../../../middleware/customerAuth');
 const { Session } = require('../../../database/models');
 const S = require('../../../validation/schemas');
 const A = require('../../../services/accountService');
+const O = require('../../../services/orderService');
 
 const meta = (req, ip) => ({ ip, userAgent: req.headers['user-agent'] });
 const customer = { audience: 'customer' };
@@ -23,6 +24,12 @@ const routes = [
     async handler({ ctx }) { await Session.updateOne({ _id: ctx.session._id }, { revokedAt: new Date(), revokedReason: 'logout' }); return res(200, {}, { 'Set-Cookie': clearCustomerCookie() }); } },
   { ...customer, method: 'GET', path: '/me', handler: ({ ctx }) => ({ customer: A.shape(ctx.customer) }) },
   { ...customer, method: 'PATCH', path: '/me', body: S.profilePatch, handler: ({ ctx, body }) => A.updateProfile(ctx, body) },
+  { ...customer, method: 'GET', path: '/orders', query: S.myOrdersQuery, handler: ({ ctx, query }) => O.listMine(ctx.customer._id, query) },
+  { ...customer, method: 'GET', path: '/orders/:orderNumber', handler: ({ ctx, params }) => O.getMine(ctx.customer._id, params.orderNumber) },
+  { ...customer, method: 'GET', path: '/addresses', handler: ({ ctx }) => A.listAddresses(ctx) },
+  { ...customer, method: 'POST', path: '/addresses', body: S.addressBody, handler: async ({ ctx, body }) => res(201, await A.addAddress(ctx, body)) },
+  { ...customer, method: 'PATCH', path: '/addresses/:id', body: S.addressPatch, handler: ({ ctx, params, body }) => A.updateAddress(ctx, params.id, body) },
+  { ...customer, method: 'DELETE', path: '/addresses/:id', handler: ({ ctx, params }) => A.removeAddress(ctx, params.id) },
   { ...customer, method: 'POST', path: '/change-password', body: S.customerChangePassword, rateLimit: { limit: 10, windowMs: 15 * 60000 }, handler: ({ ctx, body }) => A.changePassword(ctx, body) },
 ];
 exports.handler = createHandler('account', routes);

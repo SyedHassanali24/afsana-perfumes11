@@ -83,6 +83,26 @@ export const accountApi = {
   changePassword: (currentPassword, newPassword) => api('/account/change-password', { method: 'POST', body: { currentPassword, newPassword } }),
   forgotPassword: (identifier) => api('/account/forgot-password', { method: 'POST', body: { identifier } }),
   resetPassword: (token, newPassword) => api('/account/reset-password', { method: 'POST', body: { token, newPassword } }),
+  // Phase 6
+  orders: (query) => api('/account/orders', { query }),
+  order: (orderNumber) => api(`/account/orders/${orderNumber}`),
+  addresses: () => api('/account/addresses'),
+  addAddress: (body) => api('/account/addresses', { method: 'POST', body }),
+  updateAddress: (id, body) => api(`/account/addresses/${id}`, { method: 'PATCH', body }),
+  removeAddress: (id) => api(`/account/addresses/${id}`, { method: 'DELETE' }),
+};
+
+// ---- Phase 6: shopping ----
+export const cartApi = {
+  quote: (body) => api('/cart/quote', { method: 'POST', body }),      // { items:[{variantId,quantity}], couponCode? } -> priced lines (guest or shopper)
+  get: () => api('/cart'),
+  save: (body) => api('/cart', { method: 'PUT', body }),
+  merge: (body) => api('/cart/merge', { method: 'POST', body }),
+};
+export const wishlistApi = {
+  list: () => api('/wishlist'),
+  add: (productId) => api(`/wishlist/${productId}`, { method: 'PUT' }),
+  remove: (productId) => api(`/wishlist/${productId}`, { method: 'DELETE' }),
 };
 
 // ---- Phase 5: catalog & inventory ----

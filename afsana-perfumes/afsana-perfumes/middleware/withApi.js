@@ -26,6 +26,10 @@ function createHandler(group, routes) {
 
       await connectDB();
       let ctx = null; let scopes = null;
+      if (route.public && route.optionalCustomer) {
+        // public route that behaves better for a signed-in shopper (checkout, cart quote); a missing/invalid cookie just means guest
+        try { ctx = await authenticateCustomer(req); } catch { ctx = null; }
+      }
       if (!route.public) {
         ctx = route.audience === 'customer' ? await authenticateCustomer(req) : await authenticate(req);
         // Staff whose password was set by an admin must change it before doing anything else (enforced here, not just in the UI).

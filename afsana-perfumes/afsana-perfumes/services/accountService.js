@@ -7,6 +7,7 @@ const { sha256 } = require('../middleware/auth');
 const { normalizePhone } = require('./phone');
 const { withTx } = require('./tx');
 const { sendPasswordReset } = require('./mailer');
+const { MAX_ADDRESSES, normalizeDefaults } = require('./addressRules');
 
 const RESET_MINUTES = 30;
 const hash = (pw) => bcrypt.hash(pw, 12);
@@ -79,4 +80,37 @@ async function resetPassword({ token, newPassword }) {
   return {};
 }
 
-module.exports = { register, login, updateProfile, changePassword, forgotPassword, resetPassword, shape };
+// ---------- saved addresses (max 10, exactly one default) ----------
+const shapeAddr = (a) => ({ id: a._id, type: a.type, fullName: a.fullName, phone: a.phone, line1: a.line1, line2: a.line2, city: a.city, postalCode: a.postalCode, isDefault: !!a.isDefault });
+const addrList = (c) => ({ addresses: c.addresses.map(shapeAddr) });
+const loadCustomer = (ctx) => Customer.findOne({ _id: ctx.customer._id, isDeleted: false });
+
+async function listAddresses(ctx) { return addrList(await loadCustomer(ctx)); }
+async function addAddress(ctx, body) {
+  const c = await loadCustomer(ctx);
+  if (c.addresses.length >= MAX_ADDRESSES) throw E.badRequest(`You can save up to ${MAX_ADDRESSES} addresses.`);
+  c.addresses.push({ ...body, isDefault: false });
+  normalizeDefaults(c.addresses, body.isDefault ? c.addresses[c.addresses.length - 1]._id : undefined);
+  await c.save();
+  return addrList(c);
+}
+async function updateAddress(ctx, id, patch) {
+  const c = await loadCustomer(ctx);
+  const a = c.addresses.id(id);
+  if (!a) throw E.notFound('Address not found.');
+  const { isDefault, ...rest } = patch;
+  a.set(rest);
+  normalizeDefaults(c.addresses, isDefault ? a._id : undefined);
+  await c.save();
+  return addrList(c);
+}
+async function removeAddress(ctx, id) {
+  const c = await loadCustomer(ctx);
+  if (!c.addresses.id(id)) throw E.notFound('Address not found.');
+  c.addresses.pull({ _id: id });
+  normalizeDefaults(c.addresses);
+  await c.save();
+  return addrList(c);
+}
+
+module.exports = { listAddresses, addAddress, updateAddress, removeAddress, register, login, updateProfile, changePassword, forgotPassword, resetPassword, shape };

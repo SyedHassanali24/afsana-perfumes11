@@ -148,3 +148,11 @@ Guards live in `services/accessRules.js` (pure). Staff and customer cookies are 
 | products (added) | DELETE /admin/:id/variants/:variantId (password) | products.delete |
 
 Stock flow with POs: **Ordered** adds to `incoming`; **receive** moves units `incoming → current` (one atomic pipeline update, `incoming` clamped at 0) and logs `po_receive`; **cancel** returns the un-received remainder of `incoming`. Every step runs in a Mongo transaction with an AuditLog row.
+
+
+## Phase 6 — Shopping system (storefront)
+- **Prices are never client-owned.** The browser stores only `{variantId, quantity}` (guest: `localStorage`; shopper: `carts` collection). Every screen that shows money calls `POST /api/cart/quote`, which reads variants / inventory / coupon from the DB and returns line statuses (`ok | limited | out_of_stock | unavailable`). `placeOrder` still re-prices and reserves stock atomically in a transaction, so a stale cart can never oversell.
+- **Guest to shopper merge:** on login the local cart goes to `POST /cart/merge` (quantities add, capped at 20 per line and 30 lines), local storage is cleared, then changes sync with a debounced `PUT /cart`. Logout clears the in-memory and local cart.
+- **`optionalCustomer` routes:** a public route can still receive the shopper session (`ctx`); used by `/cart/quote` (per-customer coupon rules) and `POST /orders` (order attached to the account, saved cart cleared). A missing or invalid cookie means guest.
+- **Own-data access:** `/account/orders*` and `/addresses*` always filter by the session's `customerId`; the customer order shape omits `costPrice`, internal notes and staff ids.
+- **Frontend layout:** `src/shop/` (layout, contexts, pure `cartLogic`), `pages/` (public), `account/` (behind `RequireCustomer`). Every data screen uses `StateBox` (loading / error + retry / empty).
