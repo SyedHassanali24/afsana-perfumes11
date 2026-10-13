@@ -1,0 +1,4 @@
+# The app lives in a subdirectory. Netlify builds from there and then loads
+# afsana-ready-to-deploy/netlify.toml for the build command, redirects and headers.
+[build]
+  base = "afsana-ready-to-deploy"
