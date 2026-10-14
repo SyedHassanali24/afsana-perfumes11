@@ -42,6 +42,12 @@ npm run db:indexes
 Screen par aana chahiye: `Owner created: aap-ka-email`, phir indexes ka message.
 Is se demo perfumes nahi banenge. Products aap admin se khud daalenge.
 
+## Pehle health check (har masle mein sab se pehle yeh)
+Browser mein kholein: `https://aap-ka-site.netlify.app/api/health`
+- `"ok":true` aaye to env variables aur database sahi hain.
+- `"ok":false` aaye to `"fix"` mein likha hota hai ke kya theek karna hai (password galat, IP block, cluster paused, variable missing). Yeh koi password ya connection string nahi dikhata.
+- `"setupDone":false` ho to Step 4 (`npm run db:setup`) abhi baqi hai.
+
 ## Step 5: Check karein
 1. `https://aap-ka-site.netlify.app/admin/login` kholein, ADMIN_EMAIL/PASSWORD se login karein.
 2. Dashboard khulna chahiye (khali, no sales).
