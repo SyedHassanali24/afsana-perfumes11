@@ -15,6 +15,7 @@ import {
   Landmark,
   ShieldCheck,
   Settings,
+  DatabaseBackup,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
@@ -58,6 +59,7 @@ const NAV_GROUPS = [
     items: [
       { label: "Finance", icon: Landmark, href: "/admin/finance", permission: "finance.view" },
       { label: "Staff & roles", icon: ShieldCheck, href: "/admin/staff", permission: "staff.view" },
+      { label: "Backup", icon: DatabaseBackup, href: "/admin/backup", permission: "backup.export" },
       { label: "Settings", icon: Settings, href: "/admin/settings", permission: "settings.view" },
     ],
   },

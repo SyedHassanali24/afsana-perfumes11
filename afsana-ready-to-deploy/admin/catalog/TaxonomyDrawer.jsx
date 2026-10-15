@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import Drawer from "../components/Drawer";
 import { Check, Field, Input, Select, Textarea } from "../components/FormFields";
 import { taxonomyApi } from "../../src/services";
+import ImageUploadButton from "../components/ImageUploadButton";
 
 const EMPTY = { name: "", slug: "", description: "", imageUrl: "", sortOrder: "0", isActive: true, seoTitle: "", seoDescription: "", parentId: "" };
 
@@ -50,7 +51,13 @@ export default function TaxonomyDrawer({ open, type, noun, item, parents, onClos
           </Field>
         )}
         <Field label="Description"><Textarea rows={3} value={v.description} onChange={set("description")} /></Field>
-        <Field label="Image URL" error={errors.image} hint="Link to the hosted image"><Input value={v.imageUrl} error={!!errors.image} onChange={set("imageUrl")} placeholder="https://…" /></Field>
+        <Field label="Image" error={errors.image} hint="Upload a picture, or paste a link">
+          <div className="space-y-2">
+            {v.imageUrl && <img src={v.imageUrl} alt="" className="w-20 h-20 rounded-sm object-cover border border-border bg-bg" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />}
+            <Input value={v.imageUrl} error={!!errors.image} onChange={set("imageUrl")} placeholder="https://… or use Upload" />
+            <ImageUploadButton onUploaded={(url) => setV((x) => ({ ...x, imageUrl: url }))} />
+          </div>
+        </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Sort order" hint="Lower shows first"><Input type="number" min="0" value={v.sortOrder} onChange={set("sortOrder")} /></Field>
         </div>

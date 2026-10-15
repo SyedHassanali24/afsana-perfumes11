@@ -10,6 +10,7 @@ import StatusPill from "../components/StatusPill";
 import { useAuth } from "../../src/auth/AuthContext";
 import useApi from "../../src/hooks/useApi";
 import { cmsApi } from "../../src/services";
+import ImageUploadButton from "../components/ImageUploadButton";
 import { STATUS_TONE } from "../../src/services/mappers/cms";
 
 // One CMS section (banners / faqs / announcements), driven by its config in src/services/mappers/cms.js.
@@ -65,6 +66,12 @@ export default function CmsResource({ section }) {
         <Field label={f.label} error={errors[f.key]} hint={f.hint}>
           {f.type === "textarea" ? <Textarea rows={5} {...common} onChange={(e) => set(f.key, e.target.value)} />
             : <Input type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"} min={f.type === "number" ? "0" : undefined} {...common} onChange={(e) => set(f.key, e.target.value)} />}
+          {f.upload && (
+            <div className="mt-2 space-y-2">
+              {form[f.key] && <img src={form[f.key]} alt="" className="h-16 max-w-full rounded-sm object-cover border border-border bg-bg" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />}
+              <ImageUploadButton onUploaded={(url) => set(f.key, url)} />
+            </div>
+          )}
         </Field>
       </div>
     );

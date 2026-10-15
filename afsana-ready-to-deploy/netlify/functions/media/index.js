@@ -1,5 +1,5 @@
 // Picture upload + serving.
-//   POST /api/media/admin  (staff with products.manageImages) body { filename?, contentType, data: base64 }  -> { url: "/api/media/<id>" }
+//   POST /api/media/admin  (staff who can edit pictures: products.manageImages, categories/banners edit...) body { filename?, contentType, data: base64 }  -> { url: "/api/media/<id>" }
 //   GET  /api/media/<id>   (public)  -> the picture itself, cached by the browser for a year (a picture never changes once uploaded)
 const { createHandler } = require('../../../middleware/withApi');
 const { res, json } = require('../../../middleware/http');
@@ -11,9 +11,13 @@ const { audit } = require('../../../services/audit');
 const { checkUpload } = require('../../../services/mediaRules');
 const S = require('../../../validation/schemas');
 
+// Anyone who can edit a picture somewhere (product pictures, categories, banners...) may upload one.
+const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit']];
+
 const api = createHandler('media', [
-  { method: 'POST', path: '/admin', permission: ['products', 'manageImages'], body: S.uploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
+  { method: 'POST', path: '/admin', body: S.uploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
     handler: async ({ ctx, body }) => {
+      if (!UPLOADERS.some(([m, a]) => ctx.perms.can(m, a))) throw E.forbidden();
       const c = checkUpload(body);
       if (!c.ok) throw E.badRequest(c.message);
       const doc = await Media.create({ contentType: c.contentType, size: c.buffer.length, data: c.buffer, filename: body.filename, uploadedBy: ctx.user._id });
