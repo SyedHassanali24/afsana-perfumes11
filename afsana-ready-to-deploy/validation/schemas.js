@@ -260,12 +260,23 @@ for (const r of CMS.RESOURCES) {
 }
 const cmsActiveBody = z.object({ isActive: z.boolean() });
 
+// ---------- store settings ----------
+const sText = (n) => z.string().trim().max(n).default('');
+const settingsStore = z.object({ name: z.string().trim().min(2).max(80), tagline: sText(120), phone: sText(30), whatsapp: sText(30),
+  email: z.string().trim().max(120).refine((v) => v === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Enter a valid email').default(''),
+  address: sText(250), instagram: sText(200), facebook: sText(200), confirmPassword });
+const settingsBank = z.object({ enabled: z.boolean(), bankName: sText(80), accountTitle: sText(100), accountNumber: sText(40), iban: sText(40), branch: sText(100), instructions: sText(300), confirmPassword })
+  .superRefine((v, ctx) => { if (v.enabled && (!v.accountTitle || !(v.accountNumber || v.iban))) ctx.addIssue({ code: 'custom', path: ['accountTitle'], message: 'To show bank details, fill the account title and the account number or IBAN.' }); });
+const settingsShipping = z.object({ flatRate: z.number().int().min(0).max(10000), freeAbove: z.number().int().min(0).max(1000000), confirmPassword });
+const settingsReturns = z.object({ windowDays: z.number().int().min(1).max(90), confirmPassword });
+
 // ---------- backup (owner export) ----------
 const backupOverview = z.object({ confirmPassword });
 const backupData = z.object({ name: z.string().trim().max(40), after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
 const backupPictures = z.object({ after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
 
 module.exports = {
+  settingsStore, settingsBank, settingsShipping, settingsReturns,
   backupOverview, backupData, backupPictures,
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody,

@@ -5,7 +5,7 @@ const Cms = require('../../../services/cmsService');
 const { RESOURCES, MODULE_OF } = require('../../../services/cmsRules');
 
 // One function, three sections (banners / faqs / announcements); permissions come from MODULE_OF (banners, faq, announcements). Staff-only.
-// Storefront reads of this content are NOT here yet (next step: public GET for live banners / faqs / announcement).
+// Storefront reads: GET /api/cms/public (live banners / faqs / announcement).
 const routes = RESOURCES.flatMap((r) => {
   const m = MODULE_OF[r];
   return [
@@ -16,4 +16,6 @@ const routes = RESOURCES.flatMap((r) => {
     { method: 'DELETE', path: `/${r}/:id`, permission: [m, 'delete'], handler: ({ ctx, params }) => Cms.remove(ctx, r, params.id) },
   ];
 });
+// Public read for the shop (live banners, FAQs, announcement bar). Static path, listed first.
+routes.unshift({ method: 'GET', path: '/public', public: true, cache: 60, handler: () => Cms.publicContent() });
 exports.handler = createHandler('cms', routes);

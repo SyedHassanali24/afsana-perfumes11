@@ -59,3 +59,19 @@ async function remove(ctx, r, id) {
 }
 
 module.exports = { list, create, update, setActive, remove };
+
+// What the shop may show right now: live banners, live FAQs, the newest live announcement. No ids of staff, no drafts.
+async function publicContent() {
+  const now = new Date();
+  const live = (r, rows) => rows.filter((d) => R.cmsStatus(r, d, now) === 'Live');
+  const [b, f, a] = await Promise.all([
+    Banner.find({ isDeleted: false, isActive: true }).sort(SORT.banners).limit(20).lean(),
+    Faq.find({ isActive: true }).sort(SORT.faqs).limit(100).lean(),
+    Announcement.find({ isActive: true }).sort(SORT.announcements).limit(10).lean(),
+  ]);
+  const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
+  const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
+  const ann = live('announcements', a)[0];
+  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null };
+}
+module.exports.publicContent = publicContent;

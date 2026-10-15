@@ -34,6 +34,14 @@
 - **Uploads**: shared `admin/components/ImageUploadButton.jsx` now also in the category/brand/collection drawer and CMS banner image fields (`upload: true` in `src/services/mappers/cms.js`). `POST /api/media/admin` now allows anyone with products.manageImages OR categories/collections/brands edit OR banners create/edit (checked inside the handler).
 - Still not done: auto/scheduled backups (Atlas free has none: do a manual backup weekly), backup restore for staff logins, delete unused pictures, storefront reading CMS banners/FAQ/announcements (waiting for the Lovable UI).
 
+## Settings + public shop content (Oct 15 2026) — written; verified in sandbox only
+- **Admin -> Settings** (`/admin/settings`, `admin/settings/SettingsPage.jsx`): 4 cards (Shop details, Bank transfer, Delivery fee, Returns). View needs `settings.view`; saving needs `settings.edit` (high-risk) + the user's password; every save audited as `settings.updated`. API: `GET /api/settings/admin`, `PUT /api/settings/admin/{store|bank|shipping|returns}` (`netlify/functions/settings`, `services/settingsService.js`, rules in `services/settingsRules.js`).
+- Stored as `Setting` docs. `shipping` = `{flatRate, freeAbove}` (read by orderService; defaults 250 / 5000; freeAbove 0 = always free) and `returns` = `{windowDays}` (read by returnService) keep their old shape, so existing code needed no change. New keys: `store`, `bank`.
+- **Public**: `GET /api/settings/public` (anyone, cached 60 s: shop details, bank details ONLY when switched on and complete, delivery fee, return days) and `GET /api/cms/public` (live banners incl. desktop/mobile image, live FAQs, newest live announcement; expired/scheduled/inactive/deleted hidden). These are what the Lovable UI should call (`settingsApi.public()`, `shopContentApi.get()` in `src/services/index.js`).
+- Storefront: `src/shop/useShopSettings.js` + `src/shop/BankDetails.jsx`; checkout and order-success pages now show the real bank account (with order number as payment reference) instead of the placeholder text once the owner fills Settings -> Bank transfer.
+- Tested: `tests/settings.test.js` + end-to-end against a Mongo-compatible emulator (wrong password, incomplete bank refused, public view, audit rows, view-only staff, unknown key, CMS live/expired/scheduled/off/deleted). NOT tested on real Atlas/Netlify or in a browser.
+- Not built: turning COD / bank transfer on or off per method (settings only hold bank details), SEO/tracking settings, email templates, per-city delivery fees (Phase "shipping"), tax.
+
 ## Project
 "Afsana Perfumes": production-level perfume e-commerce platform.
 Stack: React + Vite (frontend), Node.js on Netlify Functions (API), MongoDB Atlas + Mongoose, GitHub + Netlify.

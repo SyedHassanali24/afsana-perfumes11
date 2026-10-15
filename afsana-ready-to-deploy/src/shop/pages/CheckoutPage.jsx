@@ -11,11 +11,13 @@ import useQuote from '../useQuote';
 import { Totals } from './CartPage';
 import { money, PAYMENT_LABEL, BANK_NOTE } from '../format';
 import useTitle from '../useTitle';
+import useShopSettings from '../useShopSettings';
 
 const blank = { name: '', phone: '', email: '', line1: '', line2: '', city: '', postalCode: '' };
 
 export default function CheckoutPage() {
   useTitle('Checkout');
+  const shop = useShopSettings();
   const navigate = useNavigate();
   const { items, couponCode, clear } = useCart();
   const { status, customer } = useCustomer();
@@ -101,7 +103,7 @@ export default function CheckoutPage() {
                   <label key={k} className={`flex items-start gap-3 rounded-md border p-4 cursor-pointer ${pay === k ? 'border-gold bg-gold-soft' : 'border-border'}`}>
                     <input type="radio" name="pay" value={k} checked={pay === k} onChange={() => setPay(k)} className="mt-1 accent-[var(--gold)]" />
                     <span><span className="block text-sm font-medium">{label}</span>
-                      <span className="block text-xs text-ink-muted mt-0.5">{k === 'COD' ? 'Pay in cash when your order arrives.' : BANK_NOTE}</span></span>
+                      <span className="block text-xs text-ink-muted mt-0.5">{k === 'COD' ? 'Pay in cash when your order arrives.' : (shop?.bank ? 'We will show our bank account right after you place the order.' : BANK_NOTE)}</span></span>
                   </label>
                 ))}
               </section>

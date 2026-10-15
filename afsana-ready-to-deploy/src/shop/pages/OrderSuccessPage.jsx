@@ -5,12 +5,15 @@ import { Container } from '../ui';
 import { useCustomer } from '../../customer/CustomerAuthContext';
 import { money, PAYMENT_LABEL, BANK_NOTE } from '../format';
 import useTitle from '../useTitle';
+import useShopSettings from '../useShopSettings';
+import BankDetails from '../BankDetails';
 
 export default function OrderSuccessPage() {
   useTitle('Order placed');
   const { orderNumber } = useParams();
   const order = useLocation().state?.order; // only present right after checkout; a refresh just shows the number
   const { status } = useCustomer();
+  const shop = useShopSettings();
   return (
     <Container className="max-w-xl">
       <div className="text-center py-10 space-y-4">
@@ -21,7 +24,7 @@ export default function OrderSuccessPage() {
           <div className="rounded-md border border-border bg-surface p-5 text-sm text-left space-y-1.5">
             <div className="flex justify-between"><span className="text-ink-muted">Total</span><span>{money(order.total)}</span></div>
             <div className="flex justify-between"><span className="text-ink-muted">Payment</span><span>{PAYMENT_LABEL[order.paymentMethod] || order.paymentMethod}</span></div>
-            {order.paymentMethod === 'BANK_TRANSFER' && <p className="text-xs text-ink-muted pt-2">{BANK_NOTE}</p>}
+            {order.paymentMethod === 'BANK_TRANSFER' && (shop?.bank ? <div className="pt-2"><BankDetails bank={shop.bank} orderNumber={orderNumber} /></div> : <p className="text-xs text-ink-muted pt-2">{BANK_NOTE}</p>)}
           </div>
         )}
         <div className="flex justify-center gap-3 pt-2">

@@ -12,6 +12,7 @@ import OrdersList from '../admin/orders/OrdersList';
 import CatalogPage from '../admin/catalog/CatalogPage';
 import ReturnsList from '../admin/returns/ReturnsList';
 import BackupPage from '../admin/backup/BackupPage';
+import SettingsPage from '../admin/settings/SettingsPage';
 import StaffPage from '../admin/staff/StaffPage';
 import MyAccountPage from '../admin/account/MyAccountPage';
 import RequireCustomer from './customer/RequireCustomer';
@@ -51,6 +52,7 @@ export default function App() {
       <Route path="/admin/returns" element={page('returns.view', <ReturnsList />)} />
       <Route path="/admin/marketing" element={page('coupons.view', <CouponsList />)} />{/* Phase 8 step 1: Coupons (the Sidebar "Marketing" link points here) */}
       <Route path="/admin/cms" element={page('homepage.view', <CmsPage />)} />{/* Banners / FAQs / Announcements (Sidebar "CMS" link) */}
+      <Route path="/admin/settings" element={page('settings.view', <SettingsPage />)} />
       <Route path="/admin/backup" element={page('backup.export', <BackupPage />)} />
       <Route path="/admin/staff" element={page(undefined, <StaffPage />)} />{/* StaffPage hides tabs the user can't open */}
       <Route path="/admin/account" element={page(undefined, <MyAccountPage />)} />

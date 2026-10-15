@@ -181,3 +181,11 @@ export const backupApi = {
   data: (confirmPassword, name, after) => api('/backup/admin/data', { method: 'POST', body: { confirmPassword, name, after, limit: 100 } }),     // { rows, next }
   pictures: (confirmPassword, after) => api('/backup/admin/pictures', { method: 'POST', body: { confirmPassword, after, limit: 100 } }),     // { rows, next }
 };
+
+// ---- store settings & public shop content ----
+export const settingsApi = {
+  public: () => api('/settings/public'),                                           // anyone: { store, bank|null, shipping, returns }
+  get: () => api('/settings/admin'),                                               // staff: { settings: { store, bank, shipping, returns } }
+  save: (key, body) => api(`/settings/admin/${key}`, { method: 'PUT', body }),      // key: store|bank|shipping|returns; body + confirmPassword
+};
+export const shopContentApi = { get: () => api('/cms/public') };                   // { banners, faqs, announcement }
