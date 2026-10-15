@@ -12,3 +12,14 @@ test('health: database errors become a plain cause and never echo secrets', () =
   const hint = JSON.stringify(d(new Error('mongodb+srv://user:SECRETPASS@host bad auth')));
   assert.equal(hint.includes('SECRETPASS'), false);
 });
+
+test('health: inspectUri describes the connection string without revealing it', () => {
+  const { inspectUri } = require('../netlify/functions/health');
+  const good = inspectUri('mongodb+srv://user:Abc12345@cluster0.abc1234.mongodb.net/?retryWrites=true');
+  assert.deepEqual([good.scheme, good.atSigns, good.hasSpaceOrNewline, good.passwordOnlyLettersAndNumbers, good.hostEndsWithMongodbNet, good.hostParts], ['mongodb+srv', 1, false, true, true, 4]);
+  const bad = inspectUri('"mongodb+srv://user:p@ss@x.mongodb.net/ ');
+  assert.equal(bad.atSigns, 2); assert.equal(bad.hasQuotes, true); assert.equal(bad.hasSpaceOrNewline, true);
+  assert.equal(JSON.stringify(good).includes('Abc12345'), false);
+  assert.equal(JSON.stringify(good).includes('cluster0'), false);
+  assert.match(inspectUri('abc').scheme, /MISSING/);
+});

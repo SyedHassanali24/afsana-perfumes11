@@ -21,9 +21,9 @@ export const SECTIONS = {
     fields: [
       { key: 'heading', label: 'Heading', type: 'text', maxLength: 120 },
       { key: 'subtitle', label: 'Subtitle', type: 'text', maxLength: 200 },
-      { key: 'desktopImageUrl', label: 'Desktop image address', type: 'text', hint: 'Full https:// address or a path like /images/eid.jpg' },
+      { key: 'desktopImageUrl', label: 'Desktop image', type: 'text', upload: true, hint: 'Upload a picture, or paste a full https:// address' },
       { key: 'desktopImageAlt', label: 'Desktop image description', type: 'text', maxLength: 150 },
-      { key: 'mobileImageUrl', label: 'Mobile image address', type: 'text' },
+      { key: 'mobileImageUrl', label: 'Mobile image', type: 'text', upload: true, hint: 'Upload a picture, or paste a full https:// address' },
       { key: 'mobileImageAlt', label: 'Mobile image description', type: 'text', maxLength: 150 },
       { key: 'buttonText', label: 'Button text', type: 'text', maxLength: 40, half: true },
       { key: 'buttonLink', label: 'Button link', type: 'text', hint: 'e.g. /shop', half: true },

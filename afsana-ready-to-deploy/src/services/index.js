@@ -174,3 +174,10 @@ export const myReturnsApi = {
 export const mediaApi = {
   upload: (body) => api('/media/admin', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
 };
+
+// ---- backup (owner only; every call needs the password) ----
+export const backupApi = {
+  overview: (confirmPassword) => api('/backup/admin/overview', { method: 'POST', body: { confirmPassword } }),                              // { collections:[{name,count}], pictures }
+  data: (confirmPassword, name, after) => api('/backup/admin/data', { method: 'POST', body: { confirmPassword, name, after, limit: 100 } }),     // { rows, next }
+  pictures: (confirmPassword, after) => api('/backup/admin/pictures', { method: 'POST', body: { confirmPassword, after, limit: 100 } }),     // { rows, next }
+};

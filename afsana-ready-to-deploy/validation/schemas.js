@@ -260,7 +260,13 @@ for (const r of CMS.RESOURCES) {
 }
 const cmsActiveBody = z.object({ isActive: z.boolean() });
 
+// ---------- backup (owner export) ----------
+const backupOverview = z.object({ confirmPassword });
+const backupData = z.object({ name: z.string().trim().max(40), after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
+const backupPictures = z.object({ after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
+
 module.exports = {
+  backupOverview, backupData, backupPictures,
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
