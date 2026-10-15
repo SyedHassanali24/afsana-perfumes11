@@ -4,6 +4,14 @@ const { ObjectId } = Schema.Types;
 const { storeScoped, model: m } = require('./_plugins');
 const model = (n, s) => m(mongoose, n, s);
 
+// Uploaded pictures (stored in the database so nothing depends on another service; served by netlify/functions/media).
+const mediaSchema = new Schema({
+  contentType: { type: String, enum: ['image/jpeg', 'image/png', 'image/webp'], required: true },
+  size: { type: Number, required: true }, data: { type: Buffer, required: true },
+  filename: String, uploadedBy: { type: ObjectId, ref: 'User' },
+}, { timestamps: true });
+storeScoped(mediaSchema);
+
 const notificationSchema = new Schema({
   type: { type: String, enum: ['new_order', 'low_stock', 'new_review', 'return_request', 'new_customer', 'payment_received', 'security_alert'], required: true },
   title: String, body: String, link: String,
@@ -51,5 +59,5 @@ storeScoped(settingSchema);
 module.exports = {
   Notification: model('Notification', notificationSchema), Expense: model('Expense', expenseSchema),
   AnalyticsEvent: model('AnalyticsEvent', analyticsEventSchema), AuditLog: model('AuditLog', auditLogSchema),
-  Setting: model('Setting', settingSchema),
+  Setting: model('Setting', settingSchema), Media: model('Media', mediaSchema),
 };

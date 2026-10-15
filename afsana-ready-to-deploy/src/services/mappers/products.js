@@ -90,7 +90,7 @@ export const toVariantPayload = (v, productSku) => ({
 export const changedVariants = (variants) =>
   variants.filter((v) => Number(v.price) !== v.original.price || Number(v.salePrice || 0) !== v.original.salePrice);
 
-const isUrl = (s) => { try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } };
+const isUrl = (s) => { if (/^\/api\/media\/[0-9a-f]{24}$/.test(s)) return true; try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } };
 export const badImage = (images) => images.findIndex((i) => i.url.trim() && !isUrl(i.url.trim()));
 
 // API validation details [{path,message}] -> { fieldName: message }

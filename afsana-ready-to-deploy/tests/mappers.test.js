@@ -54,5 +54,7 @@ test('image address validation and API error mapping', async () => {
   const M = await load();
   assert.equal(M.badImage([{ url: 'https://ok.com/a.jpg' }, { url: 'ftp://nope' }]), 1);
   assert.equal(M.badImage([{ url: '' }]), -1);
+  assert.equal(M.badImage([{ url: '/api/media/0123456789abcdef01234567' }]), -1, 'our own uploads are valid');
+  assert.equal(M.badImage([{ url: '/api/media/not-an-id' }]), 0);
   assert.deepEqual(M.fieldErrors({ details: [{ path: 'variants.0.price', message: 'bad' }, { path: 'media.2.url', message: 'x' }] }), { price: 'bad', media: 'x' });
 });

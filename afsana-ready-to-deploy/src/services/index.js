@@ -169,3 +169,8 @@ export const myReturnsApi = {
   create: (body) => api('/returns/mine', { method: 'POST', body }),
   cancel: (returnNumber) => api(`/returns/mine/${returnNumber}/cancel`, { method: 'POST' }),
 };
+
+// ---- picture upload (staff with products.manageImages) ----
+export const mediaApi = {
+  upload: (body) => api('/media/admin', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
+};

@@ -1,5 +1,9 @@
 const { z, objectId, num, bool, paging, confirmPassword } = require('./common');
 const C = require('../database/constants');
+const { isAllowedImageUrl } = require('../services/mediaRules');
+// picture address: normal https link OR one of our own uploads (/api/media/<id>)
+const imageAddress = z.string().trim().max(500).refine(isAllowedImageUrl, 'Enter a valid picture address');
+const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(980000) });
 const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
@@ -41,7 +45,7 @@ const productBase = {
   }).optional(),
   notes: z.object({ top: z.array(z.string().max(40)).max(15).optional(), heart: z.array(z.string().max(40)).max(15).optional(), base: z.array(z.string().max(40)).max(15).optional() }).optional(),
   profile: z.object({ freshness: z.number().min(0).max(100).optional(), sweetness: z.number().min(0).max(100).optional(), woody: z.number().min(0).max(100).optional(), spicy: z.number().min(0).max(100).optional(), floral: z.number().min(0).max(100).optional() }).optional(),
-  media: z.array(z.object({ kind: z.string().max(20).optional(), url: z.string().url().max(500), alt: z.string().max(200).optional(), sortOrder: z.number().optional() })).max(30).optional(),
+  media: z.array(z.object({ kind: z.string().max(20).optional(), url: imageAddress, alt: z.string().max(200).optional(), sortOrder: z.number().optional() })).max(30).optional(),
   content: z.object({ shortDescription: z.string().max(500).optional(), fullDescription: z.string().max(10000).optional() }).optional(),
   seo: z.object({ title: z.string().max(120).optional(), metaDescription: z.string().max(300).optional(), keywords: z.array(z.string().max(40)).max(20).optional(), canonicalUrl: z.string().url().optional(), ogImage: z.string().url().optional() }).optional(),
   tags: z.array(z.string().max(40)).max(20).optional(),
@@ -157,7 +161,7 @@ const myOrdersQuery = z.object({ ...paging });
 
 // ---------- taxonomy / suppliers / purchase orders ----------
 const slugRule = z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and dashes').max(100);
-const optUrl = z.string().trim().url().max(500).or(z.literal(''));
+const optUrl = imageAddress.or(z.literal(''));
 const taxonomyBody = z.object({
   name: z.string().trim().min(2).max(80), slug: slugRule.optional(), description: z.string().trim().max(1000).optional(),
   image: z.object({ url: optUrl.optional(), alt: z.string().max(200).optional() }).optional(),
@@ -257,6 +261,7 @@ for (const r of CMS.RESOURCES) {
 const cmsActiveBody = z.object({ isActive: z.boolean() });
 
 module.exports = {
+  uploadBody,
   cmsBody, cmsPatch, cmsActiveBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,

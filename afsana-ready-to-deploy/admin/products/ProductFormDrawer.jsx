@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-import { X, Plus } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { X, Plus, Upload } from "lucide-react";
 import Button from "../components/Button";
 import Drawer from "../components/Drawer";
 import ConfirmPasswordModal from "../components/ConfirmPasswordModal";
 import { Check, Field, Input, Select, Textarea } from "../components/FormFields";
-import { productsApi } from "../../src/services";
+import { productsApi, mediaApi } from "../../src/services";
+import shrinkImage from "../../src/lib/shrinkImage";
 import { useAuth } from "../../src/auth/AuthContext";
 import { EMPTY_FORM, toForm, variantsToForm, toCreatePayload, toPatchPayload, toVariantPayload, changedVariants, badImage, fieldErrors } from "../../src/services/mappers/products";
 
@@ -51,6 +52,25 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
     setVariants((old) => variantsToForm(r.variants).map((nv) => { const o = old.find((x) => x.id === nv.id); return o ? { ...nv, price: o.price, salePrice: o.salePrice } : nv; }));
   }, [productId]);
 
+  // Picture upload: shrink in the browser, upload, add the returned address as a new picture row.
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const onPickFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+    setUploading(true); setUploadError("");
+    try {
+      for (const f of files) {
+        const body = await shrinkImage(f);
+        const out = await mediaApi.upload(body);
+        setValues((v) => ({ ...v, images: [...v.images.filter((im) => im.url.trim()), { url: out.url, alt: "", kind: v.images.some((im) => im.url.trim()) ? "gallery" : "main" }] }));
+      }
+    } catch (err) { setUploadError(err.message || "Upload failed. Please try again."); }
+    finally { setUploading(false); }
+  };
+
   const setField = (key) => (e) => setValues((v) => ({ ...v, [key]: e.target.value }));
   const setVariantField = (id, key) => (e) => setVariants((vs) => vs.map((v) => (v.id === id ? { ...v, [key]: e.target.value } : v)));
   const setImage = (i, k, val) => setValues((v) => ({ ...v, images: v.images.map((im, n) => (n === i ? { ...im, [k]: val } : im)) }));
@@ -61,7 +81,7 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
     if (!values.sku.trim()) er.sku = "SKU is required.";
     if (!values.categoryId) er.categoryId = "Choose a category.";
     const bi = badImage(values.images);
-    if (bi >= 0) er.media = `Picture ${bi + 1} isn't a valid web address (it should start with https://).`;
+    if (bi >= 0) er.media = `Picture ${bi + 1} isn't a valid picture address (use Upload, or a link that starts with https://).`;
     if (!isEdit) {
       if (!(Number(values.sizeMl) > 0)) er.sizeMl = "Enter the size in ml.";
       if (values.price === "" || Number(values.price) < 0) er.price = "Price is required.";
@@ -157,16 +177,22 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
 
             {can("products.manageImages") && (
               <Section title="Pictures">
-                <p className="text-xs text-ink-muted">Paste the web address of each hosted image. The first one is the main picture.</p>
+                <p className="text-xs text-ink-muted">Upload pictures from your phone or computer, or paste a web address. The first one is the main picture.</p>
+                {uploadError && <p role="alert" className="text-xs text-danger">{uploadError}</p>}
                 {errors.media && <p role="alert" className="text-xs text-danger">{errors.media}</p>}
                 {values.images.map((im, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_9rem_2rem] gap-2 items-center">
+                  <div key={i} className="grid grid-cols-[2.5rem_1fr_9rem_2rem] gap-2 items-center">
+                    {im.url.trim() ? <img src={im.url} alt="" className="w-10 h-10 rounded-sm object-cover border border-border bg-bg" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} /> : <span className="w-10 h-10 rounded-sm border border-dashed border-border" />}
                     <Input value={im.url} placeholder="https://…" aria-label={`Picture ${i + 1} address`} onChange={(e) => setImage(i, "url", e.target.value)} />
                     <Input value={im.alt} placeholder="Describe it" aria-label={`Picture ${i + 1} description`} onChange={(e) => setImage(i, "alt", e.target.value)} />
                     <button type="button" onClick={() => setValues((v) => ({ ...v, images: v.images.filter((_, n) => n !== i) }))} className="p-2 text-ink-muted hover:text-danger" aria-label={`Remove picture ${i + 1}`}><X className="w-4 h-4" /></button>
                   </div>
                 ))}
-                <Button type="button" variant="secondary" size="sm" icon={Plus} onClick={() => setValues((v) => ({ ...v, images: [...v.images, { url: "", alt: "", kind: "gallery" }] }))}>Add picture</Button>
+                <div className="flex flex-wrap gap-2">
+                  <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={onPickFiles} />
+                  <Button type="button" size="sm" icon={Upload} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? "Uploading…" : "Upload picture"}</Button>
+                  <Button type="button" variant="secondary" size="sm" icon={Plus} onClick={() => setValues((v) => ({ ...v, images: [...v.images, { url: "", alt: "", kind: "gallery" }] }))}>Add web address</Button>
+                </div>
               </Section>
             )}
 

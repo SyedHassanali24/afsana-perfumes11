@@ -7,6 +7,7 @@
 - `netlify.toml`: added HSTS, CSP (scripts only from self; fonts from Google; images from any https), Permissions-Policy, COOP, immutable cache for `/assets/*`, `no-store` for `/api/*`.
 - `DEPLOY.md` (Roman Urdu step-by-step: Atlas, GitHub, Netlify env vars `MONGODB_URI MONGODB_DB_NAME JWT_SECRET SITE_URL`, db:setup, checks). Admin email/password are NOT Netlify env vars.
 - Added `GET /api/health` (`netlify/functions/health`, `services/healthDiagnose.js`, `tests/health.test.js`): reports env var presence (booleans), DB connect result with a plain cause (ENV_MISSING/DB_AUTH/URI_FORMAT/DNS/NETWORK) and whether db:setup was done; never prints secrets. Reason: live `/api/products` returned a generic INTERNAL error and the real cause only appears in Netlify function logs. Tested here: no env, bad cluster address, empty DB, after db:setup (emulator). Not tested on real Atlas/Netlify.
+- `/api/health` v2 (Oct 14): also returns `version:"health-v2"` (proves new code is live), `runningOn` (Netlify SITE_NAME/CONTEXT), `jwtSecret` missing/too_short/ok, `uriShape` (scheme, number of @, spaces, quotes, <>, password only letters+numbers, host ends .mongodb.net) and DB `errorName/errorCode/errorSyscall`. Live problem being debugged: after re-entering variables the live health still showed JWT_SECRET false + DNS. Read the v2 output first: no `version` = Netlify still on old code (check deploy source/branch/site); `uriShape` shows what Netlify actually stores.
 - STILL NOT DONE: nothing has run on a real Netlify deploy or in a browser from this repo; CSP could block something unexpected (check the browser console on first load); storefront is the Phase 6 default design (user wants a custom storefront from their screenshots: not started); CMS banners/FAQ not read by storefront; image upload; real email; shared rate limiter; backup scripts.
 
 **How to continue in a NEW Claude account/chat**
@@ -18,6 +19,13 @@
 **Language/style:** the user writes Roman Urdu — reply in Roman Urdu. Keep answers short and practical. The user is not a developer: give exact commands and say what they should see. When you finish a step, give a zip of the new/changed files + a short "aap ko yeh karna hai" list.
 
 ---
+## Picture upload (Oct 2026) — written, verified in sandbox only
+- Admin product form: **Upload picture** button (phone/PC, multiple) next to "Add web address"; thumbnails shown. The browser shrinks each picture to <=1400px JPEG (~150-400 KB, `src/lib/shrinkImage.js`), then `POST /api/media/admin` (permission `products.manageImages`, rate-limited, audited as `media.uploaded`).
+- Stored in MongoDB (`Media` model in `database/models/ops.js`, Buffer, max 700 KB, JPEG/PNG/WebP only, first bytes must match the type, SVG refused). Served by `GET /api/media/<id>` (public, 1-year immutable cache, nosniff, sandboxed CSP). Product/category picture fields now accept `https://…` OR `/api/media/<24 hex>` (`services/mediaRules.js`, `imageAddress` in `validation/schemas.js`; javascript:/data: links are now refused).
+- Capacity: Atlas free = 512 MB shared with everything -> roughly 1,500+ pictures. If it grows, move to a CDN/Blob store behind the same `/api/media/<id>` URL.
+- Tests: `tests/media.test.js` (+ mapper cases) and an end-to-end run (upload, read back identical bytes, 404, disguised script, SVG, missing CSRF header, missing permission) against a Mongo-compatible emulator with login stubbed. NOT tested on real Atlas/Netlify or in a browser (canvas resize, file picker, thumbnails). If `netlify.toml` `/api/*` `no-store` header also applies to function responses, pictures will just not be browser-cached (still work).
+- Not wired: category image upload, CMS banner upload (still web address only), deleting unused pictures.
+
 ## Project
 "Afsana Perfumes": production-level perfume e-commerce platform.
 Stack: React + Vite (frontend), Node.js on Netlify Functions (API), MongoDB Atlas + Mongoose, GitHub + Netlify.
