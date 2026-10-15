@@ -13,7 +13,8 @@
     "test": "node --test",
     "check": "node tools/check-syntax.js",
     "db:setup": "node database/seed/production.js",
-    "admin:reset": "node database/seed/resetAdminPassword.js"
+    "admin:reset": "node database/seed/resetAdminPassword.js",
+    "db:restore": "node database/seed/restoreBackup.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
