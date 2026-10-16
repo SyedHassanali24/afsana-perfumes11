@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { wishlistApi } from '../../services';
@@ -5,10 +6,14 @@ import Button from '../../../admin/components/Button';
 import { Container, PageTitle, StateBox, CardsSkeleton } from '../ui';
 import ProductCard from '../ProductCard';
 import useTitle from '../useTitle';
+import { useWishlist } from '../WishlistContext';
 
 export default function WishlistPage() {
   useTitle('Wishlist');
   const { data, loading, error, reload } = useApi(() => wishlistApi.list(), []);
+  const { count } = useWishlist();
+  // ProductCard toggles the shared wishlist; refetch so removed hearts disappear from this grid immediately.
+  useEffect(() => { if (data) reload(); }, [count]);
   const list = data?.products || [];
   return (
     <Container>

@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { accountApi } from '../../services';
 import StatusPill from '../../../admin/components/StatusPill';
@@ -7,13 +8,31 @@ import { Timeline } from '../pages/TrackOrderPage';
 import { money, fmtDate, PAYMENT_LABEL } from '../format';
 import useTitle from '../useTitle';
 import ReturnsSection from './ReturnsSection';
+import { useCart } from '../CartContext';
 
 export default function OrderDetailPage() {
   const { orderNumber } = useParams();
+  const navigate = useNavigate();
+  const { add } = useCart();
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionError, setActionError] = useState('');
   useTitle(orderNumber);
   const { data, loading, error, reload } = useApi(() => accountApi.order(orderNumber), [orderNumber]);
   const o = data?.order;
   const a = o?.shippingAddress || {};
+  const cancelOrder = async () => {
+    if (!o || o.status !== 'New' || !window.confirm(`Cancel order ${o.orderNumber}? This cannot be undone.`)) return;
+    setActionBusy(true); setActionError('');
+    try { await accountApi.cancelOrder(o.orderNumber); await reload(); }
+    catch (err) { setActionError(err.message || 'Could not cancel this order. Please refresh and try again.'); }
+    finally { setActionBusy(false); }
+  };
+  const reorder = () => {
+    const items = (o?.items || []).filter((item) => item.variantId);
+    if (!items.length) { setActionError('These items cannot be added to the cart. Please shop for them again.'); return; }
+    items.forEach((item) => add(String(item.variantId), item.quantity));
+    navigate('/cart');
+  };
   return (
     <Container className="max-w-3xl">
       <Link to="/account" className="text-sm text-ink-muted hover:text-ink">← All orders</Link>
@@ -23,6 +42,11 @@ export default function OrderDetailPage() {
             <div className="flex items-start justify-between gap-4">
               <div><h1 className="font-display text-3xl">{o.orderNumber}</h1><p className="text-sm text-ink-muted">Placed {fmtDate(o.placedAt)}</p></div>
               <StatusPill status={o.status} />
+            </div>
+            {actionError && <p role="alert" className="rounded-sm border border-danger/30 bg-danger-soft p-3 text-sm text-danger">{actionError}</p>}
+            <div className="flex flex-wrap gap-3">
+              <Button type="button" variant="secondary" onClick={reorder}>Reorder these items</Button>
+              {o.status === 'New' && <Button type="button" variant="danger" disabled={actionBusy} onClick={cancelOrder}>{actionBusy ? 'Cancelling…' : 'Cancel order'}</Button>}
             </div>
             <ul className="divide-y divide-border rounded-md border border-border bg-surface">
               {o.items.map((it, i) => (

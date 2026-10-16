@@ -1,23 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Heart, Menu, Moon, Search, ShoppingBag, Sun, User, X } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import { Container } from './ui';
+import useApi from '../hooks/useApi';
+import { shopContentApi } from '../services';
 
 const nav = [{ to: '/shop', label: 'Shop' }, { to: '/shop?gender=Men', label: 'For Him' }, { to: '/shop?gender=Women', label: 'For Her' }, { to: '/track', label: 'Track order' }];
 
 export default function ShopLayout() {
   const { count } = useCart();
+  const content = useApi(() => shopContentApi.get(), []);
+  const announcement = content.data?.announcement;
   const { status } = useCustomer();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem('afsana-shop-theme') || 'system'; } catch { return 'system'; }
+  });
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'system') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', theme);
+    try { if (theme === 'system') localStorage.removeItem('afsana-shop-theme'); else localStorage.setItem('afsana-shop-theme', theme); } catch { /* storage may be unavailable */ }
+  }, [theme]);
   const [q, setQ] = useState('');
   const search = (e) => { e.preventDefault(); navigate(q.trim() ? `/shop?q=${encodeURIComponent(q.trim())}` : '/shop'); setOpen(false); };
   const icon = 'relative p-2 text-ink hover:text-gold';
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-ink">
+      {announcement?.text && (
+        <div className="bg-gold text-bg text-center text-xs sm:text-sm px-4 py-2">
+          {announcement.link ? <Link to={announcement.link} className="underline underline-offset-2">{announcement.text}</Link> : announcement.text}
+        </div>
+      )}
       <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur">
         <Container className="flex items-center gap-4 h-16">
           <button type="button" className="md:hidden p-2" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
@@ -30,6 +48,7 @@ export default function ShopLayout() {
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-1.5 text-sm w-full focus:outline-none" />
           </form>
           <div className="flex items-center ml-auto md:ml-0">
+            <button type="button" className={icon} onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} title={theme === 'dark' ? 'Light theme' : 'Dark theme'}><span className="block">{theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}</span></button>
             <Link to="/wishlist" className={icon} aria-label="Wishlist"><Heart className="w-5 h-5" /></Link>
             <Link to={status === 'authed' ? '/account' : '/login'} className={icon} aria-label={status === 'authed' ? 'My account' : 'Sign in'}><User className="w-5 h-5" /></Link>
             <Link to="/cart" className={icon} aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}>

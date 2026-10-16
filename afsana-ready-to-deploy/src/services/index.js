@@ -106,7 +106,8 @@ export const accountApi = {
   resetPassword: (token, newPassword) => api('/account/reset-password', { method: 'POST', body: { token, newPassword } }),
   // Phase 6
   orders: (query) => api('/account/orders', { query }),
-  order: (orderNumber) => api(`/account/orders/${orderNumber}`),
+  order: (orderNumber) => api(`/account/orders/${encodeURIComponent(orderNumber)}`),
+  cancelOrder: (orderNumber) => api(`/account/orders/${encodeURIComponent(orderNumber)}/cancel`, { method: 'POST' }),
   addresses: () => api('/account/addresses'),
   addAddress: (body) => api('/account/addresses', { method: 'POST', body }),
   updateAddress: (id, body) => api(`/account/addresses/${id}`, { method: 'PATCH', body }),

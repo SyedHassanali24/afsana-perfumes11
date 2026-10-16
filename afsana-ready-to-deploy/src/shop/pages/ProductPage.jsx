@@ -24,7 +24,38 @@ export default function ProductPage() {
   const [added, setAdded] = useState(false);
   const p = data?.product;
   const variants = data?.variants || [];
-  useTitle(p?.name);
+  useTitle(p?.seo?.title || p?.name);
+
+  useEffect(() => {
+    if (!p) return undefined;
+    const ensureMeta = (name, content, property = false) => {
+      const attr = property ? 'property' : 'name';
+      let node = document.head.querySelector(`meta[${attr}=\"${name}\"]`);
+      if (!node) { node = document.createElement('meta'); node.setAttribute(attr, name); document.head.appendChild(node); }
+      node.setAttribute('content', content || '');
+      return node;
+    };
+    const description = p.seo?.description || p.content?.shortDescription || `Discover ${p.name} at Afsana Perfumes.`;
+    const image = p.media?.find((item) => item.kind === 'main')?.url || p.media?.[0]?.url || '';
+    ensureMeta('description', description.slice(0, 300));
+    ensureMeta('og:type', 'product', true);
+    ensureMeta('og:title', p.seo?.title || p.name, true);
+    ensureMeta('og:description', description.slice(0, 300), true);
+    ensureMeta('og:image', image, true);
+    ensureMeta('twitter:card', image ? 'summary_large_image' : 'summary');
+    let canonical = document.head.querySelector('link[rel=\"canonical\"]');
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = window.location.href.split('#')[0];
+    return () => {
+      document.head.querySelector('meta[name=\"description\"]')?.setAttribute('content', 'Afsana Perfumes — fragrances for every mood and moment.');
+      document.head.querySelector('meta[property=\"og:type\"]')?.remove();
+      document.head.querySelector('meta[property=\"og:title\"]')?.remove();
+      document.head.querySelector('meta[property=\"og:description\"]')?.remove();
+      document.head.querySelector('meta[property=\"og:image\"]')?.remove();
+      document.head.querySelector('meta[name=\"twitter:card\"]')?.remove();
+      document.head.querySelector('link[rel=\"canonical\"]')?.remove();
+    };
+  }, [p]);
 
   useEffect(() => { // pick the first size that is in stock
     if (variants.length) { setVid((variants.find((v) => v.available > 0) || variants[0]).id); setQty(1); setImg(0); setAdded(false); }
