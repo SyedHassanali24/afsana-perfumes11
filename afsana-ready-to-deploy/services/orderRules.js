@@ -5,6 +5,9 @@
 const PAYMENT_LOCKED = ['Refunded', 'Partially Refunded'];
 const canEditPayment = (paymentStatus) => !PAYMENT_LOCKED.includes(paymentStatus);
 
+// Customers may cancel only before staff confirm the order. Enforced server-side.
+const canCustomerCancel = (status) => status === 'New';
+
 // (a) What happens to stock when staff move an order to `to`. `committed` = order.stockCommitted (set when it was Shipped).
 //   Cancelled: committed -> units go back on the shelf; not yet committed -> just release the reservation.
 //   Returned (only reachable from Shipped / Out For Delivery, i.e. the parcel came back unopened): units go back on the shelf.
@@ -21,4 +24,4 @@ function searchFields(denied) {
   return d.has('customer.phone') ? ['orderNumber', 'customer.name'] : ['orderNumber', 'customer.name', 'customer.phone'];
 }
 
-module.exports = { PAYMENT_LOCKED, canEditPayment, stockEffect, searchFields };
+module.exports = { PAYMENT_LOCKED, canEditPayment, canCustomerCancel, stockEffect, searchFields };

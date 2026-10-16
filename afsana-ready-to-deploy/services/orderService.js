@@ -112,10 +112,29 @@ async function listMine(customerId, q) {
     pagination: pageMeta(total, page, limit),
   };
 }
+async function cancelMine(customerId, orderNumber) {
+  return withTx(async (session) => {
+    const order = await Order.findOne({ customerId, orderNumber: orderNumber.toUpperCase() }).session(session);
+    if (!order) throw E.notFound('Order not found.');
+    if (!R.canCustomerCancel(order.status)) throw E.conflict('This order can no longer be cancelled online. Please contact support if you need help.');
+
+    // Compare-and-set prevents a simultaneous staff confirmation from racing with customer cancellation.
+    const updated = await Order.findOneAndUpdate(
+      { _id: order._id, customerId, status: 'New' },
+      { $set: { status: 'Cancelled', cancelledReason: 'Cancelled by customer' },
+        $push: { timeline: { event: 'Cancelled by customer', status: 'Cancelled', note: 'Cancelled by customer' } } },
+      { new: true, session },
+    );
+    if (!updated) throw E.conflict('This order was just updated. Refresh the page and try again.');
+    const items = await OrderItem.find({ orderId: order._id }).session(session).lean();
+    await releaseItems(items, session);
+    return { orderNumber: updated.orderNumber, status: updated.status };
+  });
+}
 async function getMine(customerId, orderNumber) {
   const o = await Order.findOne({ customerId, orderNumber: orderNumber.toUpperCase() }).lean();
   if (!o) throw E.notFound('Order not found.');
-  const items = await OrderItem.find({ orderId: o._id }).select('name sku sizeMl image unitPrice quantity lineTotal').lean(); // no costPrice
+  const items = await OrderItem.find({ orderId: o._id }).select('variantId name sku sizeMl image unitPrice quantity lineTotal').lean(); // no costPrice
   return { order: {
     orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, paymentMethod: o.paymentMethod, placedAt: o.createdAt,
     subtotal: o.subtotal, shipping: o.shipping, discount: o.discount, total: o.total, couponCode: o.couponCode,
@@ -187,4 +206,4 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
     await audit(ctx, { action: 'payment.status_changed', module: 'payments', recordId: id, oldValue: old, newValue: paymentStatus }, session);
   });
 }
-module.exports = { SCOPE_MAP, TRANSITIONS, shippingSettings, placeOrder, trackOrder, listMine, getMine, listOrders, getOrder, changeStatus, addNote, setPayment };
+module.exports = { SCOPE_MAP, TRANSITIONS, shippingSettings, placeOrder, trackOrder, listMine, getMine, cancelMine, listOrders, getOrder, changeStatus, addNote, setPayment };

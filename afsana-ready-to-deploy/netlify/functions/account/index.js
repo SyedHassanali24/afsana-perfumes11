@@ -26,6 +26,7 @@ const routes = [
   { ...customer, method: 'PATCH', path: '/me', body: S.profilePatch, handler: ({ ctx, body }) => A.updateProfile(ctx, body) },
   { ...customer, method: 'GET', path: '/orders', query: S.myOrdersQuery, handler: ({ ctx, query }) => O.listMine(ctx.customer._id, query) },
   { ...customer, method: 'GET', path: '/orders/:orderNumber', handler: ({ ctx, params }) => O.getMine(ctx.customer._id, params.orderNumber) },
+  { ...customer, method: 'POST', path: '/orders/:orderNumber/cancel', rateLimit: { limit: 10, windowMs: 15 * 60000 }, handler: ({ ctx, params }) => O.cancelMine(ctx.customer._id, params.orderNumber) },
   { ...customer, method: 'GET', path: '/addresses', handler: ({ ctx }) => A.listAddresses(ctx) },
   { ...customer, method: 'POST', path: '/addresses', body: S.addressBody, handler: async ({ ctx, body }) => res(201, await A.addAddress(ctx, body)) },
   { ...customer, method: 'PATCH', path: '/addresses/:id', body: S.addressPatch, handler: ({ ctx, params, body }) => A.updateAddress(ctx, params.id, body) },
