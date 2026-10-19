@@ -59,3 +59,16 @@ test('addresses: exactly one default is kept', () => {
   assert.deepEqual(l.map((a) => a.isDefault), [true, false]);
   assert.deepEqual(normalizeDefaults([]), []);
 });
+
+test('cart: summarize uses the city delivery quote when given, the flat Settings fee otherwise', () => {
+  const line = [{ status: 'ok', lineTotal: 4000, quantity: 1 }];
+  const flat = R.summarize(line, { flatRate: 250, freeAbove: 5000 });
+  assert.deepEqual([flat.shipping, flat.freeShippingRemaining, flat.total], [250, 1000, 4250]);
+  const multan = R.summarize(line, { flatRate: 250, freeAbove: 5000 }, { delivery: { fee: 300, remaining: 0 } });
+  assert.deepEqual([multan.shipping, multan.freeShippingRemaining, multan.total], [300, 0, 4300]);
+  const karachi = R.summarize(line, { flatRate: 250, freeAbove: 5000 }, { delivery: { fee: 0, remaining: 0 } });
+  assert.deepEqual([karachi.shipping, karachi.total], [0, 4000]);
+  const coupon = R.summarize(line, { flatRate: 250, freeAbove: 5000 }, { delivery: { fee: 300, remaining: 0 }, shippingDiscount: 300 });
+  assert.equal(coupon.shipping, 0, 'free_shipping coupon removes the city fee');
+  assert.equal(R.summarize([], { flatRate: 250, freeAbove: 5000 }, { delivery: { fee: 300, remaining: 0 } }).shipping, 0, 'empty cart: no fee');
+});

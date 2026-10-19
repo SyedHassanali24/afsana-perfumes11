@@ -1,14 +1,14 @@
 const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon } = require('../database/models');
 const { ApiError, E } = require('../middleware/errors');
-const { effectivePrice, calcShipping, validateCoupon, calcDiscount } = require('./pricing');
+const { effectivePrice, validateCoupon, calcDiscount } = require('./pricing');
 const { mergeItems, lineStatus, summarize } = require('./cartRules');
-const { shippingSettings } = require('./orderService');
+const { loadContext, deliveryFor } = require('./shippingQuote');
 
 const mainImage = (p) => ((p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || {}).url;
 const card = (p) => ({ id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount, image: (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null });
 
 // ---------- quote: prices a list of { variantId, quantity } from the DB. Never trusts client prices. Never throws for stale items. ----------
-async function quote({ items, couponCode }, cust) {
+async function quote({ items, couponCode, city }, cust) {
   const merged = mergeItems(items);
   const ids = merged.map((i) => i.variantId);
   const variants = ids.length ? await ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean() : [];
@@ -29,9 +29,10 @@ async function quote({ items, couponCode }, cust) {
     };
   });
 
-  const ship = await shippingSettings();
+  const ship = await loadContext();
   const priced = lines.filter((l) => l.status === 'ok' || l.status === 'limited');
   const subtotal = priced.reduce((s, l) => s + l.lineTotal, 0);
+  const delivery = await deliveryFor(city, subtotal, ship); // city fee (zone) or the Settings fee when the city has no zone
   let discount = 0; let shippingDiscount = 0; let coupon = null;
   if (couponCode && priced.length) {
     const code = couponCode.toUpperCase();
@@ -43,14 +44,18 @@ async function quote({ items, couponCode }, cust) {
         customerUses: c && cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
         isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
       });
-      ({ discount, shippingDiscount } = calcDiscount(c, priced, calcShipping(subtotal, ship)));
+      ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
       coupon = { code: c.code, valid: true };
     } catch (e) {
       if (!(e instanceof ApiError)) throw e;
       coupon = { code, valid: false, message: e.message }; // shown next to the coupon box, does not break the cart
     }
   }
-  return { lines: lines.map(({ categoryId, ...l }) => l), coupon, ...summarize(lines, ship, { discount, shippingDiscount }) };
+  return {
+    lines: lines.map(({ categoryId, ...l }) => l), coupon,
+    ...summarize(lines, ship.cfg, { discount, shippingDiscount, delivery }),
+    delivery: { city: city || '', zone: delivery.zone, method: delivery.method, estDays: delivery.estDays, source: delivery.source },
+  };
 }
 
 // ---------- logged-in customer's saved cart ----------

@@ -27,15 +27,16 @@ function lineStatus({ found, available, quantity }) {
 const counts = (s) => s === 'ok' || s === 'limited';
 
 // lines: [{ status, lineTotal, quantity }]  ->  totals. Only lines that exist and have some stock are priced.
-function summarize(lines, shipCfg = DEFAULT_SHIPPING, { discount = 0, shippingDiscount = 0 } = {}) {
+// `delivery` (optional) = a shippingRules.deliveryQuote() result computed for THIS subtotal; without it the flat Settings fee is used.
+function summarize(lines, shipCfg = DEFAULT_SHIPPING, { discount = 0, shippingDiscount = 0, delivery = null } = {}) {
   const subtotal = lines.filter((l) => counts(l.status)).reduce((s, l) => s + l.lineTotal, 0);
-  const shippingFee = subtotal > 0 ? calcShipping(subtotal, shipCfg) : 0;
+  const shippingFee = subtotal > 0 ? (delivery ? delivery.fee : calcShipping(subtotal, shipCfg)) : 0;
   const shipping = Math.max(0, shippingFee - shippingDiscount);
   const total = Math.max(0, subtotal - discount) + shipping;
   return {
     subtotal, discount, shipping, total, shippingFee,
     itemCount: lines.reduce((s, l) => s + l.quantity, 0),
-    freeShippingRemaining: subtotal > 0 && shippingFee > 0 ? Math.max(0, shipCfg.freeAbove - subtotal) : 0,
+    freeShippingRemaining: subtotal > 0 && shippingFee > 0 ? (delivery ? delivery.remaining : Math.max(0, shipCfg.freeAbove - subtotal)) : 0,
     canCheckout: lines.length > 0 && lines.every((l) => l.status === 'ok'),
   };
 }

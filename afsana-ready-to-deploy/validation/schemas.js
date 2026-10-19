@@ -149,7 +149,7 @@ const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid 
 
 // ---------- storefront: cart, wishlist, addresses, my orders ----------
 const cartItems = z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(20) })).max(30);
-const quoteBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional() });
+const quoteBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional(), city: z.string().trim().max(80).optional() });
 const cartBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional().or(z.literal('')).transform((v) => v || undefined) });
 const addressBody = z.object({
   type: z.enum(['Home', 'Office', 'Other']).default('Home'), fullName: z.string().trim().min(2).max(100), phone,

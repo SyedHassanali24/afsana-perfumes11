@@ -4,6 +4,7 @@ const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination'
 const { scopeFilter } = require('../middleware/permissions');
 const { effectivePrice, calcShipping, validateCoupon, calcDiscount, DEFAULT_SHIPPING } = require('./pricing');
 const { reserveItems, releaseItems, commitItems, restockItems } = require('./inventoryService');
+const { deliveryFor } = require('./shippingQuote');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const R = require('./orderRules');
@@ -47,8 +48,8 @@ async function placeOrder(input, cust) {
     return { variantId: v._id, productId: p._id, categoryId: p.categoryId, name: `${p.name} ${v.label || v.sizeMl + 'ml'}`, sku: v.sku, sizeMl: v.sizeMl, image: ((p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || {}).url, unitPrice, costPrice: v.costPrice, quantity, lineTotal: unitPrice * quantity };
   });
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
-  const shipCfg = await shippingSettings();
-  const shippingFee = calcShipping(subtotal, shipCfg);
+  // delivery fee follows the shipping address city (zone rate), or the Settings fee when the city has no zone: same rule as the cart quote
+  const shippingFee = (await deliveryFor(input.shippingAddress && input.shippingAddress.city, subtotal)).fee;
 
   // 2. customer (guest checkout keyed by phone)
   const customer = cust ? cust.customer : await Customer.findOneAndUpdate({ phone: input.customer.phone, isDeleted: false },

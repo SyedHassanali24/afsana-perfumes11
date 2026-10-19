@@ -19,6 +19,17 @@ function shippingForCity(rate, subtotal, fallback) {
   const fee = rate.freeAbove != null && subtotal >= rate.freeAbove ? 0 : Math.max(0, Number(rate.baseRate) || 0);
   return { fee, method: rate.method || 'Standard', zone: rate.zone?.name || '', estDays: rate.estDays || '', source: 'zone' };
 }
+// One answer for "what does delivery cost to this city?": fee, zone name, delivery days, and how much more the shopper must spend
+// for free delivery (remaining; 0 when delivery is already free or the zone has no free-delivery amount).
+// A zone WITHOUT freeAbove is never free (the Settings free-above does not leak into zones). No zone for the city -> Settings fee.
+function deliveryQuote(rates, city, subtotal, fallback) {
+  const rate = matchShippingRate(rates, city, subtotal);
+  const base = shippingForCity(rate, subtotal, fallback);
+  const raw = rate ? rate.freeAbove : (Number(fallback.freeAbove) > 0 ? fallback.freeAbove : null);
+  const freeAbove = raw != null && Number.isFinite(Number(raw)) ? Number(raw) : null;
+  const remaining = base.fee > 0 && subtotal > 0 && freeAbove != null ? Math.max(0, freeAbove - subtotal) : 0;
+  return { ...base, freeAbove, remaining };
+}
 function trackingUrl(courier, number) {
   if (!courier?.trackingUrlTemplate || !number) return '';
   if (!/^https:\/\//i.test(courier.trackingUrlTemplate) || !courier.trackingUrlTemplate.includes('{trackingNumber}')) return '';
@@ -48,4 +59,4 @@ function orderStepsForShipment(orderStatus, shipmentStatus) {
   const steps = ORDER_FLOW.slice(from + 1, to + 1).filter((st) => st === target || st === 'Shipped');
   return { steps, message: '' };
 }
-module.exports = { SHIPMENT_STATUSES, canCreateShipment, isShipmentTerminal, trackingUrl, matchShippingRate, shippingForCity, orderStepsForShipment };
+module.exports = { SHIPMENT_STATUSES, canCreateShipment, isShipmentTerminal, trackingUrl, matchShippingRate, shippingForCity, deliveryQuote, orderStepsForShipment };

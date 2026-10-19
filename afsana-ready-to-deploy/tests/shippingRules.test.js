@@ -89,3 +89,22 @@ test('every planned step is a legal order transition (same table as orderService
     for (const step of R.orderStepsForShipment(o, sh).steps) { assert.ok((T[cur] || []).includes(step), `${cur} -> ${step}`); cur = step; }
   }
 });
+
+test('deliveryQuote: fee by city, free-above per zone, Settings fee when the city has no zone', () => {
+  const cfg = { flatRate: 250, freeAbove: 5000 };
+  const rates = [
+    { zone: { name: 'Karachi', cities: ['Karachi'] }, method: 'Standard', baseRate: 150, freeAbove: 3000, estDays: '1-2 days', isActive: true },
+    { zone: { name: 'Punjab', cities: ['Lahore', 'Multan'] }, method: 'Standard', baseRate: 300, isActive: true },
+  ];
+  let d = R.deliveryQuote(rates, 'karachi ', 1000, cfg);
+  assert.deepEqual([d.fee, d.zone, d.estDays, d.source, d.remaining], [150, 'Karachi', '1-2 days', 'zone', 2000]);
+  assert.equal(R.deliveryQuote(rates, 'Karachi', 3000, cfg).fee, 0, 'free exactly at the zone amount');
+  d = R.deliveryQuote(rates, 'Multan', 100000, cfg);
+  assert.deepEqual([d.fee, d.remaining, d.freeAbove], [300, 0, null], 'a zone without a free-delivery amount is never free and shows no "add X" hint');
+  d = R.deliveryQuote(rates, 'Quetta', 4000, cfg);
+  assert.deepEqual([d.fee, d.source, d.remaining], [250, 'default', 1000]);
+  assert.equal(R.deliveryQuote(rates, '', 6000, cfg).fee, 0, 'no city: Settings rule');
+  assert.equal(R.deliveryQuote(rates, 'Quetta', 0, cfg).remaining, 0, 'empty cart shows no hint');
+  assert.equal(R.deliveryQuote([{ ...rates[0], isActive: false }], 'Karachi', 1000, cfg).fee, 250, 'switched-off zone falls back to Settings');
+  assert.equal(R.deliveryQuote([], 'Quetta', 1, { flatRate: 250, freeAbove: 0 }).fee, 0, 'Settings freeAbove 0 = always free');
+});
