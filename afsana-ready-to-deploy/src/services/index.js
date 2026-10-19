@@ -75,6 +75,15 @@ export const permissionsApi = {
   catalog: () => api('/permissions/catalog'),
   history: (query) => api('/permissions/history', { query }),
 };
+export const shippingApi = { // Phase 9 (admin). admin() -> { couriers, rates, shipments }; create/update shipment -> { shipment, orderSync: { changed, message } }
+  admin: () => api('/shipping/admin'),
+  createCourier: (body) => api('/shipping/admin/couriers', { method: 'POST', body }),
+  updateCourier: (id, body) => api(`/shipping/admin/couriers/${id}`, { method: 'PATCH', body }),
+  createRate: (body) => api('/shipping/admin/rates', { method: 'POST', body }), // body: { zoneName, cities[], method, baseRate, freeAbove|null, estDays }
+  updateRate: (id, body) => api(`/shipping/admin/rates/${id}`, { method: 'PATCH', body }),
+  createShipment: (orderId, body) => api(`/shipping/admin/orders/${orderId}/shipment`, { method: 'POST', body }), // body: { courierId, trackingNumber, status, note }
+  updateShipment: (id, body) => api(`/shipping/admin/shipments/${id}`, { method: 'PATCH', body }),
+};
 export const couponsApi = { // Phase 8: marketing (admin). list query: { q, status, trash, page, limit } -> { coupons, pagination }
   list: (query) => api('/coupons/admin', { query }),
   get: (id) => api(`/coupons/admin/${id}`),

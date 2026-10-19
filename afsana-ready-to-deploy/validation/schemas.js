@@ -237,6 +237,29 @@ const couponBody = couponShape.superRefine((v, ctx) => {
 });
 const couponPatch = couponShape.partial();
 const couponActiveBody = z.object({ isActive: z.boolean() });
+
+const { SHIPMENT_STATUSES } = require('../services/shippingRules');
+// ---- shipping (couriers, city zones, shipments). Only https tracking links that contain {trackingNumber} are accepted. ----
+const trackingTemplate = z.string().trim().max(300).refine((v) => v === '' || (/^https:\/\//i.test(v) && v.includes('{trackingNumber}')), 'The tracking link must start with https:// and contain {trackingNumber}');
+const courierBody = z.object({ name: z.string().trim().min(2).max(60), trackingUrlTemplate: trackingTemplate.optional(), isActive: z.boolean().optional() });
+const courierPatch = courierBody.partial();
+const zoneShape = z.object({
+  zoneName: z.string().trim().min(2).max(60),
+  cities: z.array(z.string().trim().min(2).max(60)).min(1, 'Add at least one city').max(100),
+  method: z.string().trim().min(2).max(40),
+  baseRate: num(z.number().int().min(0).max(100000)),
+  freeAbove: optNum(z.number().int().min(0).max(10000000)), // empty / null = this zone is never free
+  estDays: z.string().trim().max(40).optional(),
+  isActive: z.boolean().optional(),
+});
+const shippingRateBody = zoneShape.extend({ method: z.string().trim().min(2).max(40).default('Standard') });
+const shippingRatePatch = zoneShape.partial();
+const courierRef = z.union([objectId, z.literal('')]).optional(); // '' clears the courier
+const shipmentBody = z.object({
+  courierId: courierRef, trackingNumber: z.string().trim().max(60).optional(),
+  status: z.enum(SHIPMENT_STATUSES).optional(), note: z.string().trim().max(300).optional(),
+});
+const shipmentPatch = shipmentBody;
 const couponQuery = z.object({ q: z.string().trim().max(40).optional(), status: z.enum(CR.STATUSES).optional(), trash: bool, ...paging });
 
 // ---------- CMS (banners / faqs / announcements) ----------
@@ -281,6 +304,7 @@ module.exports = {
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
+  courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
   quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,
   taxonomyBody, taxonomyPatch, taxonomyQuery, supplierBody, supplierPatch, supplierQuery, poCreate, poPatch, poReceive, poQuery, thresholdBody,
