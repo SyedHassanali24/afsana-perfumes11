@@ -95,5 +95,6 @@ export const toDetail = (o) => {
       : null, // null = hidden
     payments: payments && payments.map((p) => ({ status: p.status, amount: p.amount, reference: p.reference || '', at: when(p.receivedAt) })),
     paymentReference: latestRef,
+    shipment: o.shipment || null, // courier, tracking, status (staff view: events carry notes)
   };
 };

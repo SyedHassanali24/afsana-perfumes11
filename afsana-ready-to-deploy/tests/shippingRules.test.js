@@ -108,3 +108,24 @@ test('deliveryQuote: fee by city, free-above per zone, Settings fee when the cit
   assert.equal(R.deliveryQuote([{ ...rates[0], isActive: false }], 'Karachi', 1000, cfg).fee, 250, 'switched-off zone falls back to Settings');
   assert.equal(R.deliveryQuote([], 'Quetta', 1, { flatRate: 250, freeAbove: 0 }).fee, 0, 'Settings freeAbove 0 = always free');
 });
+
+test('publicShipmentView: shopper never gets staff notes; staffShipmentView keeps them', () => {
+  const courier = { _id: 'c1', name: 'TCS', trackingUrlTemplate: 'https://track.tcs.pk/{trackingNumber}' };
+  const shipment = { _id: 's1', status: 'In Transit', trackingNumber: 'TCS 123', events: [
+    { status: 'Pending', note: 'Handed over at 4pm', at: '2026-10-19T10:00:00Z' },
+    { status: 'In Transit', note: 'Updated automatically from the courier shipment', at: '2026-10-19T12:00:00Z' },
+  ] };
+  const pub = R.publicShipmentView(shipment, courier);
+  assert.equal(pub.courier, 'TCS'); assert.equal(pub.status, 'In Transit'); assert.equal(pub.events.length, 2);
+  assert.equal(pub.trackingUrl, 'https://track.tcs.pk/TCS%20123', 'tracking number is URL-encoded');
+  const json = JSON.stringify(pub);
+  assert.equal(json.includes('Handed over'), false); assert.equal(json.includes('Updated automatically'), false); assert.equal(json.includes('note'), false);
+  assert.equal(R.publicShipmentView(null, courier), null);
+  assert.equal(R.publicShipmentView(shipment, { ...courier, trackingUrlTemplate: 'http://bad/{trackingNumber}' }).trackingUrl, '', 'http:// template gives no link');
+  assert.equal(R.publicShipmentView({ status: 'Pending', events: [] }, null).courier, '', 'no courier chosen yet');
+  const staff = R.staffShipmentView(shipment, courier);
+  assert.deepEqual([staff._id, staff.courier, staff.courierId, staff.terminal], ['s1', 'TCS', 'c1', false]);
+  assert.equal(staff.events[0].note, 'Handed over at 4pm');
+  assert.equal(R.staffShipmentView({ ...shipment, status: 'Delivered' }, courier).terminal, true);
+  assert.equal(R.staffShipmentView(null, courier), null);
+});

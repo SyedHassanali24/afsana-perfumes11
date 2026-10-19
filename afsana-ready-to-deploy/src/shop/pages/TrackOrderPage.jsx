@@ -7,6 +7,7 @@ import { Container, PageTitle } from '../ui';
 import { ordersApi } from '../../services';
 import { fmtDateTime, PAYMENT_LABEL } from '../format';
 import useTitle from '../useTitle';
+import ShipmentInfo from '../ShipmentInfo';
 
 export function Timeline({ events }) {
   return (
@@ -48,6 +49,7 @@ export default function TrackOrderPage() {
         <div className="mt-8 rounded-md border border-border bg-surface p-5 space-y-5">
           <div className="flex items-center justify-between"><p className="font-display text-xl">{res.orderNumber}</p><StatusPill status={res.status} /></div>
           <p className="text-sm text-ink-muted">Payment: {res.paymentStatus}</p>
+          <ShipmentInfo shipment={res.shipment} />
           <Timeline events={res.timeline} />
         </div>
       )}

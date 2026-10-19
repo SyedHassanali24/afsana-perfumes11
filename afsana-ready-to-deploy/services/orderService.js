@@ -5,6 +5,7 @@ const { scopeFilter } = require('../middleware/permissions');
 const { effectivePrice, calcShipping, validateCoupon, calcDiscount, DEFAULT_SHIPPING } = require('./pricing');
 const { reserveItems, releaseItems, commitItems, restockItems } = require('./inventoryService');
 const { deliveryFor } = require('./shippingQuote');
+const { publicShipment, staffShipment } = require('./shippingService');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const R = require('./orderRules');
@@ -93,9 +94,9 @@ async function placeOrder(input, cust) {
 
 // ---------------- public tracking (order number + phone must both match) ----------------
 async function trackOrder(orderNumber, phone) {
-  const o = await Order.findOne({ orderNumber: orderNumber.toUpperCase(), 'customer.phone': phone }).select('orderNumber status timeline createdAt paymentStatus').lean();
+  const o = await Order.findOne({ orderNumber: orderNumber.toUpperCase(), 'customer.phone': phone }).select('_id orderNumber status timeline createdAt paymentStatus').lean();
   if (!o) throw E.notFound('We could not find an order with those details.');
-  return { order: { orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, placedAt: o.createdAt, timeline: o.timeline.map((t) => ({ event: t.event, at: t.at })) } };
+  return { order: { orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, placedAt: o.createdAt, timeline: o.timeline.map((t) => ({ event: t.event, at: t.at })), shipment: await publicShipment(o._id) } };
 }
 
 // ---------------- logged-in shopper: own orders only (filtered by customerId, never by URL alone) ----------------
@@ -140,6 +141,7 @@ async function getMine(customerId, orderNumber) {
     orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, paymentMethod: o.paymentMethod, placedAt: o.createdAt,
     subtotal: o.subtotal, shipping: o.shipping, discount: o.discount, total: o.total, couponCode: o.couponCode,
     shippingAddress: o.shippingAddress, items, timeline: (o.timeline || []).map((t) => ({ event: t.event, at: t.at })), // internal notes/staff ids stay server-side
+    shipment: await publicShipment(o._id), // courier + tracking link, never staff notes
   } };
 }
 
@@ -161,7 +163,8 @@ async function getOrder(id, scopes, uid) {
   if (!order) throw E.notFound('Order not found.');
   const items = await OrderItem.find({ orderId: id }).lean();
   const payments = await Payment.find({ orderId: id }).lean();
-  return { order: { ...order, items, payments } };
+  const shipment = await staffShipment(id);
+  return { order: { ...order, items, payments, shipment } };
 }
 
 async function changeStatus(ctx, id, status, note, scopes) {

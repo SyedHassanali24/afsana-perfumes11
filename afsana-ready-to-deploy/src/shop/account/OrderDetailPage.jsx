@@ -7,6 +7,7 @@ import { Container, StateBox, Placeholder } from '../ui';
 import { Timeline } from '../pages/TrackOrderPage';
 import { money, fmtDate, PAYMENT_LABEL } from '../format';
 import useTitle from '../useTitle';
+import ShipmentInfo from '../ShipmentInfo';
 import ReturnsSection from './ReturnsSection';
 import { useCart } from '../CartContext';
 
@@ -71,6 +72,7 @@ export default function OrderDetailPage() {
               </div>
             </div>
             <ReturnsSection orderNumber={o.orderNumber} orderStatus={o.status} onChanged={reload} />
+            <ShipmentInfo shipment={o.shipment} />
             <div><h2 className="font-display text-xl mb-4">Progress</h2><Timeline events={o.timeline} /></div>
           </div>
         )}

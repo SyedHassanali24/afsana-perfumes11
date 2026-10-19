@@ -91,9 +91,17 @@ async function updateShipment(ctx, id, body, scopes) {
   const orderSync = shipment.status !== oldStatus ? await syncOrder(ctx, shipment.orderId, shipment.status) : { changed: [], message: '' };
   return { shipment, orderSync };
 }
-async function publicShipment(orderId) {
-  const s = await Shipment.findOne({ orderId }).populate('courierId', 'name trackingUrlTemplate').lean();
-  if (!s) return null;
-  return { status: s.status, trackingNumber: s.trackingNumber || '', courier: s.courierId?.name || '', trackingUrl: Rules.trackingUrl(s.courierId, s.trackingNumber), events: (s.events || []).map(e => ({ status: e.status, note: e.note || '', at: e.at })) };
+async function loadShipment(orderId) {
+  return Shipment.findOne({ orderId }).populate('courierId', 'name trackingUrlTemplate').lean();
 }
-module.exports = { SHIPMENT_STATUSES, listAdmin, createCourier, updateCourier, createRate, updateRate, createShipment, updateShipment, publicShipment };
+// shopper view (no staff notes), null when the order has no shipment
+async function publicShipment(orderId) {
+  const s = await loadShipment(orderId);
+  return s ? Rules.publicShipmentView(s, s.courierId) : null;
+}
+// staff view for the order drawer (notes included)
+async function staffShipment(orderId) {
+  const s = await loadShipment(orderId);
+  return s ? Rules.staffShipmentView(s, s.courierId) : null;
+}
+module.exports = { SHIPMENT_STATUSES, listAdmin, createCourier, updateCourier, createRate, updateRate, createShipment, updateShipment, publicShipment, staffShipment };

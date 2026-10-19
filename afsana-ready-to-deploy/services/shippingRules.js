@@ -35,6 +35,25 @@ function trackingUrl(courier, number) {
   if (!/^https:\/\//i.test(courier.trackingUrlTemplate) || !courier.trackingUrlTemplate.includes('{trackingNumber}')) return '';
   return courier.trackingUrlTemplate.replace(/\{trackingNumber\}/g, encodeURIComponent(number));
 }
+// What the SHOPPER may see of a shipment. Events carry status + time only: staff notes and the automatic "Updated automatically..." text never leave the server.
+function publicShipmentView(shipment, courier) {
+  if (!shipment) return null;
+  return {
+    status: shipment.status, trackingNumber: shipment.trackingNumber || '', courier: (courier && courier.name) || '',
+    trackingUrl: trackingUrl(courier, shipment.trackingNumber),
+    events: (shipment.events || []).map((e) => ({ status: e.status, at: e.at })),
+  };
+}
+// What STAFF see (notes included, ids for the Shipping screen).
+function staffShipmentView(shipment, courier) {
+  if (!shipment) return null;
+  return {
+    _id: shipment._id, courier: (courier && courier.name) || '', courierId: courier ? courier._id : (shipment.courierId || null),
+    status: shipment.status, trackingNumber: shipment.trackingNumber || '', trackingUrl: trackingUrl(courier, shipment.trackingNumber),
+    terminal: isShipmentTerminal(shipment.status),
+    events: (shipment.events || []).map((e) => ({ status: e.status, note: e.note || '', at: e.at })),
+  };
+}
 // Shipment status -> the order status it implies. Pending / Failed never change the order (a failed delivery is a staff decision).
 const ORDER_FLOW = ['Packed', 'Shipped', 'Out For Delivery', 'Delivered'];
 const SHIPMENT_TO_ORDER = { 'Picked Up': 'Shipped', 'In Transit': 'Shipped', 'Out For Delivery': 'Out For Delivery', Delivered: 'Delivered', Returned: 'Returned' };
@@ -59,4 +78,4 @@ function orderStepsForShipment(orderStatus, shipmentStatus) {
   const steps = ORDER_FLOW.slice(from + 1, to + 1).filter((st) => st === target || st === 'Shipped');
   return { steps, message: '' };
 }
-module.exports = { SHIPMENT_STATUSES, canCreateShipment, isShipmentTerminal, trackingUrl, matchShippingRate, shippingForCity, deliveryQuote, orderStepsForShipment };
+module.exports = { SHIPMENT_STATUSES, canCreateShipment, isShipmentTerminal, trackingUrl, matchShippingRate, shippingForCity, deliveryQuote, publicShipmentView, staffShipmentView, orderStepsForShipment };

@@ -171,6 +171,24 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
               ) : <p className="text-sm text-ink-muted">You do not have permission to change the payment status.</p>}
             </div>
 
+            {/* shipment (created / updated on the Shipping screen) */}
+            <div className="space-y-1">
+              <p className="text-sm text-ink">Shipment</p>
+              {o.shipment ? (
+                <div className="text-sm text-ink-muted space-y-0.5">
+                  <p>Status: <span className="text-ink">{o.shipment.status}</span></p>
+                  <p>Courier: {o.shipment.courier || "—"}</p>
+                  <p>Tracking number: {o.shipment.trackingNumber ? (/^https:\/\//i.test(o.shipment.trackingUrl || "") ? <a href={o.shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">{o.shipment.trackingNumber}</a> : <span className="text-ink">{o.shipment.trackingNumber}</span>) : "—"}</p>
+                  {can("shipping.view") && <Link to="/admin/shipping" className="inline-block text-gold hover:underline">Manage in Shipping</Link>}
+                </div>
+              ) : (
+                <p className="text-sm text-ink-muted">
+                  No shipment yet.{" "}
+                  {["Confirmed", "Processing", "Packed"].includes(o.status) && can("shipping.view") && <Link to="/admin/shipping" className="text-gold hover:underline">Open Shipping</Link>}
+                </p>
+              )}
+            </div>
+
             {/* timeline */}
             <div>
               <p className="text-sm text-ink mb-3">Timeline</p>
