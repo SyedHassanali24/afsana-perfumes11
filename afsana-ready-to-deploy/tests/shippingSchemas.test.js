@@ -37,3 +37,14 @@ test('shipping schemas: cart quote accepts an optional city', () => {
   assert.equal(ok(S.quoteBody, { items, city: 'Multan' }).data.city, 'Multan');
   assert.equal(ok(S.quoteBody, { items }).success, true);
 });
+
+test('customer schemas: group must be one of the four; patch needs notes or group', () => {
+  assert.equal(S.customerPatch.safeParse({ segment: 'Gold' }).success, false);
+  assert.equal(S.customerPatch.safeParse({ segment: 'Repeat', notes: 'Prefers oud' }).success, true);
+  assert.equal(S.customerPatch.safeParse({}).success, false, 'empty patch refused');
+  assert.equal(S.customerPatch.safeParse({ notes: '' }).success, true, 'notes can be cleared');
+  assert.deepEqual(Object.keys(S.customerPatch.parse({ notes: 'x', name: 'Hack' })), ['notes'], 'other fields are dropped');
+  const q = S.customerQuery.parse({ q: ' ayesha ', segment: 'VIP', page: '2' });
+  assert.deepEqual([q.q, q.segment, q.page, q.limit], ['ayesha', 'VIP', 2, 20]);
+  assert.equal(S.customerQuery.safeParse({ segment: 'Gold' }).success, false);
+});

@@ -70,7 +70,8 @@ Design: ink-green near-black `#12140F`, antique gold `#C6A15B`, ivory text; font
 | 7 Returns & refunds | Done (unverified against real DB/browser, see STATUS). Shopper requests/cancels returns; staff approve/decline/receive/refund; stock, payment, order status, audit all wired. Scope was INFERRED (spec unavailable). |
 | 8 Marketing | Step 1 **Coupons admin** written (code only, unverified in browser/real DB): see "Phase 8 step 1" below. Flash sales, bundles, gift cards, loyalty, campaigns: not started. |
 | CMS step 1 | **Banners, FAQs, Announcements admin** written (code only, unverified in browser/real DB): see "CMS step 1" below. Homepage sections, menus, pages, email templates: not started. Storefront does NOT read banners/FAQs/announcements yet. |
-| 9–12 | Not started. |
+| 9 Shipping + Customers | Code complete (2026-10-20), unverified on a real DB / in a browser: see "Steps 4-5 of the shipping finish" at the end. |
+| 10–12 | Not started in THIS repo (an earlier chat produced a Phase 10 Finance zip that is not merged here). |
 
 ## Step 0 — verify what exists (do this first, ask the user for results verbatim)
 ```bash
@@ -289,3 +290,13 @@ Full rules in `docs/ARCHITECTURE.md` ("Phase 7 addendum"). Summary:
 - Verified here: `node --check` on 5 changed backend/test files; `node tools/check-syntax.js` 103 files OK; `node --test` with zod borrowed: 79 tests, 78 pass, only `health: inspectUri` fails (needs dotenv). On the user's PC expect 79/79.
 - NOT tested: orderService/shippingService against a real MongoDB (the new top-level `require('./shippingService')` in orderService is safe because shippingService requires orderService lazily, but it was not loaded with mongoose here); the drawer, track page and my-order page in a browser.
 - NEXT: 4) `netlify/functions/customers` + customer service/schemas + `customersApi` + `/admin/customers` route + Customers screen (Sidebar link exists); 5) checkout/cart send `city` to the quote (`useQuote`, CheckoutPage).
+
+## Steps 4-5 of the shipping finish — Customers screen + checkout city (2026-10-20) — written; NOT run on a real DB or browser
+- Customers API (staff only): `GET /api/customers/admin?q&segment&page&limit` -> `{ customers, counts:{New,Repeat,VIP,Inactive}, pagination }` (`customers.view`); `GET /admin/:id` -> `{ customer, orders (last 20, no phone/address), hidden:{phone,address} }`; `PATCH /admin/:id` body `{notes?, segment?}` (`customers.edit`, audited as `customer.updated`). Files: `services/customerRules.js` (pure), `services/customerService.js`, `netlify/functions/customers/index.js`, schemas `customerQuery` / `customerPatch`.
+- Rules: city scope uses `Customer.city`; a role without `customer.phone` cannot search by phone and gets no phone (also removed inside addresses); without `customer.address` no addresses (`hidden.*` = true); the group chips' counts follow the search + scope but not the group filter; bad / unknown / out-of-scope id = 404; only notes + group can change (name / phone / email belong to the shopper's account).
+- Frontend: `customersApi`; route `/admin/customers` (`customers.view`, Sidebar link already existed); `admin/customers/CustomersList.jsx` (search, group chips with counts, table) + `CustomerDrawer.jsx` (profile, addresses, group + notes editor for `customers.edit`, last orders).
+- Checkout: `useQuote(items, coupon, city)` sends the typed city (debounced) so the delivery fee, "add X for free delivery" and the new "Estimated delivery" line follow the city zone. The server (`placeOrder`) already charges the same fee.
+- Tests: `tests/customerRules.test.js` (pure), `tests/customerService.test.js` (service against a tiny in-memory fake of the models + handler route table), customer schema cases in `tests/shippingSchemas.test.js`.
+- Verified here: `node --check` on all new/changed backend + test files; `node tools/check-syntax.js` 105 files OK; `node --test` with zod borrowed from /opt/npm-tools: 89 tests, 88 pass, only `health: inspectUri` fails (needs dotenv). On the user's PC expect 89/89.
+- NOT tested: the service against a real MongoDB (the `$and`/`$or` filter and the `aggregate` group count were only run against the fake), the Customers screen and the checkout city box in a browser, a non-Owner role with city scope. The fake matcher is not Mongo: if a real-DB run disagrees, trust the DB and fix the filter.
+- Leftover (needs a real run): the whole shipping chain end to end (courier -> zone -> shipment -> order status -> tracking). FerretDB cannot run `reserveItems` (`$gte` in findOneAndUpdate), so test it on Atlas.

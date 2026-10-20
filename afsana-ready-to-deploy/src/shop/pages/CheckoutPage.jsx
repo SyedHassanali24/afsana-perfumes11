@@ -21,9 +21,9 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { items, couponCode, clear } = useCart();
   const { status, customer } = useCustomer();
-  const { data: q, loading, error, reload } = useQuote(items, couponCode);
   const saved = useApi(() => (status === 'authed' ? accountApi.addresses() : Promise.resolve({ addresses: [] })), [status]);
   const [f, setF] = useState(blank);
+  const { data: q, loading, error, reload } = useQuote(items, couponCode, f.city); // delivery fee follows the typed city
   const [pay, setPay] = useState('COD');
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');

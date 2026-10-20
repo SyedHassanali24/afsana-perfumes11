@@ -75,6 +75,11 @@ export const permissionsApi = {
   catalog: () => api('/permissions/catalog'),
   history: (query) => api('/permissions/history', { query }),
 };
+export const customersApi = { // staff. list query { q, segment, page, limit } -> { customers, counts, pagination }; get -> { customer, orders, hidden }; update body { segment?, notes? }
+  list: (query) => api('/customers/admin', { query }),
+  get: (id) => api(`/customers/admin/${id}`),
+  update: (id, body) => api(`/customers/admin/${id}`, { method: 'PATCH', body }),
+};
 export const shippingApi = { // Phase 9 (admin). admin() -> { couriers, rates, shipments }; create/update shipment -> { shipment, orderSync: { changed, message } }
   admin: () => api('/shipping/admin'),
   createCourier: (body) => api('/shipping/admin/couriers', { method: 'POST', body }),

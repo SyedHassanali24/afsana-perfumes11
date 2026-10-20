@@ -27,6 +27,7 @@ export function Totals({ q }) {
       {row('Subtotal', money(q.subtotal))}
       {q.discount > 0 && row('Discount', `− ${money(q.discount)}`, 'text-success')}
       {row('Delivery', q.shipping === 0 ? 'Free' : money(q.shipping))}
+      {q.delivery?.estDays && <p className="text-xs text-ink-muted">Estimated delivery: {q.delivery.estDays}.</p>}
       {q.freeShippingRemaining > 0 && <p className="text-xs text-ink-muted">Add {money(q.freeShippingRemaining)} more for free delivery.</p>}
       <div className="flex justify-between pt-3 border-t border-border font-display text-xl"><span>Total</span><span>{money(q.total)}</span></div>
     </div>

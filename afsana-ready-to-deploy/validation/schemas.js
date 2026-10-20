@@ -260,6 +260,12 @@ const shipmentBody = z.object({
   status: z.enum(SHIPMENT_STATUSES).optional(), note: z.string().trim().max(300).optional(),
 });
 const shipmentPatch = shipmentBody;
+
+// ---- customers (staff screen). Only notes and group can be changed. ----
+const { SEGMENTS: CUSTOMER_SEGMENTS } = require('../services/customerRules');
+const customerQuery = z.object({ q: z.string().trim().max(60).optional(), segment: z.enum(CUSTOMER_SEGMENTS).optional(), ...paging });
+const customerPatch = z.object({ notes: z.string().trim().max(2000).optional(), segment: z.enum(CUSTOMER_SEGMENTS).optional() })
+  .refine((v) => v.notes !== undefined || v.segment !== undefined, 'Nothing to change');
 const couponQuery = z.object({ q: z.string().trim().max(40).optional(), status: z.enum(CR.STATUSES).optional(), trash: bool, ...paging });
 
 // ---------- CMS (banners / faqs / announcements) ----------
@@ -304,6 +310,7 @@ module.exports = {
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
+  customerQuery, customerPatch,
   courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
   quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,
