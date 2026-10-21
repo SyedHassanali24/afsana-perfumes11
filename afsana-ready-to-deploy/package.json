@@ -14,7 +14,8 @@
     "check": "node tools/check-syntax.js",
     "db:setup": "node database/seed/production.js",
     "admin:reset": "node database/seed/resetAdminPassword.js",
-    "db:restore": "node database/seed/restoreBackup.js"
+    "db:restore": "node database/seed/restoreBackup.js",
+    "e2e": "node tools/e2e-smoke.cjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
