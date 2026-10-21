@@ -264,6 +264,24 @@ const shipmentPatch = shipmentBody;
 // ---- customers (staff screen). Only notes and group can be changed. ----
 const { SEGMENTS: CUSTOMER_SEGMENTS } = require('../services/customerRules');
 const customerQuery = z.object({ q: z.string().trim().max(60).optional(), segment: z.enum(CUSTOMER_SEGMENTS).optional(), ...paging });
+// ---- finance & expenses (dates are Pakistan calendar days written YYYY-MM-DD) ----
+const FIN = require('../services/financeRules');
+const dayKey = z.string().trim().refine(FIN.isRealDate, 'Use a real date like 2026-10-31');
+const financeQuery = z.object({ period: z.enum(FIN.PERIODS).default('this_month'), from: dayKey.optional(), to: dayKey.optional() })
+  .superRefine((v, ctx) => { if (v.period === 'custom' && !FIN.periodRange(v)) ctx.addIssue({ code: 'custom', path: ['from'], message: 'Choose a valid range (from before to, up to 366 days)' }); });
+const expenseShape = z.object({
+  category: z.enum(FIN.CATEGORIES), amount: num(z.number().int().min(1).max(100000000)), date: dayKey, description: z.string().trim().max(200).optional(),
+});
+const expenseBody = expenseShape;
+const expensePatch = expenseShape.partial().refine((v) => Object.keys(v).length > 0, 'Nothing to change');
+const expenseQuery = z.object({ category: z.enum(FIN.CATEGORIES).optional(), from: dayKey.optional(), to: dayKey.optional(), ...paging });
+
+// ---- reviews ----
+const REVIEW = require('../services/reviewRules');
+const reviewBody = z.object({ rating: z.number().int().min(1).max(5), title: z.string().trim().max(80).optional(), text: z.string().trim().max(1500).optional() });
+const publicReviewsQuery = z.object({ ...paging });
+const adminReviewsQuery = z.object({ status: z.enum(REVIEW.STATUSES).optional(), q: z.string().trim().max(60).optional(), ...paging });
+const reviewStatusBody = z.object({ status: z.enum(REVIEW.MODERATION_TARGETS) });
 const customerPatch = z.object({ notes: z.string().trim().max(2000).optional(), segment: z.enum(CUSTOMER_SEGMENTS).optional() })
   .refine((v) => v.notes !== undefined || v.segment !== undefined, 'Nothing to change');
 const couponQuery = z.object({ q: z.string().trim().max(40).optional(), status: z.enum(CR.STATUSES).optional(), trash: bool, ...paging });
@@ -310,7 +328,8 @@ module.exports = {
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
-  customerQuery, customerPatch,
+  financeQuery, expenseBody, expensePatch, expenseQuery,
+  customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
   courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
   quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,

@@ -6,6 +6,7 @@ import { productsApi } from '../../services';
 import Button from '../../../admin/components/Button';
 import { Container, StateBox, QtyStepper, Placeholder } from '../ui';
 import ProductCard from '../ProductCard';
+import ReviewsSection from '../ReviewsSection';
 import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
@@ -139,6 +140,8 @@ export default function ProductPage() {
                 {p.content?.fullDescription && <div className="mt-6 border-t border-border pt-6"><h2 className="font-display text-lg mb-2">About this fragrance</h2><p className="text-sm text-ink-muted whitespace-pre-line">{p.content.fullDescription}</p></div>}
               </div>
             </div>
+
+            <ReviewsSection slug={slug} />
 
             {data.related?.length > 0 && (
               <section className="mt-16">

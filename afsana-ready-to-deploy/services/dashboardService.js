@@ -63,11 +63,17 @@ async function orderSections(scopes, uid, now) {
 }
 
 // "Low" = available (current - reserved) is at or under the variant's threshold; out-of-stock variants are included (and counted separately).
-const LOW = { $expr: { $lte: [{ $subtract: ['$current', '$reserved'] }, '$lowStockThreshold'] } };
+// Soft-deleted products / sizes are left out (R.lowStockFilter): nobody can buy them, so they are not "low stock".
 async function stockSection() {
+  const [delProducts, delVariants] = await Promise.all([
+    Product.find({ isDeleted: true }).select('_id').lean(),
+    ProductVariant.find({ isDeleted: true }).select('_id').lean(),
+  ]);
+  const skip = { ...(delProducts.length ? { productId: { $nin: delProducts.map((p) => p._id) } } : {}), ...(delVariants.length ? { variantId: { $nin: delVariants.map((v) => v._id) } } : {}) };
+  const LOW = R.lowStockFilter(delProducts.map((p) => p._id), delVariants.map((v) => v._id));
   const [count, outOfStock, rows] = await Promise.all([
     Inventory.countDocuments(LOW),
-    Inventory.countDocuments({ $expr: { $lte: [{ $subtract: ['$current', '$reserved'] }, 0] } }),
+    Inventory.countDocuments({ $expr: { $lte: [{ $subtract: ['$current', '$reserved'] }, 0] }, ...skip }),
     Inventory.aggregate([
       { $match: LOW },
       { $addFields: { available: { $subtract: ['$current', '$reserved'] } } },

@@ -5,4 +5,11 @@ function normalizePhone(input) {
   else if (/^923\d{9}$/.test(p)) p = `+${p}`;
   return p;
 }
-module.exports = { normalizePhone };
+// Do two phone numbers written in different styles belong to the same Pakistani mobile? "0300 1234567" = "03001234567" = "+92 300 1234567" = "923001234567".
+// Compares the last 10 digits; anything shorter than 10 digits never matches (so blanks and junk cannot match each other).
+function samePhone(a, b) {
+  const tail = (x) => { const d = String(x || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : null; };
+  const x = tail(a); const y = tail(b);
+  return x !== null && x === y;
+}
+module.exports = { normalizePhone, samePhone };

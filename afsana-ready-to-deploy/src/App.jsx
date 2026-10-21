@@ -13,6 +13,8 @@ import CatalogPage from '../admin/catalog/CatalogPage';
 import ReturnsList from '../admin/returns/ReturnsList';
 import ShippingPage from '../admin/shipping/ShippingPage';
 import CustomersList from '../admin/customers/CustomersList';
+import ReviewsList from '../admin/reviews/ReviewsList';
+import FinancePage from '../admin/finance/FinancePage';
 import BackupPage from '../admin/backup/BackupPage';
 import SettingsPage from '../admin/settings/SettingsPage';
 import StaffPage from '../admin/staff/StaffPage';
@@ -54,6 +56,8 @@ export default function App() {
       <Route path="/admin/returns" element={page('returns.view', <ReturnsList />)} />
       <Route path="/admin/shipping" element={page('shipping.view', <ShippingPage />)} />
       <Route path="/admin/customers" element={page('customers.view', <CustomersList />)} />
+      <Route path="/admin/reviews" element={page('reviews.view', <ReviewsList />)} />
+      <Route path="/admin/finance" element={page('finance.view', <FinancePage />)} />
       <Route path="/admin/marketing" element={page('coupons.view', <CouponsList />)} />{/* Phase 8 step 1: Coupons (the Sidebar "Marketing" link points here) */}
       <Route path="/admin/cms" element={page('homepage.view', <CmsPage />)} />{/* Banners / FAQs / Announcements (Sidebar "CMS" link) */}
       <Route path="/admin/settings" element={page('settings.view', <SettingsPage />)} />

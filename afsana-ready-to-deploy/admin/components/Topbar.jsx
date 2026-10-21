@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Search, Bell, Sun, Moon, Monitor, LogOut } from "lucide-react";
+import { Search, Sun, Moon, Monitor, LogOut } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 
 const THEME_CYCLE = ["system", "light", "dark"];
 const THEME_ICON = { system: Monitor, light: Sun, dark: Moon };
@@ -56,12 +57,7 @@ export default function Topbar({
         <ThemeIcon className="w-4.5 h-4.5" />
       </button>
 
-      <button className="relative p-2 rounded-sm text-ink-muted hover:bg-bg transition-colors" aria-label="Notifications">
-        <Bell className="w-4.5 h-4.5" />
-        {notificationCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-danger" />
-        )}
-      </button>
+      <NotificationBell />
 
       <div className="flex items-center gap-2.5 pl-3 border-l border-border">
         <button onClick={onProfile} className="flex items-center gap-2.5 text-left" aria-label="My account" title="My account">

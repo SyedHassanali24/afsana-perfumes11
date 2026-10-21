@@ -49,6 +49,12 @@ function pctChange(current, previous) {
   if (!Number.isFinite(current) || !Number.isFinite(previous) || previous <= 0) return null;
   return Math.round(((current - previous) / previous) * 1000) / 10;
 }
+// Inventory rows of soft-deleted products or sizes must not show up as "low stock" (nobody can buy them).
+const lowStockFilter = (deletedProductIds = [], deletedVariantIds = []) => ({
+  $expr: { $lte: [{ $subtract: ['$current', '$reserved'] }, '$lowStockThreshold'] },
+  ...(deletedProductIds.length ? { productId: { $nin: deletedProductIds } } : {}),
+  ...(deletedVariantIds.length ? { variantId: { $nin: deletedVariantIds } } : {}),
+});
 const avg = (sum, count) => (count > 0 ? Math.round(sum / count) : 0);
 
 // "2026-10-06" for the Pakistan day containing `date`.
@@ -90,5 +96,5 @@ function sectionAccess(can) {
 
 module.exports = {
   EXCLUDED_STATUSES, PENDING_STATUSES, SERIES_DAYS, TOP_PRODUCTS_LIMIT, LOW_STOCK_LIMIT, RECENT_ORDERS_LIMIT, TZ,
-  pktDayStart, pktMonthStart, ranges, pctChange, avg, pktDateKey, fillSeries, shapeTopProduct, applyFieldSecurity, sectionAccess,
+  TZ_OFFSET_MS_PUBLIC: TZ_OFFSET_MS, lowStockFilter, pktDayStart, pktMonthStart, ranges, pctChange, avg, pktDateKey, fillSeries, shapeTopProduct, applyFieldSecurity, sectionAccess,
 };

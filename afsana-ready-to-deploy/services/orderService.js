@@ -1,5 +1,6 @@
 const { Order, OrderItem, Payment, Customer, Coupon, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
+const { samePhone } = require('./phone');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { scopeFilter } = require('../middleware/permissions');
 const { effectivePrice, calcShipping, validateCoupon, calcDiscount, DEFAULT_SHIPPING } = require('./pricing');
@@ -94,8 +95,9 @@ async function placeOrder(input, cust) {
 
 // ---------------- public tracking (order number + phone must both match) ----------------
 async function trackOrder(orderNumber, phone) {
-  const o = await Order.findOne({ orderNumber: orderNumber.toUpperCase(), 'customer.phone': phone }).select('_id orderNumber status timeline createdAt paymentStatus').lean();
-  if (!o) throw E.notFound('We could not find an order with those details.');
+  // The phone is compared by its digits (0300 1234567 = 03001234567 = +92 300 1234567), not as typed. Wrong number and unknown order give the same answer.
+  const o = await Order.findOne({ orderNumber: orderNumber.toUpperCase() }).select('_id orderNumber status timeline createdAt paymentStatus customer.phone').lean();
+  if (!o || !samePhone(o.customer && o.customer.phone, phone)) throw E.notFound('We could not find an order with those details.');
   return { order: { orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, placedAt: o.createdAt, timeline: o.timeline.map((t) => ({ event: t.event, at: t.at })), shipment: await publicShipment(o._id) } };
 }
 

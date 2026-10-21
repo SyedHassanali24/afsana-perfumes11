@@ -10,6 +10,7 @@ import {
   Truck,
   RotateCcw,
   Users,
+  Star,
   Megaphone,
   LayoutTemplate,
   Landmark,
@@ -45,6 +46,7 @@ const NAV_GROUPS = [
       { label: "Returns", icon: RotateCcw, href: "/admin/returns", permission: "returns.view" },
       { label: "Shipping", icon: Truck, href: "/admin/shipping", permission: "shipping.view" },
       { label: "Customers", icon: Users, href: "/admin/customers", permission: "customers.view" },
+      { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "reviews.view" },
     ],
   },
   {

@@ -75,6 +75,26 @@ export const permissionsApi = {
   catalog: () => api('/permissions/catalog'),
   history: (query) => api('/permissions/history', { query }),
 };
+export const financeApi = { // staff. summary(query {period, from?, to?}) -> { range, revenue, refunds, cogs|null, grossProfit|null, expenses:{total,byCategory}, netProfit|null, margin|null, missingCost, hidden }
+  summary: (query) => api('/finance/admin/summary', { query }),
+  expenses: (query) => api('/finance/admin/expenses', { query }),           // { category?, from?, to?, page, limit } -> { expenses, total, pagination }
+  createExpense: (body) => api('/finance/admin/expenses', { method: 'POST', body }), // { category, amount, date: 'YYYY-MM-DD', description? }
+  updateExpense: (id, body) => api(`/finance/admin/expenses/${id}`, { method: 'PATCH', body }),
+  deleteExpense: (id) => api(`/finance/admin/expenses/${id}`, { method: 'DELETE' }),
+};
+export const notificationsApi = { // staff bell. list -> { notifications:[{id,type,title,body,link,createdAt,read}], unread }
+  list: () => api('/notifications/admin'),
+  markRead: (id) => api(`/notifications/admin/${id}/read`, { method: 'POST' }),
+  readAll: () => api('/notifications/admin/read-all', { method: 'POST' }),
+};
+export const reviewsApi = { // public list: { summary:{avg,count,breakdown}, reviews, pagination }; mine -> { canReview, review|null }; staff: adminList -> { reviews, counts, pagination }
+  list: (slug, query) => api(`/reviews/product/${slug}`, { query }),
+  mine: (slug) => api(`/reviews/mine/${slug}`),
+  save: (slug, body) => api(`/reviews/mine/${slug}`, { method: 'PUT', body }),       // body { rating 1-5, title?, text? } -> goes to Pending
+  remove: (slug) => api(`/reviews/mine/${slug}`, { method: 'DELETE' }),
+  adminList: (query) => api('/reviews/admin', { query }),                           // query { status, q, page, limit }
+  setStatus: (id, status) => api(`/reviews/admin/${id}/status`, { method: 'PATCH', body: { status } }), // Approved | Featured | Rejected
+};
 export const customersApi = { // staff. list query { q, segment, page, limit } -> { customers, counts, pagination }; get -> { customer, orders, hidden }; update body { segment?, notes? }
   list: (query) => api('/customers/admin', { query }),
   get: (id) => api(`/customers/admin/${id}`),
