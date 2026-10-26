@@ -34,6 +34,9 @@ const orderSchema = new Schema({
   cancelledReason: String,
   stockCommitted: { type: Boolean, default: false }, // true once reserved units have left the shelf (on Shipped)
   returnRevision: { type: Number, default: 0 },      // Phase 7: bumped by every return/refund write -> acts as a lock so two staff/shoppers cannot over-return or over-refund
+  // Prevents duplicate checkout retries from creating multiple orders for the same client request.
+  idempotencyKey: { type: String, sparse: true, unique: true, index: true },
+  idempotencyHash: { type: String },
 }, { timestamps: true });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
