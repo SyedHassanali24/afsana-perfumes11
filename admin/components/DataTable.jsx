@@ -83,15 +83,15 @@ export default function DataTable({
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between pt-3 mt-1 border-t border-border text-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-3 mt-1 border-t border-border text-sm">
           <span className="text-ink-muted">
             Page {pagination.page} of {pagination.totalPages}
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => pagination.onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="px-3 py-1.5 rounded-sm border border-border text-ink disabled:opacity-40 hover:bg-bg transition-colors"
+              className="px-3 py-1.5 rounded-sm border border-border text-ink disabled:opacity-40 hover:bg-bg transition-colors flex-1 sm:flex-none"
             >
               Previous
             </button>
