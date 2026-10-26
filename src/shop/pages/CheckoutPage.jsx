@@ -67,7 +67,7 @@ export default function CheckoutPage() {
       <StateBox loading={loading && !q} error={error} onRetry={reload}>
         {q && !q.canCheckout && <div className="rounded-md border border-border bg-warning-soft p-4 text-sm mb-6" role="alert">Some items in your cart need attention. <Link to="/cart" className="underline">Review your cart</Link></div>}
         {q && (
-          <form onSubmit={submit} className="grid gap-8 lg:grid-cols-[1fr_340px]" noValidate>
+          <form onSubmit={submit} className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_340px]" noValidate>
             <div className="space-y-8">
               {status !== 'authed' && <p className="text-sm text-ink-muted">Have an account? <Link to="/login" state={{ from: '/checkout' }} className="underline text-ink">Sign in</Link> to use your saved addresses and see this order in your account.</p>}
 
@@ -109,12 +109,12 @@ export default function CheckoutPage() {
               </section>
             </div>
 
-            <aside className="rounded-md border border-border bg-surface p-5 h-fit space-y-5">
+            <aside className="rounded-md border border-border bg-surface p-4 sm:p-5 h-fit space-y-5 lg:sticky lg:top-24">
               <h2 className="font-display text-xl">Order summary</h2>
               <ul className="space-y-2 text-sm">{q.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span className="text-ink-muted">{l.name} {l.label} × {l.quantity}</span><span className="tabular-nums">{l.status === 'unavailable' ? '—' : money(l.lineTotal)}</span></li>)}</ul>
               <Totals q={q} />
               {formError && <p role="alert" className="text-sm text-danger">{formError}</p>}
-              <Button type="submit" className="w-full" disabled={busy || !q.canCheckout}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
+              <Button type="submit" className="w-full min-h-11" disabled={busy || !q.canCheckout}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
               <p className="text-xs text-ink-muted">Final price and stock are confirmed by our server when you place the order.</p>
             </aside>
           </form>
