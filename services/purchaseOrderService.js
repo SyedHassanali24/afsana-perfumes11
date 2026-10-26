@@ -132,7 +132,14 @@ async function cancel(ctx, id) {
     if (po.status !== 'Draft') {
       for (const it of po.items) {
         const left = remainingQty(it);
-        if (left > 0) await Inventory.updateOne({ variantId: it.variantId }, [{ $set: { incoming: { $max: [0, { $subtract: ['$incoming', left] }] } } }], { session });
+        if (left > 0) {
+          const inv = await Inventory.findOneAndUpdate(
+            { variantId: it.variantId, productId: it.productId, incoming: { $gte: left } },
+            [{ $set: { incoming: { $subtract: ['$incoming', left] } } }],
+            { new: true, session },
+          );
+          if (!inv) throw E.conflict('Inventory is missing, linked to the wrong product, or has inconsistent incoming stock.', { variantId: String(it.variantId) }, 'STOCK_INCONSISTENT');
+        }
       }
     }
     const was = po.status;
