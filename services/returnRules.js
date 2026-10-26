@@ -104,13 +104,16 @@ function paymentStatusAfterRefund(orderTotal, totalRefunded, current) {
 //   all units back and refunded               -> Refunded
 //   all units back, refund still to do        -> Returned
 //   returns finished but goods partly kept    -> Delivered
-function deriveOrderStatus(current, orderQty, returns) {
+function deriveOrderStatus(current, orderQty, returns, paymentStatus) {
   if (!['Delivered', 'Return Requested', 'Returned', 'Refunded'].includes(current)) return current;
   const live = (returns || []).filter((r) => COUNTED.includes(r.status));
   const inFlight = live.filter((r) => r.status !== 'Refunded');
   const back = live.filter((r) => r.status === 'Received' || r.status === 'Refunded');
   const fullyBack = orderQty > 0 && sum(back, (r) => sum(r.items || [], (i) => i.quantity)) >= orderQty;
-  if (!inFlight.length) return fullyBack ? 'Refunded' : 'Delivered';
+  if (!inFlight.length) {
+    if (!fullyBack) return 'Delivered';
+    return paymentStatus === 'Partially Refunded' ? 'Returned' : 'Refunded';
+  }
   if (fullyBack && inFlight.every((r) => r.status === 'Received')) return 'Returned';
   return 'Return Requested';
 }
