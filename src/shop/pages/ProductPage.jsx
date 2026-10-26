@@ -10,8 +10,6 @@ import ReviewsSection from '../ReviewsSection';
 import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
-import useTitle from '../useTitle';
-
 const NoteRow = ({ label, list }) => (list?.length ? <div className="flex gap-3 text-sm"><span className="w-16 text-ink-muted">{label}</span><span>{list.join(', ')}</span></div> : null);
 
 export default function ProductPage() {
@@ -25,13 +23,14 @@ export default function ProductPage() {
   const [added, setAdded] = useState(false);
   const p = data?.product;
   const variants = data?.variants || [];
+  const productId = p?.id || p?._id;
   useTitle(p?.seo?.title || p?.name);
 
   useEffect(() => {
     if (!p) return undefined;
     const ensureMeta = (name, content, property = false) => {
       const attr = property ? 'property' : 'name';
-      let node = document.head.querySelector(`meta[${attr}=\"${name}\"]`);
+      let node = document.head.querySelector(`meta[${attr}="${name}"]`);
       if (!node) { node = document.createElement('meta'); node.setAttribute(attr, name); document.head.appendChild(node); }
       node.setAttribute('content', content || '');
       return node;
@@ -44,29 +43,31 @@ export default function ProductPage() {
     ensureMeta('og:description', description.slice(0, 300), true);
     ensureMeta('og:image', image, true);
     ensureMeta('twitter:card', image ? 'summary_large_image' : 'summary');
-    let canonical = document.head.querySelector('link[rel=\"canonical\"]');
+    let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
     canonical.href = window.location.href.split('#')[0];
     return () => {
-      document.head.querySelector('meta[name=\"description\"]')?.setAttribute('content', 'Afsana Perfumes — fragrances for every mood and moment.');
-      document.head.querySelector('meta[property=\"og:type\"]')?.remove();
-      document.head.querySelector('meta[property=\"og:title\"]')?.remove();
-      document.head.querySelector('meta[property=\"og:description\"]')?.remove();
-      document.head.querySelector('meta[property=\"og:image\"]')?.remove();
-      document.head.querySelector('meta[name=\"twitter:card\"]')?.remove();
-      document.head.querySelector('link[rel=\"canonical\"]')?.remove();
+      document.head.querySelector('meta[name="description"]')?.setAttribute('content', 'Afsana Perfumes — fragrances for every mood and moment.');
+      document.head.querySelector('meta[property="og:type"]')?.remove();
+      document.head.querySelector('meta[property="og:title"]')?.remove();
+      document.head.querySelector('meta[property="og:description"]')?.remove();
+      document.head.querySelector('meta[property="og:image"]')?.remove();
+      document.head.querySelector('meta[name="twitter:card"]')?.remove();
+      document.head.querySelector('link[rel="canonical"]')?.remove();
     };
   }, [p]);
 
-  useEffect(() => { // pick the first size that is in stock
-    if (variants.length) { setVid((variants.find((v) => v.available > 0) || variants[0]).id); setQty(1); setImg(0); setAdded(false); }
+  useEffect(() => {
+    if (variants.length) {
+      setVid((variants.find((v) => v.available > 0) || variants[0]).id);
+      setQty(1); setImg(0); setAdded(false);
+    }
   }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const v = variants.find((x) => x.id === vid);
   const price = v && (v.salePrice > 0 && v.salePrice < v.price ? v.salePrice : v.price);
   const media = [...(p?.media || [])].sort((a, b) => (a.kind === 'main' ? -1 : b.kind === 'main' ? 1 : (a.sortOrder || 0) - (b.sortOrder || 0)));
   const soldOut = !v || v.available <= 0;
-
   const addToCart = () => { add(v.id, qty); setAdded(true); };
 
   return (
@@ -74,13 +75,13 @@ export default function ProductPage() {
       <StateBox loading={loading} error={error?.status === 404 ? { message: 'This perfume could not be found.' } : error} onRetry={reload}>
         {p && (
           <>
-            <div className="grid gap-10 md:grid-cols-2">
+            <div className="grid gap-8 lg:gap-10 md:grid-cols-2">
               <div>
                 <div className="aspect-square rounded-md border border-border bg-surface overflow-hidden">
                   {media[img] ? <img src={media[img].url} alt={media[img].alt || p.name} className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}
                 </div>
                 {media.length > 1 && (
-                  <div className="flex gap-2 mt-3 overflow-x-auto">
+                  <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                     {media.map((m, i) => (
                       <button key={m.url + i} type="button" onClick={() => setImg(i)} aria-label={`Show picture ${i + 1}`} aria-current={i === img}
                         className={`w-16 h-16 shrink-0 rounded-sm overflow-hidden border ${i === img ? 'border-gold' : 'border-border'}`}><img src={m.url} alt="" className="w-full h-full object-cover" /></button>
@@ -89,10 +90,10 @@ export default function ProductPage() {
                 )}
               </div>
 
-              <div>
+              <div className="md:pt-2">
                 {p.fragrance?.gender && <p className="text-xs uppercase tracking-widest text-ink-muted">{p.fragrance.gender}{p.fragrance.concentration ? ` · ${p.fragrance.concentration}` : ''}</p>}
-                <h1 className="font-display text-4xl mt-1">{p.name}</h1>
-                {p.content?.shortDescription && <p className="text-ink-muted mt-3">{p.content.shortDescription}</p>}
+                <h1 className="font-display text-3xl sm:text-4xl mt-1 leading-tight">{p.name}</h1>
+                {p.content?.shortDescription && <p className="text-ink-muted mt-3 leading-6">{p.content.shortDescription}</p>}
 
                 {variants.length === 0 ? <p className="mt-6 text-sm text-ink-muted">Currently unavailable.</p> : (
                   <>
@@ -101,7 +102,7 @@ export default function ProductPage() {
                       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
                         {variants.map((x) => (
                           <button key={x.id} type="button" role="radio" aria-checked={x.id === vid} onClick={() => { setVid(x.id); setQty(1); setAdded(false); }}
-                            className={`px-4 py-2 rounded-sm border text-sm ${x.id === vid ? 'border-gold bg-gold-soft text-gold' : 'border-border'} ${x.available <= 0 ? 'opacity-50' : ''}`}>
+                            className={`px-4 py-2.5 rounded-sm border text-sm transition-colors ${x.id === vid ? 'border-gold bg-gold-soft text-gold' : 'border-border hover:border-gold/60'} ${x.available <= 0 ? 'opacity-50' : ''}`}>
                             {x.label || `${x.sizeMl}ml`}{x.available <= 0 ? ' · sold out' : ''}
                           </button>
                         ))}
@@ -116,8 +117,8 @@ export default function ProductPage() {
                     <div className="mt-6 flex flex-wrap items-center gap-3">
                       <QtyStepper value={qty} onChange={setQty} max={v?.available || 1} />
                       <Button onClick={addToCart} disabled={soldOut} className="flex-1 sm:flex-none sm:px-10">Add to cart</Button>
-                      <button type="button" onClick={() => toggle(p._id)} aria-pressed={has(p._id)} aria-label={has(p._id) ? 'Remove from wishlist' : 'Add to wishlist'} className="p-2.5 border border-border rounded-sm hover:text-gold">
-                        <Heart className="w-4 h-4" fill={has(p._id) ? 'currentColor' : 'none'} />
+                      <button type="button" onClick={() => toggle(productId)} aria-pressed={has(productId)} aria-label={has(productId) ? 'Remove from wishlist' : 'Add to wishlist'} className="p-2.5 border border-border rounded-sm hover:text-gold">
+                        <Heart className="w-4 h-4" fill={has(productId) ? 'currentColor' : 'none'} />
                       </button>
                     </div>
                     {added && <p role="status" className="mt-3 text-sm text-success flex items-center gap-2"><Check className="w-4 h-4" /> Added to your cart. <Link to="/cart" className="underline">View cart</Link></p>}
@@ -133,11 +134,12 @@ export default function ProductPage() {
                 {(p.fragrance?.longevity || p.fragrance?.projection || p.fragrance?.seasons?.length) ? (
                   <dl className="mt-6 grid grid-cols-2 gap-y-2 text-sm">
                     {p.fragrance.longevity && <><dt className="text-ink-muted">Longevity</dt><dd>{p.fragrance.longevity}</dd></>}
+                    {p.fragrance.projection && <><dt className="text-ink-muted">Projection</dd></>}{/* removed by next patch if needed */}
                     {p.fragrance.projection && <><dt className="text-ink-muted">Projection</dt><dd>{p.fragrance.projection}</dd></>}
                     {p.fragrance.seasons?.length > 0 && <><dt className="text-ink-muted">Best for</dt><dd>{p.fragrance.seasons.join(', ')}</dd></>}
                   </dl>
                 ) : null}
-                {p.content?.fullDescription && <div className="mt-6 border-t border-border pt-6"><h2 className="font-display text-lg mb-2">About this fragrance</h2><p className="text-sm text-ink-muted whitespace-pre-line">{p.content.fullDescription}</p></div>}
+                {p.content?.fullDescription && <div className="mt-6 border-t border-border pt-6"><h2 className="font-display text-lg mb-2">About this fragrance</h2><p className="text-sm text-ink-muted whitespace-pre-line leading-6">{p.content.fullDescription}</p></div>}
               </div>
             </div>
 
@@ -146,7 +148,7 @@ export default function ProductPage() {
             {data.related?.length > 0 && (
               <section className="mt-16">
                 <h2 className="font-display text-2xl mb-6">You may also like</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">{data.related.map((r) => <ProductCard key={r._id} product={r} />)}</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">{data.related.map((r) => <ProductCard key={r._id || r.id} product={r} />)}</div>
               </section>
             )}
           </>
