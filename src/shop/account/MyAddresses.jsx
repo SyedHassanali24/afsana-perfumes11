@@ -56,9 +56,9 @@ export default function MyAddresses() {
         {rows.map((a) => (editing?.id === a.id
           ? <AddressForm key={a.id} initial={a} onSaved={saved} onCancel={() => setEditing(null)} />
           : (
-            <div key={a.id} className="rounded-md border border-border bg-surface p-4 flex justify-between gap-4 text-sm">
+            <div key={a.id} className="rounded-md border border-border bg-surface p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 text-sm">
               <div><p className="font-medium">{a.fullName} <span className="text-xs text-ink-muted font-normal">· {a.type}{a.isDefault ? ' · Default' : ''}</span></p><p>{a.line1}{a.line2 ? `, ${a.line2}` : ''}</p><p>{a.city}{a.postalCode ? ` ${a.postalCode}` : ''}</p><p className="text-ink-muted">{a.phone}</p></div>
-              <div className="flex flex-col items-end gap-1"><Button variant="ghost" size="sm" onClick={() => setEditing(a)}>Edit</Button><Button variant="ghost" size="sm" onClick={() => setDel(a)}>Remove</Button></div>
+              <div className="flex flex-row sm:flex-col items-stretch sm:items-end gap-1"><Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setEditing(a)}>Edit</Button><Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setDel(a)}>Remove</Button></div>
             </div>
           )))}
         {editing === 'new' && <AddressForm onSaved={saved} onCancel={() => setEditing(null)} />}
