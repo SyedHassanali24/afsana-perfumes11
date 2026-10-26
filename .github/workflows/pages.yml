@@ -33,8 +33,9 @@ jobs:
         run: npm run build
         env:
           VITE_API_ORIGIN: https://afsana-perfume11.netlify.app
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      - name: Prepare Pages artifact
+        run: |
+          touch dist/.nojekyll
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
