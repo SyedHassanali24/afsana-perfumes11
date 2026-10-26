@@ -44,7 +44,7 @@ async function main() {
     [models.Order, ['orderNumber'], 'Order number'],
     [models.Order, ['idempotencyKey'], 'Order idempotency key'],
     [models.Return, ['returnNumber'], 'Return number'],
-    [models.Cart, ['cartId'], 'Abandoned-cart cartId'],
+    [models.AbandonedCart, ['cartId'], 'Abandoned-cart cartId'],
   ];
 
   let failures = 0;
