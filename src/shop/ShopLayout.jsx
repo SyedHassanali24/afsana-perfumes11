@@ -7,6 +7,9 @@ import { Container } from './ui';
 import useApi from '../hooks/useApi';
 import { shopContentApi } from '../services';
 
+const isExternal = (url) => /^https?:\/\//i.test(String(url || ''));
+const SmartLink = ({ to, children, ...props }) => isExternal(to) ? <a href={to} {...props}>{children}</a> : <Link to={to} {...props}>{children}</Link>;
+
 const nav = [
   { to: '/shop', label: 'Shop' },
   { to: '/shop?gender=Men', label: 'For Him' },
@@ -56,7 +59,7 @@ export default function ShopLayout() {
     <div className="min-h-screen flex flex-col bg-bg text-ink">
       {announcement?.text && (
         <div className="bg-gold text-bg text-center text-xs sm:text-sm px-4 py-2">
-          {announcement.link ? <Link to={announcement.link} className="underline underline-offset-2">{announcement.text}</Link> : announcement.text}
+          {announcement.link ? <SmartLink to={announcement.link} className="underline underline-offset-2">{announcement.text}</SmartLink> : announcement.text}
         </div>
       )}
 
