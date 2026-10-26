@@ -109,6 +109,19 @@ async function main() {
     { $unwind: '$variant' },
     { $match: { $expr: { $ne: ['$productId', '$variant.productId'] } } },
   ]);
+  failures += await referenceCheck('inventoryTransactions.variantId', models.InventoryTransaction, [
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { variant: { $eq: [] } } },
+  ]);
+  failures += await referenceCheck('inventoryTransactions.productId', models.InventoryTransaction, [
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { product: { $eq: [] } } },
+  ]);
+  failures += await referenceCheck('inventoryTransactions.productId↔variant.productId', models.InventoryTransaction, [
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $unwind: '$variant' },
+    { $match: { $expr: { $ne: ['$productId', '$variant.productId'] } } },
+  ]);
   failures += await referenceCheck('purchaseOrders.supplierId', models.PurchaseOrder, [
     { $lookup: { from: models.Supplier.collection.name, localField: 'supplierId', foreignField: '_id', as: 'supplier' } },
     { $match: { 'supplier.0': { $exists: false } } },
