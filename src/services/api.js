@@ -40,6 +40,15 @@ function githubPagesMock(path, body, query = {}) {
     return Promise.reject(new ApiError(401, "UNAUTHENTICATED", "Not signed in."));
   }
   if (path === "/account/addresses") return Promise.reject(new ApiError(401, "UNAUTHENTICATED", "Sign in to use saved addresses."));
+  if (path === "/wishlist") {
+    try {
+      const ids = JSON.parse(localStorage.getItem("afsana_wishlist_v1") || "[]").map(String);
+      const products = DEMO_PRODUCTS.filter((p) => ids.includes(String(p.id)));
+      return Promise.resolve({ success: true, ids, products });
+    } catch {
+      return Promise.resolve({ success: true, ids: [], products: [] });
+    }
+  }
   if (path === "/products") {
     const q = String(query.q || "").trim().toLowerCase();
     let products = DEMO_PRODUCTS.filter((p) => {
