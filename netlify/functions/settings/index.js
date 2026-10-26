@@ -8,7 +8,7 @@ const Settings = require('../../../services/settingsService');
 const save = (key, schema) => ({ method: 'PUT', path: `/admin/${key}`, permission: ['settings', 'edit'], body: schema, reauth: true,
   handler: async ({ ctx, body }) => { const { confirmPassword, ...value } = body; return Settings.update(ctx, key, value); } });
 exports.handler = createHandler('settings', [
-  { method: 'GET', path: '/public', public: true, cache: 60, handler: () => Settings.getPublic() },
+  { method: 'GET', path: '/public', public: true, cache: 300, cacheTags: ['settings'], handler: () => Settings.getPublic() },
   { method: 'GET', path: '/admin', permission: ['settings', 'view'], handler: () => Settings.getAll() },
   save('store', S.settingsStore), save('bank', S.settingsBank), save('shipping', S.settingsShipping), save('returns', S.settingsReturns),
 ]);
