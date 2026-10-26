@@ -55,7 +55,7 @@ export default function StockAdjustDrawer({ open, item, onClose, onDone }) {
       <Drawer open={open} onClose={onClose} title={`${item.productName} · ${item.label}`}
         footer={<><Button variant="secondary" type="button" onClick={onClose}>Close</Button>{canAdjust && <Button type="submit" form="stock-adjust-form">Apply adjustment</Button>}</>}>
         <div className="space-y-5">
-          <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
             {[["On hand", item.current], ["Reserved", item.reserved], ["Available", item.available]].map(([l, v]) => (
               <div key={l} className="bg-bg rounded-sm py-3"><p className="text-xl text-ink font-display">{v}</p><p className="text-xs text-ink-muted">{l}</p></div>
             ))}
@@ -74,7 +74,7 @@ export default function StockAdjustDrawer({ open, item, onClose, onDone }) {
           ) : <p className="text-sm text-ink-muted">You can view stock but not change it.</p>}
 
           {can("inventory.edit") && (
-            <div className="border-t border-border pt-4 flex items-end gap-3">
+            <div className="border-t border-border pt-4 flex flex-col sm:flex-row sm:items-end gap-3">
               <div className="flex-1"><Field label="Low-stock alert level" hint="Shown as Low Stock at or below this many available units"><Input type="number" min="0" value={threshold} onChange={(e) => setThreshold(e.target.value)} /></Field></div>
               <Button variant="secondary" onClick={saveThreshold}>Save</Button>
             </div>
