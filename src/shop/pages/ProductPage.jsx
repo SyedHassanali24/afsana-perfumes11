@@ -46,7 +46,7 @@ export default function ProductPage() {
     ensureMeta('twitter:card', image ? 'summary_large_image' : 'summary');
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-    canonical.href = window.location.href.split('#')[0];
+    canonical.href = window.location.hash ? `${window.location.origin}${window.location.pathname}${window.location.hash}` : window.location.href;
     return () => {
       document.head.querySelector('meta[name="description"]')?.setAttribute('content', 'Afsana Perfumes — fragrances for every mood and moment.');
       document.head.querySelector('meta[property="og:type"]')?.remove();
