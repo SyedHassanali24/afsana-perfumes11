@@ -33,6 +33,13 @@ async function duplicateKeys(model, key, match) {
   ]);
 }
 
+async function referenceCheck(name, model, pipeline) {
+  const rows = await model.aggregate([...pipeline, { $count: 'count' }]);
+  const count = rows[0]?.count || 0;
+  if (count) console.error(`Reference integrity conflict(s) in ${name}: ${count}`);
+  return count;
+}
+
 async function main() {
   await connectDB();
   let failures = 0;
@@ -44,7 +51,28 @@ async function main() {
     console.error(`Duplicate unique-key conflict(s) in ${name}:`);
     for (const row of rows) console.error(JSON.stringify({ key: row._id, count: row.count }));
   }
-  if (failures) throw new Error(`Index preflight failed: ${failures} duplicate key group(s) detected. Resolve them before npm run db:indexes.`);
+  failures += await referenceCheck('orders.customerId', models.Order, [
+    { $match: { customerId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orderItems.orderId', models.OrderItem, [
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orderItems.productId', models.OrderItem, [
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orderItems.variantId', models.OrderItem, [
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { 'variant.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('payments.orderId', models.Payment, [
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  if (failures) throw new Error(`Index/reference preflight failed: ${failures} conflict(s) detected. Resolve them before npm run db:indexes.`);
   console.log('Index preflight OK: no duplicate values for declared unique indexes.');
 }
 
