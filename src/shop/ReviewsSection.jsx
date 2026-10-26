@@ -1,6 +1,6 @@
 // Product reviews for the storefront: summary + public reviews + (for signed-in buyers) a form.
 // Self-contained on purpose: drop <ReviewsSection slug={slug} /> into any product page design. API: reviewsApi (src/services).
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useApi from '../hooks/useApi';
 import { reviewsApi } from '../services';
@@ -17,6 +17,7 @@ const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric'
 export default function ReviewsSection({ slug }) {
   const { status } = useCustomer();
   const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [slug]);
   const list = useApi(() => reviewsApi.list(slug, { page, limit: 10 }), [slug, page]);
   const mine = useApi(() => (status === 'authed' ? reviewsApi.mine(slug) : Promise.resolve(null)), [slug, status]);
   const [form, setForm] = useState(null); // null = closed, otherwise { rating, title, text }
@@ -76,7 +77,7 @@ export default function ReviewsSection({ slug }) {
 
       {list.loading && !list.data ? <p className="text-sm text-ink-muted">Loading reviews…</p>
         : list.error ? <p className="text-sm text-danger">Reviews could not be loaded.</p>
-        : !list.data.reviews.length ? <p className="text-sm text-ink-muted">No reviews yet.</p>
+         : !list.data?.reviews?.length ? <p className="text-sm text-ink-muted">No reviews yet.</p>
         : (
           <ul className="space-y-5">
             {list.data.reviews.map((r) => (
