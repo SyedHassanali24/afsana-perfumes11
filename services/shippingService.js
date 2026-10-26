@@ -16,7 +16,7 @@ async function listAdmin(scopes, uid) {
   const ids = visibleOrders.map(o => String(o._id));
   const shipments = ids.length ? await Shipment.find({ orderId: { $in: ids } }).sort({ updatedAt: -1 }).limit(100).populate('courierId', 'name trackingUrlTemplate').lean() : [];
   const shippedIds = new Set((shipments || []).map(s => String(s.orderId)));
-  const readyOrders = visibleOrders.filter(o => ['Confirmed', 'Processing', 'Packed'].includes(o.status) && !shippedIds.has(String(o._id)));\n  const orders = visibleOrders;
+  const readyOrders = visibleOrders.filter(o => ['Confirmed', 'Processing', 'Packed'].includes(o.status) && !shippedIds.has(String(o._id))); /*\n  const orders = visibleOrders;
   const byOrder = new Map(orders.map(o => [String(o._id), o]));
   return { couriers: couriers.map(safeCourier), rates: rates.map(safeRate), shipments: shipments.map(s => ({ ...s, order: byOrder.get(String(s.orderId)) || null })), readyOrders };
 }
