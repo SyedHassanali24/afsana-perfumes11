@@ -6,7 +6,7 @@ const P = require('../../../services/productService');
 
 // Order matters: static '/admin/...' routes before the public '/:slug'.
 const routes = [
-  { method: 'GET', path: '/', public: true, query: S.publicProductsQuery, cache: 60, handler: ({ query }) => P.listPublic(query) },
+  { method: 'GET', path: '/', public: true, query: S.publicProductsQuery, cache: 60, cacheTags: ['products'], handler: ({ query }) => P.listPublic(query) },
 
   { method: 'GET', path: '/admin/list', permission: ['products', 'view'], query: S.adminProductsQuery,
     handler: async ({ query, ctx, scopes }) => redact(await P.listAdmin(query, scopes, ctx.user._id), ctx.perms.deniedFields) },
@@ -31,6 +31,6 @@ const routes = [
   { method: 'POST', path: '/admin/:id/restore', permission: ['products', 'restore'],
     handler: async ({ params, ctx, scopes }) => { await P.setDeleted(ctx, params.id, false, scopes); return {}; } },
 
-  { method: 'GET', path: '/:slug', public: true, cache: 60, handler: ({ params }) => P.getPublicBySlug(params.slug) },
+  { method: 'GET', path: '/:slug', public: true, cache: 60, cacheTags: ['products'], handler: ({ params }) => P.getPublicBySlug(params.slug) },
 ];
 exports.handler = createHandler('products', routes);
