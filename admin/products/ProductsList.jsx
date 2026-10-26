@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus, Pencil, Trash2, RotateCcw } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -17,8 +18,9 @@ const STATUSES = ["Draft", "Active", "Inactive", "Out of Stock", "Archived"];
 
 export default function ProductsList() {
   const { can } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState("active"); // 'active' | 'trash'
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -38,7 +40,7 @@ export default function ProductsList() {
 
   const rows = (data?.products || []).map(toRow);
   const pg = data?.pagination;
-  const resetPage = (fn) => (e) => { fn(e.target.value); setPage(1); };
+  const resetPage = (fn) => (e) => { fn(e.target.value); setPage(1); if (fn === setSearch) setSearchParams((prev) => { const next = new URLSearchParams(prev); const value = e.target.value.trim(); if (value) next.set("q", value); else next.delete("q"); return next; }, { replace: true }); };
   const flash = (type, text) => { setNotice({ type, text }); setTimeout(() => setNotice(null), 4000); };
 
   const restore = async (row) => {
