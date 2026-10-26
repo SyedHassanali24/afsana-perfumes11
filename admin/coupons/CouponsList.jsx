@@ -56,12 +56,12 @@ export default function CouponsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl text-ink">Coupons</h1>
           <p className="text-sm text-ink-muted mt-1">{pg ? `${pg.total} ${inTrash ? "in Trash" : pg.total === 1 ? "coupon" : "coupons"}` : "Discount codes shoppers can use at checkout."}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => { setTab(inTrash ? "active" : "trash"); setPage(1); }}>{inTrash ? "Back to coupons" : "Trash"}</Button>
           {!inTrash && can("coupons.create") && <Button icon={Plus} onClick={() => setDrawer({ open: true, coupon: null })}>Add coupon</Button>}
         </div>
@@ -69,10 +69,10 @@ export default function CouponsList() {
       {notice && <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}>{notice.text}</p>}
       <Card padded={false}>
         <div className="p-5 space-y-4">
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1"><Input placeholder="Search by code…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
             {!inTrash && (
-              <div className="w-48"><Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Filter by status">
+              <div className="w-full sm:w-48"><Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} aria-label="Filter by status">
                 <option value="">All statuses</option>{STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
               </Select></div>
             )}
