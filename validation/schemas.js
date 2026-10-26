@@ -78,7 +78,7 @@ const inventoryQuery = z.object({ q: z.string().trim().max(80).optional(), low: 
 const historyQuery = z.object({ variantId: objectId.optional(), type: z.enum(C.STOCK_TX_TYPES).optional(), ...paging });
 
 // ---------- orders ----------
-const phone = z.string().trim().regex(/^[0-9+\-\s]{10,15}$/, 'Enter a valid phone number');
+const phone = z.string().trim().regex(/^[0-9+\-\s]{10,15}$/, 'Enter a valid phone number').transform(normalizePhone);
 const checkoutBody = z.object({
   items: z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(20) })).min(1).max(30),
   customer: z.object({ name: z.string().trim().min(2).max(100), phone, email: z.string().email().max(200).optional().or(z.literal('')) }),
