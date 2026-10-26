@@ -215,12 +215,12 @@ async function issueRefund(ctx, id, { amount, method, reference, reason }, scope
     if (amount > cap) throw E.badRequest(`The most that can still be refunded on this order is ${pkr(cap)}.`);
 
     // Cap each refund by this return's actual value, not only the order-wide cap.
-    const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
+    const refundOrderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const otherReturns = await Return.find({ orderId: order._id, _id: { $ne: id } }).select('status items').session(session).lean();
-    const remaining = R.remainingByItem(orderItems, otherReturns);
+    const remaining = R.remainingByItem(refundOrderItems, otherReturns);
     const returnCap = R.suggestedRefund(
       order,
-      orderItems,
+      refundOrderItems,
       cur.items.map((i) => ({ orderItemId: i.orderItemId, quantity: i.quantity })),
       cur.reason,
       remaining,
