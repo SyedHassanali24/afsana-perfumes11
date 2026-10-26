@@ -30,7 +30,7 @@ exports.inspectUri = inspectUri;
 exports.handler = async () => {
   const env = process.env;
   const jwt = !env.JWT_SECRET ? 'missing' : env.JWT_SECRET.length < 32 ? 'too_short' : 'ok';
-  const checks = { MONGODB_URI: Boolean(env.MONGODB_URI), MONGODB_DB_NAME: Boolean(env.MONGODB_DB_NAME), JWT_SECRET: jwt === 'ok', SITE_URL: Boolean(env.SITE_URL) };
+  const checks = { MONGODB_URI: Boolean(env.MONGODB_URI), MONGODB_DB_NAME: Boolean(env.MONGODB_DB_NAME), JWT_SECRET: jwt === 'ok' };
   const out = {
     success: true, version: 'health-v2',                      // if you do not see "health-v2", Netlify is still running OLD code
     runningOn: { site: env.SITE_NAME || null, context: env.CONTEXT || null },
@@ -38,7 +38,6 @@ exports.handler = async () => {
   };
   const fixes = [];
   if (jwt !== 'ok') fixes.push(jwt === 'missing' ? 'JWT_SECRET khali hai ya Netlify ko mila hi nahi.' : 'JWT_SECRET 32 harf se chhota hai.');
-  if (!checks.SITE_URL) fixes.push('SITE_URL missing hai.');
   if (/[<>]/.test(env.MONGODB_URI || '')) fixes.push('MONGODB_URI mein < ya > hai: <db_password> ko asli password se badlein (brackets samet).');
   try {
     const mongoose = await connectDB();
