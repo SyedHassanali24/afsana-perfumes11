@@ -63,8 +63,8 @@ export default function ReturnsList() {
       </div>
 
       <Card padded={false}>
-        <div className="p-5 border-b border-border">
-          <div className="max-w-sm"><Input placeholder="Search return, order, name or phone…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
+        <div className="p-4 sm:p-5 border-b border-border">
+          <div className="w-full sm:max-w-sm"><Input placeholder="Search return, order, name or phone…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
         </div>
         <div className="p-5">
           {error ? (
