@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Sun, Moon, Monitor, LogOut } from "lucide-react";
 import NotificationBell from "./NotificationBell";
+import { useNavigate } from "react-router-dom";
 
 const THEME_CYCLE = ["system", "light", "dark"];
 const THEME_ICON = { system: Monitor, light: Sun, dark: Moon };
@@ -19,6 +20,8 @@ export default function Topbar({
   onLogout,
   onProfile,
 }) {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
   const [theme, setTheme] = useState(
     () => localStorage.getItem("afsana-theme") || "system"
   );
@@ -30,6 +33,8 @@ export default function Topbar({
     localStorage.setItem("afsana-theme", theme);
   }, [theme]);
 
+  const submitSearch = (e) => { e.preventDefault(); const q = query.trim(); if (q) navigate(`/admin/products?q=${encodeURIComponent(q)}`); };
+
   const cycleTheme = () => {
     const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
     setTheme(next);
@@ -38,15 +43,16 @@ export default function Topbar({
 
   return (
     <header className="h-16 border-b border-border bg-surface flex items-center gap-4 px-6 sticky top-0 z-10">
-      <div className="flex-1 max-w-md relative">
+      <form onSubmit={submitSearch} className="flex-1 max-w-md relative ml-10 md:ml-0" role="search">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
         <input
           type="search"
-          placeholder="Search orders, products, customers…"
-          onChange={(e) => onSearch?.(e.target.value)}
+          placeholder="Search products or SKU…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           className="w-full pl-9 pr-3 py-2 bg-bg border border-border rounded-sm text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:ring-1 focus:ring-gold"
         />
-      </div>
+      </form>
 
       <button
         onClick={cycleTheme}
