@@ -1,4 +1,5 @@
-// Distributed rate limiting when Upstash Redis is configured; local fallback keeps the API usable if Redis is unavailable.
+// Distributed rate limiting when Upstash Redis is configured. Local memory is only used when Redis is not configured.
+// In production, a configured-but-unavailable Redis must fail closed; otherwise each serverless instance could bypass the global limit.
 const buckets = new Map();
 const REDIS_URL = String(process.env.UPSTASH_REDIS_REST_URL || '').replace(/\/$/, '');
 const REDIS_TOKEN = String(process.env.UPSTASH_REDIS_REST_TOKEN || '');
@@ -28,8 +29,14 @@ async function hit(key, limit, windowMs, now = Date.now()) {
     if (count === 1) await redisCommand('pexpire', [redisKey, Math.max(1000, Math.ceil(windowMs))]);
     return count <= limit;
   } catch (err) {
-    console.error('Distributed rate-limit unavailable; using local fallback:', err?.message || err);
-    return localHit(key, limit, windowMs, now);
+    // A configured Redis failure cannot silently downgrade production to per-instance
+    // limiting. Keep local fallback available for explicit local/dev configurations only.
+    if (String(process.env.NETLIFY_DEV || '').toLowerCase() === 'true' || process.env.RATE_LIMIT_FAIL_OPEN === 'true') {
+      console.error('Distributed rate-limit unavailable; using local fallback:', err?.message || err);
+      return localHit(key, limit, windowMs, now);
+    }
+    console.error('Distributed rate-limit unavailable; failing closed:', err?.message || err);
+    return false;
   }
 }
 
