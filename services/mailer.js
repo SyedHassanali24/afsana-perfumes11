@@ -8,7 +8,8 @@ const provider = () => ({
 async function sendPasswordReset({ to, url }) {
   const { apiKey, from } = provider();
 
-  if (process.env.NODE_ENV !== 'production') {
+  const production = process.env.NODE_ENV === 'production' || process.env.CONTEXT === 'production';
+  if (!production) {
     console.info(`[mailer:dev] password reset for ${to}: ${url}`);
     return { sent: false, development: true };
   }
