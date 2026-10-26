@@ -312,6 +312,41 @@ async function main() {
     { $lookup: { from: models.User.collection.name, localField: 'by', foreignField: '_id', as: 'user' } },
     { $match: { 'user.0': { $exists: false } } },
   ]);
+  failures += await referenceCheck('media.uploadedBy', models.Media, [
+    { $match: { uploadedBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'uploadedBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('notifications.readBy', models.Notification, [
+    { $unwind: '$readBy' },
+    { $lookup: { from: models.User.collection.name, localField: 'readBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('expenses.createdBy', models.Expense, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('analyticsEvents.productId', models.AnalyticsEvent, [
+    { $match: { productId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('analyticsEvents.customerId', models.AnalyticsEvent, [
+    { $match: { customerId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('auditLogs.userId', models.AuditLog, [
+    { $match: { userId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'userId', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('settings.updatedBy', models.Setting, [
+    { $match: { updatedBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'updatedBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('orders.assignedTo', models.Order, [
     { $match: { assignedTo: { $exists: true, $ne: null } } },
     { $lookup: { from: models.User.collection.name, localField: 'assignedTo', foreignField: '_id', as: 'user' } },
