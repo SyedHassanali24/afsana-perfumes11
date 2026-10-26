@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "api": "netlify dev --functions netlify/functions",
     "db:seed": "node database/seed/index.js",
+    "db:indexes:preflight": "node database/indexes/preflight.js",
     "db:indexes": "node database/indexes/sync.js",
     "test": "node --test",
     "check": "node tools/check-syntax.js",
