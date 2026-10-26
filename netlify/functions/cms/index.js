@@ -17,5 +17,5 @@ const routes = RESOURCES.flatMap((r) => {
   ];
 });
 // Public read for the shop (live banners, FAQs, announcement bar). Static path, listed first.
-routes.unshift({ method: 'GET', path: '/public', public: true, cache: 60, handler: () => Cms.publicContent() });
+routes.unshift({ method: 'GET', path: '/public', public: true, cache: 120, cacheTags: ['cms'], handler: () => Cms.publicContent() });
 exports.handler = createHandler('cms', routes);
