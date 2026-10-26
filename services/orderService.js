@@ -38,7 +38,7 @@ async function shippingSettings() {
 async function placeOrder(input, cust) {
   // 1. merge duplicate lines, load real data from DB
   const qty = new Map();
-  for (const it of input.items) qty.set(String(it.variantId), (qty.get(String(it.variantId)) || 0) + Number(it.quantity || 1));
+  for (const it of input.items) qty.set(it.variantId, (qty.get(it.variantId) || 0) + it.quantity);
   const ids = [...qty.keys()];
   const variants = await ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean();
   const products = await Product.find({ _id: { $in: variants.map((v) => v.productId) }, status: 'Active', isDeleted: false }).lean();

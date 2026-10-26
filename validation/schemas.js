@@ -55,7 +55,6 @@ const productPatch = z.object(productBase).partial();
 
 const publicProductsQuery = z.object({
   q: z.string().trim().max(80).optional(), category: z.string().max(100).optional(), collection: z.string().max(100).optional(), brand: z.string().max(100).optional(),
-  family: z.string().max(100).optional(), note: z.string().trim().max(60).optional(),
   gender: z.enum(['Men', 'Women', 'Unisex']).optional(),
   minPrice: num(z.number().min(0).optional()), maxPrice: num(z.number().min(0).optional()),
   sort: z.enum(['newest', 'price_asc', 'price_desc', 'popular']).optional(), ...paging,

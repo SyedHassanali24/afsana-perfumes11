@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Heart, Check, Sparkles, Star, ShieldCheck, Truck, Clock, ArrowRight, Share2, Layers } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { Heart, Check } from 'lucide-react';
 import useApi from '../../hooks/useApi';
 import { productsApi } from '../../services';
+import Button from '../../../admin/components/Button';
 import { Container, StateBox, QtyStepper, Placeholder } from '../ui';
 import ProductCard from '../ProductCard';
 import ReviewsSection from '../ReviewsSection';
@@ -11,392 +12,146 @@ import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
 import useTitle from '../useTitle';
 
+const NoteRow = ({ label, list }) => (list?.length ? <div className="flex gap-3 text-sm"><span className="w-16 text-ink-muted">{label}</span><span>{list.join(', ')}</span></div> : null);
+
 export default function ProductPage() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const { data, loading, error, reload } = useApi(() => productsApi.bySlug(slug), [slug]);
   const { add } = useCart();
   const { has, toggle } = useWishlist();
-
   const [vid, setVid] = useState(null);
   const [qty, setQty] = useState(1);
   const [img, setImg] = useState(0);
   const [added, setAdded] = useState(false);
-  const [activeTab, setActiveTab] = useState('notes');
-
   const p = data?.product;
   const variants = data?.variants || [];
-  useTitle(p?.seo?.title || p?.name ? `${p.name} | Afsana Haute Parfumerie` : 'Afsana Fragrance');
+  useTitle(p?.seo?.title || p?.name);
 
   useEffect(() => {
-    if (variants.length) {
-      setVid((variants.find((v) => v.available > 0) || variants[0]).id);
-      setQty(1);
-      setImg(0);
-      setAdded(false);
-    }
-  }, [data]);
+    if (!p) return undefined;
+    const ensureMeta = (name, content, property = false) => {
+      const attr = property ? 'property' : 'name';
+      let node = document.head.querySelector(`meta[${attr}=\"${name}\"]`);
+      if (!node) { node = document.createElement('meta'); node.setAttribute(attr, name); document.head.appendChild(node); }
+      node.setAttribute('content', content || '');
+      return node;
+    };
+    const description = p.seo?.description || p.content?.shortDescription || `Discover ${p.name} at Afsana Perfumes.`;
+    const image = p.media?.find((item) => item.kind === 'main')?.url || p.media?.[0]?.url || '';
+    ensureMeta('description', description.slice(0, 300));
+    ensureMeta('og:type', 'product', true);
+    ensureMeta('og:title', p.seo?.title || p.name, true);
+    ensureMeta('og:description', description.slice(0, 300), true);
+    ensureMeta('og:image', image, true);
+    ensureMeta('twitter:card', image ? 'summary_large_image' : 'summary');
+    let canonical = document.head.querySelector('link[rel=\"canonical\"]');
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = window.location.href.split('#')[0];
+    return () => {
+      document.head.querySelector('meta[name=\"description\"]')?.setAttribute('content', 'Afsana Perfumes — fragrances for every mood and moment.');
+      document.head.querySelector('meta[property=\"og:type\"]')?.remove();
+      document.head.querySelector('meta[property=\"og:title\"]')?.remove();
+      document.head.querySelector('meta[property=\"og:description\"]')?.remove();
+      document.head.querySelector('meta[property=\"og:image\"]')?.remove();
+      document.head.querySelector('meta[name=\"twitter:card\"]')?.remove();
+      document.head.querySelector('link[rel=\"canonical\"]')?.remove();
+    };
+  }, [p]);
+
+  useEffect(() => { // pick the first size that is in stock
+    if (variants.length) { setVid((variants.find((v) => v.available > 0) || variants[0]).id); setQty(1); setImg(0); setAdded(false); }
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const v = variants.find((x) => x.id === vid);
   const price = v && (v.salePrice > 0 && v.salePrice < v.price ? v.salePrice : v.price);
-  const media = [...(p?.media || [])].sort((a, b) =>
-    a.kind === 'main' ? -1 : b.kind === 'main' ? 1 : (a.sortOrder || 0) - (b.sortOrder || 0)
-  );
+  const media = [...(p?.media || [])].sort((a, b) => (a.kind === 'main' ? -1 : b.kind === 'main' ? 1 : (a.sortOrder || 0) - (b.sortOrder || 0)));
   const soldOut = !v || v.available <= 0;
 
-  const handleAddToCart = () => {
-    if (!v) return;
-    add(v.id, qty, true);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
-  };
-
-  const handleBuyNow = () => {
-    if (!v) return;
-    add(v.id, qty, false);
-    navigate('/checkout');
-  };
+  const addToCart = () => { add(v.id, qty); setAdded(true); };
 
   return (
-    <div className="py-8 sm:py-14">
-      <Container>
-        <StateBox
-          loading={loading}
-          error={error?.status === 404 ? { message: 'This haute fragrance could not be located in our private archive.' } : error}
-          onRetry={reload}
-        >
-          {p && (
-            <>
-              {/* Breadcrumb Navigation */}
-              <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-ink-muted uppercase tracking-wider mb-8">
-                <Link to="/" className="hover:text-gold transition-colors">Afsana</Link>
-                <span>/</span>
-                <Link to="/shop" className="hover:text-gold transition-colors">Boutique</Link>
-                <span>/</span>
-                {p.category?.name && (
-                  <>
-                    <Link to={`/shop?category=${p.category.slug}`} className="hover:text-gold transition-colors">
-                      {p.category.name}
-                    </Link>
-                    <span>/</span>
-                  </>
-                )}
-                <span className="text-ink truncate font-medium">{p.name}</span>
-              </nav>
-
-              {/* Main Product Showcase (2-Columns) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-start">
-                {/* Left: Gallery Column */}
-                <div className="lg:col-span-7 space-y-4">
-                  {/* Primary Flacon Image */}
-                  <div className="aspect-[4/5] rounded-sm overflow-hidden border border-border bg-surface-raised relative group shadow-luxury">
-                    {media[img] ? (
-                      <img
-                        src={media[img].url}
-                        alt={media[img].alt || p.name}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-                    ) : (
-                      <Placeholder className="w-full h-full" />
-                    )}
-
-                    {/* Concentration Floating Tag */}
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="px-3 py-1 rounded-sm bg-bg/95 backdrop-blur-md text-gold text-xs font-semibold uppercase tracking-wider border border-gold/30">
-                        {p.fragrance?.concentration || 'Extrait de Parfum'}
-                      </span>
-                    </div>
-
-                    {/* Wishlist Button */}
-                    <button
-                      type="button"
-                      onClick={() => toggle(p._id || p.id)}
-                      aria-pressed={has(p._id || p.id)}
-                      aria-label={has(p._id || p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                      className={`absolute right-4 top-4 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        has(p._id || p.id)
-                          ? 'bg-gold text-bg shadow-md'
-                          : 'bg-bg/85 backdrop-blur-md text-ink hover:text-gold border border-border'
-                      }`}
-                    >
-                      <Heart className="w-4 h-4" fill={has(p._id || p.id) ? 'currentColor' : 'none'} />
-                    </button>
-                  </div>
-
-                  {/* Thumbnail Row */}
-                  {media.length > 1 && (
-                    <div className="flex gap-3 overflow-x-auto pb-1">
-                      {media.map((m, i) => (
-                        <button
-                          key={m.url + i}
-                          type="button"
-                          onClick={() => setImg(i)}
-                          aria-label={`View flacon photograph ${i + 1}`}
-                          className={`w-20 h-24 rounded-sm overflow-hidden border flex-shrink-0 transition-all ${
-                            i === img ? 'border-gold ring-1 ring-gold shadow-md' : 'border-border opacity-70 hover:opacity-100'
-                          }`}
-                        >
-                          <img src={m.url} alt="" className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Maison Assurance Banner */}
-                  <div className="p-5 rounded-sm bg-surface-raised border border-border grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-ink-muted">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <ShieldCheck className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-ink">Discovery Guarantee</p>
-                        <p className="text-[11px] leading-relaxed mt-0.5">
-                          Every flacon comes with a 2ml tester vial. Try the sample first; return unopened flacon within 7 days for a 100% full refund.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gold/10 text-gold flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Truck className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-ink">Express Courier Across Pakistan</p>
-                        <p className="text-[11px] leading-relaxed mt-0.5">
-                          Complimentary on orders above PKR 5,000. Delivered in discreet, velvet-lined tamper-proof presentation boxes.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+    <Container>
+      <StateBox loading={loading} error={error?.status === 404 ? { message: 'This perfume could not be found.' } : error} onRetry={reload}>
+        {p && (
+          <>
+            <div className="grid gap-10 md:grid-cols-2">
+              <div>
+                <div className="aspect-square rounded-md border border-border bg-surface overflow-hidden">
+                  {media[img] ? <img src={media[img].url} alt={media[img].alt || p.name} className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}
                 </div>
-
-                {/* Right: Product Spec Column */}
-                <div className="lg:col-span-5 space-y-6">
-                  {/* Category & Rating */}
-                  <div className="flex items-center justify-between text-xs uppercase tracking-widest text-ink-muted">
-                    <span>{p.fragrance?.gender || 'Haute Parfumerie'} · {p.fragrance?.scentType || 'Artisanal'}</span>
-                    {p.ratingAvg > 0 && (
-                      <span className="flex items-center gap-1.5 text-gold font-medium">
-                        <Star className="w-4 h-4 fill-gold text-gold" />
-                        <span className="text-sm font-semibold">{p.ratingAvg.toFixed(1)}</span>
-                        <span className="text-ink-muted">({p.ratingCount} reviews)</span>
-                      </span>
-                    )}
+                {media.length > 1 && (
+                  <div className="flex gap-2 mt-3 overflow-x-auto">
+                    {media.map((m, i) => (
+                      <button key={m.url + i} type="button" onClick={() => setImg(i)} aria-label={`Show picture ${i + 1}`} aria-current={i === img}
+                        className={`w-16 h-16 shrink-0 rounded-sm overflow-hidden border ${i === img ? 'border-gold' : 'border-border'}`}><img src={m.url} alt="" className="w-full h-full object-cover" /></button>
+                    ))}
                   </div>
+                )}
+              </div>
 
-                  {/* Title & Tagline */}
-                  <div>
-                    <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-tight">
-                      {p.name}
-                    </h1>
-                    <p className="text-xs uppercase tracking-[0.25em] text-gold font-semibold mt-1.5">
-                      Flacon de Prestige · Limited Allocation
-                    </p>
-                  </div>
+              <div>
+                {p.fragrance?.gender && <p className="text-xs uppercase tracking-widest text-ink-muted">{p.fragrance.gender}{p.fragrance.concentration ? ` · ${p.fragrance.concentration}` : ''}</p>}
+                <h1 className="font-display text-4xl mt-1">{p.name}</h1>
+                {p.content?.shortDescription && <p className="text-ink-muted mt-3">{p.content.shortDescription}</p>}
 
-                  {/* Short Description */}
-                  {p.content?.shortDescription && (
-                    <p className="text-xs sm:text-sm text-ink-muted leading-relaxed font-light">
-                      {p.content.shortDescription}
-                    </p>
-                  )}
-
-                  {/* Size Selector */}
-                  {variants.length > 0 && (
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="uppercase tracking-wider font-semibold text-ink-muted">Choose Volume / Flacon Size</span>
-                        <span className="text-gold font-medium">Concentration: 32% Oil</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        {variants.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => { setVid(item.id); setQty(1); setAdded(false); }}
-                            className={`p-3.5 rounded-sm border text-left transition-all relative ${
-                              item.id === vid
-                                ? 'border-gold bg-gold/10 text-gold shadow-sm'
-                                : 'border-border bg-surface text-ink hover:border-gold/50'
-                            } ${item.available <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-display text-sm font-semibold">{item.label || `${item.sizeMl}ml`}</span>
-                              <span className="text-xs font-semibold">{money(item.salePrice || item.price)}</span>
-                            </div>
-                            <p className="text-[10px] text-ink-muted mt-1">
-                              {item.available <= 0 ? 'Sold Out' : item.available <= 5 ? `Only ${item.available} Left` : 'In Stock'}
-                            </p>
+                {variants.length === 0 ? <p className="mt-6 text-sm text-ink-muted">Currently unavailable.</p> : (
+                  <>
+                    <div className="mt-6">
+                      <p className="text-sm mb-2">Size</p>
+                      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
+                        {variants.map((x) => (
+                          <button key={x.id} type="button" role="radio" aria-checked={x.id === vid} onClick={() => { setVid(x.id); setQty(1); setAdded(false); }}
+                            className={`px-4 py-2 rounded-sm border text-sm ${x.id === vid ? 'border-gold bg-gold-soft text-gold' : 'border-border'} ${x.available <= 0 ? 'opacity-50' : ''}`}>
+                            {x.label || `${x.sizeMl}ml`}{x.available <= 0 ? ' · sold out' : ''}
                           </button>
                         ))}
                       </div>
                     </div>
-                  )}
+                    <div className="mt-5 flex items-baseline gap-3">
+                      <span className="font-display text-3xl">{money(price)}</span>
+                      {price < v.price && <span className="text-ink-muted line-through">{money(v.price)}</span>}
+                    </div>
+                    <p className={`text-sm mt-1 ${soldOut ? 'text-danger' : v.available <= 5 ? 'text-warning' : 'text-success'}`}>{soldOut ? 'Sold out' : v.available <= 5 ? `Only ${v.available} left` : 'In stock'}</p>
 
-                  {/* Price Row */}
-                  <div className="pt-2 flex items-baseline gap-4">
-                    <span className="font-display text-3xl sm:text-4xl text-gold font-normal">
-                      {money(price)}
-                    </span>
-                    {v && v.salePrice > 0 && v.salePrice < v.price && (
-                      <span className="text-sm text-ink-muted line-through font-mono">
-                        {money(v.price)}
-                      </span>
-                    )}
-                    <span className="text-xs text-ink-muted uppercase tracking-wider">
-                      Includes luxury presentation box
-                    </span>
-                  </div>
-
-                  {/* Quantity Stepper & CTA Buttons */}
-                  <div className="space-y-3 pt-2">
-                    <div className="flex gap-3">
-                      <div className="w-32">
-                        <QtyStepper value={qty} onChange={setQty} max={v?.available || 1} />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleAddToCart}
-                        disabled={soldOut}
-                        className="flex-1 py-3.5 px-6 rounded-sm bg-gold hover:bg-gold-hover disabled:opacity-40 text-bg text-xs font-semibold uppercase tracking-widest transition-all shadow-md active:scale-[0.99]"
-                      >
-                        {soldOut ? 'Sold Out' : added ? 'Added to Bag ✓' : 'Add to Bag'}
+                    <div className="mt-6 flex flex-wrap items-center gap-3">
+                      <QtyStepper value={qty} onChange={setQty} max={v?.available || 1} />
+                      <Button onClick={addToCart} disabled={soldOut} className="flex-1 sm:flex-none sm:px-10">Add to cart</Button>
+                      <button type="button" onClick={() => toggle(p._id)} aria-pressed={has(p._id)} aria-label={has(p._id) ? 'Remove from wishlist' : 'Add to wishlist'} className="p-2.5 border border-border rounded-sm hover:text-gold">
+                        <Heart className="w-4 h-4" fill={has(p._id) ? 'currentColor' : 'none'} />
                       </button>
                     </div>
+                    {added && <p role="status" className="mt-3 text-sm text-success flex items-center gap-2"><Check className="w-4 h-4" /> Added to your cart. <Link to="/cart" className="underline">View cart</Link></p>}
+                  </>
+                )}
 
-                    <button
-                      type="button"
-                      onClick={handleBuyNow}
-                      disabled={soldOut}
-                      className="w-full py-3 px-6 rounded-sm border border-gold hover:bg-gold/10 disabled:opacity-40 text-gold text-xs font-semibold uppercase tracking-widest transition-colors"
-                    >
-                      Instant Express Checkout
-                    </button>
+                {(p.notes?.top?.length || p.notes?.heart?.length || p.notes?.base?.length) ? (
+                  <div className="mt-8 space-y-2 border-t border-border pt-6">
+                    <h2 className="font-display text-lg mb-2">Fragrance notes</h2>
+                    <NoteRow label="Top" list={p.notes.top} /><NoteRow label="Heart" list={p.notes.heart} /><NoteRow label="Base" list={p.notes.base} />
                   </div>
-
-                  {/* Olfactive Performance Metrics */}
-                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border text-xs">
-                    <div className="p-3 bg-surface-raised border border-border rounded-sm">
-                      <p className="text-[10px] uppercase tracking-wider text-ink-muted">Longevity on Skin</p>
-                      <p className="font-display text-sm font-semibold text-ink mt-0.5">
-                        {p.fragrance?.longevity || '14 to 16+ Hours'}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-surface-raised border border-border rounded-sm">
-                      <p className="text-[10px] uppercase tracking-wider text-ink-muted">Sillage & Projection</p>
-                      <p className="font-display text-sm font-semibold text-ink mt-0.5">
-                        {p.fragrance?.projection || 'Radiating & Magnetic'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Tabbed Technical Breakdown */}
-                  <div className="pt-4 border-t border-border">
-                    <div className="flex border-b border-border text-xs uppercase tracking-wider">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('notes')}
-                        className={`pb-2.5 px-3 font-semibold transition-colors border-b-2 ${
-                          activeTab === 'notes' ? 'border-gold text-gold' : 'border-transparent text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        Olfactive Notes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('story')}
-                        className={`pb-2.5 px-3 font-semibold transition-colors border-b-2 ${
-                          activeTab === 'story' ? 'border-gold text-gold' : 'border-transparent text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        Maison Story
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('usage')}
-                        className={`pb-2.5 px-3 font-semibold transition-colors border-b-2 ${
-                          activeTab === 'usage' ? 'border-gold text-gold' : 'border-transparent text-ink-muted hover:text-ink'
-                        }`}
-                      >
-                        Application & Seasons
-                      </button>
-                    </div>
-
-                    <div className="pt-4 text-xs text-ink-muted leading-relaxed">
-                      {activeTab === 'notes' && (
-                        <div className="space-y-4">
-                          {p.notes?.top?.length > 0 && (
-                            <div>
-                              <p className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-1">Top Notes (Opening 0–30 min)</p>
-                              <p className="text-ink">{p.notes.top.join(' · ')}</p>
-                            </div>
-                          )}
-                          {p.notes?.heart?.length > 0 && (
-                            <div>
-                              <p className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-1">Heart Notes (Core 30 min–4 hrs)</p>
-                              <p className="text-ink">{p.notes.heart.join(' · ')}</p>
-                            </div>
-                          )}
-                          {p.notes?.base?.length > 0 && (
-                            <div>
-                              <p className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-1">Base Notes (Dry-down 4–16 hrs)</p>
-                              <p className="text-ink">{p.notes.base.join(' · ')}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {activeTab === 'story' && (
-                        <p className="whitespace-pre-line text-ink/90">
-                          {p.content?.fullDescription || p.content?.shortDescription || 'Crafted with master French noses and authentic aged essences.'}
-                        </p>
-                      )}
-
-                      {activeTab === 'usage' && (
-                        <div className="space-y-3">
-                          <p>
-                            <strong>Ideal Seasons:</strong> {p.fragrance?.seasons?.join(', ') || 'Autumn, Winter, Gala Evenings'}
-                          </p>
-                          <p>
-                            <strong>Occasions:</strong> {p.fragrance?.occasions?.join(', ') || 'Formal gatherings, weddings, and signature daily presence'}
-                          </p>
-                          <p className="text-[11px] italic">
-                            Tip: For optimal projection, apply 2-3 sprays to pulse points (base of the neck, wrists, and collarbone). Do not rub the wrists together, as this breaks down the top notes.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                ) : null}
+                {(p.fragrance?.longevity || p.fragrance?.projection || p.fragrance?.seasons?.length) ? (
+                  <dl className="mt-6 grid grid-cols-2 gap-y-2 text-sm">
+                    {p.fragrance.longevity && <><dt className="text-ink-muted">Longevity</dt><dd>{p.fragrance.longevity}</dd></>}
+                    {p.fragrance.projection && <><dt className="text-ink-muted">Projection</dt><dd>{p.fragrance.projection}</dd></>}
+                    {p.fragrance.seasons?.length > 0 && <><dt className="text-ink-muted">Best for</dt><dd>{p.fragrance.seasons.join(', ')}</dd></>}
+                  </dl>
+                ) : null}
+                {p.content?.fullDescription && <div className="mt-6 border-t border-border pt-6"><h2 className="font-display text-lg mb-2">About this fragrance</h2><p className="text-sm text-ink-muted whitespace-pre-line">{p.content.fullDescription}</p></div>}
               </div>
+            </div>
 
-              {/* Verified Customer Reviews Section */}
-              <div className="mt-20 pt-16 border-t border-border">
-                <ReviewsSection slug={slug} />
-              </div>
+            <ReviewsSection slug={slug} />
 
-              {/* Related Parfums Row */}
-              {data.related?.length > 0 && (
-                <section className="mt-20 pt-16 border-t border-border">
-                  <div className="flex items-end justify-between mb-8">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.25em] text-gold font-medium mb-1">Complementary Creations</p>
-                      <h2 className="font-display text-2xl sm:text-3xl tracking-tight">You May Also Admire</h2>
-                    </div>
-                    <Link to="/shop" className="text-xs uppercase tracking-widest font-semibold text-gold hover:underline">
-                      View Boutique
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                    {data.related.map((r) => (
-                      <ProductCard key={r._id || r.id} product={r} />
-                    ))}
-                  </div>
-                </section>
-              )}
-            </>
-          )}
-        </StateBox>
-      </Container>
-    </div>
+            {data.related?.length > 0 && (
+              <section className="mt-16">
+                <h2 className="font-display text-2xl mb-6">You may also like</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">{data.related.map((r) => <ProductCard key={r._id} product={r} />)}</div>
+              </section>
+            )}
+          </>
+        )}
+      </StateBox>
+    </Container>
   );
 }

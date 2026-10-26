@@ -9,10 +9,5 @@ export const BANK_NOTE = 'Our team will contact you after you place the order wi
 export const cardOf = (p) => ({
   id: String(p.id || p._id), slug: p.slug, name: p.name, priceFrom: p.priceFrom, inStock: p.inStock,
   gender: p.gender || (p.fragrance && p.fragrance.gender),
-  notes: p.notes || null,
-  tags: p.tags || [],
-  ratingAvg: p.ratingAvg || 0,
-  ratingCount: p.ratingCount || 0,
-  profile: p.profile || null,
   image: p.image || (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null,
 });

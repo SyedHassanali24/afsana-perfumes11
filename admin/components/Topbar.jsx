@@ -57,17 +57,6 @@ export default function Topbar({
         <ThemeIcon className="w-4.5 h-4.5" />
       </button>
 
-      <a
-        href="/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-xs text-ink-muted hover:text-gold hover:border-gold transition-colors"
-        title="Open Live Boutique"
-      >
-        <span>View Storefront</span>
-        <span className="text-[10px]">↗</span>
-      </a>
-
       <NotificationBell />
 
       <div className="flex items-center gap-2.5 pl-3 border-l border-border">

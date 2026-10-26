@@ -31,23 +31,11 @@ async function listPublic(q) {
   if (q.category) { const c = await Category.findOne({ slug: q.category, isDeleted: false }); filter.categoryId = c ? c._id : null; }
   if (q.collection) { const c = await Collection.findOne({ slug: q.collection, isDeleted: false }); filter.collectionIds = c ? c._id : null; }
   if (q.brand) { const b = await Brand.findOne({ slug: q.brand, isDeleted: false }); filter.brandId = b ? b._id : null; }
-  if (q.family) { const f = await FragranceFamily.findOne({ slug: q.family, isDeleted: false }); filter['fragrance.familyId'] = f ? f._id : null; }
   if (q.gender) filter['fragrance.gender'] = q.gender;
-  if (q.note) {
-    const rx = new RegExp(escapeRegex(q.note), 'i');
-    filter.$or = [
-      { 'notes.top': rx },
-      { 'notes.heart': rx },
-      { 'notes.base': rx },
-      { tags: rx },
-      { name: rx },
-      { 'content.shortDescription': rx },
-    ];
-  }
   if (q.minPrice !== undefined || q.maxPrice !== undefined) filter.priceFrom = { ...(q.minPrice !== undefined && { $gte: q.minPrice }), ...(q.maxPrice !== undefined && { $lte: q.maxPrice }) };
   let sort = { createdAt: -1 };
   if (q.sort === 'price_asc') sort = { priceFrom: 1 }; else if (q.sort === 'price_desc') sort = { priceFrom: -1 }; else if (q.sort === 'popular') sort = { ratingCount: -1 };
-  let projection = 'name slug priceFrom media tags ratingAvg ratingCount fragrance.gender categoryId notes profile';
+  let projection = 'name slug priceFrom media tags ratingAvg ratingCount fragrance.gender categoryId';
   if (q.q) { filter.$text = { $search: q.q }; projection += ' score'; sort = { score: { $meta: 'textScore' } }; }
   const [rows, total] = await Promise.all([
     Product.find(filter, q.q ? { score: { $meta: 'textScore' }, ...Object.fromEntries(projection.split(' ').map((f) => [f, 1])) } : projection).sort(sort).skip(skip).limit(limit).lean(),
@@ -57,10 +45,7 @@ async function listPublic(q) {
   return {
     products: rows.map((p) => ({
       id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, tags: p.tags, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount,
-      gender: p.fragrance && p.fragrance.gender,
-      notes: p.notes || null,
-      profile: p.profile || null,
-      image: (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null,
+      gender: p.fragrance && p.fragrance.gender, image: (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null,
       inStock: ((stock.get(String(p._id)) || {}).available || 0) > 0,
     })),
     pagination: pageMeta(total, page, limit),

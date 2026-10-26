@@ -1,118 +1,78 @@
 /*
-  Afsana Perfumes — 2026 Haute Parfumerie Design System
+  Afsana Perfumes — design tokens
+  Import once in your app entry (e.g. src/main.jsx: import "./styles/tokens.css")
+  Also add these two Google Fonts links to your index.html <head>:
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 */
 
 :root {
-  /* Warm Alabaster Light Mode */
-  --bg: #FBF9F5;
+  /* Light mode */
+  --bg: #F7F5EF;
   --surface: #FFFFFF;
-  --surface-raised: #F5F1E8;
-  --border: #E8E2D5;
-  --border-light: #F0EBE0;
-  --ink: #11130E;
-  --ink-muted: #6B685C;
-  --ink-subtle: #969385;
-  --gold: #A68038;
-  --gold-hover: #BF9645;
-  --gold-soft: #F5EEDD;
-  --gold-border: rgba(166, 128, 56, 0.35);
-  --success: #3E7348;
-  --success-soft: #E5EFE6;
-  --danger: #A43B2A;
-  --danger-soft: #F6E7E4;
-  --warning: #947228;
-  --warning-soft: #F7EECD;
+  --surface-raised: #FFFFFF;
+  --border: #E4E0D4;
+  --ink: #14140F;
+  --ink-muted: #6B6A5E;
+  --gold: #9A7B3F;
+  --gold-soft: #EFE6D2;
+  --success: #4D7A55;
+  --success-soft: #E4EEE2;
+  --danger: #A24936;
+  --danger-soft: #F3E3DE;
+  --warning: #92702C;
+  --warning-soft: #F3E7D0;
 
-  --font-display: "Fraunces", "Cormorant Garamond", Georgia, serif;
-  --font-editorial: "Cormorant Garamond", Georgia, serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 14px;
-  --shadow-card: 0 4px 20px -2px rgba(17, 19, 14, 0.05), 0 2px 6px -1px rgba(17, 19, 14, 0.03);
-  --shadow-luxury: 0 20px 40px -10px rgba(17, 19, 14, 0.08), 0 0 1px 1px rgba(166, 128, 56, 0.15);
-  --shadow-glow: 0 0 30px rgba(166, 128, 56, 0.2);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --shadow-card: 0 1px 2px rgba(20, 20, 15, 0.04), 0 1px 1px rgba(20, 20, 15, 0.03);
 }
 
-:root[data-theme="dark"],
-:root:not([data-theme="light"]) {
-  /* Onyx Noir Luxury Dark Mode (Default) */
-  --bg: #0B0D09;
-  --surface: #121510;
-  --surface-raised: #181C15;
-  --border: #23271D;
-  --border-light: #2C3325;
-  --ink: #F7F5EE;
-  --ink-muted: #A3A192;
-  --ink-subtle: #6D6B5F;
-  --gold: #D4AF37;
-  --gold-hover: #E5C358;
-  --gold-soft: #242013;
-  --gold-border: rgba(212, 175, 55, 0.3);
-  --success: #7EA682;
-  --success-soft: #1B291D;
-  --danger: #CF6F5C;
-  --danger-soft: #2E1B18;
-  --warning: #DEB76A;
-  --warning-soft: #2B2414;
-
-  --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.05);
-  --shadow-luxury: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 1px 1px rgba(212, 175, 55, 0.25);
-  --shadow-glow: 0 0 40px rgba(212, 175, 55, 0.25);
+:root[data-theme="dark"] {
+  --bg: #12140F;
+  --surface: #191C15;
+  --surface-raised: #1F231B;
+  --border: #2C3025;
+  --ink: #EDEAE2;
+  --ink-muted: #9B9A8B;
+  --gold: #C6A15B;
+  --gold-soft: #2A2515;
+  --success: #8FB08F;
+  --success-soft: #1E2A1E;
+  --danger: #D08468;
+  --danger-soft: #2E1D17;
+  --warning: #D4AE6A;
+  --warning-soft: #2C2413;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-* {
-  border-color: var(--border);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --bg: #12140F;
+    --surface: #191C15;
+    --surface-raised: #1F231B;
+    --border: #2C3025;
+    --ink: #EDEAE2;
+    --ink-muted: #9B9A8B;
+    --gold: #C6A15B;
+    --gold-soft: #2A2515;
+    --success: #8FB08F;
+    --success-soft: #1E2A1E;
+    --danger: #D08468;
+    --danger-soft: #2E1D17;
+    --warning: #D4AE6A;
+    --warning-soft: #2C2413;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.2);
+  }
 }
 
 body {
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
-  letter-spacing: -0.01em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Custom Luxury Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gold);
-}
-
-/* Luxury animations and utility classes */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes goldShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.gold-gradient-text {
-  background: linear-gradient(135deg, #F3E6C8 0%, #D4AF37 50%, #AA8028 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gold-border-glow {
-  border-color: var(--gold-border);
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.12);
 }

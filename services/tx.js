@@ -1,31 +1,8 @@
 const mongoose = require('mongoose');
-
-// Runs fn(session) in a MongoDB transaction (Atlas replica set).
-// Falls back to direct execution when running on a standalone single-node instance.
+// Runs fn(session) in a MongoDB transaction (Atlas replica set). NOTE: fn may be retried -> all writes must use `session`.
 async function withTx(fn) {
-  let session = null;
-  try {
-    session = await mongoose.startSession();
-  } catch {
-    return fn(null);
-  }
-
-  try {
-    let out;
-    try {
-      await session.withTransaction(async () => {
-        out = await fn(session);
-      });
-      return out;
-    } catch (txErr) {
-      if (txErr.message && /replica set|Transaction numbers|transactions are not supported/i.test(txErr.message)) {
-        return await fn(null);
-      }
-      throw txErr;
-    }
-  } finally {
-    if (session) session.endSession();
-  }
+  const session = await mongoose.startSession();
+  try { let out; await session.withTransaction(async () => { out = await fn(session); }); return out; }
+  finally { session.endSession(); }
 }
-
 module.exports = { withTx };
