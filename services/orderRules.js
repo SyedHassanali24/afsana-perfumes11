@@ -3,7 +3,9 @@
 
 // (b) Once money has been (partly) refunded, the refund flow owns the payment status; the payment endpoint must not touch it.
 const PAYMENT_LOCKED = ['Refunded', 'Partially Refunded'];
+const PAYMENT_TRANSITIONS = { Pending: ['Paid', 'Failed'], Failed: ['Pending', 'Paid'], Paid: [] };
 const canEditPayment = (paymentStatus) => !PAYMENT_LOCKED.includes(paymentStatus);
+const canSetPayment = (from, to) => from === to || (PAYMENT_TRANSITIONS[from] || []).includes(to);
 
 // Customers may cancel only before staff confirm the order. Enforced server-side.
 const canCustomerCancel = (status) => status === 'New';
@@ -24,4 +26,4 @@ function searchFields(denied) {
   return d.has('customer.phone') ? ['orderNumber', 'customer.name'] : ['orderNumber', 'customer.name', 'customer.phone'];
 }
 
-module.exports = { PAYMENT_LOCKED, canEditPayment, canCustomerCancel, stockEffect, searchFields };
+module.exports = { PAYMENT_LOCKED, PAYMENT_TRANSITIONS, canEditPayment, canSetPayment, canCustomerCancel, stockEffect, searchFields };
