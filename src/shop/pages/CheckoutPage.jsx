@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { accountApi, ordersApi } from '../../services';
@@ -28,6 +28,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
+  const addressPrefilled = useRef(false);
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
 
   const fill = (a) => setF((s) => ({ ...s, name: a.fullName || s.name, phone: a.phone || s.phone, line1: a.line1 || '', line2: a.line2 || '', city: a.city || '', postalCode: a.postalCode || '' }));
@@ -36,8 +37,10 @@ export default function CheckoutPage() {
     setF((s) => ({ ...s, name: s.name || customer.name || '', phone: s.phone || customer.phone || '', email: s.email || customer.email || '' }));
   }, [status, customer]);
   useEffect(() => {
-    const d = (saved.data?.addresses || []).find((a) => a.isDefault);
+    if (addressPrefilled.current || !saved.data) return;
+    const d = (saved.data.addresses || []).find((a) => a.isDefault);
     if (d) fill(d);
+    addressPrefilled.current = true;
   }, [saved.data]);
 
   const submit = async (e) => {
