@@ -10,6 +10,7 @@ import ReviewsSection from '../ReviewsSection';
 import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
+import useTitle from '../useTitle';
 const NoteRow = ({ label, list }) => (list?.length ? <div className="flex gap-3 text-sm"><span className="w-16 text-ink-muted">{label}</span><span>{list.join(', ')}</span></div> : null);
 
 export default function ProductPage() {
