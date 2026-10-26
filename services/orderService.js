@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { Order, OrderItem, Payment, Customer, Coupon, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { samePhone } = require('./phone');
@@ -35,7 +36,9 @@ async function shippingSettings() {
 
 // ---------------- checkout ----------------
 // `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
-async function placeOrder(input, cust) {
+async function placeOrder(input, cust, idempotencyKey) {
+  const key = String(idempotencyKey || '').trim();
+  if (key && !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw E.badRequest('Invalid Idempotency-Key.');
   // 1. merge duplicate lines, load real data from DB
   const qty = new Map();
   for (const it of input.items) qty.set(it.variantId, (qty.get(it.variantId) || 0) + it.quantity);
@@ -57,6 +60,15 @@ async function placeOrder(input, cust) {
   const customer = cust ? cust.customer : await Customer.findOneAndUpdate({ phone: input.customer.phone, isDeleted: false },
     { $setOnInsert: { name: input.customer.name, phone: input.customer.phone, email: input.customer.email || undefined, city: input.shippingAddress.city } }, { upsert: true, new: true });
 
+  const requestHash = key ? crypto.createHash('sha256').update(JSON.stringify({ customerId: String(customer._id), input })).digest('hex') : null;
+  if (key) {
+    const existing = await Order.findOne({ idempotencyKey: key }).select('orderNumber total subtotal shipping discount status paymentMethod idempotencyHash').lean();
+    if (existing) {
+      if (existing.idempotencyHash !== requestHash) throw E.conflict('This Idempotency-Key was already used for a different checkout.', undefined, 'IDEMPOTENCY_CONFLICT');
+      return { orderNumber: existing.orderNumber, total: existing.total, subtotal: existing.subtotal, shipping: existing.shipping, discount: existing.discount, status: existing.status, paymentMethod: existing.paymentMethod };
+    }
+  }
+
   // 3. coupon
   let coupon = null; let discount = 0; let shippingDiscount = 0;
   if (input.couponCode) {
@@ -69,7 +81,9 @@ async function placeOrder(input, cust) {
   const orderNumber = await nextNumber('order', 'AFS');
 
   // 4. atomic: reserve stock + write order. If any unit is gone the whole thing rolls back.
-  const order = await withTx(async (session) => {
+  let order;
+  try {
+    order = await withTx(async (session) => {
     await reserveItems(lines, session);
     if (coupon) {
       const used = await Coupon.findOneAndUpdate(
@@ -94,12 +108,23 @@ async function placeOrder(input, cust) {
       subtotal, shipping, discount, total, couponCode: coupon ? coupon.code : undefined,
       paymentMethod: input.paymentMethod, status: 'New', paymentStatus: 'Pending',
       timeline: [{ event: 'Order Placed', status: 'New' }],
+      ...(key ? { idempotencyKey: key, idempotencyHash: requestHash } : {}),
     }], { session });
     await OrderItem.insertMany(lines.map(({ categoryId, ...l }) => ({ ...l, orderId: o._id, lineTotal: l.lineTotal })), { session });
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
     await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
     return o;
-  });
+    });
+  } catch (err) {
+    if (key && (err?.code === 11000 || err?.codeName === 'DuplicateKey')) {
+      const existing = await Order.findOne({ idempotencyKey: key }).select('orderNumber total subtotal shipping discount status paymentMethod idempotencyHash').lean();
+      if (existing) {
+        if (existing.idempotencyHash !== requestHash) throw E.conflict('This Idempotency-Key was already used for a different checkout.', undefined, 'IDEMPOTENCY_CONFLICT');
+        return { orderNumber: existing.orderNumber, total: existing.total, subtotal: existing.subtotal, shipping: existing.shipping, discount: existing.discount, status: existing.status, paymentMethod: existing.paymentMethod };
+      }
+    }
+    throw err;
+  }
   if (cust) await Cart.deleteOne({ customerId: customer._id }).catch(() => {}); // saved cart is emptied once the order exists
   await Notification.create({ type: 'new_order', title: 'New order', body: `${orderNumber} · ${total}`, link: '/admin/orders', forPermission: 'orders.view' }).catch(() => {});
   return { orderNumber: order.orderNumber, total, subtotal, shipping, discount, status: order.status, paymentMethod: order.paymentMethod };
