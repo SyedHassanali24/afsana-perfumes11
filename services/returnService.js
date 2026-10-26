@@ -213,6 +213,20 @@ async function issueRefund(ctx, id, { amount, method, reference, reason }, scope
     const already = sum(prior, (x) => x.amount);
     const cap = R.refundCap(order, already);
     if (amount > cap) throw E.badRequest(`The most that can still be refunded on this order is ${pkr(cap)}.`);
+
+    // Cap each refund by this return's actual value, not only the order-wide cap.
+    const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
+    const otherReturns = await Return.find({ orderId: order._id, _id: { $ne: id } }).select('status items').session(session).lean();
+    const remaining = R.remainingByItem(orderItems, otherReturns);
+    const returnCap = R.suggestedRefund(
+      order,
+      orderItems,
+      cur.items.map((i) => ({ orderItemId: i.orderItemId, quantity: i.quantity })),
+      cur.reason,
+      remaining,
+      already,
+    );
+    if (amount > returnCap) throw E.badRequest(`The most that can be refunded for this return is ${pkr(returnCap)}.`);
     const upd = await Return.findOneAndUpdate({ _id: id, status: 'Received' },
       { $set: { status: 'Refunded', refundedAt: new Date(), refundedAmount: amount, handledBy: ctx.user._id }, $push: { timeline: { event: EVENT.Refunded, status: 'Refunded', note: reason, by: ctx.user._id } } }, { new: true, session });
     if (!upd) throw E.conflict('This return was just updated by someone else. Please refresh.');
