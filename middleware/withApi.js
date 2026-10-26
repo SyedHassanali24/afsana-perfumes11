@@ -6,13 +6,13 @@ const { hit } = require('./rateLimit');
 const { connectDB } = require('../database/connection');
 const { authenticate } = require('./auth');
 const { authenticateCustomer } = require('./customerAuth');
-const { cacheHeaders } = require('./cache');
+const { cacheHeaders, invalidateForGroup } = require('./cache');
 
 const PAGES_ORIGIN = process.env.PAGES_ORIGIN || 'https://syedhassanali24.github.io';
 
 function createHandler(group, routes) {
   const compiled = compile(routes);
-  return async (event) => {
+  return async (event, context) => {
     const headers = lowerKeys(event.headers);
     const origin = headers.origin;
     const cors = origin === PAGES_ORIGIN ? {
@@ -57,6 +57,9 @@ function createHandler(group, routes) {
       const cacheable = route.cache && route.public && !route.optionalCustomer &&
         ['GET', 'HEAD'].includes(method) && r.status >= 200 && r.status < 300;
       const extra = cacheable ? cacheHeaders(route.cache, route.cacheSWR, route.cacheTags) : {};
+      if (!cacheable && !['GET', 'HEAD'].includes(method) && r.status >= 200 && r.status < 300) {
+        await invalidateForGroup(group, context, route.invalidateTags || []);
+      }
       return json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
     } catch (err) {
       const r = toResponse(err);
