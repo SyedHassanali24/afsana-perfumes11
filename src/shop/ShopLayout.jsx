@@ -7,7 +7,12 @@ import { Container } from './ui';
 import useApi from '../hooks/useApi';
 import { shopContentApi } from '../services';
 
-const nav = [{ to: '/shop', label: 'Shop' }, { to: '/shop?gender=Men', label: 'For Him' }, { to: '/shop?gender=Women', label: 'For Her' }, { to: '/track', label: 'Track order' }];
+const nav = [
+  { to: '/shop', label: 'Shop' },
+  { to: '/shop?gender=Men', label: 'For Him' },
+  { to: '/shop?gender=Women', label: 'For Her' },
+  { to: '/track', label: 'Track order' },
+];
 
 export default function ShopLayout() {
   const { count } = useCart();
@@ -19,15 +24,33 @@ export default function ShopLayout() {
   const [theme, setTheme] = useState(() => {
     try { return localStorage.getItem('afsana-shop-theme') || 'system'; } catch { return 'system'; }
   });
+
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'system') root.removeAttribute('data-theme');
     else root.setAttribute('data-theme', theme);
-    try { if (theme === 'system') localStorage.removeItem('afsana-shop-theme'); else localStorage.setItem('afsana-shop-theme', theme); } catch { /* storage may be unavailable */ }
+    try {
+      if (theme === 'system') localStorage.removeItem('afsana-shop-theme');
+      else localStorage.setItem('afsana-shop-theme', theme);
+    } catch { /* storage may be unavailable */ }
   }, [theme]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [open]);
+
   const [q, setQ] = useState('');
-  const search = (e) => { e.preventDefault(); navigate(q.trim() ? `/shop?q=${encodeURIComponent(q.trim())}` : '/shop'); setOpen(false); };
-  const icon = 'relative p-2 text-ink hover:text-gold';
+  const search = (e) => {
+    e.preventDefault();
+    navigate(q.trim() ? `/shop?q=${encodeURIComponent(q.trim())}` : '/shop');
+    setOpen(false);
+  };
+
+  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-surface hover:text-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-gold';
+  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-ink-muted hover:text-ink'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-gold after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-ink">
@@ -36,45 +59,82 @@ export default function ShopLayout() {
           {announcement.link ? <Link to={announcement.link} className="underline underline-offset-2">{announcement.text}</Link> : announcement.text}
         </div>
       )}
-      <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur">
-        <Container className="flex items-center gap-4 h-16">
-          <button type="button" className="md:hidden p-2" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}</button>
-          <Link to="/" className="font-display text-2xl" style={{ color: 'var(--gold)' }}>Afsana</Link>
-          <nav className="hidden md:flex items-center gap-6 ml-6 text-sm" aria-label="Main">
-            {nav.map((n) => <NavLink key={n.to} to={n.to} end className="text-ink-muted hover:text-ink">{n.label}</NavLink>)}
+
+      <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-md">
+        <Container className="flex h-14 sm:h-16 items-center gap-1 sm:gap-3">
+          <button
+            type="button"
+            className={`md:hidden ${icon}`}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          <Link to="/" className="font-display text-[1.55rem] sm:text-2xl tracking-tight shrink-0" style={{ color: 'var(--gold)' }}>
+            Afsana
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-6 ml-6" aria-label="Main">
+            {nav.map((n) => <NavLink key={n.to} to={n.to} end={n.to === '/shop'} className={navClass}>{n.label}</NavLink>)}
           </nav>
-          <form onSubmit={search} className="hidden md:flex ml-auto items-center border border-border rounded-sm px-2 w-56" role="search">
-            <Search className="w-4 h-4 text-ink-muted" aria-hidden />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-1.5 text-sm w-full focus:outline-none" />
+
+          <form onSubmit={search} className="hidden lg:flex ml-auto items-center border border-border rounded-full px-3 w-60 focus-within:border-gold/70 transition-colors" role="search">
+            <Search className="w-4 h-4 text-ink-muted shrink-0" aria-hidden />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-2 text-sm w-full focus:outline-none" />
           </form>
+
           <div className="flex items-center ml-auto md:ml-0">
-            <button type="button" className={icon} onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} title={theme === 'dark' ? 'Light theme' : 'Dark theme'}><span className="block">{theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}</span></button>
+            <button type="button" className={icon} onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} title={theme === 'dark' ? 'Light theme' : 'Dark theme'}>
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
             <Link to="/wishlist" className={icon} aria-label="Wishlist"><Heart className="w-5 h-5" /></Link>
             <Link to={status === 'authed' ? '/account' : '/login'} className={icon} aria-label={status === 'authed' ? 'My account' : 'Sign in'}><User className="w-5 h-5" /></Link>
             <Link to="/cart" className={icon} aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}>
               <ShoppingBag className="w-5 h-5" />
-              {count > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-4 h-4 px-1 rounded-full bg-gold text-bg text-[10px] leading-4 text-center font-semibold">{count}</span>}
+              {count > 0 && <span className="absolute right-0 top-0.5 min-w-4 h-4 px-1 rounded-full bg-gold text-bg text-[10px] leading-4 text-center font-semibold">{count}</span>}
             </Link>
           </div>
         </Container>
+
         {open && (
-          <div className="md:hidden border-t border-border bg-bg px-4 py-3 space-y-3">
-            <form onSubmit={search} className="flex items-center border border-border rounded-sm px-2" role="search">
-              <Search className="w-4 h-4 text-ink-muted" aria-hidden />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-2 text-sm w-full focus:outline-none" />
-            </form>
-            {nav.map((n) => <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="block py-1 text-sm">{n.label}</Link>)}
+          <div className="md:hidden border-t border-border bg-bg shadow-lg">
+            <div className="px-4 py-4 space-y-4">
+              <form onSubmit={search} className="flex items-center border border-border rounded-full px-3 focus-within:border-gold/70" role="search">
+                <Search className="w-4 h-4 text-ink-muted shrink-0" aria-hidden />
+                <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-2.5 text-sm w-full focus:outline-none" />
+              </form>
+              <nav className="grid grid-cols-2 gap-x-6 gap-y-1" aria-label="Mobile">
+                {nav.map((n) => (
+                  <NavLink key={n.to} to={n.to} end={n.to === '/shop'} onClick={() => setOpen(false)} className={({ isActive }) => `block py-2.5 text-sm border-b border-border ${isActive ? 'text-gold font-medium' : 'text-ink-muted'}`}>
+                    {n.label}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
           </div>
         )}
       </header>
 
-      <main className="flex-1 py-8"><Outlet /></main>
+      <main className="flex-1 py-6 sm:py-8"><Outlet /></main>
 
       <footer className="border-t border-border mt-12">
-        <Container className="py-10 grid gap-6 sm:grid-cols-3 text-sm">
-          <div><p className="font-display text-xl" style={{ color: 'var(--gold)' }}>Afsana Perfumes</p><p className="text-ink-muted mt-2">Fragrances for every mood and moment.</p></div>
-          <div className="space-y-1.5"><p className="font-medium">Shop</p><Link to="/shop" className="block text-ink-muted hover:text-ink">All perfumes</Link><Link to="/track" className="block text-ink-muted hover:text-ink">Track an order</Link></div>
-          <div className="space-y-1.5"><p className="font-medium">Account</p><Link to="/account" className="block text-ink-muted hover:text-ink">My orders</Link><Link to="/wishlist" className="block text-ink-muted hover:text-ink">Wishlist</Link></div>
+        <Container className="py-10 grid gap-8 sm:grid-cols-3 text-sm">
+          <div>
+            <p className="font-display text-xl" style={{ color: 'var(--gold)' }}>Afsana Perfumes</p>
+            <p className="text-ink-muted mt-2 max-w-xs">Fragrances for every mood and moment.</p>
+          </div>
+          <div className="space-y-1.5">
+            <p className="font-medium mb-2">Shop</p>
+            <Link to="/shop" className="block text-ink-muted hover:text-ink">All perfumes</Link>
+            <Link to="/track" className="block text-ink-muted hover:text-ink">Track an order</Link>
+          </div>
+          <div className="space-y-1.5">
+            <p className="font-medium mb-2">Account</p>
+            <Link to="/account" className="block text-ink-muted hover:text-ink">My orders</Link>
+            <Link to="/wishlist" className="block text-ink-muted hover:text-ink">Wishlist</Link>
+          </div>
         </Container>
         <div className="border-t border-border py-4 text-center text-xs text-ink-muted">© {new Date().getFullYear()} Afsana Perfumes</div>
       </footer>
