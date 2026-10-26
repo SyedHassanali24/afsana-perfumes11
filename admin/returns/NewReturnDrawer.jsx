@@ -43,8 +43,8 @@ export default function NewReturnDrawer({ open, onClose, onCreated }) {
     <Drawer open={open} onClose={onClose} title="New return" size="lg"
       footer={info?.eligible ? <><Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button><Button onClick={submit} disabled={busy || Boolean(problem)}>{busy ? "Saving…" : "Create return"}</Button></> : undefined}>
       <div className="space-y-5">
-        <form onSubmit={find} className="flex items-end gap-3">
-          <div className="flex-1"><Field label="Order number"><Input placeholder="AFS-000123" value={orderNo} onChange={(e) => setOrderNo(e.target.value)} autoFocus /></Field></div>
+        <form onSubmit={find} className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="w-full sm:flex-1"><Field label="Order number"><Input placeholder="AFS-000123" value={orderNo} onChange={(e) => setOrderNo(e.target.value)} autoFocus /></Field></div>
           <Button type="submit" variant="secondary" disabled={busy || orderNo.trim().length < 4}>Find order</Button>
         </form>
         {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
@@ -53,7 +53,7 @@ export default function NewReturnDrawer({ open, onClose, onCreated }) {
         {info?.eligible && (
           <>
             <p className="text-sm text-ink-muted">{info.customer?.name || "Customer"} · delivered {new Date(info.window.deliveredAt).toLocaleDateString()}{new Date() > new Date(info.window.deadline) ? " · outside the normal return period (allowed for staff)" : ""}</p>
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm">
               <thead><tr className="text-left text-xs text-ink-muted border-b border-border"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Price</th><th className="font-medium text-right">Can return</th><th className="font-medium text-right w-24">Return</th></tr></thead>
               <tbody>
                 {info.lines.map((l) => (
