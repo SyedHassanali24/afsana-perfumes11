@@ -50,7 +50,7 @@ export default function PurchaseOrderFormDrawer({ open, po, onClose, onSaved }) 
       footer={<><Button variant="secondary" type="button" onClick={onClose}>Cancel</Button><Button type="submit" form="po-form" disabled={busy}>{busy ? "Saving…" : "Save draft"}</Button></>}>
       <form id="po-form" onSubmit={submit} className="space-y-5">
         {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Supplier">
             <Select value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
               <option value="" disabled>Select…</option>
@@ -65,7 +65,7 @@ export default function PurchaseOrderFormDrawer({ open, po, onClose, onSaved }) 
           <VariantPicker exclude={rows.map((r) => r.variantId)} onPick={(i) => setRows((rs) => [...rs, { variantId: String(i.variantId), name: `${i.productName} · ${i.label}`, sku: i.sku, quantity: "1", cost: "" }])} />
           {rows.length === 0 && <p className="text-sm text-ink-muted py-3">Search above to add the perfumes you're ordering.</p>}
           {rows.map((r) => (
-            <div key={r.variantId} className="grid grid-cols-[1fr_5.5rem_7rem_2rem] gap-2 items-end border-b border-border pb-2">
+            <div key={r.variantId} className="grid grid-cols-1 sm:grid-cols-[1fr_5.5rem_7rem_2rem] gap-2 items-end border-b border-border pb-2">
               <div className="text-sm text-ink">{r.name}<span className="block text-xs text-ink-muted">{r.sku}</span></div>
               <Field label="Qty"><Input type="number" min="1" value={r.quantity} onChange={(e) => setRow(r.variantId, "quantity", e.target.value)} /></Field>
               <Field label="Cost / unit"><Input type="number" min="0" value={r.cost} onChange={(e) => setRow(r.variantId, "cost", e.target.value)} /></Field>
