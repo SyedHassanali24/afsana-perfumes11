@@ -68,6 +68,71 @@ async function main() {
     { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
     { $match: { 'variant.0': { $exists: false } } },
   ]);
+  failures += await referenceCheck('products.brandId', models.Product, [
+    { $match: { brandId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Brand.collection.name, localField: 'brandId', foreignField: '_id', as: 'brand' } },
+    { $match: { 'brand.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('products.categoryId', models.Product, [
+    { $lookup: { from: models.Category.collection.name, localField: 'categoryId', foreignField: '_id', as: 'category' } },
+    { $match: { 'category.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('products.collectionIds', models.Product, [
+    { $unwind: '$collectionIds' },
+    { $lookup: { from: models.Collection.collection.name, localField: 'collectionIds', foreignField: '_id', as: 'collection' } },
+    { $match: { 'collection.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('products.fragrance.familyId', models.Product, [
+    { $match: { 'fragrance.familyId': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.FragranceFamily.collection.name, localField: 'fragrance.familyId', foreignField: '_id', as: 'family' } },
+    { $match: { 'family.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('products.createdBy', models.Product, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('categories.parentId', models.Category, [
+    { $match: { parentId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Category.collection.name, localField: 'parentId', foreignField: '_id', as: 'parent' } },
+    { $match: { 'parent.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('bundles.productId', models.Bundle, [
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('bundles.components.variantId', models.Bundle, [
+    { $unwind: '$components' },
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'components.variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { 'variant.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('reviews.productId', models.Review, [
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('reviews.customerId', models.Review, [
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('reviews.orderId', models.Review, [
+    { $match: { orderId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('reviews.moderatedBy', models.Review, [
+    { $match: { moderatedBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'moderatedBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('wishlists.customerId', models.Wishlist, [
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('wishlists.productIds', models.Wishlist, [
+    { $unwind: '$productIds' },
+    { $lookup: { from: models.Product.collection.name, localField: 'productIds', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('variants.productId', models.ProductVariant, [
     { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
     { $match: { 'product.0': { $exists: false } } },
