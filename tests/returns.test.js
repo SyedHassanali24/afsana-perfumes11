@@ -97,7 +97,8 @@ test('deriveOrderStatus keeps the order in step with its returns', () => {
   // everything back, refund still to do
   assert.equal(R.deriveOrderStatus('Return Requested', qty, [ret('Received', [['a1', 2], ['b2', 1]])]), 'Returned');
   // everything back and refunded
-  assert.equal(R.deriveOrderStatus('Returned', qty, [ret('Refunded', [['a1', 2], ['b2', 1]])]), 'Refunded');
+  assert.equal(R.deriveOrderStatus('Returned', qty, [ret('Refunded', [['a1', 2], ['b2', 1]])], 'Paid'), 'Refunded');
+  assert.equal(R.deriveOrderStatus('Returned', qty, [ret('Refunded', [['a1', 2], ['b2', 1]])], 'Partially Refunded'), 'Returned', 'full return with partial money back is not fully refunded');
   // two-step full return: first refunded, second received
   assert.equal(R.deriveOrderStatus('Return Requested', qty, [ret('Refunded', [['a1', 2]]), ret('Received', [['b2', 1]])]), 'Returned');
   // orders outside the delivery flow are never touched
