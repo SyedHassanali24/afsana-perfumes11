@@ -252,6 +252,69 @@ async function main() {
     { $unwind: '$variant' },
     { $match: { $expr: { $ne: ['$items.productId', '$variant.productId'] } } },
   ]);
+  failures += await referenceCheck('orders.assignedTo', models.Order, [
+    { $match: { assignedTo: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'assignedTo', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orders.createdBy', models.Order, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orderItems.productId↔variant.productId', models.OrderItem, [
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $unwind: '$variant' },
+    { $match: { $expr: { $ne: ['$productId', '$variant.productId'] } } },
+  ]);
+  failures += await referenceCheck('payments.receivedBy', models.Payment, [
+    { $match: { receivedBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'receivedBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('shipments.orderId', models.Shipment, [
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('shipments.courierId', models.Shipment, [
+    { $match: { courierId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Courier.collection.name, localField: 'courierId', foreignField: '_id', as: 'courier' } },
+    { $match: { 'courier.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('returns.handledBy', models.Return, [
+    { $match: { handledBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'handledBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('returns.createdBy', models.Return, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('returns.assignedTo', models.Return, [
+    { $match: { assignedTo: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'assignedTo', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('refunds.approvedBy', models.Refund, [
+    { $lookup: { from: models.User.collection.name, localField: 'approvedBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('carts.customerId', models.Cart, [
+    { $match: { customerId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('abandonedCarts.cartId', models.AbandonedCart, [
+    { $match: { cartId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Cart.collection.name, localField: 'cartId', foreignField: '_id', as: 'cart' } },
+    { $match: { 'cart.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('abandonedCarts.customerId', models.AbandonedCart, [
+    { $match: { customerId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('orders.without-order-items', models.Order, [
     { $lookup: { from: models.OrderItem.collection.name, localField: '_id', foreignField: 'orderId', as: 'items' } },
     { $match: { 'items.0': { $exists: false } } },
