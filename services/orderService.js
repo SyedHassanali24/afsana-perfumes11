@@ -69,15 +69,8 @@ async function placeOrder(input, cust, idempotencyKey) {
     }
   }
 
-  // 3. coupon
-  let coupon = null; let discount = 0; let shippingDiscount = 0;
-  if (input.couponCode) {
-    coupon = await Coupon.findOne({ code: input.couponCode.toUpperCase(), isDeleted: false });
-    validateCoupon(coupon, { subtotal, customerId: customer._id, customerUses: coupon ? (coupon.usage || []).filter((u) => String(u.customerId) === String(customer._id)).length : 0, isFirstOrder: (customer.stats && customer.stats.ordersCount || 0) === 0 });
-    ({ discount, shippingDiscount } = calcDiscount(coupon, lines, shippingFee));
-  }
-  const shipping = shippingFee - shippingDiscount;
-  const total = subtotal - discount + shipping;
+  // 3. Reserve stock + re-read coupon rules inside the transaction so checkout uses one consistent snapshot.
+  let coupon = null; let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
   const orderNumber = await nextNumber('order', 'AFS');
 
   // 4. atomic: reserve stock + write order. If any unit is gone the whole thing rolls back.
@@ -85,6 +78,19 @@ async function placeOrder(input, cust, idempotencyKey) {
   try {
     order = await withTx(async (session) => {
     await reserveItems(lines, session);
+
+    const txCustomer = await Customer.findById(customer._id).session(session);
+    if (!txCustomer) throw E.conflict('Customer record is no longer available.');
+
+    if (input.couponCode) {
+      coupon = await Coupon.findOne({ code: input.couponCode.toUpperCase(), isDeleted: false }).session(session);
+      const customerUses = coupon ? (coupon.usage || []).filter((u) => String(u.customerId) === String(txCustomer._id)).length : 0;
+      validateCoupon(coupon, { subtotal, customerId: txCustomer._id, customerUses, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
+      ({ discount, shippingDiscount } = calcDiscount(coupon, lines, shippingFee));
+      shipping = shippingFee - shippingDiscount;
+      total = subtotal - discount + shipping;
+    }
+
     if (coupon) {
       const used = await Coupon.findOneAndUpdate(
         { _id: coupon._id, $expr: { $and: [
