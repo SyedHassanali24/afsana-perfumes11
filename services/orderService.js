@@ -57,7 +57,7 @@ async function placeOrder(input, cust, idempotencyKey) {
   const shippingFee = (await deliveryFor(input.shippingAddress && input.shippingAddress.city, subtotal)).fee;
 
   // 2. customer (guest checkout keyed by phone)
-  const customer = cust ? cust.customer : await Customer.findOneAndUpdate({ phone: input.customer.phone, isDeleted: false },
+  const customer = cust ? cust.customer : await Customer.findOneAndUpdate({ phone: input.customer.phone, storeId: 'main', isDeleted: false },
     { $setOnInsert: { name: input.customer.name, phone: input.customer.phone, email: input.customer.email || undefined, city: input.shippingAddress.city } }, { upsert: true, new: true });
 
   const requestHash = key ? crypto.createHash('sha256').update(JSON.stringify({ customerId: String(customer._id), input })).digest('hex') : null;
