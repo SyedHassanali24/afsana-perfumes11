@@ -59,6 +59,7 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
 
             <div className="text-sm space-y-1">
