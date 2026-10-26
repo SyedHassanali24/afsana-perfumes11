@@ -79,6 +79,8 @@ async function markOrdered(ctx, id) {
     const po = await PurchaseOrder.findById(id).session(session);
     if (!po) throw E.notFound('Purchase order not found.');
     if (!canTransition(po.status, 'Ordered')) throw E.conflict(`A ${po.status.toLowerCase()} purchase order can't be marked as ordered.`);
+    const supplier = await Supplier.findOne({ _id: po.supplierId, isDeleted: false, isActive: true }).session(session);
+    if (!supplier) throw E.conflict('The purchase order supplier is missing or inactive.');
     for (const it of po.items) {
       const inv = await Inventory.findOneAndUpdate(
         { variantId: it.variantId, productId: it.productId },
