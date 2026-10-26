@@ -152,7 +152,7 @@ export default function Dashboard() {
               {vm.lowStock.count > vm.lowStock.items.length && (
                 <Link to="/admin/inventory" className="block mt-4 text-sm text-gold hover:underline">
                   View all {vm.lowStock.count}{vm.lowStock.outOfStock ? ` (${vm.lowStock.outOfStock} out of stock)` : ""}
-                </a>
+                </Link>
               )}
             </>
           )}
