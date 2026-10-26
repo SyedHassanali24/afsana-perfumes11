@@ -13,7 +13,10 @@ async function reserveItems(items, session) {
   }
 }
 async function releaseItems(items, session) {
-  for (const it of sorted(items)) await Inventory.release(it.variantId, it.quantity, { session });
+  for (const it of sorted(items)) {
+    const inv = await Inventory.release(it.variantId, it.quantity, { session });
+    if (!inv) throw E.conflict('Stock reservation is inconsistent for this order.', { variantId: String(it.variantId) }, 'STOCK_INCONSISTENT');
+  }
 }
 // Shipped: reserved units physically leave. Logs an 'order' transaction per line.
 async function commitItems(items, order, ctx, session) {
@@ -27,7 +30,8 @@ async function commitItems(items, order, ctx, session) {
 async function restockItems(items, order, ctx, session, type = 'order_cancel') {
   for (const it of sorted(items)) {
     const inv = await Inventory.findOneAndUpdate({ variantId: it.variantId }, { $inc: { current: it.quantity } }, { new: true, session });
-    if (inv) await InventoryTransaction.create([{ variantId: it.variantId, productId: it.productId, type, delta: it.quantity, before: inv.current - it.quantity, after: inv.current, ref: { kind: 'Order', id: order._id }, by: ctx.user._id }], { session });
+    if (!inv) throw E.conflict('Inventory record is missing for this order item.', { variantId: String(it.variantId) }, 'STOCK_INCONSISTENT');
+    await InventoryTransaction.create([{ variantId: it.variantId, productId: it.productId, type, delta: it.quantity, before: inv.current - it.quantity, after: inv.current, ref: { kind: 'Order', id: order._id }, by: ctx.user._id }], { session });
   }
 }
 
@@ -37,7 +41,8 @@ async function receiveReturnedItems(items, order, ctx, session, condition) {
   if (condition === 'Resellable') return restockItems(items, order, ctx, session, 'return');
   for (const it of sorted(items)) {
     const inv = await Inventory.findOneAndUpdate({ variantId: it.variantId }, { $inc: { damaged: it.quantity } }, { new: true, session });
-    if (inv) await InventoryTransaction.create([{ variantId: it.variantId, productId: it.productId, type: 'return', delta: 0, before: inv.current, after: inv.current, reason: `Returned damaged (${it.quantity}) - not restocked`, ref: { kind: 'Order', id: order._id }, by: ctx.user._id }], { session });
+    if (!inv) throw E.conflict('Inventory record is missing for this returned item.', { variantId: String(it.variantId) }, 'STOCK_INCONSISTENT');
+    await InventoryTransaction.create([{ variantId: it.variantId, productId: it.productId, type: 'return', delta: 0, before: inv.current, after: inv.current, reason: `Returned damaged (${it.quantity}) - not restocked`, ref: { kind: 'Order', id: order._id }, by: ctx.user._id }], { session });
   }
 }
 
