@@ -64,7 +64,7 @@ export default function NewReturnDrawer({ open, onClose, onCreated }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <Field label="Reason"><Select value={reason} onChange={(e) => setReason(e.target.value)}>{REASONS.map((x) => <option key={x}>{x}</option>)}</Select></Field>
             <Field label="Details" hint={reason === "Other" ? "Required for “Other”" : "Optional"}><Textarea rows={3} maxLength={500} value={details} onChange={(e) => setDetails(e.target.value)} /></Field>
             {problem && <p className="text-xs text-ink-muted">{problem}</p>}
