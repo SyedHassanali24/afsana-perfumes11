@@ -29,14 +29,25 @@ function inspectUri(uri) {
 exports.inspectUri = inspectUri;
 exports.handler = async () => {
   const env = process.env;
+  const production = env.NODE_ENV === 'production' || env.CONTEXT === 'production';
   const jwt = !env.JWT_SECRET ? 'missing' : env.JWT_SECRET.length < 32 ? 'too_short' : 'ok';
-  const checks = { MONGODB_URI: Boolean(env.MONGODB_URI), MONGODB_DB_NAME: Boolean(env.MONGODB_DB_NAME), JWT_SECRET: jwt === 'ok' };
+  const emailConfigured = Boolean(env.RESEND_API_KEY && env.EMAIL_FROM);
+  const redisConfigured = Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN);
+  const checks = {
+    MONGODB_URI: Boolean(env.MONGODB_URI),
+    MONGODB_DB_NAME: Boolean(env.MONGODB_DB_NAME),
+    JWT_SECRET: jwt === 'ok',
+    passwordResetEmail: !production || emailConfigured,
+    distributedRateLimit: !production || redisConfigured || env.RATE_LIMIT_FAIL_OPEN === 'true',
+  };
   const out = {
     success: true, version: 'health-v2',                      // if you do not see "health-v2", Netlify is still running OLD code
     runningOn: { site: env.SITE_NAME || null, context: env.CONTEXT || null },
     env: checks, jwtSecret: jwt, uriShape: inspectUri(env.MONGODB_URI), database: { connected: false },
   };
   const fixes = [];
+  if (production && !emailConfigured) fixes.push('Production mein RESEND_API_KEY aur EMAIL_FROM required hain password reset emails ke liye.');
+  if (production && !redisConfigured && env.RATE_LIMIT_FAIL_OPEN !== 'true') fixes.push('Production mein UPSTASH_REDIS_REST_URL aur UPSTASH_REDIS_REST_TOKEN required hain distributed rate limiting ke liye.');
   if (jwt !== 'ok') fixes.push(jwt === 'missing' ? 'JWT_SECRET khali hai ya Netlify ko mila hi nahi.' : 'JWT_SECRET 32 harf se chhota hai.');
   if (/[<>]/.test(env.MONGODB_URI || '')) fixes.push('MONGODB_URI mein < ya > hai: <db_password> ko asli password se badlein (brackets samet).');
   try {
@@ -52,7 +63,7 @@ exports.handler = async () => {
     fixes.unshift(d.hint);
     console.error('[health] db check failed:', d.code, out.database.errorName, out.database.errorCode);
   }
-  out.ok = checks.MONGODB_URI && checks.MONGODB_DB_NAME && checks.JWT_SECRET && out.database.connected === true;
+  out.ok = Object.values(checks).every(Boolean) && out.database.connected === true;
   out.fix = fixes;
   return json(out.ok ? 200 : 503, out);
 };
