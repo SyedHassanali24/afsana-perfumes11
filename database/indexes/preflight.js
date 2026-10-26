@@ -273,6 +273,45 @@ async function main() {
     { $lookup: { from: models.Customer.collection.name, localField: 'usage.customerId', foreignField: '_id', as: 'customer' } },
     { $match: { 'customer.0': { $exists: false } } },
   ]);
+  failures += await referenceCheck('flashSales.productId', models.FlashSale, [
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('flashSales.variantId', models.FlashSale, [
+    { $match: { variantId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { 'variant.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('flashSales.productId-variant.productId', models.FlashSale, [
+    { $match: { variantId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $unwind: '$variant' },
+    { $match: { $expr: { $ne: ['$productId', '$variant.productId'] } } },
+  ]);
+  failures += await referenceCheck('campaigns.createdBy', models.Campaign, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('giftCards.issuedTo', models.GiftCard, [
+    { $match: { issuedTo: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'issuedTo', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('loyaltyTransactions.customerId', models.LoyaltyTransaction, [
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('loyaltyTransactions.orderId', models.LoyaltyTransaction, [
+    { $match: { orderId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('loyaltyTransactions.by', models.LoyaltyTransaction, [
+    { $match: { by: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'by', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('orders.assignedTo', models.Order, [
     { $match: { assignedTo: { $exists: true, $ne: null } } },
     { $lookup: { from: models.User.collection.name, localField: 'assignedTo', foreignField: '_id', as: 'user' } },
