@@ -48,15 +48,15 @@ export default function CartPage() {
       ) : (
         <StateBox loading={loading && !q} error={error} onRetry={reload}>
           {q && (
-            <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
+            <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_340px]">
               <ul className="divide-y divide-border border-y border-border">
                 {q.lines.map((l) => (
-                  <li key={l.variantId} className="flex gap-4 py-4">
-                    <div className="w-20 h-24 shrink-0 rounded-sm overflow-hidden border border-border bg-surface">{l.image ? <img src={l.image} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>
+                  <li key={l.variantId} className="flex gap-3 sm:gap-4 py-4">
+                    <div className="w-16 h-20 sm:w-20 sm:h-24 shrink-0 rounded-sm overflow-hidden border border-border bg-surface">{l.image ? <img src={l.image} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between gap-3">
                         <div className="min-w-0">
-                          {l.slug ? <Link to={`/product/${l.slug}`} className="font-display text-lg leading-snug hover:text-gold">{l.name}</Link> : <p className="font-display text-lg">{l.name}</p>}
+                          {l.slug ? <Link to={`/product/${l.slug}`} className="font-display text-base sm:text-lg leading-snug hover:text-gold">{l.name}</Link> : <p className="font-display text-base sm:text-lg">{l.name}</p>}
                           {l.label && <p className="text-sm text-ink-muted">{l.label} · {money(l.unitPrice)}</p>}
                         </div>
                         <p className="text-sm tabular-nums">{l.status === 'unavailable' ? '' : money(l.lineTotal)}</p>
@@ -71,7 +71,7 @@ export default function CartPage() {
                 ))}
               </ul>
 
-              <aside className="rounded-md border border-border bg-surface p-5 h-fit space-y-5">
+              <aside className="rounded-md border border-border bg-surface p-4 sm:p-5 h-fit space-y-5 lg:sticky lg:top-24">
                 <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); setCoupon(code); }}>
                   <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code" aria-label="Coupon code" />
                   <Button type="submit" variant="secondary">Apply</Button>
