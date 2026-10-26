@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { accountApi } from '../../services';
 import { useCustomer } from '../../customer/CustomerAuthContext';
 import Button from '../../../admin/components/Button';
@@ -8,9 +8,11 @@ function ProfileForm() {
   const { customer, refresh } = useCustomer();
   const [f, setF] = useState({ name: customer?.name || '', city: customer?.city || '' });
   const [msg, setMsg] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  useEffect(() => { setF({ name: customer?.name || '', city: customer?.city || '' }); }, [customer?.name, customer?.city]);
   const submit = async (e) => {
     e.preventDefault(); setMsg(''); setError(''); setBusy(true);
-    try { await accountApi.updateProfile({ name: f.name.trim(), city: f.city.trim() }); await refresh(); setMsg('Saved.'); }
+    try { if (!f.name.trim()) { setError('Name is required.'); setBusy(false); return; }
+    await accountApi.updateProfile({ name: f.name.trim(), city: f.city.trim() }); await refresh(); setMsg('Saved.'); }
     catch (err) { setError(err.message); } finally { setBusy(false); }
   };
   return (
@@ -20,7 +22,7 @@ function ProfileForm() {
       <Field label="City"><Input value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} /></Field>
       <p className="text-xs text-ink-muted">Phone: {customer?.phone || '—'}{customer?.email ? ` · Email: ${customer.email}` : ''}</p>
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}{msg && <p role="status" className="text-sm text-success">{msg}</p>}
-      <Button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save'}</Button>
+      <Button type="submit" className="w-full sm:w-auto" disabled={busy}>{busy ? 'Saving…' : 'Save'}</Button>
     </form>
   );
 }
@@ -41,7 +43,7 @@ function PasswordForm() {
       <Field label="Current password"><Input type="password" required autoComplete="current-password" value={f.cur} onChange={(e) => setF({ ...f, cur: e.target.value })} /></Field>
       <Field label="New password"><Input type="password" required autoComplete="new-password" value={f.next} onChange={(e) => setF({ ...f, next: e.target.value })} /></Field>
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}{msg && <p role="status" className="text-sm text-success">{msg}</p>}
-      <Button type="submit" variant="secondary" disabled={busy}>{busy ? 'Saving…' : 'Change password'}</Button>
+      <Button type="submit" variant="secondary" className="w-full sm:w-auto" disabled={busy}>{busy ? 'Saving…' : 'Change password'}</Button>
     </form>
   );
 }
