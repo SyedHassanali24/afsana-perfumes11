@@ -8,15 +8,24 @@ const { authenticate } = require('./auth');
 const { authenticateCustomer } = require('./customerAuth');
 const { cacheHeaders, invalidateForGroup } = require('./cache');
 
-const PAGES_ORIGIN = process.env.PAGES_ORIGIN || 'https://syedhassanali24.github.io';
+const configuredOrigins = () => String(process.env.ALLOWED_ORIGINS || process.env.PAGES_ORIGIN || '').split(',').map((x) => x.trim()).filter(Boolean);
+
+function allowedOrigin(origin, context) {
+  if (!origin) return false;
+  const origins = new Set(configuredOrigins());
+  const siteUrl = context?.site?.url;
+  if (siteUrl) origins.add(String(siteUrl).replace(/\/$/, ''));
+  return origins.has(origin);
+}
 
 function createHandler(group, routes) {
   const compiled = compile(routes);
   return async (event, context) => {
     const headers = lowerKeys(event.headers);
     const origin = headers.origin;
-    const cors = origin === PAGES_ORIGIN ? {
-      'Access-Control-Allow-Origin': PAGES_ORIGIN,
+    const corsOrigin = allowedOrigin(origin, context);
+    const cors = corsOrigin ? {
+      'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Headers': 'Content-Type, X-Requested-With',
       'Access-Control-Allow-Methods': 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS',
