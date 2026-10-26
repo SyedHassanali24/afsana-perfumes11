@@ -13,3 +13,15 @@ test('cancelling a New order releases its reservation rather than restocking com
   assert.equal(R.stockEffect('Cancelled', false), 'release');
   assert.equal(R.stockEffect('Cancelled', true), 'restock');
 });
+
+test('payment transitions are fail-closed', () => {
+  assert.deepEqual(R.PAYMENT_TRANSITIONS.Pending, ['Paid', 'Failed']);
+  assert.deepEqual(R.PAYMENT_TRANSITIONS.Failed, ['Pending', 'Paid']);
+  assert.equal(R.canSetPayment('Pending', 'Paid'), true);
+  assert.equal(R.canSetPayment('Failed', 'Paid'), true);
+  assert.equal(R.canSetPayment('Paid', 'Pending'), false);
+  assert.equal(R.canSetPayment('Paid', 'Failed'), false);
+  assert.equal(R.canSetPayment('Refunded', 'Paid'), false);
+  assert.equal(R.canSetPayment('Partially Refunded', 'Pending'), false);
+  assert.equal(R.canSetPayment('Pending', 'Pending'), true);
+});
