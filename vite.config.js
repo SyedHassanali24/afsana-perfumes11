@@ -1,11 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
+
 export default defineConfig({
+  base: isGitHubPages ? "/afsana-perfumes11/" : "/",
   plugins: [react()],
   server: {
-    // Local dev: run `npm run api` (Netlify CLI, port 8888) so /api/* reaches netlify/functions/*.
-    // Vite crashed with EBUSY while watching the bundled functions, so .netlify is ignored.
+    // Local dev: run `npm run api` so /api/* reaches Netlify Functions.
     watch: { ignored: [/\.netlify/] },
     proxy: {
       "/api": {
