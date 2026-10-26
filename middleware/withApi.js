@@ -8,7 +8,7 @@ const { authenticate } = require('./auth');
 const { authenticateCustomer } = require('./customerAuth');
 const { cacheHeaders, invalidateForGroup } = require('./cache');
 
-const configuredOrigins = () => String(process.env.ALLOWED_ORIGINS || process.env.PAGES_ORIGIN || '').split(',').map((x) => x.trim()).filter(Boolean);
+const configuredOrigins = () => String(process.env.ALLOWED_ORIGINS || '').split(',').map((x) => x.trim()).filter(Boolean);
 
 function allowedOrigin(origin, context) {
   if (!origin) return false;
