@@ -47,12 +47,12 @@ export default function AccountPage() {
     <Container className="max-w-3xl">
       <PageTitle title={`Hello, ${(customer?.name || '').split(' ')[0] || 'there'}`} subtitle="Your orders, addresses and details."
         action={<Button variant="ghost" size="sm" onClick={async () => { await logout(); navigate('/'); }}>Sign out</Button>} />
-      <div className="flex gap-1 border-b border-border mb-6" role="tablist">
+      <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto -mx-1 px-1" role="tablist">
         {TABS.map(([k, label]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setSp(k === 'orders' ? {} : { tab: k })}
-            className={`px-4 py-2 text-sm -mb-px border-b-2 ${tab === k ? 'border-gold text-ink' : 'border-transparent text-ink-muted hover:text-ink'}`}>{label}</button>
+            className={`shrink-0 whitespace-nowrap px-4 py-2 text-sm -mb-px border-b-2 ${tab === k ? 'border-gold text-ink' : 'border-transparent text-ink-muted hover:text-ink'}`}>{label}</button>
         ))}
-        <Link to="/wishlist" className="ml-auto px-4 py-2 text-sm text-ink-muted hover:text-ink">Wishlist</Link>
+        <Link to="/wishlist" className="shrink-0 ml-auto px-4 py-2 text-sm text-ink-muted hover:text-ink">Wishlist</Link>
       </div>
       {tab === 'orders' && <MyOrders />}
       {tab === 'returns' && <MyReturns />}
