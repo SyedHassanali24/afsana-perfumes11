@@ -41,7 +41,7 @@ function createHandler(group, routes) {
       const { route, params } = found;
       const ip = clientIp(headers);
       const rl = route.rateLimit || { limit: 120, windowMs: 60000 };
-      if (!hit(`${group}:${route.method}:${route.path}:${ip}`, rl.limit, rl.windowMs)) throw E.tooMany();
+      if (!await hit(`${group}:${route.method}:${route.path}:${ip}`, rl.limit, rl.windowMs)) throw E.tooMany();
       if (!['GET', 'HEAD'].includes(method) && headers['x-requested-with'] !== 'afsana') throw E.forbidden('Invalid request.');
       await connectDB();
       let ctx = null; let scopes = null;
