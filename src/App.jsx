@@ -11,7 +11,7 @@ import ProductsList from '../admin/products/ProductsList';
 import InventoryList from '../admin/inventory/InventoryList';
 import OrdersList from '../admin/orders/OrdersList';
 import CatalogPage from '../admin/catalog/CatalogPage';
-import ReturnsList from '../admin/returns/ReturnsListFixed';
+import ReturnsList from '../admin/returns/ReturnsList';
 import ShippingPage from '../admin/shipping/ShippingPage';
 import CustomersList from '../admin/customers/CustomersList';
 import ReviewsList from '../admin/reviews/ReviewsList';
