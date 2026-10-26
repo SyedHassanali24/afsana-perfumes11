@@ -54,7 +54,7 @@ export default function StockTab() {
       </div>
       {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-success">{notice}</p>}
       <Card padded={false}>
-        <div className="flex flex-wrap items-center gap-4 p-5 border-b border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 border-b border-border">
           <div className="flex-1 min-w-[200px]"><Input placeholder="Search product or SKU…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
           <Check label="Low & out of stock only" checked={low} onChange={(v) => { setLow(v); setPage(1); }} />
         </div>
