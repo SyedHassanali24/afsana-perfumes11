@@ -106,9 +106,12 @@ async function receive(ctx, id, body) {
       if (!it) throw E.badRequest('That size is not on this purchase order.');
       const left = remainingQty(it);
       if (r.quantity > left) throw E.conflict(`Only ${left} more unit(s) are expected for this line.`, { variantId: String(r.variantId) });
-      const inv = await Inventory.findOneAndUpdate({ variantId: it.variantId },
-        [{ $set: { current: { $add: ['$current', r.quantity] }, incoming: { $max: [0, { $subtract: ['$incoming', r.quantity] }] } } }], { new: true, session });
-      if (!inv) throw E.conflict('No inventory record for one of these sizes.');
+      const inv = await Inventory.findOneAndUpdate(
+        { variantId: it.variantId, productId: it.productId, incoming: { $gte: r.quantity } },
+        [{ $set: { current: { $add: ['$current', r.quantity] }, incoming: { $subtract: ['$incoming', r.quantity] } } }],
+        { new: true, session },
+      );
+      if (!inv) throw E.conflict('Inventory is missing, linked to the wrong product, or does not have enough incoming stock for this receipt.', { variantId: String(it.variantId) }, 'STOCK_INCONSISTENT');
       await InventoryTransaction.create([{ variantId: it.variantId, productId: it.productId, type: 'po_receive', delta: r.quantity, before: inv.current - r.quantity, after: inv.current, reason: `Received on ${po.poNumber}`, ref: { kind: 'PurchaseOrder', id: po._id }, by: ctx.user._id }], { session });
       it.receivedQuantity = (it.receivedQuantity || 0) + r.quantity;
       lines.push({ variantId: String(it.variantId), quantity: r.quantity });
