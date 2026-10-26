@@ -2,14 +2,17 @@
 export class ApiError extends Error {
   constructor(status, code, message, details) { super(message); this.status = status; this.code = code; this.details = details; }
 }
+
+const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, "");
+
 export async function api(path, { method = 'GET', body, query } = {}) {
-  const url = new URL(`/api${path}`, window.location.origin);
+  const url = new URL(`/api${path}`, API_ORIGIN);
   Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
   let res;
   try {
     res = await fetch(url, {
       method, credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, // CSRF guard header
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
@@ -17,8 +20,7 @@ export async function api(path, { method = 'GET', body, query } = {}) {
   try { data = await res.json(); } catch { /* non-JSON */ }
   if (!res.ok || !data || !data.success) {
     const e = (data && data.error) || {};
-    // Session expired / revoked -> tell AuthContext (login call itself also returns 401 for bad credentials, so skip it)
-    const staffPath = !/^\/(account|cart|wishlist|returns\/mine)(\/|$)/.test(path); // shopper endpoints must never log a staff member out
+    const staffPath = !/^\/(account|cart|wishlist|returns\/mine)(\/|$)/.test(path);
     if (staffPath && res.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/me')) window.dispatchEvent(new Event('afsana:unauthorized'));
     if (staffPath && e.code === 'PASSWORD_CHANGE_REQUIRED') window.dispatchEvent(new Event('afsana:must-change-password'));
     throw new ApiError(res.status, e.code || 'ERROR', e.message || 'Something went wrong. Please try again.', e.details);
