@@ -117,6 +117,8 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
               </div>
             )}
 
+            )}
+
             <div>
               <h3 className="text-sm font-medium text-ink mb-3">History</h3>
               <ol className="space-y-3 border-l border-border ml-2 pl-5">
