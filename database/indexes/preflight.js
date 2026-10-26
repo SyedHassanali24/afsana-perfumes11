@@ -51,6 +51,42 @@ async function main() {
     console.error(`Duplicate unique-key conflict(s) in ${name}:`);
     for (const row of rows) console.error(JSON.stringify({ key: row._id, count: row.count }));
   }
+  failures += await referenceCheck('sessions.userId', models.Session, [
+    { $lookup: { from: models.User.collection.name, localField: 'userId', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('staff.userId', models.Staff, [
+    { $lookup: { from: models.User.collection.name, localField: 'userId', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('staff.roleId', models.Staff, [
+    { $lookup: { from: models.Role.collection.name, localField: 'roleId', foreignField: '_id', as: 'role' } },
+    { $match: { 'role.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('staff.createdBy', models.Staff, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('customers.userId', models.Customer, [
+    { $match: { userId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'userId', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('permissionHistory.staffId', models.PermissionHistory, [
+    { $match: { staffId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Staff.collection.name, localField: 'staffId', foreignField: '_id', as: 'staff' } },
+    { $match: { 'staff.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('permissionHistory.roleId', models.PermissionHistory, [
+    { $match: { roleId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Role.collection.name, localField: 'roleId', foreignField: '_id', as: 'role' } },
+    { $match: { 'role.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('permissionHistory.changedBy', models.PermissionHistory, [
+    { $lookup: { from: models.User.collection.name, localField: 'changedBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('orders.customerId', models.Order, [
     { $match: { customerId: { $exists: true, $ne: null } } },
     { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
