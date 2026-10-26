@@ -45,8 +45,8 @@ export default function TaxonomyTab({ type, module, noun, plural }) {
   ];
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="w-72"><Input placeholder={`Search ${plural}…`} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="w-full sm:w-72"><Input placeholder={`Search ${plural}…`} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
         {can(`${module}.create`) && <Button icon={Plus} onClick={() => setDrawer({ open: true, item: null })}>Add {noun}</Button>}
       </div>
       {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-success">{notice}</p>}
