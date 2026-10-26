@@ -71,3 +71,6 @@ Browser mein kholein: `https://aap-ka-site.netlify.app/api/health`
 - `.env.example` mein asli values kabhi na likhein.
 - Owner ka password bhool jayein to: `.env` mein naya `ADMIN_PASSWORD` likh kar `npm run admin:reset` chalayein.
 - Free Atlas mein khud-ba-khud backup nahi hota. Live hone ke baad paid tier ya backup script zaroor lagayein (HANDOFF mein "Later" mein likha hai).
+
+
+<!-- Netlify production environment refresh marker -->
