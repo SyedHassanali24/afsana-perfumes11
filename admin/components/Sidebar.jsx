@@ -19,6 +19,8 @@ import {
   DatabaseBackup,
   ChevronsLeft,
   ChevronsRight,
+  Menu,
+  X,
 } from "lucide-react";
 
 // Each item's `permission` is `${module}.${action}` using module names from database/constants.js.
@@ -73,14 +75,16 @@ const NAV_GROUPS = [
  */
 export default function Sidebar({ activeHref = "/admin", onNavigate }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { can } = useAuth();
+  const go = (href) => { onNavigate?.(href); setMobileOpen(false); };
   const groups = NAV_GROUPS
     .map((g) => ({ ...g, items: g.items.filter((i) => can(i.permission)) }))
     .filter((g) => g.items.length);
 
   return (
     <aside
-      className={`h-screen sticky top-0 flex flex-col bg-[var(--bg)] border-r border-border transition-[width] duration-200 ${
+      className={`hidden md:flex h-screen sticky top-0 flex flex-col bg-[var(--bg)] border-r border-border transition-[width] duration-200 ${
         collapsed ? "w-[72px]" : "w-64"
       }`}
       style={{ background: "var(--ink)", borderColor: "var(--border)" }}
@@ -116,13 +120,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
                 return (
                   <li key={item.href}>
                     <a
-                      href={item.href}
-                      onClick={(e) => {
-                        if (onNavigate) {
-                          e.preventDefault();
-                          onNavigate(item.href);
-                        }
-                      }}
+                      onClick={() => go(item.href)}
                       className={`flex items-center gap-3 pl-3 pr-2.5 py-2 rounded-sm text-sm transition-colors border-l-2 ${
                         isActive ? "font-medium" : "border-transparent hover:bg-white/5"
                       }`}
@@ -143,5 +141,12 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
         ))}
       </nav>
     </aside>
+      <button type="button" className="md:hidden fixed top-3 left-3 z-50 p-2 rounded-sm bg-[var(--ink)] text-[var(--gold)] border border-border shadow-lg" onClick={() => setMobileOpen(true)} aria-label="Open admin navigation"><Menu className="w-5 h-5" /></button>
+      {mobileOpen && <button type="button" aria-label="Close navigation overlay" className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMobileOpen(false)} />}
+      <aside className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-[var(--ink)] border-r border-border shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`} style={{ background: "var(--ink)", borderColor: "var(--border)" }}>
+        <div className="flex items-center justify-between px-4 h-16 border-b" style={{ borderColor: "var(--border)" }}><span className="font-display text-lg tracking-wide" style={{ color: "var(--gold)" }}>Afsana</span><button type="button" onClick={() => setMobileOpen(false)} className="p-2" aria-label="Close admin navigation"><X className="w-5 h-5" /></button></div>
+        <nav className="flex-1 overflow-y-auto py-4">{groups.map((group) => <div key={group.label} className="mb-5 px-3"><p className="px-2 mb-1.5 text-xs text-[color:var(--ink-muted)]">{group.label}</p><ul className="space-y-0.5">{group.items.map((item) => { const isActive = item.href === "/admin" ? activeHref === "/admin" : activeHref.startsWith(item.href); const Icon = item.icon; return <li key={item.href}><button type="button" onClick={() => go(item.href)} className={`w-full flex items-center gap-3 pl-3 pr-2.5 py-2 rounded-sm text-sm text-left border-l-2 ${isActive ? "font-medium" : "border-transparent hover:bg-white/5"}`} style={{ color: isActive ? "var(--gold)" : "var(--ink-muted)", borderColor: isActive ? "var(--gold)" : "transparent", background: isActive ? "rgba(198,161,91,0.08)" : undefined }}><Icon className="w-4 h-4 shrink-0" /><span>{item.label}</span></button></li>; })}</ul></div>)}</nav>
+      </aside>
+    </>
   );
 }
