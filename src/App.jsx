@@ -1,42 +1,43 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import RequireAuth from './auth/RequireAuth';
 import LoginPage from './auth/LoginPage';
 import ChangePasswordPage from './auth/ChangePasswordPage';
 import AdminLayout from '../admin/components/AdminLayout';
-import Dashboard from '../admin/dashboard/Dashboard';
-import AnalyticsPage from '../admin/dashboard/AnalyticsPage';
-import CouponsList from '../admin/coupons/CouponsList';
-import CmsPage from '../admin/cms/CmsPage';
-import ProductsList from '../admin/products/ProductsList';
-import InventoryList from '../admin/inventory/InventoryList';
-import OrdersList from '../admin/orders/OrdersList';
-import CatalogPage from '../admin/catalog/CatalogPage';
-import ReturnsList from '../admin/returns/ReturnsList';
-import ShippingPage from '../admin/shipping/ShippingPage';
-import CustomersList from '../admin/customers/CustomersList';
-import ReviewsList from '../admin/reviews/ReviewsList';
-import FinancePage from '../admin/finance/FinancePage';
-import BackupPage from '../admin/backup/BackupPage';
-import SettingsPage from '../admin/settings/SettingsPage';
-import StaffPage from '../admin/staff/StaffPage';
-import MyAccountPage from '../admin/account/MyAccountPage';
+const Dashboard = lazy(() => import('../admin/dashboard/Dashboard'));
+const AnalyticsPage = lazy(() => import('../admin/dashboard/AnalyticsPage'));
+const CouponsList = lazy(() => import('../admin/coupons/CouponsList'));
+const CmsPage = lazy(() => import('../admin/cms/CmsPage'));
+const ProductsList = lazy(() => import('../admin/products/ProductsList'));
+const InventoryList = lazy(() => import('../admin/inventory/InventoryList'));
+const OrdersList = lazy(() => import('../admin/orders/OrdersList'));
+const CatalogPage = lazy(() => import('../admin/catalog/CatalogPage'));
+const ReturnsList = lazy(() => import('../admin/returns/ReturnsList'));
+const ShippingPage = lazy(() => import('../admin/shipping/ShippingPage'));
+const CustomersList = lazy(() => import('../admin/customers/CustomersList'));
+const ReviewsList = lazy(() => import('../admin/reviews/ReviewsList'));
+const FinancePage = lazy(() => import('../admin/finance/FinancePage'));
+const BackupPage = lazy(() => import('../admin/backup/BackupPage'));
+const SettingsPage = lazy(() => import('../admin/settings/SettingsPage'));
+const StaffPage = lazy(() => import('../admin/staff/StaffPage'));
+const MyAccountPage = lazy(() => import('../admin/account/MyAccountPage'));
 import RequireCustomer from './customer/RequireCustomer';
-import CustomerLoginPage from './customer/CustomerLoginPage';
-import RegisterPage from './customer/RegisterPage';
-import ForgotPasswordPage from './customer/ForgotPasswordPage';
-import ResetPasswordPage from './customer/ResetPasswordPage';
+const CustomerLoginPage = lazy(() => import('./customer/CustomerLoginPage'));
+const RegisterPage = lazy(() => import('./customer/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./customer/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./customer/ResetPasswordPage'));
 // Phase 6 storefront
 import ShopLayout from './shop/ShopLayout';
-import HomePage from './shop/pages/HomePage';
-import ShopPage from './shop/pages/ShopPage';
-import ProductPage from './shop/pages/ProductPage';
-import CartPage from './shop/pages/CartPage';
-import CheckoutPage from './shop/pages/CheckoutPage';
-import OrderSuccessPage from './shop/pages/OrderSuccessPage';
-import TrackOrderPage from './shop/pages/TrackOrderPage';
-import WishlistPage from './shop/account/WishlistPage';
-import AccountPage from './shop/account/AccountPage';
-import OrderDetailPage from './shop/account/OrderDetailPage';
+const HomePage = lazy(() => import('./shop/pages/HomePage'));
+const ShopPage = lazy(() => import('./shop/pages/ShopPage'));
+const ProductPage = lazy(() => import('./shop/pages/ProductPage'));
+const CartPage = lazy(() => import('./shop/pages/CartPage'));
+const CheckoutPage = lazy(() => import('./shop/pages/CheckoutPage'));
+const OrderSuccessPage = lazy(() => import('./shop/pages/OrderSuccessPage'));
+const TrackOrderPage = lazy(() => import('./shop/pages/TrackOrderPage'));
+const WishlistPage = lazy(() => import('./shop/account/WishlistPage'));
+const AccountPage = lazy(() => import('./shop/account/AccountPage'));
+const OrderDetailPage = lazy(() => import('./shop/account/OrderDetailPage'));
 
 const page = (permission, el) => (
   <RequireAuth permission={permission}><AdminLayout>{el}</AdminLayout></RequireAuth>
@@ -45,7 +46,8 @@ const mine = (el) => <RequireCustomer>{el}</RequireCustomer>;
 
 export default function App() {
   return (
-    <Routes>
+    <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center text-sm text-ink-muted" role="status">Loading…</div>}>
+      <Routes>
       {/* staff */}
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin/change-password" element={<ChangePasswordPage />} />
@@ -88,6 +90,7 @@ export default function App() {
         <Route path="/account/orders/:orderNumber" element={mine(<OrderDetailPage />)} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
