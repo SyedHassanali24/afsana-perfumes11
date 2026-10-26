@@ -11,6 +11,8 @@ const blankNull = (v) => { const t = String(v == null ? '' : v).trim(); return t
 const sortNum = (v) => (String(v).trim() === '' ? 0 : Number(v));
 const datesIn = (i) => ({ startsAt: toDateInput(i.startsAt), endsAt: toDateInput(i.endsAt) });
 const datesOut = (f) => ({ startsAt: startOfDayIso(f.startsAt), endsAt: endOfDayIso(f.endsAt) });
+const cleanLink = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^(https?:\/\/|\/|#)/i.test(t) ? t : null); };
+const cleanImage = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^https?:\/\//i.test(t) ? t : null); };
 
 export const RESOURCE_KEYS = ['banners', 'faqs', 'announcements'];
 
@@ -34,7 +36,7 @@ export const SECTIONS = {
     ],
     emptyForm: { heading: '', subtitle: '', desktopImageUrl: '', desktopImageAlt: '', mobileImageUrl: '', mobileImageAlt: '', buttonText: '', buttonLink: '', startsAt: '', endsAt: '', sortOrder: '0', isActive: true },
     toForm: (i) => ({ heading: i.heading || '', subtitle: i.subtitle || '', desktopImageUrl: i.desktopImageUrl || '', desktopImageAlt: i.desktopImageAlt || '', mobileImageUrl: i.mobileImageUrl || '', mobileImageAlt: i.mobileImageAlt || '', buttonText: i.buttonText || '', buttonLink: i.buttonLink || '', ...datesIn(i), sortOrder: String(i.sortOrder ?? 0), isActive: !!i.isActive }),
-    toPayload: (f) => ({ heading: blankNull(f.heading), subtitle: blankNull(f.subtitle), desktopImageUrl: blankNull(f.desktopImageUrl), desktopImageAlt: blankNull(f.desktopImageAlt), mobileImageUrl: blankNull(f.mobileImageUrl), mobileImageAlt: blankNull(f.mobileImageAlt), buttonText: blankNull(f.buttonText), buttonLink: blankNull(f.buttonLink), ...datesOut(f), sortOrder: sortNum(f.sortOrder), isActive: !!f.isActive }),
+    toPayload: (f) => ({ heading: blankNull(f.heading), subtitle: blankNull(f.subtitle), desktopImageUrl: cleanImage(f.desktopImageUrl), desktopImageAlt: blankNull(f.desktopImageAlt), mobileImageUrl: cleanImage(f.mobileImageUrl), mobileImageAlt: blankNull(f.mobileImageAlt), buttonText: blankNull(f.buttonText), buttonLink: cleanLink(f.buttonLink), ...datesOut(f), sortOrder: sortNum(f.sortOrder), isActive: !!f.isActive }),
     toRow: (i) => ({ id: i.id, status: i.status, isActive: i.isActive, title: i.heading || '(image only)', detail: clip(i.subtitle || i.buttonLink || '', 60), when: when(i), order: i.sortOrder, raw: i }),
     columns: [{ key: 'title', header: 'Banner' }, { key: 'detail', header: 'Details' }, { key: 'when', header: 'Shown' }, { key: 'order', header: 'Order', align: 'right' }],
   },
@@ -65,7 +67,7 @@ export const SECTIONS = {
     ],
     emptyForm: { text: '', link: '', startsAt: '', endsAt: '', isActive: true },
     toForm: (i) => ({ text: i.text || '', link: i.link || '', ...datesIn(i), isActive: !!i.isActive }),
-    toPayload: (f) => ({ text: String(f.text || '').trim(), link: blankNull(f.link), ...datesOut(f), isActive: !!f.isActive }),
+    toPayload: (f) => ({ text: String(f.text || '').trim(), link: cleanLink(f.link), ...datesOut(f), isActive: !!f.isActive }),
     toRow: (i) => ({ id: i.id, status: i.status, isActive: i.isActive, title: i.text, detail: i.link || '—', when: when(i), raw: i }),
     columns: [{ key: 'title', header: 'Text' }, { key: 'detail', header: 'Link' }, { key: 'when', header: 'Shown' }],
   },
