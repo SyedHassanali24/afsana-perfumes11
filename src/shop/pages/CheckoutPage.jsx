@@ -15,6 +15,11 @@ import useShopSettings from '../useShopSettings';
 
 const blank = { name: '', phone: '', email: '', line1: '', line2: '', city: '', postalCode: '' };
 
+function newCheckoutKey() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export default function CheckoutPage() {
   useTitle('Checkout');
   const shop = useShopSettings();
@@ -29,6 +34,7 @@ export default function CheckoutPage() {
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
   const addressPrefilled = useRef(false);
+  const checkoutAttempt = useRef({ signature: '', key: '' });
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
 
   const fill = (a) => setF((s) => ({ ...s, name: a.fullName || s.name, phone: a.phone || s.phone, line1: a.line1 || '', line2: a.line2 || '', city: a.city || '', postalCode: a.postalCode || '' }));
@@ -47,13 +53,19 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (busy || !q?.canCheckout) return;
     setErrors({}); setFormError('');
+    const checkoutPayload = {
+      items, couponCode: couponCode || undefined, paymentMethod: pay,
+      customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
+      shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
+    };
+    const signature = JSON.stringify(checkoutPayload);
+    if (checkoutAttempt.current.signature !== signature) {
+      checkoutAttempt.current = { signature, key: newCheckoutKey() };
+    }
+    const idempotencyKey = checkoutAttempt.current.key;
     setBusy(true);
     try {
-      const { order } = await ordersApi.checkout({
-        items, couponCode: couponCode || undefined, paymentMethod: pay,
-        customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
-        shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
-      });
+      const { order } = await ordersApi.checkout(checkoutPayload, idempotencyKey);
       clear();
       navigate(`/order-success/${order.orderNumber}`, { replace: true, state: { order } });
     } catch (err) {
