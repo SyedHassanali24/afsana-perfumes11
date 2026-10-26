@@ -79,7 +79,7 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
         {o && (
           <div className="space-y-6">
             {/* customer + address */}
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-0.5">
                 <p className="text-sm text-ink">{o.customer.name}</p>
                 <p className="text-xs text-ink-muted">{o.customer.phone || "Phone hidden"}</p>
@@ -92,7 +92,7 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
                   </div>
                 ) : <p className="text-xs text-ink-muted pt-1">Address hidden</p>}
               </div>
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex flex-row flex-wrap sm:flex-col items-start sm:items-end gap-2">
                 <StatusPill status={o.status} />
                 <StatusPill status={o.paymentStatus} tone={PAYMENT_TONE[o.paymentStatus]} />
                 <span className="text-xs text-ink-muted">{o.methodLabel}</span>
@@ -106,7 +106,7 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
               <div className="border border-border rounded-sm divide-y divide-border">
                 {o.items.length === 0 && <p className="px-3 py-2.5 text-sm text-ink-muted">No items found.</p>}
                 {o.items.map((i) => (
-                  <div key={i.key} className="flex items-center justify-between px-3 py-2.5 text-sm">
+                  <div key={i.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2.5 text-sm">
                     <div>
                       <p className="text-ink">{i.name}</p>
                       <p className="text-ink-muted text-xs">
@@ -119,10 +119,10 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
                 ))}
               </div>
               <div className="mt-3 space-y-1 text-sm">
-                <div className="flex justify-between text-ink-muted"><span>Subtotal</span><span>{money(o.subtotal)}</span></div>
+                <div className="flex justify-between gap-4 text-ink-muted"><span>Subtotal</span><span>{money(o.subtotal)}</span></div>
                 <div className="flex justify-between text-ink-muted"><span>Shipping</span><span>{money(o.shipping)}</span></div>
                 {o.discount > 0 && <div className="flex justify-between text-ink-muted"><span>Discount{o.couponCode ? ` (${o.couponCode})` : ""}</span><span>-{money(o.discount)}</span></div>}
-                <div className="flex justify-between text-ink font-medium pt-1 border-t border-border"><span>Total</span><span>{money(o.total)}</span></div>
+                <div className="flex justify-between gap-4 text-ink font-medium pt-1 border-t border-border"><span>Total</span><span>{money(o.total)}</span></div>
               </div>
             </div>
 
