@@ -14,7 +14,10 @@ const models = require('../models');
   ]);
   if (duplicates.length) throw new Error(`Cannot sync indexes: ${duplicates.length} duplicate customer phone/store key(s) exist.`);
   for (const [name, mdl] of Object.entries(models)) {
-    if (mdl && mdl.syncIndexes) { await mdl.syncIndexes(); console.log('indexes synced:', name); }
+    // createIndexes is intentionally used instead of syncIndexes: production must never drop an
+    // existing index just because a schema/index definition changed in code. Stale indexes are
+    // reviewed and removed explicitly in a separate migration.
+    if (mdl && mdl.createIndexes) { await mdl.createIndexes(); console.log('indexes ensured:', name); }
   }
   await mongoose.disconnect();
 })().catch((e) => { console.error(e.message); process.exit(1); });
