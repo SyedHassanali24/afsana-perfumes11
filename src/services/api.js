@@ -122,7 +122,7 @@ function githubPagesMock(path, body, query = {}) {
   return null;
 }
 
-export async function api(path, { method = 'GET', body, query } = {}) {
+export async function api(path, { method = 'GET', body, query, idempotencyKey } = {}) {
   const mock = githubPagesMock(path, body, query);
   if (mock) return mock;
 
@@ -132,7 +132,7 @@ export async function api(path, { method = 'GET', body, query } = {}) {
   try {
     res = await fetch(url, {
       method, credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
