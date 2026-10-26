@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom';
+
+const isExternal = (url) => /^https?:\/\//i.test(String(url || ''));
+const SmartLink = ({ to, children, ...props }) => isExternal(to) ? <a href={to} {...props}>{children}</a> : <Link to={to} {...props}>{children}</Link>;
 import useApi from '../../hooks/useApi';
 import { productsApi, publicTaxonomyApi, shopContentApi } from '../../services';
 import Button from '../../../admin/components/Button';
@@ -50,7 +53,7 @@ export default function HomePage() {
                   {banner.heading && <h1 className="font-display text-4xl sm:text-6xl mt-4 leading-tight">{banner.heading}</h1>}
                   {banner.subtitle && <p className="mt-5 max-w-xl text-white/80">{banner.subtitle}</p>}
                   <div className="mt-8 flex flex-wrap gap-3">
-                    {banner.buttonText && banner.buttonLink && <Link to={banner.buttonLink}><Button>{banner.buttonText}</Button></Link>}
+                    {banner.buttonText && banner.buttonLink && <SmartLink to={banner.buttonLink}><Button>{banner.buttonText}</Button></SmartLink>}
                     <Link to="/shop"><Button variant="secondary">Shop all perfumes</Button></Link>
                   </div>
                 </div>
