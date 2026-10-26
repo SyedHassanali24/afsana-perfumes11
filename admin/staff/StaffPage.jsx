@@ -21,7 +21,7 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl text-ink">Staff &amp; access</h1>
-      <div className="flex gap-1 border-b border-border" role="tablist">
+      <div className="flex gap-1 overflow-x-auto border-b border-border" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={t.id === current.id} onClick={() => setActive(t.id)}
             className={`px-4 py-2 text-sm border-b-2 -mb-px transition-colors ${t.id === current.id ? "border-[var(--gold)] text-ink" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.label}</button>
