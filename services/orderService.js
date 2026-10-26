@@ -73,7 +73,19 @@ async function placeOrder(input, cust) {
     await reserveItems(lines, session);
     if (coupon) {
       const used = await Coupon.findOneAndUpdate(
-        { _id: coupon._id, $expr: { $or: [{ $not: ['$usageLimit'] }, { $lt: ['$usedCount', '$usageLimit'] }] } },
+        { _id: coupon._id, $expr: { $and: [
+          { $or: [{ $not: ['$usageLimit'] }, { $lt: ['$usedCount', '$usageLimit'] }] },
+          { $or: [
+            { $eq: [{ $ifNull: ['$perCustomerLimit', 0] }, 0] },
+            { $lt: [
+              { $size: { $filter: {
+                input: { $ifNull: ['$usage', []] }, as: 'u',
+                cond: { $eq: ['$u.customerId', customer._id] },
+              } } },
+              '$perCustomerLimit',
+            ] },
+          ] },
+        ] } },
         { $inc: { usedCount: 1 }, $push: { usage: { customerId: customer._id } } }, { new: true, session });
       if (!used) throw E.badRequest('This coupon has reached its usage limit.');
     }
