@@ -1,11 +1,9 @@
 const json = (status, body, headers = {}) => ({
   statusCode: status,
   headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...headers },
-  body: JSON.stringify(body),
+  body: status === 204 ? '' : JSON.stringify(body),
 });
-// Handler return helper: res(201, { order }) or res(200, {...}, { 'Set-Cookie': '...' })
 const res = (status, data = {}, headers = {}) => ({ __res: true, status, data, headers });
-
 const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
 const clientIp = (h) => h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
@@ -15,7 +13,8 @@ function parseCookies(header = '') {
   }));
 }
 function serializeCookie(name, value, { maxAge, secure = true } = {}) {
-  return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=Lax', secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']
+  // GitHub Pages -> Netlify is cross-site, so session cookies must be SameSite=None.
+  return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=None', secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']
     .filter(Boolean).join('; ');
 }
 function parseBody(event) {
