@@ -13,8 +13,10 @@ function parseCookies(header = '') {
   }));
 }
 function serializeCookie(name, value, { maxAge, secure = true } = {}) {
-  // GitHub Pages -> Netlify is cross-site, so session cookies must be SameSite=None.
-  return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=None', secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']
+  // Same-site Netlify deployments use Lax. Set COOKIE_SAMESITE=None only when the frontend/API are intentionally cross-site.
+  const sameSite = String(process.env.COOKIE_SAMESITE || 'Lax').toLowerCase();
+  const sameSiteValue = ['lax', 'strict', 'none'].includes(sameSite) ? sameSite[0].toUpperCase() + sameSite.slice(1) : 'Lax';
+  return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', `SameSite=${sameSiteValue}`, secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']
     .filter(Boolean).join('; ');
 }
 function parseBody(event) {
