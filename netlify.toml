@@ -39,4 +39,4 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# The API must never be cached by the browser or a CDN (private data, cookies).
+# Private API responses send no-store from middleware; public read routes opt into route-level Netlify CDN caching.
