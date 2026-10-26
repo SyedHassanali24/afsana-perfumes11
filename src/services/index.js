@@ -38,7 +38,7 @@ export const inventoryApi = {
 };
 
 export const ordersApi = {
-  checkout: (body) => api('/orders', { method: 'POST', body }),
+  checkout: (body, idempotencyKey) => api('/orders', { method: 'POST', body, idempotencyKey }),
   track: (orderNumber, phone) => api(`/orders/track/${orderNumber}`, { query: { phone } }),
   adminList: (query) => api('/orders/admin/list', { query }),
   adminGet: (id) => api(`/orders/admin/${id}`),
