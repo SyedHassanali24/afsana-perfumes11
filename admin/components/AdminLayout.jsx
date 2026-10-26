@@ -16,7 +16,7 @@ export default function AdminLayout({ children, notificationCount }) {
       <Sidebar activeHref={pathname} onNavigate={navigate} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar user={{ name: user?.name || "Staff", role: user?.role?.name || "" }} notificationCount={notificationCount} onLogout={logout} onProfile={() => navigate("/admin/account")} />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 pt-16 md:pt-6">{children}</main>
       </div>
     </div>
   );
