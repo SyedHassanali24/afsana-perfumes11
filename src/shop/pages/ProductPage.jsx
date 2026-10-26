@@ -134,7 +134,6 @@ export default function ProductPage() {
                 {(p.fragrance?.longevity || p.fragrance?.projection || p.fragrance?.seasons?.length) ? (
                   <dl className="mt-6 grid grid-cols-2 gap-y-2 text-sm">
                     {p.fragrance.longevity && <><dt className="text-ink-muted">Longevity</dt><dd>{p.fragrance.longevity}</dd></>}
-                    {p.fragrance.projection && <><dt className="text-ink-muted">Projection</dd></>}{/* removed by next patch if needed */}
                     {p.fragrance.projection && <><dt className="text-ink-muted">Projection</dt><dd>{p.fragrance.projection}</dd></>}
                     {p.fragrance.seasons?.length > 0 && <><dt className="text-ink-muted">Best for</dt><dd>{p.fragrance.seasons.join(', ')}</dd></>}
                   </dl>
