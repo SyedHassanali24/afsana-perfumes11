@@ -13,7 +13,7 @@ const configuredOrigins = () => String(process.env.ALLOWED_ORIGINS || process.en
 function allowedOrigin(origin, context) {
   if (!origin) return false;
   const origins = new Set(configuredOrigins());
-  const siteUrl = context?.site?.url;
+  const siteUrl = process.env.SITE_URL || context?.site?.url;
   if (siteUrl) origins.add(String(siteUrl).replace(/\/$/, ''));
   return origins.has(origin);
 }
