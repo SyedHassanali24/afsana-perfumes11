@@ -52,10 +52,10 @@ export default function OrderDetailPage() {
             </div>
             <ul className="divide-y divide-border rounded-md border border-border bg-surface">
               {o.items.map((it, i) => (
-                <li key={i} className="flex gap-4 p-4">
+                <li key={i} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4">
                   <div className="w-14 h-16 rounded-sm overflow-hidden border border-border bg-bg shrink-0">{it.image ? <img src={it.image} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>
                   <div className="flex-1 text-sm"><p>{it.name}</p><p className="text-ink-muted">{money(it.unitPrice)} × {it.quantity}</p></div>
-                  <p className="text-sm tabular-nums">{money(it.lineTotal)}</p>
+                  <p className="text-sm tabular-nums sm:ml-auto">{money(it.lineTotal)}</p>
                 </li>
               ))}
             </ul>
