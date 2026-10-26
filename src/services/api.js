@@ -5,9 +5,6 @@ export class ApiError extends Error {
 
 const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, "");
 export async function api(path, { method = 'GET', body, query, idempotencyKey } = {}) {
-  const mock = githubPagesMock(path, body, query);
-  if (mock) return mock;
-
   const url = new URL(`/api${path}`, API_ORIGIN);
   Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
   let res;
