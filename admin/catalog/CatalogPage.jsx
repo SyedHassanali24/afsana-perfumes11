@@ -22,10 +22,10 @@ export default function CatalogPage() {
         <h1 className="font-display text-2xl text-ink">Catalog setup</h1>
         <p className="text-sm text-ink-muted mt-1">The groups your products are organised into.</p>
       </div>
-      <div className="flex gap-1 border-b border-border" role="tablist">
+      <div className="flex gap-1 border-b border-border overflow-x-auto" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={t.id === cur.id} onClick={() => setActive(t.id)}
-            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${t.id === cur.id ? "border-[var(--gold)] text-ink font-medium" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.label}</button>
+            className={`px-3 sm:px-4 py-2.5 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${t.id === cur.id ? "border-[var(--gold)] text-ink font-medium" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.label}</button>
         ))}
       </div>
       <TaxonomyTab key={cur.id} type={cur.id} module={cur.module} noun={cur.noun} plural={cur.plural} />
