@@ -43,10 +43,10 @@ export default function TrackOrderPage() {
         <Field label="Order number"><Input required value={f.order} onChange={(e) => setF({ ...f, order: e.target.value })} placeholder="AFS-000123" /></Field>
         <Field label="Phone number"><Input required inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} placeholder="0300 1234567" /></Field>
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-        <Button type="submit" disabled={busy}>{busy ? 'Checking…' : 'Track order'}</Button>
+        <Button type="submit" className="w-full sm:w-auto min-h-11" disabled={busy}>{busy ? 'Checking…' : 'Track order'}</Button>
       </form>
       {res && (
-        <div className="mt-8 rounded-md border border-border bg-surface p-5 space-y-5">
+        <div className="mt-8 rounded-md border border-border bg-surface p-4 sm:p-5 space-y-5">
           <div className="flex items-center justify-between"><p className="font-display text-xl">{res.orderNumber}</p><StatusPill status={res.status} /></div>
           <p className="text-sm text-ink-muted">Payment: {res.paymentStatus}</p>
           <ShipmentInfo shipment={res.shipment} />
