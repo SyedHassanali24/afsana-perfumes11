@@ -35,7 +35,7 @@ function SupplierDrawer({ open, supplier, onClose, onSaved }) {
       <form id="supplier-form" onSubmit={submit} className="space-y-4">
         {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
         <Field label="Supplier name" error={errors.name}><Input value={v.name} error={!!errors.name} onChange={set("name")} /></Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Contact person"><Input value={v.contactPerson} onChange={set("contactPerson")} /></Field>
           <Field label="Phone" error={errors.phone}><Input value={v.phone} onChange={set("phone")} /></Field>
         </div>
@@ -76,8 +76,8 @@ export default function SuppliersTab() {
   ];
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="w-72"><Input placeholder="Search suppliers…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="w-full sm:w-72"><Input placeholder="Search suppliers…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
         {can("suppliers.create") && <Button icon={Plus} onClick={() => setDrawer({ open: true, supplier: null })}>Add supplier</Button>}
       </div>
       {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-success">{notice}</p>}
