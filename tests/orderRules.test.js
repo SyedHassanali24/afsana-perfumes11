@@ -25,3 +25,21 @@ test('payment transitions are fail-closed', () => {
   assert.equal(R.canSetPayment('Partially Refunded', 'Pending'), false);
   assert.equal(R.canSetPayment('Pending', 'Pending'), true);
 });
+
+test('stock effects are fail-closed for non-stock lifecycle transitions', () => {
+  for (const status of ['Confirmed', 'Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Return Requested', 'Refunded']) {
+    assert.equal(R.stockEffect(status, false), null, `${status} must not change stock`);
+    assert.equal(R.stockEffect(status, true), null, `${status} must not change stock`);
+  }
+});
+
+test('Returned only restocks already committed stock', () => {
+  assert.equal(R.stockEffect('Returned', true), 'restock_return');
+  assert.equal(R.stockEffect('Returned', false), null);
+});
+
+test('terminal states cannot accidentally trigger a second stock effect', () => {
+  assert.equal(R.stockEffect('Cancelled', true), 'restock');
+  assert.equal(R.stockEffect('Cancelled', false), 'release');
+  assert.equal(R.stockEffect('Returned', true), 'restock_return');
+});
