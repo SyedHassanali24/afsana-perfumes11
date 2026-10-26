@@ -347,6 +347,46 @@ async function main() {
     { $lookup: { from: models.User.collection.name, localField: 'updatedBy', foreignField: '_id', as: 'user' } },
     { $match: { 'user.0': { $exists: false } } },
   ]);
+  failures += await referenceCheck('inventoryTransactions.by', models.InventoryTransaction, [
+    { $match: { by: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'by', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('purchaseOrders.createdBy', models.PurchaseOrder, [
+    { $match: { createdBy: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'createdBy', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orders.timeline.by', models.Order, [
+    { $unwind: '$timeline' },
+    { $match: { 'timeline.by': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'timeline.by', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orders.internalNotes.by', models.Order, [
+    { $unwind: '$internalNotes' },
+    { $match: { 'internalNotes.by': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'internalNotes.by', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('returns.timeline.by', models.Return, [
+    { $unwind: '$timeline' },
+    { $match: { 'timeline.by': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.User.collection.name, localField: 'timeline.by', foreignField: '_id', as: 'user' } },
+    { $match: { 'user.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('carts.items.productId', models.Cart, [
+    { $unwind: '$items' },
+    { $match: { 'items.productId': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Product.collection.name, localField: 'items.productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('carts.items.variantId', models.Cart, [
+    { $unwind: '$items' },
+    { $match: { 'items.variantId': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'items.variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { 'variant.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('orders.assignedTo', models.Order, [
     { $match: { assignedTo: { $exists: true, $ne: null } } },
     { $lookup: { from: models.User.collection.name, localField: 'assignedTo', foreignField: '_id', as: 'user' } },
