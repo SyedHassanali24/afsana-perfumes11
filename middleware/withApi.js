@@ -6,8 +6,9 @@ const { hit } = require('./rateLimit');
 const { connectDB } = require('../database/connection');
 const { authenticate } = require('./auth');
 const { authenticateCustomer } = require('./customerAuth');
+const { cacheHeaders } = require('./cache');
 
-const PAGES_ORIGIN = 'https://syedhassanali24.github.io';
+const PAGES_ORIGIN = process.env.PAGES_ORIGIN || 'https://syedhassanali24.github.io';
 
 function createHandler(group, routes) {
   const compiled = compile(routes);
@@ -53,7 +54,9 @@ function createHandler(group, routes) {
       if (route.reauth) await ctx.reauth(rawBody && rawBody.confirmPassword);
       const out = await route.handler({ req, params, query, body, ctx, scopes, ip });
       const r = out && out.__res ? out : { status: 200, data: out || {}, headers: {} };
-      const extra = route.cache ? { 'Cache-Control': `public, max-age=${route.cache}` } : {};
+      const cacheable = route.cache && route.public && !route.optionalCustomer &&
+        ['GET', 'HEAD'].includes(method) && r.status >= 200 && r.status < 300;
+      const extra = cacheable ? cacheHeaders(route.cache, route.cacheSWR, route.cacheTags) : {};
       return json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
     } catch (err) {
       const r = toResponse(err);
