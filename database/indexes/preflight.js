@@ -252,6 +252,27 @@ async function main() {
     { $unwind: '$variant' },
     { $match: { $expr: { $ne: ['$items.productId', '$variant.productId'] } } },
   ]);
+  failures += await referenceCheck('coupons.productIds', models.Coupon, [
+    { $unwind: '$productIds' },
+    { $lookup: { from: models.Product.collection.name, localField: 'productIds', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('coupons.categoryIds', models.Coupon, [
+    { $unwind: '$categoryIds' },
+    { $lookup: { from: models.Category.collection.name, localField: 'categoryIds', foreignField: '_id', as: 'category' } },
+    { $match: { 'category.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('coupons.customerIds', models.Coupon, [
+    { $unwind: '$customerIds' },
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerIds', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('coupon.usage.customerId', models.Coupon, [
+    { $unwind: '$usage' },
+    { $match: { 'usage.customerId': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'usage.customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('orders.assignedTo', models.Order, [
     { $match: { assignedTo: { $exists: true, $ne: null } } },
     { $lookup: { from: models.User.collection.name, localField: 'assignedTo', foreignField: '_id', as: 'user' } },
