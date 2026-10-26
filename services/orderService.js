@@ -150,7 +150,7 @@ async function placeOrder(input, cust, idempotencyKey) {
     throw err;
   }
   if (cust) await Cart.deleteOne({ customerId: customer._id }).catch(() => {}); // saved cart is emptied once the order exists
-  await Notification.create({ type: 'new_order', title: 'New order', body: `${orderNumber} · ${total}`, link: '/admin/orders', forPermission: 'orders.view' }).catch(() => {});
+  if (order && order.orderNumber === orderNumber) await Notification.create({ type: 'new_order', title: 'New order', body: `${order.orderNumber} · ${order.total}`, link: '/admin/orders', forPermission: 'orders.view' }).catch(() => {});
   return { orderNumber: order.orderNumber, total, subtotal, shipping, discount, status: order.status, paymentMethod: order.paymentMethod };
 }
 
