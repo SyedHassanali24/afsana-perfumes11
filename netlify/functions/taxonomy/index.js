@@ -5,7 +5,7 @@ const T = require('../../../services/taxonomyService');
 
 // /api/taxonomy/{categories|collections|brands|fragrance-families}  (+ /public/:type for the storefront)
 const routes = [
-  { method: 'GET', path: '/public/:type', public: true, cache: 60, handler: ({ params }) => T.publicList(params.type) },
+  { method: 'GET', path: '/public/:type', public: true, cache: 300, cacheTags: ['taxonomy'], handler: ({ params }) => T.publicList(params.type) },
 ];
 for (const [type, cfg] of Object.entries(T.TYPES)) {
   const m = cfg.module;
