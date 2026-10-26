@@ -192,7 +192,7 @@ async function setStatus(ctx, id, { status, note, condition }, scopes) {
     if (status === 'Received') await receiveReturnedItems(upd.items, order, ctx, session, condition);
     const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const returns = await Return.find({ orderId: order._id }).session(session).lean();
-    await syncOrderStatus(order, orderItems, returns, ctx.user._id, session, payStatus);
+    await syncOrderStatus(order, orderItems, returns, ctx.user._id, session);
     await audit(ctx, { action: `return.${status.toLowerCase()}`, module: 'returns', recordId: id, oldValue: cur.status, newValue: { status, condition, note } }, session);
     return upd;
   });
@@ -237,7 +237,7 @@ async function issueRefund(ctx, id, { amount, method, reference, reason }, scope
     if (order.customerId) await Customer.updateOne({ _id: order.customerId }, [{ $set: { 'stats.totalSpent': { $max: [0, { $subtract: [{ $ifNull: ['$stats.totalSpent', 0] }, amount] }] } } }], { session });
     const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const returns = await Return.find({ orderId: order._id }).session(session).lean();
-    await syncOrderStatus(order, orderItems, returns, ctx.user._id, session);
+    await syncOrderStatus(order, orderItems, returns, ctx.user._id, session, payStatus);
     await audit(ctx, { action: 'refund.issued', module: 'refunds', recordId: refund._id, oldValue: { paymentStatus: order.paymentStatus, refundedSoFar: already }, newValue: { amount, method, reference, returnNumber: cur.returnNumber, orderNumber: order.orderNumber, paymentStatus: payStatus } }, session);
     return upd;
   });
