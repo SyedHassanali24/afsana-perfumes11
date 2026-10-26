@@ -240,7 +240,7 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
   const o = await Order.findOne({ _id: id, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) });
   if (!o) throw E.notFound('Order not found.');
   const old = o.paymentStatus;
-  if (!R.canEditPayment(old)) throw E.conflict('This order has been refunded, so its payment status can no longer be changed.');
+  if (!R.canSetPayment(old, paymentStatus)) throw E.conflict(`Payment status cannot change from ${old} to ${paymentStatus}.`);
   await withTx(async (session) => {
     // compare-and-set: a refund that lands between the check above and this write must win
     const locked = await Order.findOneAndUpdate({ _id: id, paymentStatus: { $nin: R.PAYMENT_LOCKED } }, { $set: { paymentStatus } }, { session });
