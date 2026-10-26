@@ -109,6 +109,26 @@ async function main() {
     { $unwind: '$variant' },
     { $match: { $expr: { $ne: ['$productId', '$variant.productId'] } } },
   ]);
+  failures += await referenceCheck('purchaseOrders.supplierId', models.PurchaseOrder, [
+    { $lookup: { from: models.Supplier.collection.name, localField: 'supplierId', foreignField: '_id', as: 'supplier' } },
+    { $match: { 'supplier.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('purchaseOrders.items.productId', models.PurchaseOrder, [
+    { $unwind: '$items' },
+    { $lookup: { from: models.Product.collection.name, localField: 'items.productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('purchaseOrders.items.variantId', models.PurchaseOrder, [
+    { $unwind: '$items' },
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'items.variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { 'variant.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('purchaseOrders.items.productId↔variant.productId', models.PurchaseOrder, [
+    { $unwind: '$items' },
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'items.variantId', foreignField: '_id', as: 'variant' } },
+    { $unwind: '$variant' },
+    { $match: { $expr: { $ne: ['$items.productId', '$variant.productId'] } } },
+  ]);
   if (failures) throw new Error(`Index/reference preflight failed: ${failures} conflict(s) detected. Resolve them before npm run db:indexes.`);
   console.log('Index preflight OK: no duplicate values for declared unique indexes.');
 }
