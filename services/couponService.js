@@ -39,7 +39,15 @@ async function create(ctx, body) {
   if (errs.length) throw invalid(errs);
   const same = await Coupon.findOne({ code: data.code }).select('isDeleted').lean();
   if (same) throw E.conflict(same.isDeleted ? 'This code is in Trash. Restore it instead.' : 'A coupon with this code already exists.', [{ path: 'code', message: same.isDeleted ? 'Code is in Trash.' : 'Code already used.' }], 'DUPLICATE');
-  const c = await Coupon.create(data);
+  let c;
+  try {
+    c = await Coupon.create(data);
+  } catch (err) {
+    if (err?.code === 11000 || err?.codeName === 'DuplicateKey') {
+      throw E.conflict('A coupon with this code already exists.', [{ path: 'code', message: 'Code already used.' }], 'DUPLICATE');
+    }
+    throw err;
+  }
   await audit(ctx, { action: 'coupon.created', module: 'coupons', recordId: c._id, newValue: keyFields(c) });
   return { coupon: shape(c) };
 }
@@ -58,7 +66,14 @@ async function update(ctx, id, body) {
     if (same) throw E.conflict('A coupon with this code already exists.', [{ path: 'code', message: same.isDeleted ? 'Code is in Trash.' : 'Code already used.' }], 'DUPLICATE');
   }
   for (const k of ['code', 'type', 'value', 'minOrder', 'maxDiscount', 'firstOrderOnly', 'usageLimit', 'perCustomerLimit', 'startsAt', 'expiresAt', 'isActive']) c.set(k, data[k]); // missing key -> cleared
-  await c.save();
+  try {
+    await c.save();
+  } catch (err) {
+    if (err?.code === 11000 || err?.codeName === 'DuplicateKey') {
+      throw E.conflict('A coupon with this code already exists.', [{ path: 'code', message: 'Code already used.' }], 'DUPLICATE');
+    }
+    throw err;
+  }
   await audit(ctx, { action: 'coupon.updated', module: 'coupons', recordId: id, oldValue: before, newValue: keyFields(c) });
   return { coupon: shape(c) };
 }
