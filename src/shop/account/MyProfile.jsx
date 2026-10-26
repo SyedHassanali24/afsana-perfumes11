@@ -32,7 +32,7 @@ function PasswordForm() {
   const [msg, setMsg] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
   const submit = async (e) => {
     e.preventDefault(); setMsg(''); setError('');
-    if (f.next.length < 8 || !/[A-Za-z]/.test(f.next) || !/\d/.test(f.next)) return setError('New password: at least 8 characters, with letters and numbers.');
+    if (f.next.length < 8 || !/[A-Za-z]/.test(f.next) || !/\d/.test(f.next)) return setError('New password: at least 8 characters, with letters and numbers.');\n    if (f.cur === f.next) return setError('New password must be different from your current password.');
     setBusy(true);
     try { await accountApi.changePassword(f.cur, f.next); setF({ cur: '', next: '' }); setMsg('Password changed. Other devices were signed out.'); }
     catch (err) { setError(err.message); } finally { setBusy(false); }
