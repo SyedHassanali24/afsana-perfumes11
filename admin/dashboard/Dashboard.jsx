@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { AlertTriangle } from "lucide-react";
 import Card from "../components/Card";
@@ -149,7 +150,7 @@ export default function Dashboard() {
                 ))}
               </ul>
               {vm.lowStock.count > vm.lowStock.items.length && (
-                <a href="/admin/inventory" className="block mt-4 text-sm text-gold hover:underline">
+                <Link to="/admin/inventory" className="block mt-4 text-sm text-gold hover:underline">
                   View all {vm.lowStock.count}{vm.lowStock.outOfStock ? ` (${vm.lowStock.outOfStock} out of stock)` : ""}
                 </a>
               )}
@@ -162,7 +163,7 @@ export default function Dashboard() {
         <Card className="xl:col-span-2" padded={false}>
           <div className="flex items-center justify-between px-5 pt-5 pb-1">
             <h2 className="font-display text-lg text-ink">Recent orders</h2>
-            <a href="/admin/orders" className="text-sm text-gold hover:underline">View all</a>
+            <Link to="/admin/orders" className="text-sm text-gold hover:underline">View all</Link>
           </div>
           <div className="px-5 pb-5">
             {!vm.recentOrders ? (
