@@ -12,7 +12,6 @@ if (!uri || !dbName) {
 }
 
 async function main() {
-  const suffix = new mongoose.Types.ObjectId();
   const variantId = new mongoose.Types.ObjectId();
   const productId = new mongoose.Types.ObjectId();
 
