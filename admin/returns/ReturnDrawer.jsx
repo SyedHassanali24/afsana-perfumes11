@@ -42,13 +42,13 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
         {r && order && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <div className="flex items-center gap-3"><StatusPill status={r.status} /><span className="text-sm text-ink">{r.customer?.name || "Customer"}</span>{r.source === "staff" && <span className="text-xs text-ink-muted">logged by staff</span>}</div>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3"><StatusPill status={r.status} /><span className="text-sm text-ink">{r.customer?.name || "Customer"}</span>{r.source === "staff" && <span className="text-xs text-ink-muted">logged by staff</span>}</div>
               <p className="text-sm text-ink-muted">Order {r.orderNumber} ({order.status}) · requested {when(r.createdAt)}{r.customer?.phone ? ` · ${r.customer.phone}` : ""}</p>
             </div>
 
             <div>
               <h3 className="text-sm font-medium text-ink mb-2">Items being returned</h3>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto"><table className="w-full min-w-[520px] text-sm">
                 <thead><tr className="text-left text-xs text-ink-muted border-b border-border"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Qty</th><th className="font-medium text-right">Price</th></tr></thead>
                 <tbody>
                   {r.items.map((i) => (
@@ -97,7 +97,7 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
             {mode === "refund" && refund && (
               <div className="space-y-3 border border-border rounded-md p-4">
                 <p className="text-xs text-ink-muted">Order total {money(order.total)} · already refunded {money(refund.alreadyRefunded)} · you can refund up to {money(refund.cap)}.</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Amount (PKR)" hint={`Suggested ${money(refund.suggested)}`}><Input type="number" min="1" max={refund.cap} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></Field>
                   <Field label="Paid back by"><Select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>{METHODS.map((m) => <option key={m}>{m}</option>)}</Select></Field>
                 </div>
