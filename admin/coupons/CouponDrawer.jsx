@@ -39,7 +39,7 @@ export default function CouponDrawer({ open, coupon, onClose, onSaved }) {
         <Field label="Code" error={errors.code} hint={used ? "Locked: this coupon has already been used." : "Letters, numbers, - or _ . Shoppers type this at checkout."}>
           <Input value={v.code} error={!!errors.code} disabled={used} maxLength={30} onChange={(e) => setV((x) => ({ ...x, code: e.target.value.toUpperCase() }))} />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Type" error={errors.type}>
             <Select value={v.type} onChange={set("type")}>{TYPE_OPTIONS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}</Select>
           </Field>
@@ -49,7 +49,7 @@ export default function CouponDrawer({ open, coupon, onClose, onSaved }) {
             </Field>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Minimum order (PKR)" error={errors.minOrder} hint="Leave empty for none.">
             <Input type="number" min="0" inputMode="numeric" value={v.minOrder} error={!!errors.minOrder} onChange={set("minOrder")} />
           </Field>
@@ -59,7 +59,7 @@ export default function CouponDrawer({ open, coupon, onClose, onSaved }) {
             </Field>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Total uses allowed" error={errors.usageLimit} hint="Empty = unlimited.">
             <Input type="number" min="1" inputMode="numeric" value={v.usageLimit} error={!!errors.usageLimit} onChange={set("usageLimit")} />
           </Field>
@@ -67,7 +67,7 @@ export default function CouponDrawer({ open, coupon, onClose, onSaved }) {
             <Input type="number" min="0" inputMode="numeric" value={v.perCustomerLimit} error={!!errors.perCustomerLimit} onChange={set("perCustomerLimit")} />
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Starts on" error={errors.startsAt} hint="Empty = already started."><Input type="date" value={v.startsAt} error={!!errors.startsAt} onChange={set("startsAt")} /></Field>
           <Field label="Expires on" error={errors.expiresAt} hint="Valid until the end of this day."><Input type="date" value={v.expiresAt} error={!!errors.expiresAt} onChange={set("expiresAt")} /></Field>
         </div>
