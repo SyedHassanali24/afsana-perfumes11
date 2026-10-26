@@ -1,10 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
-
 export default defineConfig({
-  base: isGitHubPages ? "/afsana-perfumes11/" : "/",
+  base: "/",
   plugins: [react()],
   server: {
     // Local dev: run `npm run api` so /api/* reaches Netlify Functions.
