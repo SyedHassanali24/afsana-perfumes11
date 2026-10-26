@@ -58,7 +58,7 @@ export default function TaxonomyDrawer({ open, type, noun, item, parents, onClos
             <ImageUploadButton onUploaded={(url) => setV((x) => ({ ...x, imageUrl: url }))} />
           </div>
         </Field>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Sort order" hint="Lower shows first"><Input type="number" min="0" value={v.sortOrder} onChange={set("sortOrder")} /></Field>
         </div>
         <div className="border-t border-border pt-4 space-y-3">
