@@ -36,7 +36,7 @@ function AddressForm({ initial, onSaved, onCancel }) {
       </div>
       <Check label="Use as my default address" checked={f.isDefault} onChange={(v) => setF({ ...f, isDefault: v })} />
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-      <div className="flex gap-2"><Button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save address'}</Button><Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button></div>
+      <div className="flex flex-col sm:flex-row gap-2"><Button type="submit" className="w-full sm:w-auto" disabled={busy}>{busy ? 'Saving…' : 'Save address'}</Button><Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={onCancel}>Cancel</Button></div>
     </form>
   );
 }
@@ -66,7 +66,7 @@ export default function MyAddresses() {
       </div>
       <ConfirmDialog open={!!del} title="Remove this address?" message={del ? `${del.line1}, ${del.city}` : ''} confirmLabel="Remove" danger
         onClose={() => setDel(null)}
-        onConfirm={async () => { const r = await accountApi.removeAddress(del.id); setList(r.addresses); }} />
+        onConfirm={async () => { try { const r = await accountApi.removeAddress(del.id); setList(r.addresses); setDel(null); } catch (err) { setDel(null); } }} />
     </StateBox>
   );
 }
