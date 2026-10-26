@@ -28,7 +28,7 @@ export default function MyAccountPage() {
         <div className="max-w-sm"><ChangePasswordForm onSubmit={(c, n) => authApi.changePassword(c, n)} onDone={() => { setMsg("Password changed. Your other devices were signed out."); reload(); }} /></div>
       </Card>
       <Card>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h2 className="font-display text-lg text-ink">Where you're signed in</h2>
           <Button variant="secondary" size="sm" onClick={everywhere}>Sign out everywhere</Button>
         </div>
