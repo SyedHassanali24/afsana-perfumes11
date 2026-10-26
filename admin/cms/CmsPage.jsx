@@ -16,7 +16,7 @@ export default function CmsPage() {
         <p className="text-sm text-ink-muted mt-1">Banners, FAQs and the announcement bar for the shop.</p>
       </div>
       {!section ? <p className="text-sm text-ink-muted">You do not have access to any content sections.</p> : (<>
-        <div className="flex gap-2 border-b border-border" role="tablist">
+        <div className="flex gap-2 overflow-x-auto border-b border-border" role="tablist">
           {tabs.map((t) => (
             <button key={t.key} role="tab" aria-selected={t.key === section.key} onClick={() => setActive(t.key)}
               className={`px-4 py-2 text-sm -mb-px border-b-2 ${t.key === section.key ? "border-gold text-ink" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.tab}</button>
