@@ -79,7 +79,14 @@ async function markOrdered(ctx, id) {
     const po = await PurchaseOrder.findById(id).session(session);
     if (!po) throw E.notFound('Purchase order not found.');
     if (!canTransition(po.status, 'Ordered')) throw E.conflict(`A ${po.status.toLowerCase()} purchase order can't be marked as ordered.`);
-    for (const it of po.items) await Inventory.updateOne({ variantId: it.variantId }, { $inc: { incoming: it.quantity } }, { session });
+    for (const it of po.items) {
+      const inv = await Inventory.findOneAndUpdate(
+        { variantId: it.variantId, productId: it.productId },
+        { $inc: { incoming: it.quantity } },
+        { new: true, session },
+      );
+      if (!inv) throw E.conflict('Inventory record is missing or linked to the wrong product.', { variantId: String(it.variantId) }, 'STOCK_INCONSISTENT');
+    }
     po.status = 'Ordered';
     await po.save({ session });
     await audit(ctx, { action: 'purchase_order.ordered', module: 'purchaseOrders', recordId: id, newValue: { poNumber: po.poNumber } }, session);
