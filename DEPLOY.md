@@ -31,46 +31,27 @@ Ek waqt mein ek hi step karein, aur kahin atak jayein to screen ka message mujhe
 | `UPSTASH_REDIS_REST_TOKEN` | Yes | Production shared rate-limit Redis REST token |
 | `RATE_LIMIT_FAIL_OPEN` | No | Production mein false/empty rakhein |
 
-Random JWT_SECRET banane ke liye apne PC par:
-`node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
-
 Admin ka email/password Netlify mein **mat** daalein (sirf Step 4 mein apne PC par chahiye).
-Production mein shared rate limiter required hai. Upstash variables missing hon to rate limiter production mein fail-closed karega. `RATE_LIMIT_FAIL_OPEN=true` sirf deliberate emergency exception hai.
+Production mein shared rate limiter required hai. Upstash variables missing hon to rate limiter production mein fail-closed karega.
 
-Production password reset ke liye `RESEND_API_KEY` aur `EMAIL_FROM` required hain. Missing provider configuration par email silently drop nahi hogi.
+Production password reset ke liye `RESEND_API_KEY` aur `EMAIL_FROM` required hain.
 
-4. **Deploy** dabayein. Pehli build 2-3 minute leti hai.
+4. **Deploy** dabayein.
 
-## Step 4: Live database ka pehla setup (apne PC se, sirf ek baar)
-Project folder mein `.env` file mein yeh 4 cheezein live wali rakhein: `MONGODB_URI`, `MONGODB_DB_NAME=afsana_live`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (kam az kam 12 harf).
-Phir ek ek command chalayein:
-```
-npm install
-npm run db:setup
-npm run db:indexes:preflight
-npm run db:indexes
-```
-Screen par aana chahiye: `Owner created: aap-ka-email`, phir indexes ka message.
-Is se demo perfumes nahi banenge. Products aap admin se khud daalenge.
+## Step 4: Live database ka pehla setup
+Live database mein owner/admin aur indexes create karna zaroori hai:
+`npm run db:setup`
+`npm run db:indexes:preflight`
+`npm run db:indexes`
 
-## Pehle health check (har masle mein sab se pehle yeh)
-Browser mein kholein: `https://aap-ka-site.netlify.app/api/health`
+## Pehle health check
+Browser mein kholein: `/api/health`
 - `"ok":true` aaye to env variables aur database sahi hain.
-- `"ok":false` aaye to response ke `"fixes"` field mein missing configuration ya connection issue identify karne ki information hoti hai. Yeh password ya connection string expose nahi karta.
-- `"setupDone":false` ho to Step 4 (`npm run db:setup`) abhi baqi hai.
+- `"ok":false` aaye to response ke `"fixes"` field mein missing configuration ya connection issue identify hota hai.
 
-## Step 5: Check karein
-1. `https://aap-ka-site.netlify.app/admin/login` kholein, ADMIN_EMAIL/PASSWORD se login karein.
-2. Dashboard khulna chahiye (khali, no sales).
-3. Products mein ek product banayein, Inventory mein stock dalein. Phir `https://aap-ka-site.netlify.app/shop` par woh dikhna chahiye.
-4. Ek test order dein (COD) aur admin Orders mein dekhein.
-5. Kuch bhi kaam na kare to Netlify mein **Functions, logs** dekhein aur error mujhe bhej dein.
-
-## Zaroori hifazati kaam (live karne se pehle)
-- Pehle screenshot mein jo secrets nazar aaye (`JWT_SECRET`, `ADMIN_PASSWORD`, purana Mongo password) un ko **badal dein**. Live ke liye sab naye banayein.
-- `.env.example` mein asli values kabhi na likhein.
-- Owner ka password bhool jayein to: `.env` mein naya `ADMIN_PASSWORD` likh kar `npm run admin:reset` chalayein.
-- Free Atlas mein khud-ba-khud backup nahi hota. Live hone ke baad paid tier ya backup script zaroor lagayein (HANDOFF mein "Later" mein likha hai).
-
+## Check
+`/admin/login` par owner credentials se login karein.
+`/shop` par products check karein.
 
 <!-- Netlify production environment refresh marker -->
+<!-- Environment values changed: production URL switched to a hidden custom Netlify subdomain. -->
