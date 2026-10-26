@@ -124,7 +124,7 @@ async function placeOrder(input, cust, idempotencyKey) {
             ] },
           ] },
         ] } },
-        { $inc: { usedCount: 1 }, $push: { usage: { customerId: customer._id, orderId: orderNumber, at: new Date() } } }, { new: true, session });
+        { $inc: { usedCount: 1 } }, { new: true, session });
       if (!used) throw E.badRequest('This coupon has reached its usage limit.');
     }
     const [o] = await Order.create([{
@@ -135,6 +135,7 @@ async function placeOrder(input, cust, idempotencyKey) {
       ...(key ? { idempotencyKey: key, idempotencyHash: requestHash } : {}),
     }], { session });
     await OrderItem.insertMany(lines.map(({ categoryId, ...l }) => ({ ...l, orderId: o._id, lineTotal: l.lineTotal })), { session });
+    if (coupon) await Coupon.updateOne({ _id: coupon._id }, { $push: { usage: { customerId: txCustomer._id, orderId: o._id, at: new Date() } } }, { session });
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
     await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
     return o;
