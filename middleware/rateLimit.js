@@ -22,7 +22,13 @@ async function redisCommand(command, args = []) {
 }
 
 async function hit(key, limit, windowMs, now = Date.now()) {
-  if (!REDIS_URL || !REDIS_TOKEN) return localHit(key, limit, windowMs, now);
+  const production = process.env.NODE_ENV === 'production' || process.env.CONTEXT === 'production';
+  if (!REDIS_URL || !REDIS_TOKEN) {
+    // Production must use a shared limiter. A per-instance map is not a real global
+    // limit on serverless infrastructure, so fail closed until Upstash is configured.
+    if (production && process.env.RATE_LIMIT_FAIL_OPEN !== 'true') return false;
+    return localHit(key, limit, windowMs, now);
+  }
   const redisKey = `afsana:rl:${key}`;
   try {
     const count = Number(await redisCommand('incr', [redisKey]));
