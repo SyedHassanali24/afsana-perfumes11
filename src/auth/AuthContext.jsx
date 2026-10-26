@@ -4,11 +4,20 @@ import { can as canFn } from './permissions';
 
 const AuthContext = createContext(null);
 
+const DEMO_ADMIN = import.meta.env.BASE_URL !== '/';
+const DEMO_SESSION_KEY = 'afsana_demo_admin_v1';
+const DEMO_USER = { id: 'demo-admin', email: 'demo@afsana.local', name: 'Afsana Demo Admin', role: 'owner' };
+const DEMO_PERMISSIONS = { unrestricted: true, modules: {}, deniedFields: [] };
+
 // status: 'loading' (checking session) | 'authed' | 'guest'
 export function AuthProvider({ children }) {
   const [state, setState] = useState({ status: 'loading', user: null, permissions: null, mustChangePassword: false });
 
   const refresh = useCallback(async () => {
+    if (DEMO_ADMIN && localStorage.getItem(DEMO_SESSION_KEY) === '1') {
+      setState({ status: 'authed', user: DEMO_USER, permissions: DEMO_PERMISSIONS, mustChangePassword: false });
+      return;
+    }
     try {
       const { user, permissions, mustChangePassword } = await authApi.me();
       setState({ status: 'authed', user, permissions, mustChangePassword: !!mustChangePassword });
@@ -29,11 +38,17 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
+    if (DEMO_ADMIN && email.toLowerCase() === DEMO_USER.email && password === 'AfsanaDemo123!') {
+      localStorage.setItem(DEMO_SESSION_KEY, '1');
+      setState({ status: 'authed', user: DEMO_USER, permissions: DEMO_PERMISSIONS, mustChangePassword: false });
+      return;
+    }
     await authApi.login(email, password); // throws ApiError on failure (message is safe to show)
     await refresh();
   }, [refresh]);
 
   const logout = useCallback(async () => {
+    if (DEMO_ADMIN) localStorage.removeItem(DEMO_SESSION_KEY);
     try { await authApi.logout(); } catch { /* cookie may already be gone */ }
     setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
   }, []);
