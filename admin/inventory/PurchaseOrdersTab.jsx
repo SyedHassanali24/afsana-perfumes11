@@ -36,16 +36,16 @@ export default function PurchaseOrdersTab() {
   ];
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-sm text-ink-muted">Order stock from suppliers and receive it into inventory.</p>
         {can("purchaseOrders.create") && <Button icon={Plus} onClick={() => setForm({ open: true, po: null })}>New purchase order</Button>}
       </div>
       <Card padded={false}>
-        <div className="flex flex-wrap gap-3 p-5 border-b border-border">
-          <div className="flex-1 min-w-[180px]"><Input placeholder="Search PO number…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
-          <div className="w-48"><Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}><option value="">All statuses</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}</Select></div>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 p-4 sm:p-5 border-b border-border">
+          <div className="w-full sm:flex-1 sm:min-w-[180px]"><Input placeholder="Search PO number…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
+          <div className="w-full sm:w-48"><Select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}><option value="">All statuses</option>{STATUSES.map((s) => <option key={s}>{s}</option>)}</Select></div>
         </div>
-        <div className="p-5">
+        <div className="p-4 sm:p-5">
           {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
             : <DataTable loading={loading} rows={data?.orders || []} columns={columns} onRowClick={(r) => setDetailId(r.id)} emptyMessage={q || status ? "No purchase orders match." : "No purchase orders yet."} pagination={pg && { page: pg.page, totalPages: pg.pages, onPageChange: setPage }} />}
         </div>
