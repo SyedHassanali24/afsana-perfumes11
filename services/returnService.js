@@ -53,8 +53,8 @@ function eligibility(order, orderItems, returns, cfg, opts = {}) {
 }
 
 // Keeps the order status in step with its returns (compare-and-set, same transaction).
-async function syncOrderStatus(order, orderItems, returns, byUserId, session) {
-  const next = R.deriveOrderStatus(order.status, sum(orderItems, (i) => i.quantity), returns);
+async function syncOrderStatus(order, orderItems, returns, byUserId, session, paymentStatus = order.paymentStatus) {
+  const next = R.deriveOrderStatus(order.status, sum(orderItems, (i) => i.quantity), returns, paymentStatus);
   if (next === order.status) return order.status;
   const ok = await Order.findOneAndUpdate({ _id: order._id, status: order.status },
     { $set: { status: next }, $push: { timeline: { event: R.ORDER_EVENT[next] || next, status: next, by: byUserId } } }, { new: true, session });
@@ -192,7 +192,7 @@ async function setStatus(ctx, id, { status, note, condition }, scopes) {
     if (status === 'Received') await receiveReturnedItems(upd.items, order, ctx, session, condition);
     const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const returns = await Return.find({ orderId: order._id }).session(session).lean();
-    await syncOrderStatus(order, orderItems, returns, ctx.user._id, session);
+    await syncOrderStatus(order, orderItems, returns, ctx.user._id, session, payStatus);
     await audit(ctx, { action: `return.${status.toLowerCase()}`, module: 'returns', recordId: id, oldValue: cur.status, newValue: { status, condition, note } }, session);
     return upd;
   });
