@@ -51,7 +51,7 @@ export default function CustomersList() {
       </div>
 
       <Card padded={false}>
-        <div className="space-y-3 p-5 border-b border-border">
+        <div className="space-y-3 p-4 sm:p-5 border-b border-border">
           <Input placeholder="Search name, email or phone…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Search customers" />
           <div className="flex flex-wrap gap-2" role="group" aria-label="Customer group">
             <button type="button" onClick={() => pick("")} aria-pressed={segment === ""} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === "" ? "border-gold text-ink" : "border-border text-ink-muted"}`}>All</button>
