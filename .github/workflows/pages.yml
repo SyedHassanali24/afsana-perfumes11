@@ -31,8 +31,6 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-        env:
-          VITE_API_ORIGIN: https://afsana-perfume11.netlify.app
       - name: Prepare Pages artifact
         run: |
           touch dist/.nojekyll
