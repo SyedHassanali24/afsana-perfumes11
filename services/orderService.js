@@ -124,7 +124,7 @@ async function placeOrder(input, cust, idempotencyKey) {
             ] },
           ] },
         ] } },
-        { $inc: { usedCount: 1 }, $push: { usage: { customerId: customer._id } } }, { new: true, session });
+        { $inc: { usedCount: 1 }, $push: { usage: { customerId: customer._id, orderId: orderNumber, at: new Date() } } }, { new: true, session });
       if (!used) throw E.badRequest('This coupon has reached its usage limit.');
     }
     const [o] = await Order.create([{
