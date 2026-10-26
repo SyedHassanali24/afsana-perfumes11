@@ -253,9 +253,13 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
   const old = o.paymentStatus;
   if (!R.canSetPayment(old, paymentStatus)) throw E.conflict(`Payment status cannot change from ${old} to ${paymentStatus}.`);
   await withTx(async (session) => {
-    // compare-and-set: a refund that lands between the check above and this write must win
-    const locked = await Order.findOneAndUpdate({ _id: id, paymentStatus: { $nin: R.PAYMENT_LOCKED } }, { $set: { paymentStatus } }, { session });
-    if (!locked) throw E.conflict('This order has been refunded, so its payment status can no longer be changed.');
+    // compare-and-set against the exact status observed above: concurrent payment edits cannot overwrite each other.
+    const locked = await Order.findOneAndUpdate(
+      { _id: id, paymentStatus: old },
+      { $set: { paymentStatus } },
+      { new: true, session },
+    );
+    if (!locked) throw E.conflict('This order payment was just updated. Refresh and try again.');
     await Payment.updateMany({ orderId: id }, { $set: { status: paymentStatus, reference, ...(paymentStatus === 'Paid' ? { receivedBy: ctx.user._id, receivedAt: new Date() } : {}) } }, { session });
     await audit(ctx, { action: 'payment.status_changed', module: 'payments', recordId: id, oldValue: old, newValue: paymentStatus }, session);
   });
