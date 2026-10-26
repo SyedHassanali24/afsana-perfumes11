@@ -91,10 +91,10 @@ test('errors: safe messages, no internals leaked', () => {
   assert.equal(toResponse(E.conflict('x', undefined, 'OUT_OF_STOCK')).body.error.code, 'OUT_OF_STOCK');
 });
 
-test('rate limiter blocks after limit and recovers after window', () => {
+test('rate limiter blocks after limit and recovers after window', async () => {
   const t = 1000;
-  assert.equal(hit('k', 2, 1000, t), true); assert.equal(hit('k', 2, 1000, t), true); assert.equal(hit('k', 2, 1000, t), false);
-  assert.equal(hit('k', 2, 1000, t + 1500), true);
+  assert.equal(await hit('k', 2, 1000, t), true); assert.equal(await hit('k', 2, 1000, t), true); assert.equal(await hit('k', 2, 1000, t), false);
+  assert.equal(await hit('k', 2, 1000, t + 1500), true);
 });
 
 test('pagination clamps and regex escaping', () => {
