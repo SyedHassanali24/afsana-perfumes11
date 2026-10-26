@@ -5,7 +5,7 @@ const Rv = require('../../../services/reviewService');
 // public: approved reviews of a product. customer: my review of a product (only after the perfume was delivered). staff: moderation.
 const customer = { audience: 'customer' };
 const routes = [
-  { method: 'GET', path: '/product/:slug', public: true, query: S.publicReviewsQuery, cache: 60, handler: ({ params, query }) => Rv.listPublic(params.slug, query) },
+  { method: 'GET', path: '/product/:slug', public: true, query: S.publicReviewsQuery, cache: 60, cacheTags: ['reviews'], handler: ({ params, query }) => Rv.listPublic(params.slug, query) },
 
   { ...customer, method: 'GET', path: '/mine/:slug', handler: ({ ctx, params }) => Rv.mine(ctx, params.slug) },
   { ...customer, method: 'PUT', path: '/mine/:slug', body: S.reviewBody, rateLimit: { limit: 10, windowMs: 10 * 60000 }, handler: ({ ctx, params, body }) => Rv.saveMine(ctx, params.slug, body) },
