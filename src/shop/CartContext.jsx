@@ -28,8 +28,8 @@ export function CartProvider({ children }) {
           const next = { items: r.items || [], couponCode: r.couponCode || '' };
           lastSaved.current = JSON.stringify(next);
           writeLocal(EMPTY); setState(next);
-        } catch { /* offline: keep the local cart, the shopper can still browse */ }
-        setServerReady(true);
+          setServerReady(true);
+        } catch { /* keep the local cart and do not sync it over an existing server cart until merge succeeds */ }
       })();
     }
     if (status === 'guest' && wasAuthed.current) { wasAuthed.current = false; setServerReady(false); lastSaved.current = ''; writeLocal(EMPTY); setState(EMPTY); }
