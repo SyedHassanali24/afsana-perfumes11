@@ -162,7 +162,7 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
                 <Field label="For"><Select value={values.gender} onChange={setField("gender")}><option value="">—</option><option>Men</option><option>Women</option><option>Unisex</option></Select></Field>
                 <Field label="Concentration"><Input value={values.concentration} onChange={setField("concentration")} placeholder="EDP, EDT, Attar…" /></Field>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Top notes" hint="Comma separated"><Input value={values.notesTop} onChange={setField("notesTop")} placeholder="Saffron, Bergamot" /></Field>
                 <Field label="Heart notes"><Input value={values.notesHeart} onChange={setField("notesHeart")} placeholder="Rose, Oud" /></Field>
                 <Field label="Base notes"><Input value={values.notesBase} onChange={setField("notesBase")} placeholder="Amber, Musk" /></Field>
@@ -198,12 +198,12 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
 
             {!isEdit && (
               <Section title="First size & price">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Field label="Size (ml)" error={errors.sizeMl}><Input type="number" min="1" value={values.sizeMl} error={!!errors.sizeMl} onChange={setField("sizeMl")} /></Field>
                   <Field label="Price (PKR)" error={errors.price}><Input type="number" min="0" value={values.price} error={!!errors.price} onChange={setField("price")} placeholder="8500" /></Field>
                   <Field label="Sale price" error={errors.salePrice} hint="Optional"><Input type="number" min="0" value={values.salePrice} error={!!errors.salePrice} onChange={setField("salePrice")} /></Field>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Size SKU" hint="Blank = SKU-size"><Input value={values.variantSku} onChange={setField("variantSku")} /></Field>
                   <Field label="Opening stock" error={errors.stock}><Input type="number" min="0" value={values.stock} error={!!errors.stock} onChange={setField("stock")} /></Field>
                 </div>
