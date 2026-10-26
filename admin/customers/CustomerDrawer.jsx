@@ -46,7 +46,7 @@ export default function CustomerDrawer({ customerId, onClose, onChanged }) {
             <p className="text-xs text-ink-muted">{c.city || "City not set"} · Customer since {day(c.createdAt)}</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
             {[["Orders", c.stats.ordersCount], ["Spent", money(c.stats.totalSpent)], ["Points", c.loyaltyPoints]].map(([l, v]) => (
               <div key={l} className="border border-border rounded-sm p-3"><p className="text-xs text-ink-muted">{l}</p><p className="text-sm text-ink mt-1">{v}</p></div>
             ))}
@@ -81,7 +81,7 @@ export default function CustomerDrawer({ customerId, onClose, onChanged }) {
             <p className="text-sm text-ink">Recent orders</p>
             {!data.orders.length ? <p className="text-sm text-ink-muted">No orders yet.</p> : (
               <ul className="space-y-2">{data.orders.map((o) => (
-                <li key={o._id} className="flex items-center justify-between gap-3 border border-border rounded-sm px-3 py-2 text-sm">
+                <li key={o._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border border-border rounded-sm px-3 py-2 text-sm">
                   <span className="text-ink">{o.orderNumber}<span className="block text-xs text-ink-muted">{day(o.createdAt)} · {money(o.total)}</span></span>
                   <StatusPill status={o.status} />
                 </li>))}</ul>
