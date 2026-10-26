@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { accountApi } from '../../services';
 import StatusPill from '../../../admin/components/StatusPill';
+import Button from '../../../admin/components/Button';
 import { Container, StateBox, Placeholder } from '../ui';
 import { Timeline } from '../pages/TrackOrderPage';
 import { money, fmtDate, PAYMENT_LABEL } from '../format';
@@ -40,14 +41,14 @@ export default function OrderDetailPage() {
       <StateBox loading={loading} error={error?.status === 404 ? { message: 'We could not find this order in your account.' } : error} onRetry={reload}>
         {o && (
           <div className="mt-4 space-y-6">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div><h1 className="font-display text-3xl">{o.orderNumber}</h1><p className="text-sm text-ink-muted">Placed {fmtDate(o.placedAt)}</p></div>
               <StatusPill status={o.status} />
             </div>
             {actionError && <p role="alert" className="rounded-sm border border-danger/30 bg-danger-soft p-3 text-sm text-danger">{actionError}</p>}
-            <div className="flex flex-wrap gap-3">
-              <Button type="button" variant="secondary" onClick={reorder}>Reorder these items</Button>
-              {o.status === 'New' && <Button type="button" variant="danger" disabled={actionBusy} onClick={cancelOrder}>{actionBusy ? 'Cancelling…' : 'Cancel order'}</Button>}
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={reorder}>Reorder these items</Button>
+              {o.status === 'New' && <Button type="button" variant="danger" className="w-full sm:w-auto" disabled={actionBusy} onClick={cancelOrder}>{actionBusy ? 'Cancelling…' : 'Cancel order'}</Button>}
             </div>
             <ul className="divide-y divide-border rounded-md border border-border bg-surface">
               {o.items.map((it, i) => (
