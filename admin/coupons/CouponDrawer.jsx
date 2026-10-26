@@ -19,6 +19,13 @@ export default function CouponDrawer({ open, coupon, onClose, onSaved }) {
   const submit = async (e) => {
     e.preventDefault(); setError(""); setErrors({});
     if (v.code.trim().length < 3) return setErrors({ code: "Enter a code (at least 3 characters)." });
+    if (v.type === "percentage" && (Number(v.value) <= 0 || Number(v.value) > 100)) return setErrors({ value: "Percentage must be between 1 and 100." });
+    if (v.type === "fixed" && Number(v.value) <= 0) return setErrors({ value: "Enter a fixed discount greater than 0." });
+    if (v.minOrder !== "" && Number(v.minOrder) < 0) return setErrors({ minOrder: "Minimum order cannot be negative." });
+    if (v.usageLimit !== "" && Number(v.usageLimit) < 1) return setErrors({ usageLimit: "Use a positive limit or leave it empty." });
+    if (v.perCustomerLimit !== "" && Number(v.perCustomerLimit) < 0) return setErrors({ perCustomerLimit: "Limit cannot be negative." });
+    if (v.startsAt && v.expiresAt && v.expiresAt < v.startsAt) return setErrors({ expiresAt: "Expiry date must be on or after the start date." });
+    if (v.type === "percentage" && v.maxDiscount !== "" && Number(v.maxDiscount) <= 0) return setErrors({ maxDiscount: "Maximum discount must be greater than 0." });
     setBusy(true);
     try {
       const body = toPayload(v);
