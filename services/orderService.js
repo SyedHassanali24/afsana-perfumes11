@@ -77,6 +77,11 @@ async function placeOrder(input, cust, idempotencyKey) {
   let order;
   try {
     order = await withTx(async (session) => {
+    const currentVariants = await ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).session(session).lean();
+    const currentProducts = await Product.find({ _id: { $in: currentVariants.map((v) => v.productId) }, status: 'Active', isDeleted: false }).session(session).lean();
+    const currentProductIds = new Set(currentProducts.map((p) => String(p._id)));
+    if (currentVariants.length !== ids.length || currentVariants.some((v) => !currentProductIds.has(String(v.productId)))) throw E.conflict('Some items are no longer available. Please refresh your cart.', undefined, 'ITEM_UNAVAILABLE');
+    if (currentVariants.some((v) => effectivePrice(v) !== lines.find((l) => String(l.variantId) === String(v._id)).unitPrice)) throw E.conflict('A product price changed. Please refresh your cart before placing the order.', undefined, 'PRICE_CHANGED');
     await reserveItems(lines, session);
 
     const txCustomer = await Customer.findById(customer._id).session(session);
