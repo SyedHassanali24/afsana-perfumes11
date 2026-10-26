@@ -79,7 +79,7 @@ export default function CmsResource({ section }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <p className="text-sm text-ink-muted">{section.help}</p>
         {can(`${m}.create`) && <Button icon={Plus} onClick={() => open(null)}>{section.addLabel}</Button>}
       </div>
@@ -94,7 +94,7 @@ export default function CmsResource({ section }) {
         footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form={`cms-form-${section.key}`} disabled={busy}>{busy ? "Saving…" : "Save"}</Button></>}>
         <form id={`cms-form-${section.key}`} onSubmit={submit} className="space-y-4">
           {formError && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{formError}</p>}
-          <div className="grid grid-cols-2 gap-3">{section.fields.filter((f) => f.type !== "check").map(renderField)}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{section.fields.filter((f) => f.type !== "check").map(renderField)}</div>
           {section.fields.filter((f) => f.type === "check").map(renderField)}
         </form>
       </Drawer>
