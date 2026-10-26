@@ -65,6 +65,7 @@ export default function PurchaseOrderDrawer({ poId, version = 0, onClose, onEdit
               )}
             </div>
             {receiving && receiveError && <p className="text-xs text-ink-muted">{receiveError}</p>}
+            </div>
           </div>
         )}
       </Drawer>
