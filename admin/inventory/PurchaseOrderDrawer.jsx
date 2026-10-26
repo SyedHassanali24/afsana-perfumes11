@@ -43,7 +43,7 @@ export default function PurchaseOrderDrawer({ poId, version = 0, onClose, onEdit
               <p className="text-sm text-ink-muted">Created {new Date(po.createdAt).toLocaleDateString()}{po.expectedDate ? ` · expected ${new Date(po.expectedDate).toLocaleDateString()}` : ""} · total {money(po.totalCost)}</p>
             </div>
             {msg && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{msg}</p>}
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
               <thead><tr className="text-left text-xs text-ink-muted border-b border-border"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Ordered</th><th className="font-medium text-right">Received</th><th className="font-medium text-right">Cost</th>{receiving && <th className="font-medium text-right w-24">Arrived now</th>}</tr></thead>
               <tbody>
                 {po.items.map((i) => (
