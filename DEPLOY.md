@@ -16,19 +16,29 @@ Ek waqt mein ek hi step karein, aur kahin atak jayein to screen ka message mujhe
 ## Step 3: Netlify
 1. Netlify mein **Add new site, Import from GitHub** chunein aur apni repo select karein.
 2. Build settings khud `netlify.toml` se aa jati hain (`npm run build`, publish `dist`). Netlify Node 22 use karega. Kuch badalna nahi.
-3. **Site configuration, Environment variables** mein yeh 4 add karein:
+3. **Site configuration → Environment variables** mein production ke liye yeh variables add karein:
 
-| Naam | Value |
-|---|---|
-| `MONGODB_URI` | Atlas wali connection string |
-| `MONGODB_DB_NAME` | `afsana_live` |
-| `JWT_SECRET` | naya lamba random text (neeche command) |
-| `SITE_URL` | `https://aap-ka-site.netlify.app` (apna asli address) |
+| Naam | Required | Value |
+|---|---|---|
+| `MONGODB_URI` | Yes | Atlas wali connection string |
+| `MONGODB_DB_NAME` | Yes | `afsana_live` |
+| `JWT_SECRET` | Yes | Naya random secret, kam az kam 32 characters |
+| `SITE_URL` | Yes | Apni actual HTTPS site URL |
+| `ALLOWED_ORIGINS` | Yes | Trusted frontend origin(s), e.g. apni HTTPS site URL |
+| `RESEND_API_KEY` | Yes | Production password-reset email provider API key |
+| `EMAIL_FROM` | Yes | Verified sender address |
+| `UPSTASH_REDIS_REST_URL` | Yes | Production shared rate-limit Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Yes | Production shared rate-limit Redis REST token |
+| `RATE_LIMIT_FAIL_OPEN` | No | Production mein false/empty rakhein |
 
 Random JWT_SECRET banane ke liye apne PC par:
 `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
 
 Admin ka email/password Netlify mein **mat** daalein (sirf Step 4 mein apne PC par chahiye).
+Production mein shared rate limiter required hai. Upstash variables missing hon to rate limiter production mein fail-closed karega. `RATE_LIMIT_FAIL_OPEN=true` sirf deliberate emergency exception hai.
+
+Production password reset ke liye `RESEND_API_KEY` aur `EMAIL_FROM` required hain. Missing provider configuration par email silently drop nahi hogi.
+
 4. **Deploy** dabayein. Pehli build 2-3 minute leti hai.
 
 ## Step 4: Live database ka pehla setup (apne PC se, sirf ek baar)
@@ -46,7 +56,7 @@ Is se demo perfumes nahi banenge. Products aap admin se khud daalenge.
 ## Pehle health check (har masle mein sab se pehle yeh)
 Browser mein kholein: `https://aap-ka-site.netlify.app/api/health`
 - `"ok":true` aaye to env variables aur database sahi hain.
-- `"ok":false` aaye to `"fix"` mein likha hota hai ke kya theek karna hai (password galat, IP block, cluster paused, variable missing). Yeh koi password ya connection string nahi dikhata.
+- `"ok":false` aaye to response ke `"fixes"` field mein missing configuration ya connection issue identify karne ki information hoti hai. Yeh password ya connection string expose nahi karta.
 - `"setupDone":false` ho to Step 4 (`npm run db:setup`) abhi baqi hai.
 
 ## Step 5: Check karein
