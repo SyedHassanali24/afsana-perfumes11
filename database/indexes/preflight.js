@@ -129,6 +129,18 @@ async function main() {
     { $unwind: '$variant' },
     { $match: { $expr: { $ne: ['$items.productId', '$variant.productId'] } } },
   ]);
+  failures += await referenceCheck('orders.without-order-items', models.Order, [
+    { $lookup: { from: models.OrderItem.collection.name, localField: '_id', foreignField: 'orderId', as: 'items' } },
+    { $match: { 'items.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orders.without-payment', models.Order, [
+    { $lookup: { from: models.Payment.collection.name, localField: '_id', foreignField: 'orderId', as: 'payments' } },
+    { $match: { 'payments.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('orders.multiple-payments', models.Order, [
+    { $lookup: { from: models.Payment.collection.name, localField: '_id', foreignField: 'orderId', as: 'payments' } },
+    { $match: { $expr: { $gt: [{ $size: '$payments' }, 1] } } },
+  ]);
   if (failures) throw new Error(`Index/reference preflight failed: ${failures} conflict(s) detected. Resolve them before npm run db:indexes.`);
   console.log('Index preflight OK: no duplicate values for declared unique indexes.');
 }
