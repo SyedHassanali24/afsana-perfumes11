@@ -44,7 +44,9 @@ export default function CheckoutPage() {
   }, [saved.data]);
 
   const submit = async (e) => {
-    e.preventDefault(); setErrors({}); setFormError('');
+    e.preventDefault();
+    if (busy || !q?.canCheckout) return;
+    setErrors({}); setFormError('');
     setBusy(true);
     try {
       const { order } = await ordersApi.checkout({
