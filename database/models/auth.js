@@ -130,7 +130,7 @@ const customerSchema = new Schema({
   notes: String, // staff-only
 }, { timestamps: true });
 customerSchema.index({ phone: 1, storeId: 1 }, { unique: true, sparse: true });
-customerSchema.index({ email: 1, storeId: 1 }, { unique: true, sparse: true });
+customerSchema.index({ email: 1, storeId: 1 }, { sparse: true });
 storeScoped(customerSchema);
 softDelete(customerSchema);
 
