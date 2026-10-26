@@ -31,9 +31,19 @@ async function verifyLogin({ identifier, password }) {
   if (!user) { dummyHash = dummyHash || bcrypt.hashSync('not-a-real-password', 12); await bcrypt.compare(password, dummyHash); throw generic; }
   if (user.lockedUntil && user.lockedUntil > new Date()) throw E.tooMany('Too many failed attempts. Try again later.');
   if (!(await bcrypt.compare(password, user.passwordHash))) {
-    user.failedLoginCount += 1;
-    if (user.failedLoginCount >= MAX_FAILS) { user.lockedUntil = new Date(Date.now() + LOCK_MINUTES * 60000); user.failedLoginCount = 0; }
-    await user.save();
+    // Atomically increment the failure counter so concurrent login attempts cannot
+    // race past the lock threshold or overwrite each other's failed-attempt count.
+    const lockUntil = new Date(Date.now() + LOCK_MINUTES * 60000);
+    await User.updateOne(
+      { _id: user._id },
+      [
+        { $set: { failedLoginCount: { $add: [{ $ifNull: ['$failedLoginCount', 0] }, 1] } } },
+        { $set: {
+          lockedUntil: { $cond: [{ $gte: ['$failedLoginCount', MAX_FAILS] }, lockUntil, '$lockedUntil'] },
+          failedLoginCount: { $cond: [{ $gte: ['$failedLoginCount', MAX_FAILS] }, 0, '$failedLoginCount'] },
+        } },
+      ],
+    );
     throw generic;
   }
   if (user.status !== 'Active') throw E.forbidden('This account is not active.');
