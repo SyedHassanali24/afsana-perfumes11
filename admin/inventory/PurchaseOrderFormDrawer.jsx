@@ -8,7 +8,7 @@ import useApi from "../../src/hooks/useApi";
 import { purchaseOrdersApi, suppliersApi } from "../../src/services";
 
 const money = (n) => `PKR ${Number(n || 0).toLocaleString("en-PK")}`;
-const dateInput = (d) => (d ? new Date(d).toISOString().slice(0, 10) : "");
+const dateInput = (d) => (d ? new Date(new Date(d).getTime() + 5 * 3600 * 1000).toISOString().slice(0, 10) : "");
 
 /** po = an existing Draft order to edit, or null to create. */
 export default function PurchaseOrderFormDrawer({ open, po, onClose, onSaved }) {
