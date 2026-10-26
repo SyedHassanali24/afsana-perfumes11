@@ -54,7 +54,7 @@ export default function OrdersList() {
       </div>
 
       <Card padded={false}>
-        <div className="flex flex-wrap gap-3 p-5 border-b border-border">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 p-4 sm:p-5 border-b border-border">
           <div className="flex-1 min-w-[200px]">
             <Input
               placeholder="Search order #, customer name or phone…"
@@ -62,13 +62,13 @@ export default function OrdersList() {
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
-          <div className="w-48">
+          <div className="w-full sm:w-48">
             <Select value={status} onChange={resetTo(setStatus)} aria-label="Order status">
               <option value="">All statuses</option>
               {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </Select>
           </div>
-          <div className="w-48">
+          <div className="w-full sm:w-48">
             <Select value={paymentStatus} onChange={resetTo(setPaymentStatus)} aria-label="Payment status">
               <option value="">All payments</option>
               {PAYMENT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
