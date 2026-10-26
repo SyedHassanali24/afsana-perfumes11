@@ -126,6 +126,11 @@ async function main() {
     { $lookup: { from: models.Supplier.collection.name, localField: 'supplierId', foreignField: '_id', as: 'supplier' } },
     { $match: { 'supplier.0': { $exists: false } } },
   ]);
+  failures += await referenceCheck('suppliers.productIds', models.Supplier, [
+    { $unwind: '$productIds' },
+    { $lookup: { from: models.Product.collection.name, localField: 'productIds', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
   failures += await referenceCheck('purchaseOrders.items.productId', models.PurchaseOrder, [
     { $unwind: '$items' },
     { $lookup: { from: models.Product.collection.name, localField: 'items.productId', foreignField: '_id', as: 'product' } },
