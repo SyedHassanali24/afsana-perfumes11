@@ -15,7 +15,7 @@ Ek waqt mein ek hi step karein, aur kahin atak jayein to screen ka message mujhe
 
 ## Step 3: Netlify
 1. Netlify mein **Add new site, Import from GitHub** chunein aur apni repo select karein.
-2. Build settings khud `netlify.toml` se aa jati hain (`npm run build`, publish `dist`). Kuch badalna nahi.
+2. Build settings khud `netlify.toml` se aa jati hain (`npm run build`, publish `dist`). Netlify Node 22 use karega. Kuch badalna nahi.
 3. **Site configuration, Environment variables** mein yeh 4 add karein:
 
 | Naam | Value |
@@ -37,6 +37,7 @@ Phir ek ek command chalayein:
 ```
 npm install
 npm run db:setup
+npm run db:indexes:preflight
 npm run db:indexes
 ```
 Screen par aana chahiye: `Owner created: aap-ka-email`, phir indexes ka message.
