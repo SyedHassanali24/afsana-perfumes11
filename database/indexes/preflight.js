@@ -72,6 +72,43 @@ async function main() {
     { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
     { $match: { 'order.0': { $exists: false } } },
   ]);
+  failures += await referenceCheck('returns.orderId', models.Return, [
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('refunds.orderId', models.Refund, [
+    { $lookup: { from: models.Order.collection.name, localField: 'orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('refunds.returnId', models.Refund, [
+    { $match: { returnId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Return.collection.name, localField: 'returnId', foreignField: '_id', as: 'return' } },
+    { $match: { 'return.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('refunds.customerId', models.Refund, [
+    { $match: { customerId: { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Customer.collection.name, localField: 'customerId', foreignField: '_id', as: 'customer' } },
+    { $match: { 'customer.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('coupon.usage.orderId', models.Coupon, [
+    { $unwind: '$usage' },
+    { $match: { 'usage.orderId': { $exists: true, $ne: null } } },
+    { $lookup: { from: models.Order.collection.name, localField: 'usage.orderId', foreignField: '_id', as: 'order' } },
+    { $match: { 'order.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('inventory.variantId', models.Inventory, [
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $match: { 'variant.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('inventory.productId', models.Inventory, [
+    { $lookup: { from: models.Product.collection.name, localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $match: { 'product.0': { $exists: false } } },
+  ]);
+  failures += await referenceCheck('inventory.productId↔variant.productId', models.Inventory, [
+    { $lookup: { from: models.ProductVariant.collection.name, localField: 'variantId', foreignField: '_id', as: 'variant' } },
+    { $unwind: '$variant' },
+    { $match: { $expr: { $ne: ['$productId', '$variant.productId'] } } },
+  ]);
   if (failures) throw new Error(`Index/reference preflight failed: ${failures} conflict(s) detected. Resolve them before npm run db:indexes.`);
   console.log('Index preflight OK: no duplicate values for declared unique indexes.');
 }
