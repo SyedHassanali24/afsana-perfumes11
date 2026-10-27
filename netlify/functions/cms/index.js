@@ -4,7 +4,7 @@ const S = require('../../../validation/schemas');
 const Cms = require('../../../services/cmsService');
 const { RESOURCES, MODULE_OF } = require('../../../services/cmsRules');
 
-// One function, three sections (banners / faqs / announcements); permissions come from MODULE_OF (banners, faq, announcements). Staff-only.
+// One function, CMS resources including the visual homepage builder; permissions come from MODULE_OF (banners, faq, announcements). Staff-only.
 // Storefront reads: GET /api/cms/public (live banners / faqs / announcement).
 const routes = RESOURCES.flatMap((r) => {
   const m = MODULE_OF[r];
