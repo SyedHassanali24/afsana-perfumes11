@@ -69,6 +69,7 @@ function crossFieldErrors(r, c) {
 
 // 'Live' | 'Scheduled' | 'Expired' | 'Inactive'
 function cmsStatus(r, c, now = new Date()) {
+  if (r === 'homepage') return c.isEnabled ? 'Live' : 'Inactive';
   if (!c.isActive) return 'Inactive';
   if (r === 'faqs') return 'Live';
   if (c.startsAt && toDate(c.startsAt) > now) return 'Scheduled';
