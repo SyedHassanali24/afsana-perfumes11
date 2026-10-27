@@ -135,6 +135,51 @@ function CategoryTiles({section}) {
   </Container></section>;
 }
 
+function CinematicStatement({section}) {
+  const c=section.config||{};
+  return <section className="relative overflow-hidden py-24 sm:py-36 bg-[#160c19] text-white">
+    <div className="absolute -left-24 top-10 w-72 h-72 rounded-full bg-[#743d78]/30 blur-3xl"/>
+    <div className="absolute -right-24 bottom-0 w-80 h-80 rounded-full bg-gold/20 blur-3xl"/>
+    <Container className="relative max-w-5xl text-center luxury-reveal">
+      <p className="text-[10px] uppercase tracking-[.42em] text-gold">{c.eyebrow||'THE ART OF PERFUMERY'}</p>
+      <div className="gold-line w-20 my-6 mx-auto"/>
+      <h2 className="font-display text-4xl sm:text-6xl lg:text-7xl leading-[.95]">{section.title||'Wear the memory. Leave the impression.'}</h2>
+      {c.body&&<p className="max-w-2xl mx-auto mt-7 text-white/65 leading-8">{c.body}</p>}
+      {c.buttonText&&<SmartLink to={c.buttonLink||'/shop'} className="inline-flex mt-9 rounded-full border border-gold/50 px-7 py-3.5 text-sm text-gold hover:bg-gold hover:text-[#24152b] transition">{c.buttonText}<ArrowRight className="w-4 h-4"/></SmartLink>}
+    </Container>
+  </section>;
+}
+
+function Lookbook({section}) {
+  const c=section.config||{};
+  const cards=itemsFrom(c.items||'The signature edit|/shop\nFor evenings|/shop?sort=popular\nFor every day|/shop?sort=newest');
+  return <section className="py-20 sm:py-28 bg-surface"><Container><SectionIntro eyebrow="THE LOOKBOOK" title={section.title||'A fragrance wardrobe for every moment'} text={c.subtitle}/>
+    <div className="grid md:grid-cols-3 gap-4 sm:gap-6">{cards.slice(0,3).map((x,i)=><SmartLink key={i} to={x.text||'/shop'} className="group relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-[#24152b] border border-border">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(200,161,95,.38),transparent_25%),linear-gradient(145deg,#743d78,#160c19)] transition duration-700 group-hover:scale-105"/>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#120813] via-transparent to-transparent"/>
+      <div className="absolute bottom-0 inset-x-0 p-6 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-gold">Edit {String(i+1).padStart(2,'0')}</p><h3 className="font-display text-2xl mt-2">{x.title}</h3><span className="inline-flex items-center gap-1 mt-4 text-[10px] uppercase tracking-[.2em] text-white/65">Discover <ArrowRight className="w-3 h-3"/></span></div>
+    </SmartLink>)}</div>
+  </Container></section>;
+}
+
+function ValuesGrid({section}) {
+  const items=itemsFrom(section.config?.items||'Crafted to be remembered|A considered fragrance experience from first spray to dry down.\nDesigned with intention|Elegant details without unnecessary noise.\nMade for your ritual|A signature for mornings, evenings and everything between.\nDelivered with care|Beautifully packed from house to home.');
+  return <section className="py-16 sm:py-22 bg-primary-soft"><Container><SectionIntro eyebrow="THE AFSANA STANDARD" title={section.title||'Details matter'}/><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{items.slice(0,4).map((x,i)=><article key={i} className="luxury-card rounded-[1.5rem] border border-border bg-surface p-6"><span className="font-display text-4xl text-gold/70">0{i+1}</span><h3 className="font-display text-xl mt-4">{x.title}</h3><p className="text-sm text-ink-muted leading-6 mt-2">{x.text}</p></article>)}</div></Container></section>;
+}
+
+
+  const {data,loading}=useApi(()=>publicTaxonomyApi.list('categories'),[]);
+  const cats=(data?.items||[]).filter(x=>!x.parentId).slice(0,6);
+  if(loading) return <section className="py-16"><Container><div className="grid grid-cols-2 md:grid-cols-3 gap-4">{Array.from({length:6}).map((_,i)=><div key={i} className="aspect-[4/3] rounded-[1.5rem] bg-surface-raised animate-pulse"/>)}</div></Container></section>;
+  return <section className="py-20 sm:py-28 bg-bg"><Container><SectionIntro eyebrow="SHOP BY MOOD" title={section.title||'Find your fragrance world'} text={section.config?.subtitle}/>
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">{cats.map((cat,i)=><Link key={cat.id} to={'/shop?category='+encodeURIComponent(cat.slug)} className="group relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-border bg-[#24152b]">
+      {cat.image?.url?<img src={cat.image.url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-75 transition duration-700 group-hover:scale-105 group-hover:opacity-90"/>:<div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(200,161,95,.55),transparent_30%),linear-gradient(135deg,#24152b,#743d78)]"/>}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#120813] via-transparent to-transparent"/>
+      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-gold">Collection {String(i+1).padStart(2,'0')}</p><h3 className="font-display text-2xl sm:text-3xl mt-1">{cat.name}</h3><span className="inline-flex items-center gap-1 mt-3 text-[10px] uppercase tracking-[.2em] text-white/70">Explore <ArrowRight className="w-3 h-3"/></span></div>
+    </Link>)}</div>
+  </Container></section>;
+}
+
 function Marquee({section}) {
   const items=itemsFrom(section.config?.items||'Afsana Perfumes|Crafted with intention\nMade to linger|A signature worth remembering');
   const repeated=[...items,...items,...items,...items];
@@ -183,6 +228,9 @@ export default function HomepageSections({sections,faqs}) {
     if(type==='split_story') return <SplitStory key={key} section={s}/>;
     if(type==='benefits') return <Benefits key={key} section={s}/>;
     if(type==='category_tiles') return <CategoryTiles key={key} section={s}/>;
+    if(type==='cinematic_statement') return <CinematicStatement key={key} section={s}/>;
+    if(type==='lookbook') return <Lookbook key={key} section={s}/>;
+    if(type==='values_grid') return <ValuesGrid key={key} section={s}/>
     if(type==='marquee') return <Marquee key={key} section={s}/>;
     if(type==='trust_grid') return <TrustGrid key={key} section={s}/>;
     if(type==='testimonials') return <Testimonials key={key} section={s}/>;
