@@ -59,7 +59,7 @@ export default function ShopLayout(){
       </div>
     </Container>
   </div>}
-  <div className="fixed bottom-6 right-6 z-[55] hidden md:block">
+  <div className="fixed bottom-5 right-4 z-[55] md:hidden"><button onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-4 py-3 shadow-2xl text-[8px] uppercase tracking-[.18em] border border-[#263e0e]/10">AI Concierge ↗</button></div>\n  <div className="fixed bottom-6 right-6 z-[55] hidden md:block">
     <div className="group relative">
       <button onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-5 py-3 shadow-xl text-[9px] uppercase tracking-[.2em] hover:scale-105">AI Concierge</button>
       <div className="pointer-events-none absolute bottom-full right-0 mb-3 w-72 translate-y-2 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 transition">
