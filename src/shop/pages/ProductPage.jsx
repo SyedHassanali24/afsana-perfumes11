@@ -28,7 +28,7 @@ export default function ProductPage(){
    <div className="grid lg:grid-cols-[1.05fr_.95fr] gap-10 lg:gap-20 mt-8">
     <div className="grid grid-cols-[76px_1fr] gap-4">
       <div className="space-y-3">{(media.length?media:[{url:''}]).map((m,i)=><button key={i} onClick={()=>setImg(i)} className={'w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#748e40]':'border-[#263e0e]/10')}>{m.url?<img src={m.url} alt="" className="w-full h-full object-cover"/>:<Placeholder className="w-full h-full"/>}</button>)}</div>
-      <div className="relative min-h-[560px] bg-[#f4eef4] overflow-hidden flex items-center justify-center">
+      <div className="relative min-h-[560px] bg-[#f3f1e9] overflow-hidden flex items-center justify-center">
        <div className="absolute w-72 h-72 rounded-full bg-[#748e40]/20 blur-3xl"/>
        <div className="absolute bottom-10 w-[55%] h-8 rounded-full bg-black/15 blur-xl"/>
        <div className="relative w-[68%] h-[82%] transition-transform duration-700 hover:scale-[1.03] hover:-rotate-1"><div className="absolute inset-0 border border-[#748e40]/20 rounded-[40%] blur-sm"/>{media[img]?.url?<img src={media[img].url} alt={p.name} className="relative w-full h-full object-cover shadow-[0_35px_55px_rgba(36,21,43,.28)]"/>:<Placeholder className="w-full h-full"/>}</div>
@@ -41,7 +41,7 @@ export default function ProductPage(){
       <p className="mt-7 text-sm leading-8 text-[#5f654f]">{p.content?.shortDescription||'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.'}</p>
       <div className="mt-7 font-display text-4xl">{v?money(price):'Currently unavailable'}</div>
       <div className="mt-8 text-[10px] uppercase tracking-[.25em]">Choose your size</div>
-      <div className="mt-3 flex flex-wrap gap-2">{variants.map(x=><button key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} className={'px-5 py-3 border text-[10px] uppercase tracking-[.15em] '+(x.id===vid?'border-[#263e0e] bg-[#f1e5f3] text-[#263e0e]':'border-[#263e0e]/15')}>{x.label||x.sizeMl+' ML'}</button>)}</div>
+      <div className="mt-3 flex flex-wrap gap-2">{variants.map(x=><button key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} className={'px-5 py-3 border text-[10px] uppercase tracking-[.15em] '+(x.id===vid?'border-[#263e0e] bg-[#e7ead9] text-[#263e0e]':'border-[#263e0e]/15')}>{x.label||x.sizeMl+' ML'}</button>)}</div>
       <div className="mt-7 flex gap-3"><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/><button disabled={soldOut} onClick={addToCart} className="flex-1 bg-[#263e0e] text-white px-7 py-4 text-[10px] uppercase tracking-[.2em] disabled:opacity-40">Add to bag <span className="ml-3">↗</span></button><button onClick={()=>toggle(p.id||p._id)} className="w-14 border border-[#263e0e]/15 grid place-items-center"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4"/></button></div>
       <div className="mt-8 grid grid-cols-3 border-y border-[#263e0e]/10">{[['Premium','Fragrance Oils'],['Gift Ready','Luxury Packaging'],['Fast','Nationwide Delivery']].map(([a,b])=><div key={a} className="py-5"><strong className="block font-display text-lg">{a}</strong><small className="text-[9px] uppercase tracking-[.12em] text-[#5f654f]">{b}</small></div>)}</div>
     </div>
