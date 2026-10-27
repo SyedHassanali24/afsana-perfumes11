@@ -34,21 +34,21 @@ export default function PurchaseOrderDrawer({ poId, version = 0, onClose, onEdit
   return (
     <>
       <Drawer open={Boolean(poId)} onClose={onClose} size="lg" title={po ? po.poNumber : "Purchase order"}>
-        {loading && <p className="text-sm text-ink-muted">Loading…</p>}
-        {error && <p className="text-sm text-danger">{error.message}</p>}
+        {loading && <p className="text-sm text-[#182308]-muted">Loading…</p>}
+        {error && <p className="text-sm text-[#9b3f3f]">{error.message}</p>}
         {po && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <div className="flex items-center gap-3"><StatusPill status={po.status} /><span className="text-sm text-ink">{po.supplier.name}</span></div>
-              <p className="text-sm text-ink-muted">Created {new Date(po.createdAt).toLocaleDateString()}{po.expectedDate ? ` · expected ${new Date(po.expectedDate).toLocaleDateString()}` : ""} · total {money(po.totalCost)}</p>
+              <div className="flex items-center gap-3"><StatusPill status={po.status} /><span className="text-sm text-[#182308]">{po.supplier.name}</span></div>
+              <p className="text-sm text-[#182308]-muted">Created {new Date(po.createdAt).toLocaleDateString()}{po.expectedDate ? ` · expected ${new Date(po.expectedDate).toLocaleDateString()}` : ""} · total {money(po.totalCost)}</p>
             </div>
-            {msg && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{msg}</p>}
+            {msg && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{msg}</p>}
             <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
-              <thead><tr className="text-left text-xs text-ink-muted border-b border-border"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Ordered</th><th className="font-medium text-right">Received</th><th className="font-medium text-right">Cost</th>{receiving && <th className="font-medium text-right w-24">Arrived now</th>}</tr></thead>
+              <thead><tr className="text-left text-xs text-[#182308]-muted border-b border-[#263e0e]/10"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Ordered</th><th className="font-medium text-right">Received</th><th className="font-medium text-right">Cost</th>{receiving && <th className="font-medium text-right w-24">Arrived now</th>}</tr></thead>
               <tbody>
                 {po.items.map((i) => (
-                  <tr key={String(i.variantId)} className="border-b border-border/60">
-                    <td className="py-2 text-ink">{i.productName} · {i.label}<span className="block text-xs text-ink-muted">{i.sku}</span></td>
+                  <tr key={String(i.variantId)} className="border-b border-[#263e0e]/10/60">
+                    <td className="py-2 text-[#182308]">{i.productName} · {i.label}<span className="block text-xs text-[#182308]-muted">{i.sku}</span></td>
                     <td className="text-right">{i.quantity}</td><td className="text-right">{i.receivedQuantity}</td><td className="text-right">{money(i.costPerUnit)}</td>
                     {receiving && <td className="text-right"><Input type="number" min="0" max={i.quantity - i.receivedQuantity} disabled={i.quantity - i.receivedQuantity === 0} value={qty[String(i.variantId)] ?? ""} onChange={(e) => setQty((q) => ({ ...q, [String(i.variantId)]: e.target.value }))} /></td>}
                   </tr>
@@ -64,7 +64,7 @@ export default function PurchaseOrderDrawer({ poId, version = 0, onClose, onEdit
                 <Button variant="danger" size="sm" onClick={() => setConfirm({ title: `Cancel ${po.poNumber}?`, message: po.status === "Draft" ? "This draft will be marked as cancelled." : "Units not yet received stop counting as incoming. Stock already received stays.", label: "Cancel order", danger: true, run: async () => { await purchaseOrdersApi.cancel(po.id); await after(); } })}>Cancel order</Button>
               )}
             </div>
-            {receiving && receiveError && <p className="text-xs text-ink-muted">{receiveError}</p>}
+            {receiving && receiveError && <p className="text-xs text-[#182308]-muted">{receiveError}</p>}
             </div>
           </div>
         )}
