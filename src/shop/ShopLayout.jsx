@@ -54,8 +54,8 @@ export default function ShopLayout() {
     setOpen(false);
   };
 
-  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 hover:text-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-white/70 hover:text-gold'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-primary after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
+  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-white/70 hover:text-primary'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-primary after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
 
   return (
     <div className="storefront-theme min-h-screen flex flex-col bg-bg text-ink">
@@ -98,7 +98,7 @@ export default function ShopLayout() {
             <Link to={status === 'authed' ? '/account' : '/login'} className={icon} aria-label={status === 'authed' ? 'My account' : 'Sign in'}><User className="w-5 h-5" /></Link>
             <Link to="/cart" className={icon} aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}>
               <ShoppingBag className="w-5 h-5" />
-              {count > 0 && <span className="absolute right-0 top-0.5 min-w-4 h-4 px-1 rounded-full bg-gold text-[#24152b] text-[10px] leading-4 text-center font-semibold">{count}</span>}
+              {count > 0 && <span className="absolute right-0 top-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-white text-[10px] leading-4 text-center font-semibold">{count}</span>}
             </Link>
           </div>
         </Container>
@@ -127,12 +127,12 @@ export default function ShopLayout() {
       <footer className="border-t border-[#3a2740] mt-12 bg-[#24152b] text-white">
         <Container className="py-10 grid gap-8 sm:grid-cols-3 text-sm">
           <div>
-            <p className="font-display text-xl" style={{ color: 'var(--gold)' }}>Afsana Perfumes</p>
+            <p className="font-display text-xl" className="text-primary">Afsana Perfumes</p>
             <p className="text-ink-muted mt-2 max-w-xs">Fragrances for every mood and moment.</p>
           </div>
           <div className="space-y-1.5">
             <p className="font-medium mb-2">Shop</p>
-            <Link to="/shop" className="block text-ink-muted hover:text-ink">All perfumes</Link>
+            <Link to="/shop" className="block text-white/65 hover:text-primary">All perfumes</Link>
             <Link to="/track" className="block text-ink-muted hover:text-ink">Track an order</Link>
           </div>
           <div className="space-y-1.5">
