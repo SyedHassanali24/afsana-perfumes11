@@ -56,7 +56,7 @@ export default function CustomersList() {
           <div className="flex flex-wrap gap-2" role="group" aria-label="Customer group">
             <button type="button" onClick={() => pick("")} aria-pressed={segment === ""} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === "" ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary-soft)]" : "border-[#263e0e]/10 text-[#182308]-muted hover:bg-[#f3f1e9]"}`}>All</button>
             {GROUPS.map((g) => (
-              <button key={g} type="button" onClick={() => pick(g)} aria-pressed={segment === g} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === g ? "border-gold text-[#182308]" : "border-[#263e0e]/10 text-[#182308]-muted"}`}>
+              <button key={g} type="button" onClick={() => pick(g)} aria-pressed={segment === g} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === g ? "border-[#748e40] text-[#182308]" : "border-[#263e0e]/10 text-[#182308]-muted"}`}>
                 {g}{counts ? ` (${counts[g] ?? 0})` : ""}
               </button>
             ))}
