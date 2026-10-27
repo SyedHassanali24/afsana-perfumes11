@@ -3,7 +3,7 @@ export default function BankDetails({ bank, orderNumber }) {
   if (!bank) return null;
   const rows = [['Bank', bank.bankName], ['Account title', bank.accountTitle], ['Account number', bank.accountNumber], ['IBAN', bank.iban], ['Branch', bank.branch]].filter(([, v]) => v);
   return (
-    <div className="rounded-md border border-border bg-bg p-4 text-sm text-left space-y-1.5">
+    <div className="rounded-2xl border border-border bg-surface p-5 shadow-card text-sm text-left space-y-1.5">
       <p className="font-medium">Send your payment to</p>
       {rows.map(([k, v]) => <div key={k} className="flex justify-between gap-4"><span className="text-ink-muted">{k}</span><span className="text-right select-all">{v}</span></div>)}
       {orderNumber && <p className="text-xs text-ink-muted pt-1">Please write your order number ({orderNumber}) in the payment reference.</p>}
