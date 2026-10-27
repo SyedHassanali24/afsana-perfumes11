@@ -26,6 +26,7 @@ stub('database/models/index.js', {
     findOne: (f) => { const d = REVIEWS.find((x) => match(x, f)); const o = q(d ? [d] : [], true); return o; },
     create: async (b) => { if (REVIEWS.some((r) => r.productId === b.productId && r.customerId === b.customerId)) { const e = new Error('dup'); e.code = 11000; throw e; } const d = { _id: `a${++seq}`.padEnd(24, "0"), status: 'Pending', isDeleted: false, createdAt: `2026-10-0${seq}`, ...b }; REVIEWS.push(d); return { toObject: () => copy(d) }; },
     findByIdAndUpdate: (id, u) => ({ lean: async () => { const d = upd(REVIEWS, { _id: id }, u); return d ? copy(d) : null; } }),
+    findOneAndUpdate: (f, u) => ({ lean: async () => { const d = upd(REVIEWS, f, u); return d ? copy(d) : null; } }),
     findOneAndDelete: async (f) => { const i = REVIEWS.findIndex((x) => match(x, f)); return i < 0 ? null : REVIEWS.splice(i, 1)[0]; },
   },
   Product: { findOne: (f) => q(PRODUCTS.filter((d) => match(d, f)), true), find: (f) => q(PRODUCTS.filter((d) => match(d, f))), updateOne: async (f, u) => { upd(PRODUCTS, f, u); } },
