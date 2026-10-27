@@ -62,3 +62,14 @@ body{overflow-x:hidden}
 /* AFSANA reference responsive hardening */
 @media(max-width:900px){.product-gallery{grid-template-columns:1fr;gap:12px}.gallery-thumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;order:2;overflow-x:auto}.gallery-thumbs button{width:100%;min-width:0}.main-product-stage{min-height:520px}.product-3d{width:78%;height:82%}.notes-grid{grid-template-columns:1fr;gap:40px}.note-pyramid{width:100%}.product-banner-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.hero{min-height:720px!important}.hero-content{min-height:720px;padding-top:6rem;padding-bottom:4rem}.hero-title{font-size:clamp(3.25rem,17vw,5.5rem)}.hero-description{font-size:13px;line-height:1.8}.collection-grid{grid-template-columns:1fr 1fr}.collection-card{aspect-ratio:.72}.product-detail-grid{gap:34px}.main-product-stage{min-height:470px}.product-3d{width:88%;height:82%}.product-banner-grid{grid-template-columns:1fr}.product-banner{aspect-ratio:1.15}.notes-section{padding-block:60px}.note-layer{font-size:17px;padding:20px 12px}.note-top{width:62%}.note-heart{width:80%}.testimonial-track{grid-template-columns:1fr}.ritual-grid{grid-template-columns:1fr}.newsletter-form{display:flex;flex-direction:column;align-items:stretch}.newsletter-form input{width:100%}}
+
+/* Cinematic product-stage motion */
+.media-transition{animation:afsana-media-in .7s cubic-bezier(.2,.8,.2,1)}
+.stage-pulse{animation:afsana-stage-pulse .65s ease}
+.main-product-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.18) 48%,transparent 61%);transform:translateX(-120%);animation:afsana-sheen 7s ease-in-out infinite}
+.gallery-thumbs button:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.25),transparent 45%);opacity:0;transition:opacity .4s}.gallery-thumbs button:hover:after,.gallery-thumbs button:focus-visible:after{opacity:1}
+.product-detail-grid h1{letter-spacing:-.035em}
+@keyframes afsana-media-in{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:none}}
+@keyframes afsana-stage-pulse{0%{transform:perspective(1100px) scale(.985)}55%{transform:perspective(1100px) scale(1.015)}100%{transform:perspective(1100px) scale(1)}}
+@keyframes afsana-sheen{0%,55%,100%{transform:translateX(-120%)}70%{transform:translateX(120%)}}
+@media(prefers-reduced-motion:reduce){.media-transition,.stage-pulse,.main-product-stage:before{animation:none}}
