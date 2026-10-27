@@ -13,14 +13,14 @@ export default function CmsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl text-ink">Content</h1>
-        <p className="text-sm text-ink-muted mt-1">Homepage layout, banners, FAQs and the announcement bar — all managed visually.</p>
+        <h1 className="font-display text-2xl text-[#182308]">Content</h1>
+        <p className="text-sm text-[#182308]-muted mt-1">Homepage layout, banners, FAQs and the announcement bar — all managed visually.</p>
       </div>
-      {!section ? <p className="text-sm text-ink-muted">You do not have access to any content sections.</p> : (<>
-        <div className="flex gap-2 overflow-x-auto border-b border-border" role="tablist">
+      {!section ? <p className="text-sm text-[#182308]-muted">You do not have access to any content sections.</p> : (<>
+        <div className="flex gap-2 overflow-x-auto border-b border-[#263e0e]/10" role="tablist">
           {tabs.map((t) => (
             <button key={t.key} role="tab" aria-selected={t.key === section.key} onClick={() => setActive(t.key)}
-              className={`px-4 py-2 text-sm -mb-px border-b-2 ${t.key === section.key ? "border-gold text-ink" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.tab}</button>
+              className={`px-4 py-2 text-sm -mb-px border-b-2 ${t.key === section.key ? "border-gold text-[#182308]" : "border-transparent text-[#182308]-muted hover:text-[#182308]"}`}>{t.tab}</button>
           ))}
         </div>
         {section.key === 'homepage' ? <HomepageBuilder /> : <CmsResource key={section.key} section={section} />}
