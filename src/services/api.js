@@ -4,17 +4,20 @@ export class ApiError extends Error {
 }
 
 const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, "");
-export async function api(path, { method = 'GET', body, query, idempotencyKey } = {}) {
-  const url = new URL(`/api${path}`, API_ORIGIN);
-  Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
+const inflightGets = new Map();
+
+async function executeRequest(url, path, options) {
+  const { method = 'GET', body, idempotencyKey } = options;
   let res;
   try {
     res = await fetch(url, {
-      method, credentials: 'include',
+      method,
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
+
   let data = null;
   try { data = await res.json(); } catch { /* non-JSON */ }
   if (!res.ok || !data || !data.success) {
@@ -25,4 +28,22 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey } 
     throw new ApiError(res.status, e.code || 'ERROR', e.message || 'Something went wrong. Please try again.', e.details);
   }
   return data;
+}
+
+export async function api(path, { method = 'GET', body, query, idempotencyKey } = {}) {
+  const url = new URL(`/api${path}`, API_ORIGIN);
+  Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
+
+  if (method === 'GET') {
+    const key = url.toString();
+    const existing = inflightGets.get(key);
+    if (existing) return existing;
+
+    const request = executeRequest(url, path, { method, body, idempotencyKey })
+      .finally(() => inflightGets.delete(key));
+    inflightGets.set(key, request);
+    return request;
+  }
+
+  return executeRequest(url, path, { method, body, idempotencyKey });
 }
