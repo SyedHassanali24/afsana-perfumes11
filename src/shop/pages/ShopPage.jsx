@@ -1,9 +1,8 @@
 import { useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import useApi from '../../hooks/useApi';
-import { productsApi, publicTaxonomyApi } from '../../services';
-import { Select, Input } from '../../../admin/components/FormFields';
-import Button from '../../../admin/components/Button';
+import { productsApi } from '../../services';
+import { Select } from '../../../admin/components/FormFields';
 import { Container, PageTitle, StateBox, CardsSkeleton, Pager } from '../ui';
 import ProductCard from '../ProductCard';
 import useTitle from '../useTitle';
@@ -14,7 +13,6 @@ const KEYS = ['q', 'category', 'collection', 'brand', 'gender', 'sort', 'minPric
 export default function ShopPage() {
   useTitle('Shop');
   const [sp, setSp] = useSearchParams();
-  const [showFilters, setShowFilters] = useState(false);
   const get = (k) => sp.get(k) || '';
   const set = (patch) => {
     const n = new URLSearchParams(sp);
@@ -22,19 +20,7 @@ export default function ShopPage() {
     if (!('page' in patch)) n.delete('page');
     setSp(n);
   };
-  const applyFilter = (patch) => {
-    set(patch);
-    setShowFilters(false);
-  };
-
-  const [price, setPrice] = useState({ min: get('minPrice'), max: get('maxPrice') });
-  useEffect(() => {
-    setPrice({ min: get('minPrice'), max: get('maxPrice') });
-  }, [sp]);
-
-  const cats = useApi(() => publicTaxonomyApi.list('categories'), []);
-  const collections = useApi(() => publicTaxonomyApi.list('collections'), []);
-  const brands = useApi(() => publicTaxonomyApi.list('brands'), []);
+  const applyFilter = (patch) => set(patch);
 
   const query = Object.fromEntries(KEYS.map((k) => [k, get(k)]).filter(([, v]) => v));
   const { data, loading, error, reload } = useApi(() => productsApi.list({ ...query, limit: 12 }), [sp.toString()]);
