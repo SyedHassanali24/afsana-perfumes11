@@ -10,10 +10,10 @@ const routes = [
 for (const [type, cfg] of Object.entries(T.TYPES)) {
   const m = cfg.module;
   routes.push(
-    { method: 'GET', path: `/${type}`, permission: [m, 'view'], query: S.taxonomyQuery, handler: ({ query }) => T.list(type, query) },
-    { method: 'POST', path: `/${type}`, permission: [m, 'create'], body: S.taxonomyBody, handler: async ({ ctx, body }) => res(201, await T.create(ctx, type, body)) },
-    { method: 'PATCH', path: `/${type}/:id`, permission: [m, 'edit'], body: S.taxonomyPatch, handler: ({ ctx, params, body }) => T.update(ctx, type, params.id, body) },
-    { method: 'DELETE', path: `/${type}/:id`, permission: [m, 'delete'], handler: ({ ctx, params }) => T.remove(ctx, type, params.id) },
+    { method: 'GET', path: `/${type}`, permission: [m, 'view'], query: S.taxonomyQuery, handler: ({ query, scopes, ctx }) => T.list(type, query, scopes, ctx.user._id) },
+    { method: 'POST', path: `/${type}`, permission: [m, 'create'], body: S.taxonomyBody, handler: async ({ ctx, body, scopes }) => res(201, await T.create(ctx, type, body, scopes)) },
+    { method: 'PATCH', path: `/${type}/:id`, permission: [m, 'edit'], body: S.taxonomyPatch, handler: ({ ctx, params, body, scopes }) => T.update(ctx, type, params.id, body, scopes) },
+    { method: 'DELETE', path: `/${type}/:id`, permission: [m, 'delete'], handler: ({ ctx, params, scopes }) => T.remove(ctx, type, params.id, scopes) },
   );
 }
 exports.handler = createHandler('taxonomy', routes);
