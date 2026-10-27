@@ -125,3 +125,13 @@ body {
     opacity: .45;
   }
 }
+
+
+/* AFSANA supplied-design motion layer */
+@keyframes afsanaMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-track{animation:afsanaMarquee 28s linear infinite;width:max-content}
+.marquee-track:hover{animation-play-state:paused}
+.font-display{font-family:'Cormorant Garamond',serif}
+.storefront-theme button,.storefront-theme a{transition:all .35s cubic-bezier(.2,.8,.2,1)}
+.storefront-theme img,.storefront-theme video{backface-visibility:hidden}
+@media(max-width:640px){.marquee-track{animation-duration:22s}}
