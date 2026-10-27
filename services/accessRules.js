@@ -9,11 +9,18 @@ const canManageLevel = (actorRole, targetLevel) => !!actorRole && (actorRole.isU
 // Does the acting user hold every action in this grant (with a scope at least as broad)? Prevents privilege escalation.
 function holdsGrant(perms, grant) {
   if (perms.unrestricted) return true;
-  const wantAll = ((grant.scope && grant.scope.kind) || 'all') === 'all';
+  const wantedKind = (grant.scope && grant.scope.kind) || 'all';
+  const wantedValues = (grant.scope && grant.scope.values) || [];
   return (grant.actions || []).every((a) => {
     const scopes = perms.can(grant.module, a);
     if (!scopes) return false;
-    return !wantAll || scopes.some((s) => s.kind === 'all');
+    return scopes.some((s) => {
+      const kind = s.kind || 'all';
+      const values = s.values || [];
+      if (kind === 'all') return true;
+      if (wantedKind === 'all' || kind !== wantedKind) return false;
+      return wantedValues.every((v) => values.includes(v));
+    });
   });
 }
 const missingGrants = (perms, grants) => grants.filter((g) => !holdsGrant(perms, g));
