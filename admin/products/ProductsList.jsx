@@ -55,7 +55,7 @@ export default function ProductsList() {
     { key: "price", header: "Price", align: "right" },
     {
       key: "stock", header: "Stock", align: "right",
-      render: (r) => <span className={r.stock === 0 ? "text-danger" : r.stock <= 5 ? "text-warning" : "text-ink"}>{r.stock}</span>,
+      render: (r) => <span className={r.stock === 0 ? "text-[#9b3f3f]" : r.stock <= 5 ? "text-warning" : "text-[#182308]"}>{r.stock}</span>,
     },
     { key: "status", header: "Status", render: (r) => <StatusPill status={r.status} /> },
     {
@@ -64,19 +64,19 @@ export default function ProductsList() {
         <div className="flex justify-end gap-1">
           {inTrash ? (
             can("products.restore") && (
-              <button onClick={() => restore(r)} className="p-1.5 rounded-sm text-ink-muted hover:bg-bg hover:text-ink transition-colors" aria-label={`Restore ${r.name}`}>
+              <button onClick={() => restore(r)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308] transition-colors" aria-label={`Restore ${r.name}`}>
                 <RotateCcw className="w-4 h-4" />
               </button>
             )
           ) : (
             <>
               {can("products.edit") && (
-                <button onClick={() => setDrawer({ open: true, productId: r.id })} className="p-1.5 rounded-sm text-ink-muted hover:bg-bg hover:text-ink transition-colors" aria-label={`Edit ${r.name}`}>
+                <button onClick={() => setDrawer({ open: true, productId: r.id })} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308] transition-colors" aria-label={`Edit ${r.name}`}>
                   <Pencil className="w-4 h-4" />
                 </button>
               )}
               {can("products.delete") && (
-                <button onClick={() => setToDelete(r)} className="p-1.5 rounded-sm text-ink-muted hover:bg-danger-soft hover:text-danger transition-colors" aria-label={`Delete ${r.name}`}>
+                <button onClick={() => setToDelete(r)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f7e7e5] hover:text-[#9b3f3f] transition-colors" aria-label={`Delete ${r.name}`}>
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
@@ -91,8 +91,8 @@ export default function ProductsList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl text-ink">{inTrash ? "Deleted products" : "Products"}</h1>
-          <p className="text-sm text-ink-muted mt-1">{pg ? `${pg.total} ${pg.total === 1 ? "product" : "products"}` : "\u00A0"}</p>
+          <h1 className="font-display text-2xl text-[#182308]">{inTrash ? "Deleted products" : "Products"}</h1>
+          <p className="text-sm text-[#182308]-muted mt-1">{pg ? `${pg.total} ${pg.total === 1 ? "product" : "products"}` : "\u00A0"}</p>
         </div>
         <div className="flex items-center gap-2">
           {can("products.restore") && (
@@ -107,11 +107,11 @@ export default function ProductsList() {
       </div>
 
       {notice && (
-        <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}>{notice.text}</p>
+        <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-success-soft text-[#3d6b3d]" : "bg-[#f7e7e5] text-[#9b3f3f]"}`}>{notice.text}</p>
       )}
 
       <Card padded={false}>
-        <div className="flex flex-wrap gap-3 p-5 border-b border-border">
+        <div className="flex flex-wrap gap-3 p-5 border-b border-[#263e0e]/10">
           <div className="flex-1 min-w-[200px]">
             <Input placeholder="Search by name or SKU…" value={search} onChange={resetPage(setSearch)} />
           </div>
@@ -132,7 +132,7 @@ export default function ProductsList() {
         <div className="p-5">
           {error ? (
             <div className="py-10 text-center space-y-3">
-              <p className="text-sm text-danger">{error.status === 403 ? "You don't have access to products." : error.message}</p>
+              <p className="text-sm text-[#9b3f3f]">{error.status === 403 ? "You don't have access to products." : error.message}</p>
               <Button variant="secondary" onClick={reload}>Try again</Button>
             </div>
           ) : (
