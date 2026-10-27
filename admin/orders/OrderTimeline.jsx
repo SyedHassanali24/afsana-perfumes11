@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
  * @param {{event: string, at: string, note?: string, done: boolean}[]} steps
  */
 export default function OrderTimeline({ steps }) {
-  if (!steps || steps.length === 0) return <p className="text-sm text-ink-muted">No events recorded yet.</p>;
+  if (!steps || steps.length === 0) return <p className="text-sm text-[#5f654f]">No events recorded yet.</p>;
   return (
     <ol className="space-y-0">
       {steps.map((step, i) => {
@@ -15,19 +15,19 @@ export default function OrderTimeline({ steps }) {
             <div className="flex flex-col items-center">
               <span
                 className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                  step.done ? "bg-success text-white" : "bg-bg border border-border"
+                  step.done ? "bg-[#3d6b3d] text-white" : "bg-[#f3f1e9] border border-[#263e0e]/10"
                 }`}
               >
                 {step.done && <Check className="w-3 h-3" />}
               </span>
               {!isLast && (
-                <span className={`w-px flex-1 min-h-[20px] ${step.done ? "bg-success" : "bg-border"}`} />
+                <span className={`w-px flex-1 min-h-[20px] ${step.done ? "bg-[#3d6b3d]" : "bg-[#263e0e]/10"}`} />
               )}
             </div>
             <div className="pb-5">
-              <p className={`text-sm ${step.done ? "text-ink" : "text-ink-muted"}`}>{step.event}</p>
-              {step.at && <p className="text-xs text-ink-muted mt-0.5">{step.at}</p>}
-              {step.note && <p className="text-xs text-ink-muted mt-0.5">“{step.note}”</p>}
+              <p className={`text-sm ${step.done ? "text-[#182308]" : "text-[#5f654f]"}`}>{step.event}</p>
+              {step.at && <p className="text-xs text-[#5f654f] mt-0.5">{step.at}</p>}
+              {step.note && <p className="text-xs text-[#5f654f] mt-0.5">“{step.note}”</p>}
             </div>
           </li>
         );
