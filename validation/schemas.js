@@ -302,6 +302,7 @@ const cmsShape = {
 // Shape here, business rules (required fields, links, dates) in services/cmsRules.crossFieldErrors; a PATCH is re-checked MERGED in cmsService.update.
 const cmsBody = {}; const cmsPatch = {};
 for (const r of CMS.RESOURCES) {
+  if (r === 'homepage') { cmsBody[r] = homepageSectionShape; cmsPatch[r] = homepageSectionPatch; continue; }
   cmsBody[r] = cmsShape[r].superRefine((v, ctx) => CMS.crossFieldErrors(r, CMS.normalize(r, v)).forEach((e) => ctx.addIssue({ code: 'custom', path: [e.path], message: e.message })));
   cmsPatch[r] = cmsShape[r].partial();
 }
