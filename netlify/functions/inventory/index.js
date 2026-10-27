@@ -57,7 +57,7 @@ const routes = [
       return { history: rows.map((t) => ({ id: t._id, type: t.type, delta: t.delta, before: t.before, after: t.after, reason: t.reason, productName: t.productId && t.productId.name, sku: t.variantId && t.variantId.sku, by: t.by && t.by.email, at: t.createdAt })), pagination: pageMeta(total, page, limit) };
     } },
   { method: 'POST', path: '/adjust', permission: ['inventory', 'manageStock'], body: S.adjustBody, reauth: true,
-    async handler({ body, ctx }) {
+    async handler({ body, ctx, scopes }) {
       const inv = await adjustStock(ctx, body, scopes);
       return { stock: { current: inv.current, reserved: inv.reserved, available: inv.current - inv.reserved, damaged: inv.damaged } };
     } },
