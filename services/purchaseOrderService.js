@@ -3,6 +3,15 @@ const { E } = require('../middleware/errors');
 const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
+const { scopeFilter } = require('../middleware/permissions');
+const SCOPE_MAP = { stores: 'storeId' };
+const storeFilter = (scopes, uid) => scopeFilter(scopes, uid, SCOPE_MAP);
+const createStoreId = (scopes) => {
+  if (scopes?.some((s) => s.kind === 'all')) return 'main';
+  const stores = [...new Set((scopes || []).filter((s) => s.kind === 'stores').flatMap((s) => s.values || []))];
+  if (stores.length !== 1) throw E.forbidden('A purchase order must belong to exactly one store in your access scope.');
+  return stores[0];
+};
 const { poStatusAfterReceive, canTransition, remainingQty, poTotal } = require('./poRules');
 
 const hideCost = (ctx) => ctx.perms.deniedFields.has('product.costPrice');
@@ -23,67 +32,68 @@ const shape = (ctx, po) => {
 };
 const load = (q) => q.populate('supplierId', 'name').populate('items.productId', 'name').populate('items.variantId', 'sku label');
 
-async function list(ctx, q) {
+async function list(ctx, q, scopes) {
   const { page, limit, skip } = paging(q);
-  const filter = {};
+  const filter = { ...storeFilter(scopes, ctx.user._id) };
   if (q.status) filter.status = q.status;
   if (q.supplierId) filter.supplierId = q.supplierId;
   if (q.q) filter.poNumber = new RegExp(escapeRegex(q.q), 'i');
   const [rows, total] = await Promise.all([load(PurchaseOrder.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit)).lean(), PurchaseOrder.countDocuments(filter)]);
   return { orders: rows.map((r) => shape(ctx, r)), pagination: pageMeta(total, page, limit) };
 }
-async function get(ctx, id) {
-  const po = await load(PurchaseOrder.findById(id)).lean();
+async function get(ctx, id, scopes) {
+  const po = await load(PurchaseOrder.findOne({ _id: id, ...storeFilter(scopes, ctx.user._id) })).lean();
   if (!po) throw E.notFound('Purchase order not found.');
   return { order: shape(ctx, po) };
 }
 
-async function buildItems(items) {
+async function buildItems(items, scopes, uid, storeId) {
   const ids = items.map((i) => String(i.variantId));
   if (new Set(ids).size !== ids.length) throw E.badRequest('Each size can only appear once. Combine the quantities instead.');
-  const variants = await ProductVariant.find({ _id: { $in: ids }, isDeleted: false }).select('productId').lean();
+  const variants = await ProductVariant.find({ _id: { $in: ids }, isDeleted: false, ...(storeId ? { storeId } : {}), ...storeFilter(scopes, uid) }).select('productId').lean();
   if (variants.length !== ids.length) throw E.badRequest('One of the selected products/sizes no longer exists.');
   const byId = new Map(variants.map((v) => [String(v._id), v]));
   return items.map((i) => ({ productId: byId.get(String(i.variantId)).productId, variantId: i.variantId, quantity: i.quantity, costPerUnit: i.costPerUnit, receivedQuantity: 0 }));
 }
-async function activeSupplier(id) {
-  const s = await Supplier.findOne({ _id: id, isDeleted: false });
+async function activeSupplier(id, scopes, uid, storeId) {
+  const s = await Supplier.findOne({ _id: id, isDeleted: false, ...(storeId ? { storeId } : {}), ...storeFilter(scopes, uid) });
   if (!s) throw E.badRequest('Supplier not found.');
   if (!s.isActive) throw E.badRequest('This supplier is inactive.');
   return s;
 }
 
-async function create(ctx, body) {
-  await activeSupplier(body.supplierId);
-  const items = await buildItems(body.items);
+async function create(ctx, body, scopes) {
+  const storeId = createStoreId(scopes);
+  await activeSupplier(body.supplierId, scopes, ctx.user._id, storeId);
+  const items = await buildItems(body.items, scopes, ctx.user._id, storeId);
   const poNumber = await nextNumber('po', 'PO');
-  const po = await PurchaseOrder.create({ poNumber, supplierId: body.supplierId, items, totalCost: poTotal(items), expectedDate: body.expectedDate, status: 'Draft', createdBy: ctx.user._id });
+  const po = await PurchaseOrder.create({ poNumber, supplierId: body.supplierId, items, totalCost: poTotal(items), expectedDate: body.expectedDate, status: 'Draft', createdBy: ctx.user._id, storeId });
   await audit(ctx, { action: 'purchase_order.created', module: 'purchaseOrders', recordId: po._id, newValue: { poNumber, total: po.totalCost } });
-  return get(ctx, po._id);
+  return get(ctx, po._id, scopes);
 }
-async function update(ctx, id, body) {
-  const po = await PurchaseOrder.findById(id);
+async function update(ctx, id, body, scopes) {
+  const po = await PurchaseOrder.findOne({ _id: id, ...storeFilter(scopes, ctx.user._id) });
   if (!po) throw E.notFound('Purchase order not found.');
   if (po.status !== 'Draft') throw E.conflict('Only draft purchase orders can be edited.');
-  if (body.supplierId) { await activeSupplier(body.supplierId); po.supplierId = body.supplierId; }
-  if (body.items) { po.items = await buildItems(body.items); po.totalCost = poTotal(po.items); }
+  if (body.supplierId) { await activeSupplier(body.supplierId, scopes, ctx.user._id, po.storeId); po.supplierId = body.supplierId; }
+  if (body.items) { po.items = await buildItems(body.items, scopes, ctx.user._id, po.storeId); po.totalCost = poTotal(po.items); }
   if (body.expectedDate !== undefined) po.expectedDate = body.expectedDate || undefined;
   await po.save();
   await audit(ctx, { action: 'purchase_order.updated', module: 'purchaseOrders', recordId: id, newValue: { total: po.totalCost } });
-  return get(ctx, id);
+  return get(ctx, id, scopes);
 }
 
 // Draft -> Ordered: the stock is now "incoming".
-async function markOrdered(ctx, id) {
+async function markOrdered(ctx, id, scopes) {
   await withTx(async (session) => {
-    const po = await PurchaseOrder.findById(id).session(session);
+    const po = await PurchaseOrder.findOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }).session(session);
     if (!po) throw E.notFound('Purchase order not found.');
     if (!canTransition(po.status, 'Ordered')) throw E.conflict(`A ${po.status.toLowerCase()} purchase order can't be marked as ordered.`);
-    const supplier = await Supplier.findOne({ _id: po.supplierId, isDeleted: false, isActive: true }).session(session);
+    const supplier = await Supplier.findOne({ _id: po.supplierId, isDeleted: false, isActive: true, storeId: po.storeId }).session(session);
     if (!supplier) throw E.conflict('The purchase order supplier is missing or inactive.');
     for (const it of po.items) {
       const inv = await Inventory.findOneAndUpdate(
-        { variantId: it.variantId, productId: it.productId },
+        { variantId: it.variantId, productId: it.productId, storeId: po.storeId },
         { $inc: { incoming: it.quantity } },
         { new: true, session },
       );
@@ -93,13 +103,13 @@ async function markOrdered(ctx, id) {
     await po.save({ session });
     await audit(ctx, { action: 'purchase_order.ordered', module: 'purchaseOrders', recordId: id, newValue: { poNumber: po.poNumber } }, session);
   });
-  return get(ctx, id);
+  return get(ctx, id, scopes);
 }
 
 // Receiving adds real stock. Can be partial; several deliveries per PO are fine.
-async function receive(ctx, id, body) {
+async function receive(ctx, id, body, scopes) {
   await withTx(async (session) => {
-    const po = await PurchaseOrder.findById(id).session(session);
+    const po = await PurchaseOrder.findOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }).session(session);
     if (!po) throw E.notFound('Purchase order not found.');
     if (!['Ordered', 'Partially Received'].includes(po.status)) throw E.conflict('Only ordered purchase orders can be received.');
     const lines = [];
@@ -109,7 +119,7 @@ async function receive(ctx, id, body) {
       const left = remainingQty(it);
       if (r.quantity > left) throw E.conflict(`Only ${left} more unit(s) are expected for this line.`, { variantId: String(r.variantId) });
       const inv = await Inventory.findOneAndUpdate(
-        { variantId: it.variantId, productId: it.productId, incoming: { $gte: r.quantity } },
+        { variantId: it.variantId, productId: it.productId, storeId: po.storeId, incoming: { $gte: r.quantity } },
         [{ $set: { current: { $add: ['$current', r.quantity] }, incoming: { $subtract: ['$incoming', r.quantity] } } }],
         { new: true, session },
       );
@@ -122,13 +132,13 @@ async function receive(ctx, id, body) {
     await po.save({ session });
     await audit(ctx, { action: 'purchase_order.received', module: 'purchaseOrders', recordId: id, newValue: { poNumber: po.poNumber, lines, status: po.status } }, session);
   });
-  return get(ctx, id);
+  return get(ctx, id, scopes);
 }
 
 // Cancelling gives back the "incoming" units that were never received.
-async function cancel(ctx, id) {
+async function cancel(ctx, id, scopes) {
   await withTx(async (session) => {
-    const po = await PurchaseOrder.findById(id).session(session);
+    const po = await PurchaseOrder.findOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }).session(session);
     if (!po) throw E.notFound('Purchase order not found.');
     if (!canTransition(po.status, 'Cancelled')) throw E.conflict(`A ${po.status.toLowerCase()} purchase order can't be cancelled.`);
     if (po.status !== 'Draft') {
@@ -136,7 +146,7 @@ async function cancel(ctx, id) {
         const left = remainingQty(it);
         if (left > 0) {
           const inv = await Inventory.findOneAndUpdate(
-            { variantId: it.variantId, productId: it.productId, incoming: { $gte: left } },
+            { variantId: it.variantId, productId: it.productId, storeId: po.storeId, incoming: { $gte: left } },
             [{ $set: { incoming: { $subtract: ['$incoming', left] } } }],
             { new: true, session },
           );
@@ -149,7 +159,7 @@ async function cancel(ctx, id) {
     await po.save({ session });
     await audit(ctx, { action: 'purchase_order.cancelled', module: 'purchaseOrders', recordId: id, oldValue: { status: was }, newValue: { poNumber: po.poNumber } }, session);
   });
-  return get(ctx, id);
+  return get(ctx, id, scopes);
 }
 
 module.exports = { list, get, create, update, markOrdered, receive, cancel };
