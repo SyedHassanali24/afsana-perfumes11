@@ -73,6 +73,7 @@ async function createReturn({ orderFilter, body, source, ctx, cfg }) {
   const returnNumber = await nextNumber('return', 'RET');
   const created = await withTx(async (session) => {
     const order = await lockOrder(found._id, session, source === 'staff' ? cfg.scopes : undefined, source === 'staff' ? cfg.uid : undefined);
+    if (!order) throw E.forbidden('This order is outside your access scope.');
     const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const returns = await Return.find({ orderId: order._id }).session(session).lean();
     const remaining = R.remainingByItem(orderItems, returns);
