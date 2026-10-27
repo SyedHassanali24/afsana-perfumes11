@@ -61,7 +61,10 @@ async function syncOrderStatus(order, orderItems, returns, byUserId, session, pa
   if (!ok) throw E.conflict('This order was just updated by someone else. Please refresh.');
   return next;
 }
-const lockOrder = (orderId, session) => Order.findOneAndUpdate({ _id: orderId }, { $inc: { returnRevision: 1 } }, { new: true, session });
+const lockOrder = (orderId, session, scopes, uid) => {
+  const scope = scopes ? scopeFilter(scopes, uid, ORDER_SCOPE) : {};
+  return Order.findOneAndUpdate({ _id: orderId, ...scope }, { $inc: { returnRevision: 1 } }, { new: true, session });
+};
 
 // ---------------- create (shopper or staff) ----------------
 async function createReturn({ orderFilter, body, source, ctx, cfg }) {
@@ -69,7 +72,7 @@ async function createReturn({ orderFilter, body, source, ctx, cfg }) {
   if (!found) throw E.notFound('We could not find that order.');
   const returnNumber = await nextNumber('return', 'RET');
   const created = await withTx(async (session) => {
-    const order = await lockOrder(found._id, session);
+    const order = await lockOrder(found._id, session, source === 'staff' ? cfg.scopes : undefined, source === 'staff' ? cfg.uid : undefined);
     const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const returns = await Return.find({ orderId: order._id }).session(session).lean();
     const remaining = R.remainingByItem(orderItems, returns);
@@ -121,7 +124,7 @@ async function cancelMine(customer, returnNumber) {
   const pre = await Return.findOne({ returnNumber: String(returnNumber).toUpperCase(), customerId: customer._id }).select('orderId').lean();
   if (!pre) throw E.notFound('Return not found.');
   const updated = await withTx(async (session) => {
-    const order = await lockOrder(pre.orderId, session);
+    const order = await lockOrder(pre.orderId, session, scopes, ctx.user._id);
     const cur = await Return.findOne({ _id: pre._id }).session(session);
     if (!R.canTransition(cur.status, 'Cancelled')) throw E.conflict(cur.status === 'Cancelled' ? 'This return is already cancelled.' : 'This return can no longer be cancelled. Please contact us.', undefined, 'NOT_CANCELLABLE');
     const upd = await Return.findOneAndUpdate({ _id: cur._id, status: cur.status }, { $set: { status: 'Cancelled' }, $push: { timeline: { event: EVENT.Cancelled, status: 'Cancelled' } } }, { new: true, session });
@@ -174,7 +177,10 @@ async function eligibilityStaff(ctx, orderNumber, scopes) {
 }
 async function createStaff(ctx, body, scopes) {
   const cfg = await returnSettings();
-  const doc = await createReturn({ orderFilter: { orderNumber: body.orderNumber, ...scopeFilter(scopes, ctx.user._id, ORDER_SCOPE) }, body, source: 'staff', ctx, cfg });
+  const doc = await createReturn({
+    orderFilter: { orderNumber: body.orderNumber, ...scopeFilter(scopes, ctx.user._id, ORDER_SCOPE) },
+    body, source: 'staff', ctx, cfg: { ...cfg, scopes, uid: ctx.user._id },
+  });
   return { return: shapeAdmin(doc.toObject()) };
 }
 
