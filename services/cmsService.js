@@ -43,6 +43,11 @@ async function update(ctx, r, id, body) {
 async function setActive(ctx, r, id, isActive) {
   const d = await MODEL[r].findOne({ _id: id, ...base(r) });
   if (!d) throw E.notFound('Not found.');
+  if (r === 'homepage') {
+    const was = d.isEnabled; d.isEnabled = !!isActive; await d.save();
+    await audit(ctx, { action: `${NAME[r]}.active_changed`, module: mod(r), recordId: id, oldValue: { isEnabled: was }, newValue: { isEnabled: d.isEnabled } });
+    return { item: shape(r, d) };
+  }
   const was = d.isActive; d.isActive = !!isActive; await d.save();
   await audit(ctx, { action: `${NAME[r]}.active_changed`, module: mod(r), recordId: id, oldValue: { isActive: was }, newValue: { isActive: d.isActive } });
   return { item: shape(r, d) };
