@@ -12,7 +12,7 @@ export default function MyReturns() {
   const rows = data?.returns || [];
   return (
     <StateBox loading={loading && !data} error={error} onRetry={reload} empty={!loading && !rows.length} emptyText="You have not requested any returns. To start one, open a delivered order.">
-      <ul className="space-y-3">
+      <ul className="space-y-4">
         {rows.map((r) => (
           <li key={r.returnNumber}>
             <ReturnCard r={r} />
