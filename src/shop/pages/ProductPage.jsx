@@ -78,14 +78,14 @@ export default function ProductPage() {
           <>
             <div className="grid gap-8 lg:gap-10 md:grid-cols-2">
               <div>
-                <div className="aspect-square rounded-md border border-border bg-surface overflow-hidden">
+                <div className="aspect-square rounded-2xl border border-border shadow-card bg-surface overflow-hidden">
                   {media[img] ? <img src={media[img].url} alt={media[img].alt || p.name} className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}
                 </div>
                 {media.length > 1 && (
                   <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                     {media.map((m, i) => (
                       <button key={m.url + i} type="button" onClick={() => setImg(i)} aria-label={`Show picture ${i + 1}`} aria-current={i === img}
-                        className={`w-16 h-16 shrink-0 rounded-sm overflow-hidden border ${i === img ? 'border-gold' : 'border-border'}`}><img src={m.url} alt="" className="w-full h-full object-cover" /></button>
+                        className={`w-16 h-16 shrink-0 rounded-xl overflow-hidden border ${i === img ? 'border-primary' : 'border-border'}`}><img src={m.url} alt="" className="w-full h-full object-cover" /></button>
                     ))}
                   </div>
                 )}
@@ -103,7 +103,7 @@ export default function ProductPage() {
                       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Size">
                         {variants.map((x) => (
                           <button key={x.id} type="button" role="radio" aria-checked={x.id === vid} onClick={() => { setVid(x.id); setQty(1); setAdded(false); }}
-                            className={`px-4 py-2.5 rounded-sm border text-sm transition-colors ${x.id === vid ? 'border-gold bg-gold-soft text-gold' : 'border-border hover:border-gold/60'} ${x.available <= 0 ? 'opacity-50' : ''}`}>
+                            className={`px-4 py-2.5 rounded-xl border text-sm transition-colors ${x.id === vid ? 'border-primary bg-primary-soft text-primary' : 'border-border hover:border-primary/60'} ${x.available <= 0 ? 'opacity-50' : ''}`}>
                             {x.label || `${x.sizeMl}ml`}{x.available <= 0 ? ' · sold out' : ''}
                           </button>
                         ))}
@@ -118,7 +118,7 @@ export default function ProductPage() {
                     <div className="mt-6 flex flex-wrap items-center gap-3">
                       <QtyStepper value={qty} onChange={setQty} max={v?.available || 1} />
                       <Button onClick={addToCart} disabled={soldOut} className="flex-1 sm:flex-none sm:px-10">Add to cart</Button>
-                      <button type="button" onClick={() => toggle(productId)} aria-pressed={has(productId)} aria-label={has(productId) ? 'Remove from wishlist' : 'Add to wishlist'} className="p-2.5 border border-border rounded-sm hover:text-gold">
+                      <button type="button" onClick={() => toggle(productId)} aria-pressed={has(productId)} aria-label={has(productId) ? 'Remove from wishlist' : 'Add to wishlist'} className="p-2.5 border border-border rounded-xl hover:text-primary">
                         <Heart className="w-4 h-4" fill={has(productId) ? 'currentColor' : 'none'} />
                       </button>
                     </div>
