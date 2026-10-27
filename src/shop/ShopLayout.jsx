@@ -127,7 +127,7 @@ export default function ShopLayout() {
       <footer className="border-t border-[#3a2740] mt-12 bg-[#24152b] text-white">
         <Container className="py-10 grid gap-8 sm:grid-cols-3 text-sm">
           <div>
-            <p className="font-display text-xl" className="text-primary">Afsana Perfumes</p>
+            <p className="font-display text-xl text-primary">Afsana Perfumes</p>
             <p className="text-ink-muted mt-2 max-w-xs">Fragrances for every mood and moment.</p>
           </div>
           <div className="space-y-1.5">
