@@ -164,7 +164,7 @@ function Lookbook({section}) {
 
 function ValuesGrid({section}) {
   const items=itemsFrom(section.config?.items||'Crafted to be remembered|A considered fragrance experience from first spray to dry down.\nDesigned with intention|Elegant details without unnecessary noise.\nMade for your ritual|A signature for mornings, evenings and everything between.\nDelivered with care|Beautifully packed from house to home.');
-  return <section className="py-16 sm:py-22 bg-primary-soft"><Container><SectionIntro eyebrow="THE AFSANA STANDARD" title={section.title||'Details matter'}/><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{items.slice(0,4).map((x,i)=><article key={i} className="luxury-card rounded-[1.5rem] border border-border bg-surface p-6"><span className="font-display text-4xl text-gold/70">0{i+1}</span><h3 className="font-display text-xl mt-4">{x.title}</h3><p className="text-sm text-ink-muted leading-6 mt-2">{x.text}</p></article>)}</div></Container></section>;
+  return <section className="py-16 sm:py-20 bg-primary-soft"><Container><SectionIntro eyebrow="THE AFSANA STANDARD" title={section.title||'Details matter'}/><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{items.slice(0,4).map((x,i)=><article key={i} className="luxury-card rounded-[1.5rem] border border-border bg-surface p-6"><span className="font-display text-4xl text-gold/70">0{i+1}</span><h3 className="font-display text-xl mt-4">{x.title}</h3><p className="text-sm text-ink-muted leading-6 mt-2">{x.text}</p></article>)}</div></Container></section>;
 }
 
 
@@ -205,4 +205,29 @@ function Faq({faqs,section}) {
 function InstagramBlock({section}) {
   const c=section.config||{};
   return <section className="py-16 sm:py-20"><Container><div className="rounded-[2rem] border border-border bg-surface p-8 sm:p-14 text-center luxury-card"><Instagram className="mx-auto w-7 h-7 text-gold"/><p className="text-[10px] uppercase tracking-[.35em] text-primary mt-4">FOLLOW THE HOUSE</p><h2 className="font-display text-3xl sm:text-5xl mt-3">{section.title||'Afsana, beyond the bottle.'}</h2>{c.body&&<p className="mt-4 max-w-xl mx-auto text-sm text-ink-muted">{c.body}</p>}<SmartLink to={c.url||'https://instagram.com'} className="inline-flex mt-7 rounded-full bg-primary px-7 py-3.5 text-white text-sm font-semibold">{c.buttonText||'Follow Afsana'}</SmartLink></div></Container></section>;
+}
+
+export default function HomepageSections({sections,faqs}) {
+  return <>{sections.filter((s)=>s?.isEnabled!==false).map((s,index)=>{
+    const type=s.type, c=s.config||{}, key=s.id||index;
+    if(['best_sellers','new_arrivals','under_2000','featured_collection','gift_boxes'].includes(type)) return <ProductsSection key={key} section={s}/>;
+    if(type==='hero'||type==='image_banner') return <Hero key={key} section={s}/>;
+    if(type==='video_banner') return <VideoBanner key={key} section={s}/>;
+    if(type==='split_story') return <SplitStory key={key} section={s}/>;
+    if(type==='benefits') return <Benefits key={key} section={s}/>;
+    if(type==='category_tiles') return <CategoryTiles key={key} section={s}/>;
+    if(type==='cinematic_statement') return <CinematicStatement key={key} section={s}/>;
+    if(type==='lookbook') return <Lookbook key={key} section={s}/>;
+    if(type==='values_grid') return <ValuesGrid key={key} section={s}/>;
+    if(type==='marquee') return <Marquee key={key} section={s}/>;
+    if(type==='trust_grid') return <TrustGrid key={key} section={s}/>;
+    if(type==='testimonials') return <Testimonials key={key} section={s}/>;
+    if(type==='blog_grid') return <EditorialCards key={key} section={s}/>;
+    if(type==='faq') return <Faq key={key} faqs={faqs} section={s}/>;
+    if(type==='newsletter') return <section key={key} className="py-16 sm:py-24"><Container><NewsletterSubscription/></Container></section>;
+    if(type==='instagram') return <InstagramBlock key={key} section={s}/>;
+    if(type==='rich_text') return <section key={key} className="py-16"><Container className="max-w-4xl"><SectionIntro eyebrow={c.eyebrow||'FROM THE HOUSE'} title={s.title||'Afsana Perfumes'}/><p className="text-ink-muted leading-8 whitespace-pre-line text-center">{c.body}</p></Container></section>;
+    if(type==='spacer') return <div key={key} aria-hidden style={{height:Math.min(500,Math.max(20,Number(c.height)||80))}}/>;
+    return null;
+  })}</>;
 }
