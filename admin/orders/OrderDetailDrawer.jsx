@@ -73,69 +73,69 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
     <>
       <Drawer open={Boolean(orderId)} onClose={onClose} size="lg" title={o ? o.orderNumber : "Order"}
         footer={<Button variant="secondary" onClick={onClose}>Close</Button>}>
-        {!o && loading && <p className="text-sm text-ink-muted">Loading…</p>}
-        {error && <div className="space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" size="sm" onClick={reload}>Try again</Button></div>}
+        {!o && loading && <p className="text-sm text-[#182308]-muted">Loading…</p>}
+        {error && <div className="space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" size="sm" onClick={reload}>Try again</Button></div>}
 
         {o && (
           <div className="space-y-6">
             {/* customer + address */}
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-0.5">
-                <p className="text-sm text-ink">{o.customer.name}</p>
-                <p className="text-xs text-ink-muted">{o.customer.phone || "Phone hidden"}</p>
-                {o.customer.email && <p className="text-xs text-ink-muted">{o.customer.email}</p>}
+                <p className="text-sm text-[#182308]">{o.customer.name}</p>
+                <p className="text-xs text-[#182308]-muted">{o.customer.phone || "Phone hidden"}</p>
+                {o.customer.email && <p className="text-xs text-[#182308]-muted">{o.customer.email}</p>}
                 {o.address ? (
-                  <div className="text-xs text-ink-muted pt-1">
+                  <div className="text-xs text-[#182308]-muted pt-1">
                     {o.address.fullName && <p>{o.address.fullName}</p>}
                     {o.address.lines.map((l) => <p key={l}>{l}</p>)}
                     {o.address.cityLine && <p>{o.address.cityLine}</p>}
                   </div>
-                ) : <p className="text-xs text-ink-muted pt-1">Address hidden</p>}
+                ) : <p className="text-xs text-[#182308]-muted pt-1">Address hidden</p>}
               </div>
               <div className="flex flex-row flex-wrap sm:flex-col items-start sm:items-end gap-2">
                 <StatusPill status={o.status} />
                 <StatusPill status={o.paymentStatus} tone={PAYMENT_TONE[o.paymentStatus]} />
-                <span className="text-xs text-ink-muted">{o.methodLabel}</span>
+                <span className="text-xs text-[#182308]-muted">{o.methodLabel}</span>
               </div>
             </div>
-            {o.status === "Cancelled" && o.cancelledReason && <p className="text-sm text-ink-muted">Cancelled: “{o.cancelledReason}”</p>}
+            {o.status === "Cancelled" && o.cancelledReason && <p className="text-sm text-[#182308]-muted">Cancelled: “{o.cancelledReason}”</p>}
 
             {/* items + totals */}
             <div>
-              <p className="text-sm text-ink mb-2">Items</p>
-              <div className="border border-border rounded-sm divide-y divide-border">
-                {o.items.length === 0 && <p className="px-3 py-2.5 text-sm text-ink-muted">No items found.</p>}
+              <p className="text-sm text-[#182308] mb-2">Items</p>
+              <div className="border border-[#263e0e]/10 rounded-sm divide-y divide-border">
+                {o.items.length === 0 && <p className="px-3 py-2.5 text-sm text-[#182308]-muted">No items found.</p>}
                 {o.items.map((i) => (
                   <div key={i.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2.5 text-sm">
                     <div>
-                      <p className="text-ink">{i.name}</p>
-                      <p className="text-ink-muted text-xs">
+                      <p className="text-[#182308]">{i.name}</p>
+                      <p className="text-[#182308]-muted text-xs">
                         {[i.sku, i.sizeMl ? `${i.sizeMl}ml` : ""].filter(Boolean).join(" · ")}{i.sku || i.sizeMl ? " · " : ""}Qty {i.quantity} × {money(i.unitPrice)}
                         {i.costPrice !== null && ` · Cost ${money(i.costPrice)}`}
                       </p>
                     </div>
-                    <span className="text-ink">{money(i.lineTotal)}</span>
+                    <span className="text-[#182308]">{money(i.lineTotal)}</span>
                   </div>
                 ))}
               </div>
               <div className="mt-3 space-y-1 text-sm">
-                <div className="flex justify-between gap-4 text-ink-muted"><span>Subtotal</span><span>{money(o.subtotal)}</span></div>
-                <div className="flex justify-between text-ink-muted"><span>Shipping</span><span>{money(o.shipping)}</span></div>
-                {o.discount > 0 && <div className="flex justify-between text-ink-muted"><span>Discount{o.couponCode ? ` (${o.couponCode})` : ""}</span><span>-{money(o.discount)}</span></div>}
-                <div className="flex justify-between gap-4 text-ink font-medium pt-1 border-t border-border"><span>Total</span><span>{money(o.total)}</span></div>
+                <div className="flex justify-between gap-4 text-[#182308]-muted"><span>Subtotal</span><span>{money(o.subtotal)}</span></div>
+                <div className="flex justify-between text-[#182308]-muted"><span>Shipping</span><span>{money(o.shipping)}</span></div>
+                {o.discount > 0 && <div className="flex justify-between text-[#182308]-muted"><span>Discount{o.couponCode ? ` (${o.couponCode})` : ""}</span><span>-{money(o.discount)}</span></div>}
+                <div className="flex justify-between gap-4 text-[#182308] font-medium pt-1 border-t border-[#263e0e]/10"><span>Total</span><span>{money(o.total)}</span></div>
               </div>
             </div>
 
             {/* status */}
             <div className="space-y-3">
-              <p className="text-sm text-ink">Order status</p>
+              <p className="text-sm text-[#182308]">Order status</p>
               {isReturnsFlow(o.status) ? (
-                <div className="text-sm text-ink-muted space-y-2">
+                <div className="text-sm text-[#182308]-muted space-y-2">
                   <p>After delivery, the status changes only through Returns.</p>
-                  {can("returns.view") && <Link to={`/admin/returns?q=${encodeURIComponent(o.orderNumber)}`} className="inline-block text-gold hover:underline">View returns →</Link>}
+                  {can("returns.view") && <Link to={`/admin/returns?q=${encodeURIComponent(o.orderNumber)}`} className="inline-block text-[#748e40] hover:underline">View returns →</Link>}
                 </div>
               ) : next.length === 0 ? (
-                <p className="text-sm text-ink-muted">No further status changes are possible.</p>
+                <p className="text-sm text-[#182308]-muted">No further status changes are possible.</p>
               ) : can("orders.changeStatus") ? (
                 <>
                   <Field label="Note (optional)" hint="Saved on the timeline; for a cancellation it is kept as the reason.">
@@ -145,14 +145,14 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
                     {next.map((s) => <Button key={s} size="sm" variant={s === "Cancelled" ? "danger" : "primary"} onClick={() => setConfirm(s)}>Mark {s}</Button>)}
                   </div>
                 </>
-              ) : <p className="text-sm text-ink-muted">You do not have permission to change the status.</p>}
+              ) : <p className="text-sm text-[#182308]-muted">You do not have permission to change the status.</p>}
             </div>
 
             {/* payment */}
             <div className="space-y-3">
-              <p className="text-sm text-ink">Payment</p>
+              <p className="text-sm text-[#182308]">Payment</p>
               {!canEditPayment(o.paymentStatus) ? (
-                <p className="text-sm text-ink-muted">Refunds are recorded from the Returns screen, so this cannot be edited here.</p>
+                <p className="text-sm text-[#182308]-muted">Refunds are recorded from the Returns screen, so this cannot be edited here.</p>
               ) : can("payments.changeStatus") ? (
                 <>
                   <div className="grid grid-cols-2 gap-3">
@@ -165,56 +165,56 @@ export default function OrderDetailDrawer({ orderId, onClose, onChanged }) {
                       <Input value={payRef} maxLength={100} onChange={(e) => setPayRef(e.target.value)} />
                     </Field>
                   </div>
-                  {payError && <p role="alert" className="text-sm text-danger">{payError}</p>}
+                  {payError && <p role="alert" className="text-sm text-[#9b3f3f]">{payError}</p>}
                   <Button size="sm" onClick={savePayment} disabled={payBusy || !paymentChanged}>{payBusy ? "Saving…" : "Update payment"}</Button>
                 </>
-              ) : <p className="text-sm text-ink-muted">You do not have permission to change the payment status.</p>}
+              ) : <p className="text-sm text-[#182308]-muted">You do not have permission to change the payment status.</p>}
             </div>
 
             {/* shipment (created / updated on the Shipping screen) */}
             <div className="space-y-1">
-              <p className="text-sm text-ink">Shipment</p>
+              <p className="text-sm text-[#182308]">Shipment</p>
               {o.shipment ? (
-                <div className="text-sm text-ink-muted space-y-0.5">
-                  <p>Status: <span className="text-ink">{o.shipment.status}</span></p>
+                <div className="text-sm text-[#182308]-muted space-y-0.5">
+                  <p>Status: <span className="text-[#182308]">{o.shipment.status}</span></p>
                   <p>Courier: {o.shipment.courier || "—"}</p>
-                  <p>Tracking number: {o.shipment.trackingNumber ? (/^https:\/\//i.test(o.shipment.trackingUrl || "") ? <a href={o.shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">{o.shipment.trackingNumber}</a> : <span className="text-ink">{o.shipment.trackingNumber}</span>) : "—"}</p>
-                  {can("shipping.view") && <Link to="/admin/shipping" className="inline-block text-gold hover:underline">Manage in Shipping</Link>}
+                  <p>Tracking number: {o.shipment.trackingNumber ? (/^https:\/\//i.test(o.shipment.trackingUrl || "") ? <a href={o.shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-[#748e40] hover:underline">{o.shipment.trackingNumber}</a> : <span className="text-[#182308]">{o.shipment.trackingNumber}</span>) : "—"}</p>
+                  {can("shipping.view") && <Link to="/admin/shipping" className="inline-block text-[#748e40] hover:underline">Manage in Shipping</Link>}
                 </div>
               ) : (
-                <p className="text-sm text-ink-muted">
+                <p className="text-sm text-[#182308]-muted">
                   No shipment yet.{" "}
-                  {["Confirmed", "Processing", "Packed"].includes(o.status) && can("shipping.view") && <Link to="/admin/shipping" className="text-gold hover:underline">Open Shipping</Link>}
+                  {["Confirmed", "Processing", "Packed"].includes(o.status) && can("shipping.view") && <Link to="/admin/shipping" className="text-[#748e40] hover:underline">Open Shipping</Link>}
                 </p>
               )}
             </div>
 
             {/* timeline */}
             <div>
-              <p className="text-sm text-ink mb-3">Timeline</p>
+              <p className="text-sm text-[#182308] mb-3">Timeline</p>
               <OrderTimeline steps={o.timeline} />
             </div>
 
             {/* notes */}
             <div className="space-y-3">
-              <p className="text-sm text-ink">Internal notes <span className="text-xs text-ink-muted">(staff only, never shown to the customer)</span></p>
+              <p className="text-sm text-[#182308]">Internal notes <span className="text-xs text-[#182308]-muted">(staff only, never shown to the customer)</span></p>
               {o.notes === null ? (
-                <p className="text-sm text-ink-muted">Notes are hidden for your role.</p>
+                <p className="text-sm text-[#182308]-muted">Notes are hidden for your role.</p>
               ) : (
                 <>
-                  {o.notes.length === 0 && <p className="text-sm text-ink-muted">No notes yet.</p>}
+                  {o.notes.length === 0 && <p className="text-sm text-[#182308]-muted">No notes yet.</p>}
                   <ul className="space-y-2">
                     {o.notes.map((n) => (
-                      <li key={n.key} className="border border-border rounded-sm px-3 py-2 text-sm">
-                        <p className="text-ink whitespace-pre-wrap">{n.text}</p>
-                        <p className="text-xs text-ink-muted mt-1">{n.at}</p>
+                      <li key={n.key} className="border border-[#263e0e]/10 rounded-sm px-3 py-2 text-sm">
+                        <p className="text-[#182308] whitespace-pre-wrap">{n.text}</p>
+                        <p className="text-xs text-[#182308]-muted mt-1">{n.at}</p>
                       </li>
                     ))}
                   </ul>
                   {can("orders.edit") && (
                     <div className="space-y-2">
                       <Textarea rows={3} maxLength={500} value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Add a note…" error={Boolean(noteError)} />
-                      {noteError && <p role="alert" className="text-sm text-danger">{noteError}</p>}
+                      {noteError && <p role="alert" className="text-sm text-[#9b3f3f]">{noteError}</p>}
                       <Button size="sm" variant="secondary" onClick={addNote} disabled={noteBusy || !noteText.trim()}>{noteBusy ? "Adding…" : "Add note"}</Button>
                     </div>
                   )}
