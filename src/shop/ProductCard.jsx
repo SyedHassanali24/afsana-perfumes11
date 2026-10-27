@@ -11,9 +11,9 @@ export default function ProductCard({ product }) {
   return (
     <div className="group relative">
       <Link to={`/product/${p.slug}`} className="block">
-        <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-surface relative shadow-card transition-shadow duration-300 group-hover:shadow-card-hover">
+        <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-surface relative shadow-card transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-card-hover">
           {p.image?.url
-            ? <img src={p.image.url} alt={p.image.alt || p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            ? <img src={p.image.url} alt={p.image.alt || p.name} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             : <Placeholder className="w-full h-full" />}
           {p.inStock === false && <span className="absolute left-2 top-2 rounded-full bg-bg/90 px-2 py-0.5 text-xs text-ink-muted">Sold out</span>}
         </div>
@@ -24,7 +24,7 @@ export default function ProductCard({ product }) {
         </div>
       </Link>
       <button type="button" onClick={() => toggle(p.id)} aria-pressed={liked} aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
-        className="absolute right-2 top-2 rounded-full bg-bg/90 p-2 text-ink hover:text-primary">
+        className="absolute right-2 top-2 rounded-full bg-bg/90 p-2 text-ink shadow-sm transition-all hover:-translate-y-0.5 hover:text-primary">
         <Heart className="w-4 h-4" fill={liked ? 'currentColor' : 'none'} />
       </button>
     </div>
