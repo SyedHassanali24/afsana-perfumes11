@@ -11,7 +11,6 @@ export default function CartDrawer() {
   const quote = quoteData || { lines: [], subtotal: 0, discount: 0, shipping: 0, total: 0 };
   const navigate = useNavigate();
   const [couponInput, setCouponInput] = useState('');
-  const [couponError, setCouponError] = useState('');
 
   useEffect(() => {
     setCouponInput(couponCode || '');
@@ -87,7 +86,7 @@ export default function CartDrawer() {
           <div className="flex items-center justify-between text-xs mb-1.5">
             {remainingForFree > 0 ? (
               <span className="text-[#5f654f]">
-                Add <strong className="text-[#263e0e] font-semibold">{money(remainingForFree)}</strong> for <span className="text-ink font-medium">Complimentary Express Shipping</span>
+                Add <strong className="text-[#263e0e] font-semibold">{money(remainingForFree)}</strong> for <span className="text-[#263e0e] font-medium">Complimentary Express Shipping</span>
               </span>
             ) : (
               <span className="text-[#263e0e] font-semibold flex items-center gap-1.5">
@@ -95,7 +94,7 @@ export default function CartDrawer() {
                 You unlocked Complimentary Express Shipping!
               </span>
             )}
-            <span className="font-mono text-[11px] text-ink-muted">{progressPct}%</span>
+            <span className="font-mono text-[11px] text-[#5f654f]">{progressPct}%</span>
           </div>
           <div className="w-full h-1 bg-[#263e0e]/10 rounded-full overflow-hidden">
             <div
@@ -109,7 +108,7 @@ export default function CartDrawer() {
         <div className="flex-1 overflow-y-auto p-7 space-y-5 divide-y divide-[#263e0e]/10">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-surface-raised border border-border flex items-center justify-center text-ink-muted mb-4">
+              <div className="w-16 h-16 rounded-full bg-[#f3f1e9] border border-[#263e0e]/10 flex items-center justify-center text-ink-muted mb-4">
                 <ShoppingBag className="w-7 h-7 stroke-[1.5]" />
               </div>
               <h3 className="font-display text-xl mb-1.5">Your Bag is Empty</h3>
@@ -119,7 +118,7 @@ export default function CartDrawer() {
               <button
                 type="button"
                 onClick={() => { closeDrawer(); navigate('/shop'); }}
-                className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-semibold uppercase tracking-wider hover:bg-gold-hover transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-[#263e0e] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[#748e40] transition-colors"
               >
                 Explore Collection
               </button>
@@ -153,7 +152,7 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => remove(line.variantId)}
-                          className="text-ink-muted hover:text-danger p-1 transition-colors"
+                          className="text-ink-muted hover:text-[#9b3f3f] p-1 transition-colors"
                           title="Remove item"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -168,7 +167,7 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => setQty(line.variantId, Math.max(1, qty - 1))}
-                          className="p-1 px-2 text-ink-muted hover:text-primary disabled:opacity-30"
+                          className="p-1 px-2 text-ink-muted hover:text-[#263e0e] disabled:opacity-30"
                           disabled={qty <= 1}
                         >
                           <Minus className="w-3 h-3" />
@@ -208,9 +207,9 @@ export default function CartDrawer() {
                 <input
                   type="text"
                   value={couponInput}
-                  onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
+                  onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); }}
                   placeholder="Coupon (e.g. WELCOME10)"
-                  className="w-full pl-8 pr-3 py-3 bg-transparent border border-[#263e0e]/15 rounded-none text-xs uppercase focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  className="w-full pl-8 pr-3 py-3 bg-transparent border border-[#263e0e]/15 rounded-none text-xs uppercase focus:outline-none focus:border-[#263e0e] focus:ring-2 focus:ring-[#263e0e]/10"
                 />
               </div>
               <button
@@ -222,7 +221,7 @@ export default function CartDrawer() {
             </form>
 
             {quote.coupon?.valid && (
-              <div className="flex items-center justify-between text-xs text-success bg-success/10 px-3 py-1.5 rounded-sm border border-success/20">
+              <div className="flex items-center justify-between text-xs text-[#3d6b3d] bg-[#3d6b3d]/10 px-3 py-1.5 rounded-sm border border-[#3d6b3d]/20">
                 <span className="flex items-center gap-1.5 font-medium">
                   <Check className="w-3.5 h-3.5" />
                   Code {quote.coupon.code} applied
@@ -232,7 +231,7 @@ export default function CartDrawer() {
             )}
 
             {quote.coupon?.valid === false && couponCode && (
-              <p className="text-xs text-danger">{quote.coupon.message || 'Invalid or expired promo code.'}</p>
+              <p className="text-xs text-[#9b3f3f]">{quote.coupon.message || 'Invalid or expired promo code.'}</p>
             )}
 
             {/* Calculations Breakdown */}
@@ -242,7 +241,7 @@ export default function CartDrawer() {
                 <span className="text-ink font-medium">{money(quote.subtotal)}</span>
               </div>
               {quote.discount > 0 && (
-                <div className="flex justify-between text-success">
+                <div className="flex justify-between text-[#3d6b3d]">
                   <span>Savings & Discount</span>
                   <span>-{money(quote.discount)}</span>
                 </div>
@@ -253,9 +252,9 @@ export default function CartDrawer() {
                   {quote.shipping === 0 ? <span className="text-success font-semibold">Complimentary</span> : money(quote.shipping)}
                 </span>
               </div>
-              <div className="flex justify-between font-display text-xl text-[#263e0e] pt-2 border-t border-border">
+              <div className="flex justify-between font-display text-xl text-[#263e0e] pt-2 border-t border-[#263e0e]/10">
                 <span>Estimated Total</span>
-                <span className="text-primary font-display text-base">{money(quote.total)}</span>
+                <span className="text-[#263e0e] font-display text-base">{money(quote.total)}</span>
               </div>
             </div>
 
