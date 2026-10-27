@@ -7,6 +7,7 @@ import { productsApi, publicTaxonomyApi, shopContentApi } from '../../services';
 import Button from '../../../admin/components/Button';
 import { Container, StateBox, CardsSkeleton, Placeholder } from '../ui';
 import ProductCard from '../ProductCard';
+import HomepageSections from '../HomepageSections';
 import useTitle from '../useTitle';
 
 function Row({ title, query, to }) {
@@ -33,7 +34,9 @@ export default function HomePage() {
   const content = useApi(() => shopContentApi.get(), []);
   const banners = content.data?.banners || [];
   const faqs = content.data?.faqs || [];
+  const homepageSections = content.data?.homepageSections || [];
   const top = (cats.data?.items || []).filter((c) => !c.parentId).slice(0, 6);
+  if (homepageSections.length > 0) return <HomepageSections sections={homepageSections} faqs={faqs} />;
   return (
     <>
       {banners.length > 0 ? (
