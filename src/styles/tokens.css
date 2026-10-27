@@ -8,6 +8,12 @@
   --ink-muted:#7280A2;
   --gold:#B4874B;
   --gold-soft:#F5EBDD;
+  --primary:#4F46E5;
+  --primary-hover:#4338CA;
+  --primary-soft:#EEF0FF;
+  --primary-soft-border:#C9CDFF;
+  --table-head:#F8F9FF;
+  --table-row-hover:#FAFBFF;
   --success:#18A875;
   --success-soft:#E4F8F0;
   --danger:#E65364;
@@ -34,7 +40,14 @@
   --ink-muted:#A9B2D4;
   --gold:#D6AE73;
   --gold-soft:#2B2419;
+  --primary:#818CF8;
+  --primary-hover:#A5B4FC;
+  --primary-soft:#23284F;
+  --primary-soft-border:#4B5390;
+  --table-head:#1D2245;
+  --table-row-hover:#1A1F40;
   --success:#55D2A2;
+  --success-soft:#17352B;
   --success-soft:#17352B;
   --danger:#FF8A98;
   --danger-soft:#3A2027;
