@@ -55,18 +55,18 @@ export default function Topbar({
         </button>
         <NotificationBell />
         <div className="h-8 w-px bg-[#263e0e]/10 mx-1.5 hidden sm:block" />
-        <button onClick={onProfile} className="flex items-center gap-2.5 text-left rounded-xl px-2 py-1.5 hover:bg-bg transition-colors" aria-label="My account" title="My account">
+        <button onClick={onProfile} className="flex items-center gap-2.5 text-left rounded-xl px-2 py-1.5 hover:bg-[#f3f1e9] transition-colors" aria-label="My account" title="My account">
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br from-[#263e0e] to-[#748e40] shadow-md">
             {user.name.charAt(0)}
           </div>
           <div className="text-left hidden sm:block">
             <p className="text-sm font-semibold text-[#182308] leading-tight">{user.name}</p>
-            <p className="text-[11px] text-ink-muted leading-tight">{user.role}</p>
+            <p className="text-[11px] text-[#5f654f] leading-tight">{user.role}</p>
           </div>
-          <ChevronDown className="w-4 h-4 text-ink-muted hidden sm:block" />
+          <ChevronDown className="w-4 h-4 text-[#5f654f] hidden sm:block" />
         </button>
         {onLogout && (
-          <button onClick={onLogout} className="p-2.5 rounded-xl text-ink-muted hover:bg-[#9b3f3f]/10 hover:text-[#9b3f3f] transition-colors" aria-label="Sign out" title="Sign out">
+          <button onClick={onLogout} className="p-2.5 rounded-xl text-[#5f654f] hover:bg-[#9b3f3f]/10 hover:text-[#9b3f3f] transition-colors" aria-label="Sign out" title="Sign out">
             <LogOut className="w-4 h-4" />
           </button>
         )}
