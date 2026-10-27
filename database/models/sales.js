@@ -122,6 +122,8 @@ const cartSchema = new Schema({
   couponCode: String,
   lastActivityAt: { type: Date, default: Date.now, index: true },
 }, { timestamps: true });
+// A signed-in shopper has exactly one saved cart. Sparse keeps guest carts (without customerId) independent.
+cartSchema.index({ customerId: 1 }, { unique: true, sparse: true });
 
 const abandonedCartSchema = new Schema({
   cartId: { type: ObjectId, ref: 'Cart', unique: true },
