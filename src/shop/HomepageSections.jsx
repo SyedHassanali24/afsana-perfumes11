@@ -60,7 +60,7 @@ function Hero({ section }) {
   const heroImage=c.imageUrl||heroProduct?.image?.url;
   return <section className="relative isolate min-h-[680px] sm:min-h-[780px] overflow-hidden luxury-hero text-white">
     {heroImage && <picture>{c.mobileImageUrl&&<source media="(max-width:639px)" srcSet={c.mobileImageUrl}/>}<img src={heroImage} alt="" fetchPriority="high" className="absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-35"/></picture>}
-    <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_74%_42%,rgba(200,161,95,.34),transparent_26%),linear-gradient(90deg,rgba(18,8,19,.98) 0%,rgba(36,18,42,.86) 52%,rgba(18,8,19,.35) 100%)]"/>
+    <div className="absolute inset-0 -z-10 luxury-hero-overlay"/>
     <Container className="relative flex min-h-[680px] sm:min-h-[780px] items-center py-24">
       <div className="grid lg:grid-cols-[1.05fr_.95fr] items-center gap-8 lg:gap-14 w-full">
         <div className="max-w-2xl luxury-reveal">
@@ -76,9 +76,9 @@ function Hero({ section }) {
         </div>
         <div className="hidden lg:flex justify-center luxury-float">
           <div className="relative w-[330px] h-[470px]">
-            <div className="absolute inset-8 rounded-full bg-gold/20 blur-3xl"/>
+            <div className="absolute inset-8 rounded-full luxury-orb blur-3xl"/>
             <div className="absolute inset-0 rounded-[12rem] border border-gold/30 bg-white/[.04] backdrop-blur-[2px]"/>
-            {heroImage ? <img src={heroImage} alt="" className="absolute inset-10 w-[250px] h-[360px] object-contain drop-shadow-[0_30px_35px_rgba(0,0,0,.55)]"/> : <div className="absolute inset-x-20 top-20 bottom-20 rounded-[5rem] bg-gradient-to-b from-[var(--luxury-champagne)] via-[var(--luxury-gold-deep)] to-[#3a1e3d] shadow-2xl"/>}
+            {heroImage ? <img src={heroImage} alt="" className="absolute inset-10 w-[250px] h-[360px] object-contain drop-shadow-[0_30px_35px_rgba(0,0,0,.55)]"/> : <div className="absolute inset-x-20 top-20 bottom-20 rounded-[5rem] bg-gradient-to-b from-[var(--luxury-champagne)] via-[var(--luxury-gold-deep)] to-[var(--luxury-plum-deep)] shadow-2xl"/>}
             <div className="absolute bottom-2 inset-x-0 text-center"><p className="text-[9px] uppercase tracking-[.35em] text-gold">The Afsana signature</p><p className="font-display text-xl mt-2">{heroProduct?.name||'Signature Collection'}</p></div>
           </div>
         </div>
@@ -138,7 +138,7 @@ function CategoryTiles({section}) {
 function CinematicStatement({section}) {
   const c=section.config||{};
   return <section className="relative overflow-hidden py-24 sm:py-36 luxury-dark text-white">
-    <div className="absolute -left-24 top-10 w-72 h-72 rounded-full luxury-plum/30 blur-3xl"/>
+    <div className="absolute -left-24 top-10 w-72 h-72 rounded-full luxury-orb blur-3xl"/>
     <div className="absolute -right-24 bottom-0 w-80 h-80 rounded-full bg-gold/20 blur-3xl"/>
     <Container className="relative max-w-5xl text-center luxury-reveal">
       <p className="text-[10px] uppercase tracking-[.42em] text-gold">{c.eyebrow||'THE ART OF PERFUMERY'}</p>
