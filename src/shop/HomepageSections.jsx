@@ -128,7 +128,7 @@ export default function HomepageSections({ sections, faqs }) {
 
     if (type === 'split_story') {
       return (
-        <section key={s.id} className="py-14 sm:py-20 bg-[#f4eaf7]">
+        <section key={s.id} className="py-14 sm:py-20 bg-primary-soft">
           <Container className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
             {c.imageUrl && <img src={c.imageUrl} alt="" className="w-full aspect-[4/3] object-cover rounded-2xl shadow-card" />}
             <div>
@@ -143,7 +143,7 @@ export default function HomepageSections({ sections, faqs }) {
     }
 
     if (type === 'benefits') {
-      return <section key={s.id} className="py-8 border-y border-[#d8bfdc] bg-[#fbf3fc]"><Container className="grid grid-cols-2 md:grid-cols-4 gap-4">{itemsFrom(c.items).map((x, i) => <div key={i} className="text-center px-3 py-2"><Sparkles className="mx-auto w-5 h-5 text-primary" /><p className="font-display text-lg mt-2">{x.title}</p><p className="text-xs text-ink-muted mt-1">{x.text}</p></div>)}</Container></section>;
+      return <section key={s.id} className="py-8 border-y border-primary-soft-border bg-surface-raised"><Container className="grid grid-cols-2 md:grid-cols-4 gap-4">{itemsFrom(c.items).map((x, i) => <div key={i} className="text-center px-3 py-2"><Sparkles className="mx-auto w-5 h-5 text-primary" /><p className="font-display text-lg mt-2">{x.title}</p><p className="text-xs text-ink-muted mt-1">{x.text}</p></div>)}</Container></section>;
     }
 
     if (type === 'testimonials' || type === 'blog_grid') {
