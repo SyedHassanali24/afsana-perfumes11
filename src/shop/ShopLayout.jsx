@@ -52,18 +52,18 @@ export default function ShopLayout() {
     setOpen(false);
   };
 
-  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-primary-soft hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-ink-muted hover:text-ink'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-primary after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
+  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 hover:text-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-white/70 hover:text-gold'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-primary after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg text-ink">
+    <div className="storefront-theme min-h-screen flex flex-col bg-bg text-ink">
       {announcement?.text && (
         <div className="bg-primary text-white text-center text-xs sm:text-sm px-4 py-2">
           {announcement.link ? <SmartLink to={announcement.link} className="underline underline-offset-2">{announcement.text}</SmartLink> : announcement.text}
         </div>
       )}
 
-      <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#24152b]/95 text-white backdrop-blur-md shadow-lg">
         <Container className="flex h-14 sm:h-16 items-center gap-1 sm:gap-3">
           <button
             type="button"
@@ -75,7 +75,7 @@ export default function ShopLayout() {
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <Link to="/" className="font-display text-[1.55rem] sm:text-2xl tracking-tight shrink-0" style={{ color: 'var(--primary)' }}>
+          <Link to="/" className="font-display text-[1.55rem] sm:text-2xl tracking-tight shrink-0 text-gold">
             Afsana
           </Link>
 
@@ -83,8 +83,8 @@ export default function ShopLayout() {
             {nav.map((n) => <NavLink key={n.to} to={n.to} end={n.to === '/shop'} className={navClass}>{n.label}</NavLink>)}
           </nav>
 
-          <form onSubmit={search} className="hidden lg:flex ml-auto items-center border border-border rounded-full px-3 w-60 focus-within:border-primary/70 transition-colors" role="search">
-            <Search className="w-4 h-4 text-ink-muted shrink-0" aria-hidden />
+          <form onSubmit={search} className="hidden lg:flex ml-auto items-center border border-white/20 rounded-full px-3 w-60 focus-within:border-gold/70 transition-colors" role="search">
+            <Search className="w-4 h-4 text-white/60 shrink-0" aria-hidden />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-2 text-sm w-full focus:outline-none" />
           </form>
 
@@ -96,7 +96,7 @@ export default function ShopLayout() {
             <Link to={status === 'authed' ? '/account' : '/login'} className={icon} aria-label={status === 'authed' ? 'My account' : 'Sign in'}><User className="w-5 h-5" /></Link>
             <Link to="/cart" className={icon} aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}>
               <ShoppingBag className="w-5 h-5" />
-              {count > 0 && <span className="absolute right-0 top-0.5 min-w-4 h-4 px-1 rounded-full bg-gold text-bg text-[10px] leading-4 text-center font-semibold">{count}</span>}
+              {count > 0 && <span className="absolute right-0 top-0.5 min-w-4 h-4 px-1 rounded-full bg-gold text-[#24152b] text-[10px] leading-4 text-center font-semibold">{count}</span>}
             </Link>
           </div>
         </Container>
@@ -122,7 +122,7 @@ export default function ShopLayout() {
 
       <main className="flex-1 py-6 sm:py-8"><Outlet /></main>
 
-      <footer className="border-t border-border mt-12">
+      <footer className="border-t border-[#3a2740] mt-12 bg-[#24152b] text-white">
         <Container className="py-10 grid gap-8 sm:grid-cols-3 text-sm">
           <div>
             <p className="font-display text-xl" style={{ color: 'var(--gold)' }}>Afsana Perfumes</p>
