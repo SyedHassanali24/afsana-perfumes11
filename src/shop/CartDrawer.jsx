@@ -35,7 +35,7 @@ export default function CartDrawer() {
 
   if (!drawerOpen) return null;
 
-  const freeThreshold = 5000;
+  const freeThreshold = 7500;
   const subtotal = quote.subtotal || 0;
   const progressPct = Math.min(100, Math.round((subtotal / freeThreshold) * 100));
   const remainingForFree = Math.max(0, freeThreshold - subtotal);
