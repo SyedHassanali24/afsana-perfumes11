@@ -26,7 +26,7 @@ export default function InventoryList() {
       <div className="flex gap-1 border-b border-border" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={t.id === current.id} onClick={() => setActive(t.id)}
-            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${t.id === current.id ? "border-[var(--gold)] text-ink font-medium" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.label}</button>
+            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${t.id === current.id ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-ink-muted hover:text-ink hover:bg-[var(--primary-soft)]"}`}>{t.label}</button>
         ))}
       </div>
       <View />
