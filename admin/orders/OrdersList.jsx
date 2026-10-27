@@ -49,12 +49,12 @@ export default function OrdersList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl text-ink">Orders</h1>
-        <p className="text-sm text-ink-muted mt-1">{pg ? `${pg.total} ${pg.total === 1 ? "order" : "orders"}${filtered ? " match these filters" : ""}` : "\u00A0"}</p>
+        <h1 className="font-display text-2xl text-[#182308]">Orders</h1>
+        <p className="text-sm text-[#182308]-muted mt-1">{pg ? `${pg.total} ${pg.total === 1 ? "order" : "orders"}${filtered ? " match these filters" : ""}` : "\u00A0"}</p>
       </div>
 
       <Card padded={false}>
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 p-4 sm:p-5 border-b border-border">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 p-4 sm:p-5 border-b border-[#263e0e]/10">
           <div className="flex-1 min-w-[200px]">
             <Input
               placeholder="Search order #, customer name or phone…"
@@ -79,7 +79,7 @@ export default function OrdersList() {
         <div className="p-5">
           {error ? (
             <div className="py-10 text-center space-y-3">
-              <p className="text-sm text-danger">{error.message}</p>
+              <p className="text-sm text-[#9b3f3f]">{error.message}</p>
               <Button variant="secondary" onClick={reload}>Try again</Button>
             </div>
           ) : (
