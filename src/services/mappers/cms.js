@@ -72,3 +72,24 @@ export const SECTIONS = {
     columns: [{ key: 'title', header: 'Text' }, { key: 'detail', header: 'Link' }, { key: 'when', header: 'Shown' }],
   },
 };
+
+
+export const HOMEPAGE_SECTION_TYPES = [
+  { key: 'hero', label: 'Hero / main visual' },
+  { key: 'featured_collection', label: 'Featured collection' },
+  { key: 'best_sellers', label: 'Best sellers' },
+  { key: 'new_arrivals', label: 'New arrivals' },
+  { key: 'under_2000', label: 'Under 2000' },
+  { key: 'gift_boxes', label: 'Gift boxes' },
+  { key: 'video_banner', label: 'Banner-size video' },
+  { key: 'image_banner', label: 'Banner image' },
+  { key: 'split_story', label: 'Story / split image' },
+  { key: 'benefits', label: 'Benefits strip' },
+  { key: 'testimonials', label: 'Testimonials' },
+  { key: 'blog_grid', label: 'Blog / editorial cards' },
+  { key: 'faq', label: 'FAQ' },
+  { key: 'newsletter', label: 'Newsletter' },
+  { key: 'instagram', label: 'Social / Instagram' },
+  { key: 'rich_text', label: 'Rich text' },
+  { key: 'spacer', label: 'Spacer' },
+];
