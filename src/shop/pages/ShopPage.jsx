@@ -148,7 +148,7 @@ export default function ShopPage() {
             empty={!loading && !list.length}
             emptyText="No perfumes match these filters. Try clearing a filter or changing your search."
             skeleton={<CardsSkeleton n={6} />}>
-            <div className={'product-grid grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6  + (loading ? 'opacity-60' : '')}>
+            <div className={'product-grid grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 ' + (loading ? 'opacity-60' : '')}>
               {list.map((p) => <ProductCard key={p.id || p._id} product={p} />)}
             </div>
             <Pager pagination={data?.pagination} onPage={(p) => { set({ page: String(p) }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
