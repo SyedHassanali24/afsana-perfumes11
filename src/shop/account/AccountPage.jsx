@@ -21,9 +21,9 @@ function MyOrders() {
       <ul className="space-y-3">
         {orders.map((o) => (
           <li key={o.orderNumber}>
-            <Link to={`/account/orders/${o.orderNumber}`} className="flex items-center gap-4 rounded-md border border-border bg-surface p-4 hover:border-gold">
+            <Link to={`/account/orders/${o.orderNumber}`} className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5 hover:border-primary-soft-border hover:shadow-card transition">
               <div className="flex -space-x-3 shrink-0">
-                {(o.images.length ? o.images : [null]).map((src, i) => <div key={i} className="w-12 h-14 rounded-sm overflow-hidden border-2 border-surface bg-bg">{src ? <img src={src} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>)}
+                {(o.images.length ? o.images : [null]).map((src, i) => <div key={i} className="w-12 h-14 rounded-xl overflow-hidden border-2 border-surface bg-bg">{src ? <img src={src} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>)}
               </div>
               <div className="flex-1 min-w-0"><p className="font-medium text-sm">{o.orderNumber}</p><p className="text-xs text-ink-muted">{fmtDate(o.placedAt)} · {o.itemCount} item{o.itemCount === 1 ? '' : 's'}</p></div>
               <div className="text-right space-y-1"><StatusPill status={o.status} /><p className="text-sm tabular-nums">{money(o.total)}</p></div>
@@ -44,15 +44,15 @@ export default function AccountPage() {
   const navigate = useNavigate();
   const tab = TABS.some(([k]) => k === sp.get('tab')) ? sp.get('tab') : 'orders';
   return (
-    <Container className="max-w-3xl">
+    <Container className="max-w-4xl pb-12">
       <PageTitle title={`Hello, ${(customer?.name || '').split(' ')[0] || 'there'}`} subtitle="Your orders, addresses and details."
         action={<Button variant="ghost" size="sm" onClick={async () => { await logout(); navigate('/'); }}>Sign out</Button>} />
-      <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto -mx-1 px-1" role="tablist">
+      <div className="flex gap-1 rounded-2xl border border-border bg-surface p-1 mb-6 overflow-x-auto shadow-card" role="tablist">
         {TABS.map(([k, label]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setSp(k === 'orders' ? {} : { tab: k })}
-            className={`shrink-0 whitespace-nowrap px-4 py-2 text-sm -mb-px border-b-2 ${tab === k ? 'border-gold text-ink' : 'border-transparent text-ink-muted hover:text-ink'}`}>{label}</button>
+            className={`shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm transition ${tab === k ? 'bg-primary text-white shadow-sm' : 'text-ink-muted hover:bg-primary-soft hover:text-primary'}`}>{label}</button>
         ))}
-        <Link to="/wishlist" className="shrink-0 ml-auto px-4 py-2 text-sm text-ink-muted hover:text-ink">Wishlist</Link>
+        <Link to="/wishlist" className="shrink-0 rounded-xl ml-auto px-4 py-2.5 text-sm text-ink-muted hover:bg-primary-soft hover:text-primary">Wishlist</Link>
       </div>
       {tab === 'orders' && <MyOrders />}
       {tab === 'returns' && <MyReturns />}
