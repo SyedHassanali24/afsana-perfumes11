@@ -47,18 +47,18 @@ export default function NewReturnDrawer({ open, onClose, onCreated }) {
           <div className="w-full sm:flex-1"><Field label="Order number"><Input placeholder="AFS-000123" value={orderNo} onChange={(e) => setOrderNo(e.target.value)} autoFocus /></Field></div>
           <Button type="submit" variant="secondary" disabled={busy || orderNo.trim().length < 4}>Find order</Button>
         </form>
-        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{error}</p>}
 
-        {info && !info.eligible && <p className="text-sm text-ink-muted bg-bg border border-border rounded-sm px-3 py-2">{info.message}</p>}
+        {info && !info.eligible && <p className="text-sm text-[#182308]-muted bg-[#f3f1e9] border border-[#263e0e]/10 rounded-sm px-3 py-2">{info.message}</p>}
         {info?.eligible && (
           <>
-            <p className="text-sm text-ink-muted">{info.customer?.name || "Customer"} · delivered {new Date(info.window.deliveredAt).toLocaleDateString()}{new Date() > new Date(info.window.deadline) ? " · outside the normal return period (allowed for staff)" : ""}</p>
+            <p className="text-sm text-[#182308]-muted">{info.customer?.name || "Customer"} · delivered {new Date(info.window.deliveredAt).toLocaleDateString()}{new Date() > new Date(info.window.deadline) ? " · outside the normal return period (allowed for staff)" : ""}</p>
             <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm">
-              <thead><tr className="text-left text-xs text-ink-muted border-b border-border"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Price</th><th className="font-medium text-right">Can return</th><th className="font-medium text-right w-24">Return</th></tr></thead>
+              <thead><tr className="text-left text-xs text-[#182308]-muted border-b border-[#263e0e]/10"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Price</th><th className="font-medium text-right">Can return</th><th className="font-medium text-right w-24">Return</th></tr></thead>
               <tbody>
                 {info.lines.map((l) => (
-                  <tr key={String(l.orderItemId)} className="border-b border-border/60">
-                    <td className="py-2 text-ink">{l.name}<span className="block text-xs text-ink-muted">{l.sku}</span></td>
+                  <tr key={String(l.orderItemId)} className="border-b border-[#263e0e]/10/60">
+                    <td className="py-2 text-[#182308]">{l.name}<span className="block text-xs text-[#182308]-muted">{l.sku}</span></td>
                     <td className="text-right">{money(l.unitPrice)}</td><td className="text-right">{l.remaining}</td>
                     <td className="text-right"><Input type="number" min="0" max={l.remaining} disabled={l.remaining === 0} value={qty[String(l.orderItemId)] ?? ""} onChange={(e) => setQty((q) => ({ ...q, [String(l.orderItemId)]: e.target.value }))} /></td>
                   </tr>
@@ -67,7 +67,7 @@ export default function NewReturnDrawer({ open, onClose, onCreated }) {
             </table></div>
             <Field label="Reason"><Select value={reason} onChange={(e) => setReason(e.target.value)}>{REASONS.map((x) => <option key={x}>{x}</option>)}</Select></Field>
             <Field label="Details" hint={reason === "Other" ? "Required for “Other”" : "Optional"}><Textarea rows={3} maxLength={500} value={details} onChange={(e) => setDetails(e.target.value)} /></Field>
-            {problem && <p className="text-xs text-ink-muted">{problem}</p>}
+            {problem && <p className="text-xs text-[#182308]-muted">{problem}</p>}
           </>
         )}
       </div>
