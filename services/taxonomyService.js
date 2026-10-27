@@ -59,7 +59,7 @@ async function checkParent(id, parentId, scopes, uid) {
   const parent = await Category.findOne({ _id: parentId, isDeleted: false, ...storeFilter(scopes, uid) });
   if (!parent) throw E.badRequest('Parent category not found.');
   if (parent.parentId) throw E.badRequest('Categories can only be nested one level deep.');
-  if (id && (await Category.exists({ parentId: id, isDeleted: false, ...storeFilter(scopes, ctx.user._id) }))) throw E.badRequest('This category has sub-categories, so it cannot become a sub-category itself.');
+  if (id && (await Category.exists({ parentId: id, isDeleted: false, ...storeFilter(scopes, uid) }))) throw E.badRequest('This category has sub-categories, so it cannot become a sub-category itself.');
 }
 
 async function create(ctx, type, body, scopes) {
