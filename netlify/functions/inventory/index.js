@@ -28,7 +28,7 @@ const routes = [
   { method: 'GET', path: '/', permission: ['inventory', 'view'], query: S.inventoryQuery,
     async handler({ query, ctx }) {
       const { page, limit, skip } = paging(query);
-      const filter = { ...scopeFilter(ctx.scopes, ctx.user._id, SCOPE_MAP) };
+      const filter = { ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) };
       if (query.productId) filter.productId = query.productId;
       if (query.q) { const r = new RegExp(escapeRegex(query.q), 'i'); const ps = await Product.find({ isDeleted: false, $or: [{ name: r }, { sku: r }] }).select('_id').limit(200); filter.productId = { $in: ps.map((p) => p._id) }; }
       if (query.low) filter.$expr = { $lte: [{ $subtract: ['$current', '$reserved'] }, '$lowStockThreshold'] };
