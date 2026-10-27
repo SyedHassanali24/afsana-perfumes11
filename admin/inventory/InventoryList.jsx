@@ -18,15 +18,15 @@ export default function InventoryList() {
   const tabs = TABS.filter((t) => can(t.permission));
   const [active, setActive] = useState(tabs[0]?.id);
   const current = tabs.find((t) => t.id === active) || tabs[0];
-  if (!current) return <p className="text-sm text-ink-muted">Your role doesn't include inventory.</p>;
+  if (!current) return <p className="text-sm text-[#182308]-muted">Your role doesn't include inventory.</p>;
   const { View } = current;
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl text-ink">Inventory</h1>
-      <div className="flex gap-1 border-b border-border" role="tablist">
+      <h1 className="font-display text-2xl text-[#182308]">Inventory</h1>
+      <div className="flex gap-1 border-b border-[#263e0e]/10" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={t.id === current.id} onClick={() => setActive(t.id)}
-            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${t.id === current.id ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-ink-muted hover:text-ink hover:bg-[var(--primary-soft)]"}`}>{t.label}</button>
+            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${t.id === current.id ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-[#182308]-muted hover:text-[#182308] hover:bg-[var(--primary-soft)]"}`}>{t.label}</button>
         ))}
       </div>
       <View />
