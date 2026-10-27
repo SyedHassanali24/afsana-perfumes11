@@ -8,9 +8,21 @@ const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) 
 const clientIp = (h) => h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
 function parseCookies(header = '') {
-  return Object.fromEntries(header.split(';').map((c) => c.trim()).filter(Boolean).map((c) => {
-    const i = c.indexOf('='); return [c.slice(0, i), decodeURIComponent(c.slice(i + 1))];
-  }));
+  const out = {};
+  for (const part of String(header).split(';')) {
+    const c = part.trim();
+    if (!c) continue;
+    const i = c.indexOf('=');
+    if (i <= 0) continue;
+    const name = c.slice(0, i).trim();
+    const raw = c.slice(i + 1).trim();
+    try {
+      out[name] = decodeURIComponent(raw);
+    } catch {
+      // Ignore malformed cookie values instead of turning a bad client header into a 500.
+    }
+  }
+  return out;
 }
 function serializeCookie(name, value, { maxAge, secure = true } = {}) {
   // Same-site Netlify deployments use Lax. Set COOKIE_SAMESITE=None only when the frontend/API are intentionally cross-site.
