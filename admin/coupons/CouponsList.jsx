@@ -44,11 +44,11 @@ export default function CouponsList() {
     { key: "a", header: "", align: "right", render: (r) => (
       <div className="flex justify-end gap-1">
         {inTrash ? (
-          can("coupons.delete") && <button onClick={() => act(() => couponsApi.restore(r.id), `${r.code} restored (inactive). Switch it on when ready.`)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={`Restore ${r.code}`}><RotateCcw className="w-4 h-4" /></button>
+          can("coupons.delete") && <button onClick={() => act(() => couponsApi.restore(r.id), `${r.code} restored (inactive). Switch it on when ready.`)} className="p-1.5 rounded-sm text-[#5f654f] hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={`Restore ${r.code}`}><RotateCcw className="w-4 h-4" /></button>
         ) : (<>
-          {can("coupons.edit") && <button onClick={() => act(() => couponsApi.setActive(r.id, !r.isActive), r.isActive ? `${r.code} switched off.` : `${r.code} switched on.`)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={r.isActive ? `Turn off ${r.code}` : `Turn on ${r.code}`} title={r.isActive ? "Turn off" : "Turn on"}><Power className="w-4 h-4" /></button>}
-          {can("coupons.edit") && <button onClick={() => setDrawer({ open: true, coupon: r.raw })} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={`Edit ${r.code}`}><Pencil className="w-4 h-4" /></button>}
-          {can("coupons.delete") && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" aria-label={`Delete ${r.code}`}><Trash2 className="w-4 h-4" /></button>}
+          {can("coupons.edit") && <button onClick={() => act(() => couponsApi.setActive(r.id, !r.isActive), r.isActive ? `${r.code} switched off.` : `${r.code} switched on.`)} className="p-1.5 rounded-sm text-[#5f654f] hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={r.isActive ? `Turn off ${r.code}` : `Turn on ${r.code}`} title={r.isActive ? "Turn off" : "Turn on"}><Power className="w-4 h-4" /></button>}
+          {can("coupons.edit") && <button onClick={() => setDrawer({ open: true, coupon: r.raw })} className="p-1.5 rounded-sm text-[#5f654f] hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={`Edit ${r.code}`}><Pencil className="w-4 h-4" /></button>}
+          {can("coupons.delete") && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-[#5f654f] hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" aria-label={`Delete ${r.code}`}><Trash2 className="w-4 h-4" /></button>}
         </>)}
       </div>
     ) },
@@ -59,14 +59,14 @@ export default function CouponsList() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl text-[#182308]">Coupons</h1>
-          <p className="text-sm text-[#182308]-muted mt-1">{pg ? `${pg.total} ${inTrash ? "in Trash" : pg.total === 1 ? "coupon" : "coupons"}` : "Discount codes shoppers can use at checkout."}</p>
+          <p className="text-sm text-[#5f654f] mt-1">{pg ? `${pg.total} ${inTrash ? "in Trash" : pg.total === 1 ? "coupon" : "coupons"}` : "Discount codes shoppers can use at checkout."}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => { setTab(inTrash ? "active" : "trash"); setPage(1); }}>{inTrash ? "Back to coupons" : "Trash"}</Button>
           {!inTrash && can("coupons.create") && <Button icon={Plus} onClick={() => setDrawer({ open: true, coupon: null })}>Add coupon</Button>}
         </div>
       </div>
-      {notice && <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-success-soft text-[#3d6b3d]" : "bg-[#f7e7e5] text-[#9b3f3f]"}`}>{notice.text}</p>}
+      {notice && <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-[#e6f0e4] text-[#3d6b3d]" : "bg-[#f7e7e5] text-[#9b3f3f]"}`}>{notice.text}</p>}
       <Card padded={false}>
         <div className="p-5 space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
