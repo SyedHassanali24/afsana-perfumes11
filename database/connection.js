@@ -5,9 +5,31 @@ require('dotenv').config({ quiet: true });
 // on a connection that belongs to the old instance.
 const mongoose = require('mongoose');
 
+function cleanEnvValue(value) {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (trimmed.length >= 2) {
+    const first = trimmed[0];
+    const last = trimmed[trimmed.length - 1];
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+      return trimmed.slice(1, -1).trim();
+    }
+  }
+  return trimmed;
+}
+
 async function connectDB() {
-  const { MONGODB_URI, MONGODB_DB_NAME } = process.env;
-  if (!MONGODB_URI || !MONGODB_DB_NAME) throw new Error('MONGODB_URI / MONGODB_DB_NAME not set');
+  const MONGODB_URI = cleanEnvValue(process.env.MONGODB_URI);
+  const MONGODB_DB_NAME = cleanEnvValue(process.env.MONGODB_DB_NAME);
+
+  if (!MONGODB_URI || !MONGODB_DB_NAME) {
+    throw new Error('MONGODB_URI / MONGODB_DB_NAME not set');
+  }
+
+  if (!/^mongodb(?:\+srv)?:\/\//i.test(MONGODB_URI)) {
+    throw new Error('MONGODB_URI must start with mongodb:// or mongodb+srv://');
+  }
+
   if (mongoose.connection.readyState === 1) return mongoose;
   if (!mongoose.__afsanaConnecting) {
     mongoose.set('strictQuery', true);
