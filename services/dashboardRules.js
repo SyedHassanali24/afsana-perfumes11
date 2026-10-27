@@ -91,7 +91,7 @@ function applyFieldSecurity(data, denied) {
 // Which sections this role may see. `null` section in the response = "not allowed" (UI shows "hidden").
 function sectionAccess(can) {
   const orders = can('orders', 'view');
-  return { orders: orders || null, inventory: !!can('inventory', 'view') };
+  return { orders: orders || null, inventory: can('inventory', 'view') || null };
 }
 
 module.exports = {
