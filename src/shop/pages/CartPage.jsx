@@ -44,7 +44,7 @@ export default function CartPage() {
     <Container>
       <PageTitle title="Your cart" />
       {items.length === 0 ? (
-        <div className="py-16 text-center space-y-4"><p className="text-ink-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div>
+        <div className="py-20 text-center space-y-5"><p className="text-ink-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div>
       ) : (
         <StateBox loading={loading && !q} error={error} onRetry={reload}>
           {q && (
@@ -52,11 +52,11 @@ export default function CartPage() {
               <ul className="divide-y divide-border border-y border-border">
                 {q.lines.map((l) => (
                   <li key={l.variantId} className="flex gap-3 sm:gap-4 py-4">
-                    <div className="w-16 h-20 sm:w-20 sm:h-24 shrink-0 rounded-sm overflow-hidden border border-border bg-surface">{l.image ? <img src={l.image} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>
+                    <div className="w-16 h-20 sm:w-20 sm:h-24 shrink-0 rounded-xl overflow-hidden border border-border bg-surface shadow-card">{l.image ? <img src={l.image} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between gap-3">
                         <div className="min-w-0">
-                          {l.slug ? <Link to={`/product/${l.slug}`} className="font-display text-base sm:text-lg leading-snug hover:text-gold">{l.name}</Link> : <p className="font-display text-base sm:text-lg">{l.name}</p>}
+                          {l.slug ? <Link to={`/product/${l.slug}`} className="font-display text-base sm:text-lg leading-snug hover:text-primary">{l.name}</Link> : <p className="font-display text-base sm:text-lg">{l.name}</p>}
                           {l.label && <p className="text-sm text-ink-muted">{l.label} · {money(l.unitPrice)}</p>}
                         </div>
                         <p className="text-sm tabular-nums">{l.status === 'unavailable' ? '' : money(l.lineTotal)}</p>
@@ -71,16 +71,16 @@ export default function CartPage() {
                 ))}
               </ul>
 
-              <aside className="rounded-md border border-border bg-surface p-4 sm:p-5 h-fit space-y-5 lg:sticky lg:top-24">
+              <aside className="rounded-2xl border border-border bg-surface p-5 sm:p-6 h-fit space-y-5 shadow-card lg:sticky lg:top-24">
                 <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); setCoupon(code); }}>
                   <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code" aria-label="Coupon code" />
-                  <Button type="submit" variant="secondary">Apply</Button>
+                  <Button type="submit" variant="secondary" className="rounded-xl">Apply</Button>
                 </form>
                 {q.coupon && (q.coupon.valid
                   ? <p className="text-xs text-success -mt-3">Coupon {q.coupon.code} applied. <button type="button" className="underline" onClick={() => { setCoupon(''); setCode(''); }}>Remove</button></p>
                   : <p className="text-xs text-danger -mt-3" role="alert">{q.coupon.message}</p>)}
                 <Totals q={q} />
-                {q.canCheckout ? <Link to="/checkout" className="block"><Button className="w-full">Checkout</Button></Link> : <Button className="w-full" disabled>Checkout</Button>}
+                {q.canCheckout ? <Link to="/checkout" className="block"><Button className="w-full rounded-xl">Checkout</Button></Link> : <Button className="w-full rounded-xl" disabled>Checkout</Button>}
                 {!q.canCheckout && <p className="text-xs text-ink-muted">Please fix the items marked above to continue.</p>}
               </aside>
             </div>
