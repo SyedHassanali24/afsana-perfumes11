@@ -41,7 +41,7 @@ export default function ReviewsSection({ slug }) {
   };
 
   return (
-    <section className="mt-16" aria-labelledby="reviews-title">
+    <section className="mt-16 rounded-2xl border border-border bg-surface p-5 sm:p-7 shadow-card" aria-labelledby="reviews-title">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
           <h2 id="reviews-title" className="font-display text-2xl">Customer reviews</h2>
@@ -54,7 +54,7 @@ export default function ReviewsSection({ slug }) {
       {status === 'guest' && <p className="text-sm text-ink-muted mb-4"><Link to="/login" className="underline text-ink">Sign in</Link> to review a perfume you have received.</p>}
       {status === 'authed' && mine.data && !canReview && !my && <p className="text-sm text-ink-muted mb-4">You can review this perfume after your order is delivered.</p>}
       {my && !form && (
-        <div className="rounded-sm border border-border p-4 mb-6 text-sm space-y-1">
+        <div className="rounded-xl border border-border bg-surface-raised p-4 mb-6 text-sm space-y-1">
           <p className="text-ink">Your review <span className="text-ink-muted">({my.status === 'Pending' ? 'waiting for approval' : my.status === 'Rejected' ? 'not published' : 'published'})</span></p>
           <Stars value={my.rating} />{my.title && <p className="text-ink">{my.title}</p>}{my.text && <p className="text-ink-muted whitespace-pre-wrap">{my.text}</p>}
           <button type="button" onClick={remove} className="text-xs text-danger underline">Delete my review</button>
@@ -62,7 +62,7 @@ export default function ReviewsSection({ slug }) {
       )}
 
       {form && (
-        <form onSubmit={save} className="rounded-sm border border-border p-4 mb-6 space-y-4" noValidate>
+        <form onSubmit={save} className="rounded-xl border border-border bg-surface-raised p-5 mb-6 space-y-4" noValidate>
           <div role="radiogroup" aria-label="Your rating" className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setForm({ ...form, rating: n })} className={`text-2xl ${n <= form.rating ? 'text-gold' : 'text-ink-muted/40'}`}>★</button>
@@ -81,7 +81,7 @@ export default function ReviewsSection({ slug }) {
         : (
           <ul className="space-y-5">
             {list.data.reviews.map((r) => (
-              <li key={r.id} className="border-b border-border pb-5">
+              <li key={r.id} className="border-b border-border pb-5 last:border-0 last:pb-0">
                 <div className="flex items-center gap-2 text-sm"><Stars value={r.rating} />{r.featured && <span className="text-xs text-gold">Featured</span>}</div>
                 {r.title && <p className="text-ink mt-1">{r.title}</p>}
                 {r.text && <p className="text-sm text-ink-muted mt-1 whitespace-pre-wrap">{r.text}</p>}
