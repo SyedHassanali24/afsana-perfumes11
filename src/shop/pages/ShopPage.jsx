@@ -68,7 +68,7 @@ export default function ShopPage() {
       <div className="grid gap-8 md:grid-cols-[220px_1fr]">
         <aside>
           <div className={(showFilters ? 'block' : 'hidden') + ' md:block'}>
-            <div className="space-y-5 rounded-md border border-border bg-surface p-4 md:border-0 md:bg-transparent md:p-0">
+            <div className="space-y-5 rounded-2xl border border-border bg-surface p-5 shadow-card md:border-0 md:bg-transparent md:p-0">
               <label className="block text-sm">
                 <span className="block mb-1.5">Category</span>
                 <Select value={get('category')} onChange={(e) => applyFilter({ category: e.target.value })}>
@@ -98,7 +98,7 @@ export default function ShopPage() {
                 <div className="flex flex-wrap gap-2">
                   {['Men', 'Women', 'Unisex'].map((g) => (
                     <button key={g} type="button" aria-pressed={get('gender') === g} onClick={() => applyFilter({ gender: get('gender') === g ? '' : g })}
-                      className={'px-3 py-1.5 rounded-sm border text-xs transition-colors ' + (get('gender') === g ? 'border-gold text-gold bg-gold-soft' : 'border-border text-ink-muted hover:text-ink')}>
+                      className={'px-3 py-1.5 rounded-xl border text-xs transition-colors ' + (get('gender') === g ? 'border-primary text-primary bg-primary-soft' : 'border-border text-ink-muted hover:text-primary hover:bg-primary-soft')}>
                       {g}
                     </button>
                   ))}
@@ -135,7 +135,7 @@ export default function ShopPage() {
                 const labels = { q: 'Search', category: 'Category', collection: 'Collection', brand: 'Brand', gender: 'For', minPrice: 'Min price', maxPrice: 'Max price' };
                 return (
                   <button key={key} type="button" onClick={() => set({ [key]: '' })}
-                    className="rounded-full border border-border px-2.5 py-1 text-xs text-ink-muted hover:text-ink"
+                    className="rounded-full border border-primary-soft-border bg-primary-soft px-2.5 py-1 text-xs text-primary hover:bg-primary-soft"
                     title={'Remove ' + (labels[key] || key) + ' filter'}>
                     {(labels[key] || key) + ': ' + get(key) + ' ×'}
                   </button>
