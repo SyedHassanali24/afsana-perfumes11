@@ -25,7 +25,7 @@ export default function CatalogPage() {
       <div className="flex gap-1 border-b border-border overflow-x-auto" role="tablist">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={t.id === cur.id} onClick={() => setActive(t.id)}
-            className={`px-3 sm:px-4 py-2.5 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${t.id === cur.id ? "border-[var(--gold)] text-ink font-medium" : "border-transparent text-ink-muted hover:text-ink"}`}>{t.label}</button>
+            className={`px-3 sm:px-4 py-2.5 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${t.id === cur.id ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-ink-muted hover:text-ink hover:bg-[var(--primary-soft)]"}`}>{t.label}</button>
         ))}
       </div>
       <TaxonomyTab key={cur.id} type={cur.id} module={cur.module} noun={cur.noun} plural={cur.plural} />
