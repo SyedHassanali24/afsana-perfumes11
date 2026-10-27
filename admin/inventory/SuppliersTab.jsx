@@ -33,7 +33,7 @@ function SupplierDrawer({ open, supplier, onClose, onSaved }) {
     <Drawer open={open} onClose={onClose} title={supplier ? "Edit supplier" : "Add supplier"}
       footer={<><Button variant="secondary" type="button" onClick={onClose}>Cancel</Button><Button type="submit" form="supplier-form" disabled={busy}>{busy ? "Saving…" : "Save"}</Button></>}>
       <form id="supplier-form" onSubmit={submit} className="space-y-4">
-        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{error}</p>}
         <Field label="Supplier name" error={errors.name}><Input value={v.name} error={!!errors.name} onChange={set("name")} /></Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Contact person"><Input value={v.contactPerson} onChange={set("contactPerson")} /></Field>
@@ -69,8 +69,8 @@ export default function SuppliersTab() {
     { key: "isActive", header: "Status", render: (r) => <StatusPill status={r.isActive ? "Active" : "Inactive"} /> },
     { key: "a", header: "", align: "right", render: (r) => (
       <div className="flex justify-end gap-1">
-        {can("suppliers.edit") && <button onClick={() => setDrawer({ open: true, supplier: r })} className="p-1.5 rounded-sm text-ink-muted hover:bg-bg hover:text-ink" aria-label={`Edit ${r.name}`}><Pencil className="w-4 h-4" /></button>}
-        {can("suppliers.delete") && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-ink-muted hover:bg-danger-soft hover:text-danger" aria-label={`Delete ${r.name}`}><Trash2 className="w-4 h-4" /></button>}
+        {can("suppliers.edit") && <button onClick={() => setDrawer({ open: true, supplier: r })} className="p-1.5 rounded-sm text-[#5f654f] hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={`Edit ${r.name}`}><Pencil className="w-4 h-4" /></button>}
+        {can("suppliers.delete") && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-[#5f654f] hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" aria-label={`Delete ${r.name}`}><Trash2 className="w-4 h-4" /></button>}
       </div>
     ) },
   ];
@@ -80,9 +80,9 @@ export default function SuppliersTab() {
         <div className="w-full sm:w-72"><Input placeholder="Search suppliers…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
         {can("suppliers.create") && <Button icon={Plus} onClick={() => setDrawer({ open: true, supplier: null })}>Add supplier</Button>}
       </div>
-      {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-success">{notice}</p>}
+      {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
       <Card padded={false}><div className="p-5">
-        {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
+        {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
           : <DataTable loading={loading} rows={data?.suppliers || []} columns={columns} emptyMessage={q ? "No suppliers match." : "No suppliers yet."} pagination={pg && { page: pg.page, totalPages: pg.pages, onPageChange: setPage }} />}
       </div></Card>
       <SupplierDrawer open={drawer.open} supplier={drawer.supplier} onClose={() => setDrawer({ open: false, supplier: null })} onSaved={() => { setDrawer({ open: false, supplier: null }); flash("Supplier saved."); reload(); }} />
