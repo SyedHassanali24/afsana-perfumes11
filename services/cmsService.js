@@ -1,6 +1,17 @@
 const { Banner, Faq, Announcement, HomepageSection } = require('../database/models');
 const { E, ApiError } = require('../middleware/errors');
 const { audit } = require('./audit');
+const { scopeFilter } = require('../middleware/permissions');
+const SCOPE_MAP = { stores: 'storeId' };
+const storeFilter = (scopes, uid) => scopeFilter(scopes, uid, SCOPE_MAP);
+const isStoreScoped = (r) => r === 'banners' || r === 'homepage';
+const createStoreId = (scopes) => {
+  if (scopes?.some((s) => s.kind === 'all')) return 'main';
+  const stores = [...new Set((scopes || []).filter((s) => s.kind === 'stores').flatMap((s) => s.values || []))];
+  if (stores.length !== 1) throw E.forbidden('CMS content must belong to exactly one store in your access scope.');
+  return stores[0];
+};
+const adminFilter = (r, scopes, uid) => ({ ...base(r), ...(isStoreScoped(r) ? storeFilter(scopes, uid) : {}) });
 const R = require('./cmsRules');
 
 const MODEL = { banners: Banner, faqs: Faq, announcements: Announcement, homepage: HomepageSection };
@@ -11,23 +22,23 @@ const invalid = (errs) => new ApiError(400, 'VALIDATION_ERROR', 'Please check th
 const shape = (r, d, now = new Date()) => ({ id: d._id, ...R.fromDoc(r, d), status: R.cmsStatus(r, d, now), createdAt: d.createdAt });
 const mod = (r) => R.MODULE_OF[r];
 
-async function list(r) {
+async function list(r, scopes, uid) {
   const now = new Date();
-  const rows = await MODEL[r].find(base(r)).sort(SORT[r]).limit(200).lean();
+  const rows = await MODEL[r].find(adminFilter(r, scopes, uid)).sort(SORT[r]).limit(200).lean();
   return { items: rows.map((d) => shape(r, d, now)) };
 }
 
-async function create(ctx, r, body) {
+async function create(ctx, r, body, scopes) {
   const data = R.normalize(r, body);
   const errs = R.crossFieldErrors(r, data);
   if (errs.length) throw invalid(errs);
-  const d = await MODEL[r].create(R.toDoc(r, data));
+  const d = await MODEL[r].create({ ...R.toDoc(r, data), ...(isStoreScoped(r) ? { storeId: createStoreId(scopes) } : {}) });
   await audit(ctx, { action: `${NAME[r]}.created`, module: mod(r), recordId: d._id, newValue: R.fromDoc(r, d) });
   return { item: shape(r, d) };
 }
 
-async function update(ctx, r, id, body) {
-  const d = await MODEL[r].findOne({ _id: id, ...base(r) });
+async function update(ctx, r, id, body, scopes) {
+  const d = await MODEL[r].findOne({ _id: id, ...adminFilter(r, scopes, ctx.user._id) });
   if (!d) throw E.notFound('Not found.');
   const before = R.fromDoc(r, d);
   const data = R.normalize(r, { ...before, ...body });
@@ -40,8 +51,8 @@ async function update(ctx, r, id, body) {
   return { item: shape(r, d) };
 }
 
-async function setActive(ctx, r, id, isActive) {
-  const d = await MODEL[r].findOne({ _id: id, ...base(r) });
+async function setActive(ctx, r, id, isActive, scopes) {
+  const d = await MODEL[r].findOne({ _id: id, ...adminFilter(r, scopes, ctx.user._id) });
   if (!d) throw E.notFound('Not found.');
   if (r === 'homepage') {
     const was = d.isEnabled; d.isEnabled = !!isActive; await d.save();
@@ -53,11 +64,11 @@ async function setActive(ctx, r, id, isActive) {
   return { item: shape(r, d) };
 }
 
-async function remove(ctx, r, id) {
-  const d = await MODEL[r].findOne({ _id: id, ...base(r) });
+async function remove(ctx, r, id, scopes) {
+  const d = await MODEL[r].findOne({ _id: id, ...adminFilter(r, scopes, ctx.user._id) });
   if (!d) throw E.notFound('Not found.');
   const old = R.fromDoc(r, d);
-  if (r === 'banners') await Banner.updateOne({ _id: id }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
+  if (r === 'banners') await Banner.updateOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
   else await MODEL[r].deleteOne({ _id: id });
   await audit(ctx, { action: `${NAME[r]}.deleted`, module: mod(r), recordId: id, oldValue: old });
   return {};
