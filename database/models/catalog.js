@@ -9,7 +9,7 @@ const model = (n, s) => m(mongoose, n, s);
 function taxonomy(extra = {}) {
   const s = new Schema({
     name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, lowercase: true },
+    slug: { type: String, required: true, lowercase: true },
     description: String,
     image: { url: String, alt: String },
     sortOrder: { type: Number, default: 0 },
@@ -17,6 +17,8 @@ function taxonomy(extra = {}) {
     seo: { title: String, description: String },
     ...extra,
   }, { timestamps: true });
+  s.index({ slug: 1 }, { unique: true });
+  s.index({ isDeleted: 1, isActive: 1, sortOrder: 1, name: 1 });
   storeScoped(s); softDelete(s);
   return s;
 }
@@ -47,7 +49,7 @@ const productSchema = new Schema({
     seasons: [String], occasions: [String],
   },
   notes: { top: [String], heart: [String], base: [String] },
-  profile: { // admin sliders, 0-100
+  profile: {
     freshness: { type: Number, min: 0, max: 100, default: 0 },
     sweetness: { type: Number, min: 0, max: 100, default: 0 },
     woody: { type: Number, min: 0, max: 100, default: 0 },
@@ -57,7 +59,7 @@ const productSchema = new Schema({
   media: [mediaSchema],
   content: { shortDescription: String, fullDescription: String },
   seo: { title: String, metaDescription: String, keywords: [String], canonicalUrl: String, ogImage: String },
-  tags: [String], // 'New Arrival','Best Seller','Under 2000'...
+  tags: [String],
 
   // denormalised for listing speed; recomputed when variants change
   priceFrom: Number,
@@ -71,6 +73,9 @@ productSchema.index({ categoryId: 1 });
 productSchema.index({ status: 1 });
 productSchema.index({ collectionIds: 1 });
 productSchema.index({ 'fragrance.familyId': 1 });
+productSchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
+productSchema.index({ status: 1, isDeleted: 1, priceFrom: 1 });
+productSchema.index({ status: 1, isDeleted: 1, ratingCount: -1 });
 productSchema.index({ name: 'text', tags: 'text', 'notes.top': 'text', 'notes.heart': 'text', 'notes.base': 'text' },
   { weights: { name: 10, tags: 4, 'notes.top': 3, 'notes.heart': 3, 'notes.base': 3 }, name: 'product_search' });
 storeScoped(productSchema); softDelete(productSchema);
@@ -78,18 +83,17 @@ storeScoped(productSchema); softDelete(productSchema);
 const variantSchema = new Schema({
   productId: { type: ObjectId, ref: 'Product', required: true, index: true },
   sku: { type: String, required: true, unique: true },
-  label: String,                       // "50ml"
+  label: String,
   sizeMl: { type: Number, required: true },
   price: { type: Number, required: true, min: 0 },
   salePrice: { type: Number, min: 0 },
-  costPrice: { type: Number, min: 0 },  // field-restricted (product.costPrice)
+  costPrice: { type: Number, min: 0 },
   barcode: String,
   weightGrams: Number,
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 storeScoped(variantSchema); softDelete(variantSchema);
 
-// Bundle stock = min over components of floor(available / qty). Computed server-side, never stored.
 const bundleSchema = new Schema({
   productId: { type: ObjectId, ref: 'Product', required: true, unique: true },
   components: [{ variantId: { type: ObjectId, ref: 'ProductVariant', required: true }, quantity: { type: Number, min: 1, default: 1 } }],
