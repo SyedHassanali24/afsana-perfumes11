@@ -1,10 +1,11 @@
 // Pure rules for the CMS admin (Banners, FAQs, Announcements). No DB, no npm deps -> unit-tested with `node --test`.
-const RESOURCES = ['banners', 'faqs', 'announcements'];
-const MODULE_OF = { banners: 'banners', faqs: 'faq', announcements: 'announcements' }; // permission module per resource
+const RESOURCES = ['banners', 'faqs', 'announcements', 'homepage'];
+const MODULE_OF = { banners: 'banners', faqs: 'faq', announcements: 'announcements', homepage: 'homepage' }; // permission module per resource
 const DOC_KEYS = { // top-level fields of the Mongoose document the admin may write (a missing key is CLEARED on update)
   banners: ['desktopImage', 'mobileImage', 'heading', 'subtitle', 'buttonText', 'buttonLink', 'startsAt', 'endsAt', 'isActive', 'sortOrder'],
   faqs: ['question', 'answer', 'sortOrder', 'isActive'],
   announcements: ['text', 'link', 'startsAt', 'endsAt', 'isActive'],
+  homepage: ['type', 'title', 'config', 'sortOrder', 'isEnabled'],
 };
 
 const has = (v) => v !== undefined && v !== null && v !== '';
@@ -26,6 +27,10 @@ function normalize(r, c) {
     ['question', 'answer'].forEach(put); out.sortOrder = int(c.sortOrder);
   } else if (r === 'announcements') {
     ['text', 'link'].forEach(put); dates();
+  } else if (r === 'homepage') {
+    ['type', 'title'].forEach(put);
+    out.config = c.config && typeof c.config === 'object' ? c.config : {};
+    out.sortOrder = int(c.sortOrder); out.isEnabled = c.isEnabled === undefined ? true : !!c.isEnabled;
   }
   return out;
 }
@@ -53,6 +58,11 @@ function crossFieldErrors(r, c) {
     if (str(c.text).length < 3) add('text', 'Write the announcement (at least 3 characters).');
     if (str(c.text).length > 160) add('text', 'The announcement can be at most 160 characters.');
     url('link', 'Link'); dates();
+  } else if (r === 'homepage') {
+    const allowed = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','image_banner','split_story','benefits','blog_grid','rich_text','faq','spacer'];
+    if (!allowed.includes(str(c.type))) add('type', 'Choose a valid section type.');
+    if (str(c.title).length > 120) add('title', 'Title can be at most 120 characters.');
+    if (!(Number.isInteger(Number(c.sortOrder || 0)) && Number(c.sortOrder || 0) >= 0 && Number(c.sortOrder || 0) <= 9999)) add('sortOrder', 'Order must be a whole number from 0 to 9999.');
   } else add('resource', 'Unknown section.');
   return errs;
 }
@@ -68,6 +78,7 @@ function cmsStatus(r, c, now = new Date()) {
 
 // Mongoose document <-> flat admin record (banner images are nested in the document, flat in the API)
 function fromDoc(r, d) {
+  if (r === 'homepage') return { type: d.type || 'rich_text', title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0, isEnabled: !!d.isEnabled };
   if (r === 'banners') return { heading: d.heading || '', subtitle: d.subtitle || '', buttonText: d.buttonText || '', buttonLink: d.buttonLink || '',
     desktopImageUrl: (d.desktopImage && d.desktopImage.url) || '', desktopImageAlt: (d.desktopImage && d.desktopImage.alt) || '',
     mobileImageUrl: (d.mobileImage && d.mobileImage.url) || '', mobileImageAlt: (d.mobileImage && d.mobileImage.alt) || '',
@@ -76,6 +87,7 @@ function fromDoc(r, d) {
   return { text: d.text || '', link: d.link || '', startsAt: d.startsAt || null, endsAt: d.endsAt || null, isActive: !!d.isActive };
 }
 function toDoc(r, n) { // n = normalize() output
+  if (r === 'homepage') return { type: n.type, title: n.title || '', config: n.config || {}, sortOrder: n.sortOrder || 0, isEnabled: n.isEnabled !== false };
   if (r !== 'banners') return { ...n };
   const { desktopImageUrl, desktopImageAlt, mobileImageUrl, mobileImageAlt, ...rest } = n;
   const out = { ...rest };
