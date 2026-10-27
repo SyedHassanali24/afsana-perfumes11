@@ -22,7 +22,7 @@ function AddressForm({ initial, onSaved, onCancel }) {
     finally { setBusy(false); }
   };
   return (
-    <form onSubmit={submit} className="rounded-md border border-border bg-surface p-5 space-y-4" noValidate>
+    <form onSubmit={submit} className="rounded-2xl border border-border bg-surface shadow-card p-5 space-y-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Full name" error={errors.fullName}><Input required value={f.fullName} onChange={set('fullName')} error={errors.fullName} /></Field>
         <Field label="Phone" error={errors.phone}><Input required inputMode="tel" value={f.phone} onChange={set('phone')} error={errors.phone} /></Field>
@@ -36,7 +36,7 @@ function AddressForm({ initial, onSaved, onCancel }) {
       </div>
       <Check label="Use as my default address" checked={f.isDefault} onChange={(v) => setF({ ...f, isDefault: v })} />
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-      <div className="flex flex-col sm:flex-row gap-2"><Button type="submit" className="w-full sm:w-auto" disabled={busy}>{busy ? 'Saving…' : 'Save address'}</Button><Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={onCancel}>Cancel</Button></div>
+      <div className="flex flex-col sm:flex-row gap-2"><Button type="submit" className="w-full sm:w-auto rounded-xl" disabled={busy}>{busy ? 'Saving…' : 'Save address'}</Button><Button type="button" variant="ghost" className="w-full sm:w-auto rounded-xl" onClick={onCancel}>Cancel</Button></div>
     </form>
   );
 }
@@ -56,9 +56,9 @@ export default function MyAddresses() {
         {rows.map((a) => (editing?.id === a.id
           ? <AddressForm key={a.id} initial={a} onSaved={saved} onCancel={() => setEditing(null)} />
           : (
-            <div key={a.id} className="rounded-md border border-border bg-surface p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 text-sm">
+            <div key={a.id} className="rounded-2xl border border-border bg-surface shadow-card p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 text-sm">
               <div><p className="font-medium">{a.fullName} <span className="text-xs text-ink-muted font-normal">· {a.type}{a.isDefault ? ' · Default' : ''}</span></p><p>{a.line1}{a.line2 ? `, ${a.line2}` : ''}</p><p>{a.city}{a.postalCode ? ` ${a.postalCode}` : ''}</p><p className="text-ink-muted">{a.phone}</p></div>
-              <div className="flex flex-row sm:flex-col items-stretch sm:items-end gap-1"><Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setEditing(a)}>Edit</Button><Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setDel(a)}>Remove</Button></div>
+              <div className="flex flex-row sm:flex-col items-stretch sm:items-end gap-1"><Button variant="ghost" size="sm" className="w-full sm:w-auto rounded-xl" onClick={() => setEditing(a)}>Edit</Button><Button variant="ghost" size="sm" className="w-full sm:w-auto rounded-xl" onClick={() => setDel(a)}>Remove</Button></div>
             </div>
           )))}
         {editing === 'new' && <AddressForm onSaved={saved} onCancel={() => setEditing(null)} />}
