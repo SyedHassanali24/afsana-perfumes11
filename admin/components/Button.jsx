@@ -1,8 +1,8 @@
 const VARIANTS = {
-  primary: "bg-[var(--primary)] text-white shadow-sm hover:bg-[var(--primary-hover)]",
-  secondary: "bg-surface border border-border text-ink hover:bg-bg hover:border-[var(--primary-soft-border)]",
-  ghost: "bg-transparent text-ink-muted hover:bg-bg hover:text-ink",
-  danger: "bg-danger text-white hover:opacity-90",
+  primary: "bg-[#263e0e] text-white shadow-sm hover:bg-[ #748e40]",
+  secondary: "bg-[#faf8f4] border border-[#263e0e]/10 text-[#182308] hover:bg-[#f3f1e9] hover:border-[ #b4bf4166]",
+  ghost: "bg-transparent text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]",
+  danger: "bg-[#9b3f3f] text-white hover:opacity-90",
 };
 
 const SIZES = {
@@ -20,7 +20,7 @@ export default function Button({
 }) {
   return (
     <button
-      className={"inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/30 disabled:opacity-40 disabled:pointer-events-none " + VARIANTS[variant] + " " + SIZES[size] + " " + className}
+      className={"inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[[#263e0e]/30 disabled:opacity-40 disabled:pointer-events-none " + VARIANTS[variant] + " " + SIZES[size] + " " + className}
       {...props}
     >
       {Icon && <Icon className="w-4 h-4" />}
