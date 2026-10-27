@@ -14,8 +14,9 @@ async function uniqueSlug(base, excludeId) {
   while (await Product.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })) slug = `${slugify(base)}-${++n}`;
   return slug;
 }
-async function stockByProduct(ids) {
-  const rows = await Inventory.aggregate([{ $match: { productId: { $in: ids } } }, { $group: { _id: '$productId', current: { $sum: '$current' }, reserved: { $sum: '$reserved' } } }]);
+async function stockByProduct(ids, scopes, uid) {
+  const invScope = scopeFilter(scopes, uid, SCOPE_MAP);
+  const rows = await Inventory.aggregate([{ $match: { productId: { $in: ids }, ...invScope } }, { $group: { _id: '$productId', current: { $sum: '$current' }, reserved: { $sum: '$reserved' } } }]);
   return new Map(rows.map((r) => [String(r._id), { current: r.current, available: r.current - r.reserved }]));
 }
 async function recomputePriceFrom(productId, session) {
@@ -41,7 +42,7 @@ async function listPublic(q) {
     Product.find(filter, q.q ? { score: { $meta: 'textScore' }, ...Object.fromEntries(projection.split(' ').map((f) => [f, 1])) } : projection).sort(sort).skip(skip).limit(limit).lean(),
     Product.countDocuments(filter),
   ]);
-  const stock = await stockByProduct(rows.map((r) => r._id), scopes, uid);
+  const stock = await stockByProduct(rows.map((r) => r._id));
   return {
     products: rows.map((p) => ({
       id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, tags: p.tags, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount,
@@ -79,7 +80,7 @@ async function listAdmin(q, scopes, uid, { trash = false } = {}) {
     Product.find(filter).select('name slug sku status categoryId priceFrom tags media createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit).populate('categoryId', 'name').lean(),
     Product.countDocuments(filter),
   ]);
-  const stock = await stockByProduct(rows.map((r) => r._id));
+  const stock = await stockByProduct(rows.map((r) => r._id), scopes, uid);
   return {
     products: rows.map((p) => ({ ...p, category: p.categoryId && p.categoryId.name, categoryId: p.categoryId && p.categoryId._id, stock: (stock.get(String(p._id)) || { current: 0, available: 0 }) })),
     pagination: pageMeta(total, page, limit),
@@ -96,7 +97,7 @@ async function getAdmin(id, scopes, uid) {
   const p = await Product.findOne({ _id: id, ...scopeFilter(scopes, uid, SCOPE_MAP) }).lean();
   if (!p) throw E.notFound('Product not found.');
   const variants = await ProductVariant.find({ productId: id, isDeleted: false }).sort({ sizeMl: 1 }).lean();
-  const inv = await Inventory.find({ productId: id }).lean();
+  const inv = await Inventory.find({ productId: id, ...scopeFilter(scopes, uid, { stores: 'storeId' }) }).lean();
   const byV = new Map(inv.map((i) => [String(i.variantId), i]));
   return { product: p, variants: variants.map((v) => ({ ...v, stock: byV.get(String(v._id)) || null })) };
 }
