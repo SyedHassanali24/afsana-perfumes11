@@ -41,7 +41,7 @@ async function listPublic(q) {
     Product.find(filter, q.q ? { score: { $meta: 'textScore' }, ...Object.fromEntries(projection.split(' ').map((f) => [f, 1])) } : projection).sort(sort).skip(skip).limit(limit).lean(),
     Product.countDocuments(filter),
   ]);
-  const stock = await stockByProduct(rows.map((r) => r._id));
+  const stock = await stockByProduct(rows.map((r) => r._id), scopes, uid);
   return {
     products: rows.map((p) => ({
       id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, tags: p.tags, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount,
