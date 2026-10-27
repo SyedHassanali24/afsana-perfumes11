@@ -2,6 +2,9 @@ const { Inventory, InventoryTransaction, ProductVariant, Notification } = requir
 const { E } = require('../middleware/errors');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
+const { scopeFilter } = require('../middleware/permissions');
+
+const SCOPE_MAP = { stores: 'storeId' };
 
 // Sorted order avoids deadlocks when two orders touch the same variants.
 const sorted = (items) => [...items].sort((a, b) => String(a.variantId).localeCompare(String(b.variantId)));
@@ -51,18 +54,18 @@ async function receiveReturnedItems(items, order, ctx, session, condition) {
   }
 }
 
-async function adjustStock(ctx, { variantId, type, quantity, reason }) {
+async function adjustStock(ctx, { variantId, type, quantity, reason }, scopes) {
   const result = await withTx(async (session) => {
-    const variant = await ProductVariant.findOne({ _id: variantId, isDeleted: false }).session(session);
+    const variant = await ProductVariant.findOne({ _id: variantId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session);
     if (!variant) throw E.notFound('Variant not found.');
     const delta = type === 'damaged' ? -quantity : quantity;
     const inc = type === 'damaged' ? { current: -quantity, damaged: quantity } : { current: quantity };
     // condition lives in the update: stock can never drop below units reserved for open orders
     const inv = await Inventory.findOneAndUpdate(
-      { variantId, $expr: { $gte: [{ $add: ['$current', delta] }, '$reserved'] } },
+      { variantId, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP), $expr: { $gte: [{ $add: ['$current', delta] }, '$reserved'] } },
       { $inc: inc }, { new: true, session });
     if (!inv) {
-      if (!(await Inventory.exists({ variantId }).session(session))) throw E.notFound('No inventory record for this variant.');
+      if (!(await Inventory.exists({ variantId, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session))) throw E.notFound('No inventory record for this variant.');
       throw E.conflict('Cannot reduce stock below the units reserved for open orders.');
     }
     const before = inv.current - delta;
