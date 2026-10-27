@@ -60,7 +60,7 @@ export default function ReviewsList() {
           <Input placeholder="Search perfume, customer or review text…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Search reviews" />
           <div className="flex flex-wrap gap-2" role="group" aria-label="Review status">
             {TABS.map((t) => (
-              <button key={t} type="button" aria-pressed={status === t} onClick={() => { setStatus(t); setPage(1); }} className={`px-3 py-1.5 rounded-sm text-xs border ${status === t ? "border-gold text-[#182308]" : "border-[#263e0e]/10 text-[#182308]-muted"}`}>
+              <button key={t} type="button" aria-pressed={status === t} onClick={() => { setStatus(t); setPage(1); }} className={`px-3 py-1.5 rounded-sm text-xs border ${status === t ? "border-[#748e40] text-[#182308]" : "border-[#263e0e]/10 text-[#182308]-muted"}`}>
                 {t}{counts ? ` (${counts[t] ?? 0})` : ""}
               </button>
             ))}
