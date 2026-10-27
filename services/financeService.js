@@ -40,12 +40,14 @@ async function listExpenses(q, scopes) {
   needAll(scopes);
   const { page, limit, skip } = paging(q);
   const filter = expenseFilter(q);
-  const [rows, total, all] = await Promise.all([
+  // Keep the paginated read small: the displayed total is an aggregate and should not
+  // require loading every matching expense document into the serverless function.
+  const [rows, total, sums] = await Promise.all([
     Expense.find(filter).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
     Expense.countDocuments(filter),
-    Expense.find(filter).select('amount').lean(),
+    Expense.aggregate([{ $match: filter }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
   ]);
-  return { expenses: rows.map(shape), total: all.reduce((s, e) => s + (Number(e.amount) || 0), 0), pagination: pageMeta(total, page, limit) };
+  return { expenses: rows.map(shape), total: Number(sums[0]?.total || 0), pagination: pageMeta(total, page, limit) };
 }
 async function createExpense(ctx, body, scopes) {
   needAll(scopes);
