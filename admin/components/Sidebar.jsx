@@ -76,7 +76,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
     <>
       <aside
         className={`hidden md:flex h-screen sticky top-0 flex-col transition-[width] duration-200 shadow-2xl ${collapsed ? "w-[76px]" : "w-64"}`}
-        style={{ background: "linear-gradient(180deg, #3438B8 0%, #292E9F 45%, #202675 100%)" }}
+        style={{ background: "linear-gradient(180deg, #263e0e 0%, #344d18 48%, #182308 100%)" }}
       >
         <div className="flex items-center justify-between px-4 h-[82px] shrink-0 border-b border-white/10">
           {!collapsed ? (
@@ -100,13 +100,13 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
         )}
       </aside>
 
-      <button type="button" className="md:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl text-white shadow-lg" style={{ background: "#3035AD" }} onClick={() => setMobileOpen(true)} aria-label="Open admin navigation">
+      <button type="button" className="md:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl text-white shadow-lg" style={{ background: "#263e0e" }} onClick={() => setMobileOpen(true)} aria-label="Open admin navigation">
         <Menu className="w-5 h-5" />
       </button>
 
       {mobileOpen && <button type="button" aria-label="Close navigation overlay" className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMobileOpen(false)} />}
 
-      <aside className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`} style={{ background: "linear-gradient(180deg, #3438B8 0%, #202675 100%)" }}>
+      <aside className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`} style={{ background: "linear-gradient(180deg, #263e0e 0%, #182308 100%)" }}>
         <div className="flex items-center justify-between px-5 h-[82px] border-b border-white/10">
           <div><p className="text-xl font-bold tracking-[0.12em] text-white">AFSANA</p><p className="text-[9px] font-semibold tracking-[0.34em] text-white/70">PERFUMES</p></div>
           <button type="button" onClick={() => setMobileOpen(false)} className="p-2 rounded-lg text-white/70 hover:bg-white/10" aria-label="Close admin navigation"><X className="w-5 h-5" /></button>
