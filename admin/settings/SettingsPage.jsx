@@ -14,10 +14,10 @@ function Section({ title, hint, children, canSave, dirty, error, onSave, saved }
   return (
     <Card>
       <div className="space-y-4">
-        <div><h2 className="font-display text-lg text-ink">{title}</h2>{hint && <p className="text-sm text-ink-muted mt-0.5">{hint}</p>}</div>
+        <div><h2 className="font-display text-lg text-[#182308]">{title}</h2>{hint && <p className="text-sm text-[#182308]-muted mt-0.5">{hint}</p>}</div>
         {children}
-        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-xl px-3 py-2">{error}</p>}
-        {saved && !dirty && <p role="status" className="text-sm text-success">Saved.</p>}
+        {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-xl px-3 py-2">{error}</p>}
+        {saved && !dirty && <p role="status" className="text-sm text-[#3d6b3d]">Saved.</p>}
         {canSave && <Button onClick={onSave} disabled={!dirty}>Save {title.toLowerCase()}</Button>}
       </div>
     </Card>
@@ -35,8 +35,8 @@ export default function SettingsPage() {
   const canEdit = can("settings.edit");
 
   useEffect(() => { if (data?.settings) { setForm(structuredClone(data.settings)); setOrig(structuredClone(data.settings)); } }, [data]);
-  if (loading && !form) return <p className="text-sm text-ink-muted">Loading…</p>;
-  if (error) return <div className="space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>;
+  if (loading && !form) return <p className="text-sm text-[#182308]-muted">Loading…</p>;
+  if (error) return <div className="space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>;
   if (!form) return null;
 
   const set = (sec, key) => (e) => { setForm((f) => ({ ...f, [sec]: { ...f[sec], [key]: e.target.value } })); setSaved((s) => ({ ...s, [sec]: false })); };
@@ -66,8 +66,8 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div><h1 className="font-display text-2xl text-ink">Settings</h1><p className="text-sm text-ink-muted mt-1">Your shop details, bank account for transfers, delivery fee and return days. Customers see these on the website.</p></div>
-      {!canEdit && <p className="text-sm text-ink-muted bg-bg border border-border rounded-sm px-3 py-2">You can view settings but not change them.</p>}
+      <div><h1 className="font-display text-2xl text-[#182308]">Settings</h1><p className="text-sm text-[#182308]-muted mt-1">Your shop details, bank account for transfers, delivery fee and return days. Customers see these on the website.</p></div>
+      {!canEdit && <p className="text-sm text-[#182308]-muted bg-[#f3f1e9] border border-[#263e0e]/10 rounded-sm px-3 py-2">You can view settings but not change them.</p>}
 
       <Section title="Shop details" hint="Shown on the website footer, contact page and in messages." {...sec("store")}>
         <div className="grid sm:grid-cols-2 gap-4">
