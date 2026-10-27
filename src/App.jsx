@@ -52,7 +52,7 @@ export default function App() {
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin/change-password" element={<ChangePasswordPage />} />
       <Route path="/admin" element={page('dashboard.view', <Dashboard />)} />
-      <Route path="/admin/analytics" element={page('analytics.view', <AnalyticsPage />)} />
+      <Route path="/admin/analytics" element={page('dashboard.view', <AnalyticsPage />)} />
       <Route path="/admin/products" element={page('products.view', <ProductsList />)} />
       <Route path="/admin/catalog" element={page('categories.view', <CatalogPage />)} />
       <Route path="/admin/inventory" element={page('inventory.view', <InventoryList />)} />
