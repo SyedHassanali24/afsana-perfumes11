@@ -117,9 +117,30 @@ function QuickLink({ href, icon: Icon, title, text, tone }) {
 }
 
 export default function Dashboard() {
-  const { data, loading, error, reload } = useApi(() => analyticsApi.dashboard(), []);\n  const [draggedCard, setDraggedCard] = useState(null);\n  const [cardOrder, setCardOrder] = useState(null);
+  const { data, loading, error, reload } = useApi(() => analyticsApi.dashboard(), []);
+  const [draggedCard, setDraggedCard] = useState(null);
+  const [cardOrder, setCardOrder] = useState(null);
   const vm = useMemo(() => (data ? toDashboard(data.dashboard) : null), [data]);
-  const orderedCards = useMemo(() => {\n    const cards = vm?.cards || [];\n    if (!cardOrder) return cards;\n    const byKey = new Map(cards.map((card) => [card.key, card]));\n    return cardOrder.map((key) => byKey.get(key)).filter(Boolean).concat(cards.filter((card) => !cardOrder.includes(card.key)));\n  }, [vm?.cards, cardOrder]);\n\n  const reorderCard = (fromKey, toKey) => {\n    if (!fromKey || !toKey || fromKey === toKey || !vm?.cards) return;\n    const current = orderedCards.map((card) => card.key);\n    const from = current.indexOf(fromKey);\n    const to = current.indexOf(toKey);\n    if (from < 0 || to < 0) return;\n    const next = [...current];\n    const [moved] = next.splice(from, 1);\n    next.splice(to, 0, moved);\n    setCardOrder(next);\n  };\n\n  const statusBreakdown = useMemo(() => {
+  const orderedCards = useMemo(() => {
+    const cards = vm?.cards || [];
+    if (!cardOrder) return cards;
+    const byKey = new Map(cards.map((card) => [card.key, card]));
+    return cardOrder.map((key) => byKey.get(key)).filter(Boolean).concat(cards.filter((card) => !cardOrder.includes(card.key)));
+  }, [vm?.cards, cardOrder]);
+
+  const reorderCard = (fromKey, toKey) => {
+    if (!fromKey || !toKey || fromKey === toKey || !vm?.cards) return;
+    const current = orderedCards.map((card) => card.key);
+    const from = current.indexOf(fromKey);
+    const to = current.indexOf(toKey);
+    if (from < 0 || to < 0) return;
+    const next = [...current];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setCardOrder(next);
+  };
+
+  const statusBreakdown = useMemo(() => {
     const map = new Map();
     (vm?.recentOrders || []).forEach((o) => map.set(o.status, (map.get(o.status) || 0) + 1));
     return Array.from(map, ([key, value]) => ({ name: STATUS_LABELS[key] || key, value })).filter((x) => x.value);
@@ -168,7 +189,20 @@ export default function Dashboard() {
       <Header />
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        {orderedCards.map((card, index) => (\n          <div\n            key={card.key}\n            draggable\n            onDragStart={() => setDraggedCard(card.key)}\n            onDragOver={(event) => event.preventDefault()}\n            onDrop={() => { reorderCard(draggedCard, card.key); setDraggedCard(null); }}\n            onDragEnd={() => setDraggedCard(null)}\n            className={`cursor-grab active:cursor-grabbing transition-transform ${draggedCard === card.key ? "scale-[.98] opacity-60" : ""}`}\n            title="Drag to reorder"\n          >\n            <StatCard card={card} index={index} />\n          </div>\n        ))}
+        {orderedCards.map((card, index) => (
+          <div
+            key={card.key}
+            draggable
+            onDragStart={() => setDraggedCard(card.key)}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => { reorderCard(draggedCard, card.key); setDraggedCard(null); }}
+            onDragEnd={() => setDraggedCard(null)}
+            className={`cursor-grab active:cursor-grabbing transition-transform ${draggedCard === card.key ? "scale-[.98] opacity-60" : ""}`}
+            title="Drag to reorder"
+          >
+            <StatCard card={card} index={index} />
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
