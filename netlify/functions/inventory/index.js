@@ -43,7 +43,13 @@ const routes = [
   { method: 'GET', path: '/history', permission: ['inventory', 'view'], query: S.historyQuery,
     async handler({ query, ctx, scopes }) {
       const { page, limit, skip } = paging(query);
-      const filter = { ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }; if (query.variantId) filter.variantId = query.variantId; if (query.type) filter.type = query.type;
+      const filter = {}; if (query.variantId) filter.variantId = query.variantId; if (query.type) filter.type = query.type;
+      const storeScope = scopeFilter(scopes, ctx.user._id, SCOPE_MAP);
+      if (Object.keys(storeScope).length) {
+        const allowed = await Inventory.find(storeScope).select('variantId').lean();
+        const allowedIds = allowed.map((i) => i.variantId);
+        filter.variantId = filter.variantId ? { $in: allowedIds.filter((id) => String(id) === String(filter.variantId)) } : { $in: allowedIds };
+      }
       const [rows, total] = await Promise.all([
         InventoryTransaction.find(filter).populate('variantId', 'sku label').populate('productId', 'name').populate('by', 'email').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
         InventoryTransaction.countDocuments(filter),
