@@ -11,7 +11,7 @@ async function listAdmin(scopes, uid) {
   const orderFilter = scopeFilter(scopes, uid, { cities: 'shippingAddress.city', stores: 'storeId', assignedTo: 'assignedTo', createdBy: 'createdBy' });
   const [couriers, rates, visibleOrders] = await Promise.all([
     Courier.find({}).sort({ name: 1 }).lean(), ShippingRate.find({}).sort({ 'zone.name': 1 }).lean(),
-    Order.find(orderFilter).select('_id orderNumber customer.name shippingAddress.city').lean(),
+    Order.find(orderFilter).select('_id orderNumber status customer.name shippingAddress.city').lean(),
   ]);
   const ids = visibleOrders.map(o => String(o._id));
   const shipments = ids.length ? await Shipment.find({ orderId: { $in: ids } }).sort({ updatedAt: -1 }).limit(100).populate('courierId', 'name trackingUrlTemplate').lean() : [];
