@@ -4,7 +4,6 @@ import Button from "./Button";
 import { mediaApi } from "../../src/services";
 import shrinkImage from "../../src/lib/shrinkImage";
 
-// "Upload" next to a picture-address box: shrinks the picture in the browser, uploads it, then calls onUploaded("/api/media/<id>").
 export default function ImageUploadButton({ onUploaded, label = "Upload picture" }) {
   const ref = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -22,7 +21,7 @@ export default function ImageUploadButton({ onUploaded, label = "Upload picture"
     <div className="flex flex-wrap items-center gap-2">
       <input ref={ref} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={pick} />
       <Button type="button" variant="secondary" size="sm" icon={Upload} disabled={busy} onClick={() => ref.current?.click()}>{busy ? "Uploading…" : label}</Button>
-      {error && <span role="alert" className="text-xs text-danger">{error}</span>}
+      {error && <span role="alert" className="text-xs text-[#9b3f3f]">{error}</span>}
     </div>
   );
 }
