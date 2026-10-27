@@ -177,8 +177,9 @@ async function removeOverride(ctx, id, overrideId) {
 }
 
 // ---- sessions ----
-async function listSessions(id) {
-  const s = await Staff.findOne({ _id: id, isDeleted: false }).select('userId');
+async function listSessions(ctx, id) {
+  const { staff } = await loadManageable(ctx, id);
+  const s = await Staff.findOne({ _id: staff._id, isDeleted: false }).select('userId');
   if (!s) throw E.notFound('Staff member not found.');
   const rows = await Session.find({ userId: s.userId, revokedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ lastActiveAt: -1 }).lean();
   return { sessions: rows.map((x) => ({ id: x._id, device: x.device, lastActiveAt: x.lastActiveAt, createdAt: x.createdAt })) };
