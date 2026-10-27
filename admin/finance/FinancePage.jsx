@@ -60,7 +60,7 @@ export default function FinancePage() {
     { key: "amount", header: "Amount", align: "right", render: (r) => money(r.amount) },
     ...(can("expenses.edit") || can("expenses.delete") ? [{ key: "actions", header: "", align: "right", render: (r) => (
       <span className="inline-flex gap-3">
-        {can("expenses.edit") && <button type="button" className="text-xs text-gold hover:underline" onClick={(ev) => { ev.stopPropagation(); open(r); }}>Edit</button>}
+        {can("expenses.edit") && <button type="button" className="text-xs text-[var(--primary)] hover:underline" onClick={(ev) => { ev.stopPropagation(); open(r); }}>Edit</button>}
         {can("expenses.delete") && <button type="button" className="text-xs text-danger hover:underline" onClick={(ev) => { ev.stopPropagation(); setRemoving(r); }}>Delete</button>}
       </span>) }] : []),
   ];
@@ -102,7 +102,7 @@ export default function FinancePage() {
               <ul className="space-y-2">{s.expenses.byCategory.map((c) => (
                 <li key={c.category} className="text-sm">
                   <div className="flex justify-between"><span className="text-ink">{c.category}</span><span className="text-ink-muted">{money(c.total)}{c.share !== null ? ` · ${c.share}%` : ""}</span></div>
-                  <div className="h-1.5 mt-1 rounded-full bg-border overflow-hidden"><div className="h-full bg-gold" style={{ width: `${c.share || 0}%` }} /></div>
+                  <div className="h-1.5 mt-1 rounded-full bg-border overflow-hidden"><div className="h-full bg-[var(--primary)]" style={{ width: `${c.share || 0}%` }} /></div>
                 </li>))}</ul>
             )}
           </Card>
