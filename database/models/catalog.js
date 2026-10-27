@@ -109,6 +109,8 @@ const reviewSchema = new Schema({
   moderatedBy: { type: ObjectId, ref: 'User' },
 }, { timestamps: true });
 reviewSchema.index({ productId: 1 });
+reviewSchema.index({ productId: 1, isDeleted: 1, status: 1, createdAt: -1 });
+reviewSchema.index({ isDeleted: 1, status: 1, createdAt: -1 });
 reviewSchema.index({ productId: 1, customerId: 1 }, { unique: true });
 softDelete(reviewSchema);
 
