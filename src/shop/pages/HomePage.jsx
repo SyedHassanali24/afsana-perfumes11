@@ -7,6 +7,8 @@ import useTitle from '../useTitle';
 
 const DEFAULT_SECTIONS = [
   { id:'default-hero', type:'hero', title:'A scent that becomes your signature.', isEnabled:true, config:{ eyebrow:'AFSANA PERFUMES', subtitle:'Discover refined fragrances composed for presence, memory and everyday luxury.', buttonText:'Shop the collection', buttonLink:'/shop' } },
+  { id:'default-marquee', type:'marquee', title:'', isEnabled:true, config:{ items:'Afsana Perfumes|Crafted with intention\\nMade to linger|A signature worth remembering' } },
+  { id:'default-categories', type:'category_tiles', title:'Find your fragrance world', isEnabled:true, config:{} },
   { id:'default-cinematic', type:'cinematic_statement', title:'Wear the memory. Leave the impression.', isEnabled:true, config:{ eyebrow:'THE ART OF PERFUMERY', body:'Afsana is composed around the moments you want to keep — and the presence you want to leave behind.', buttonText:'Explore the collection', buttonLink:'/shop' } },
   { id:'default-benefits', type:'benefits', title:'', isEnabled:true, config:{ items:'Signature-worthy sillage|Designed to be remembered\nThoughtful ingredients|Chosen for a beautiful finish\nElegant packaging|Ready to gift or keep\nPakistan-wide delivery|Packed with care' } },
   { id:'default-best', type:'best_sellers', title:'The Afsana Icons', isEnabled:true, config:{ limit:4 } },
