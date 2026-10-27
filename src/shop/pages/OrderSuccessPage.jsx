@@ -16,12 +16,12 @@ export default function OrderSuccessPage() {
   const shop = useShopSettings();
   return (
     <Container className="max-w-xl">
-      <div className="text-center py-8 sm:py-10 space-y-4">
-        <CheckCircle2 className="w-12 h-12 mx-auto text-success" aria-hidden />
-        <h1 className="font-display text-3xl">Thank you for your order</h1>
+      <div className="text-center py-10 sm:py-14 space-y-5">
+        <div className="mx-auto flex w-20 h-20 items-center justify-center rounded-full bg-success-soft luxury-float"><CheckCircle2 className="w-10 h-10 text-success" aria-hidden /></div>
+        <h1 className="font-display text-3xl sm:text-4xl">Thank you for your order</h1>
         <p className="text-ink-muted">Your order number is <span className="text-ink font-medium">{orderNumber}</span>. Keep it to track your parcel.</p>
         {order && (
-          <div className="rounded-md border border-border bg-surface p-4 sm:p-5 text-sm text-left space-y-1.5">
+          <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6 text-sm text-left space-y-2 shadow-card">
             <div className="flex justify-between"><span className="text-ink-muted">Total</span><span>{money(order.total)}</span></div>
             <div className="flex justify-between"><span className="text-ink-muted">Payment</span><span>{PAYMENT_LABEL[order.paymentMethod] || order.paymentMethod}</span></div>
             {order.paymentMethod === 'BANK_TRANSFER' && (shop?.bank ? <div className="pt-2"><BankDetails bank={shop.bank} orderNumber={orderNumber} /></div> : <p className="text-xs text-ink-muted pt-2">{BANK_NOTE}</p>)}
