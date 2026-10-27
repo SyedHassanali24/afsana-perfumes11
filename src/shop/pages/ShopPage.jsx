@@ -2,7 +2,7 @@ import { useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { productsApi } from '../../services';
 import { Select } from '../../../admin/components/FormFields';
-import { Container, PageTitle, StateBox, CardsSkeleton, Pager } from '../ui';
+import { StateBox, CardsSkeleton, Pager } from '../ui';
 import ProductCard from '../ProductCard';
 import useTitle from '../useTitle';
 
