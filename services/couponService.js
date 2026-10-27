@@ -101,7 +101,7 @@ async function setActive(ctx, id, isActive, scopes) {
 async function remove(ctx, id, scopes) {
   const c = await Coupon.findOne({ _id: id, isDeleted: false, ...storeFilter(scopes, ctx.user._id) });
   if (!c) throw E.notFound('Coupon not found.');
-  await Coupon.updateOne({ _id: id }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
+  await Coupon.updateOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
   await audit(ctx, { action: 'coupon.deleted', module: 'coupons', recordId: id, oldValue: { code: c.code } });
   return {};
 }
@@ -110,7 +110,7 @@ async function remove(ctx, id, scopes) {
 async function restore(ctx, id, scopes) {
   const c = await Coupon.findOne({ _id: id, isDeleted: true, ...storeFilter(scopes, ctx.user._id) });
   if (!c) throw E.notFound('Coupon not found in Trash.');
-  await Coupon.updateOne({ _id: id }, { $set: { isDeleted: false, isActive: false }, $unset: { deletedAt: 1, deletedBy: 1 } });
+  await Coupon.updateOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }, { $set: { isDeleted: false, isActive: false }, $unset: { deletedAt: 1, deletedBy: 1 } });
   await audit(ctx, { action: 'coupon.restored', module: 'coupons', recordId: id, newValue: { code: c.code } });
   const fresh = await Coupon.findOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }).lean();
   return { coupon: shape(fresh) };
