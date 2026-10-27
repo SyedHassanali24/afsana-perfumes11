@@ -14,7 +14,7 @@ const REASON_LABEL = { 'Wrong Product': 'I received the wrong product', Damaged:
 // One returned request, as the shopper sees it (no staff notes, no costs).
 export function ReturnCard({ r, onCancel }) {
   return (
-    <div className="rounded-md border border-border bg-surface p-4 text-sm space-y-2">
+    <div className="rounded-2xl border border-border bg-surface shadow-card p-4 text-sm space-y-2">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
         <div><p className="font-medium">{r.returnNumber}</p><p className="text-xs text-ink-muted">Requested {fmtDate(r.createdAt)} · Order {r.orderNumber}</p></div>
         <StatusPill status={r.status} />
@@ -68,15 +68,15 @@ export default function ReturnsSection({ orderNumber, orderStatus, onChanged }) 
       {returns.map((r) => <ReturnCard key={r.returnNumber} r={r} onCancel={setCancelling} />)}
 
       {e && e.eligible && !open && (
-        <div className="rounded-md border border-border bg-surface p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="rounded-2xl border border-border bg-surface shadow-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <p className="text-sm text-ink-muted">Not happy with something? You can return items until {fmtDate(e.window.deadline)}.</p>
-          <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => { setOpen(true); setError(''); }}>Request a return</Button>
+          <Button variant="secondary" size="sm" className="w-full sm:w-auto rounded-xl" onClick={() => { setOpen(true); setError(''); }}>Request a return</Button>
         </div>
       )}
       {e && !e.eligible && orderStatus === 'Delivered' && returns.length === 0 && <p className="text-sm text-ink-muted">{e.message}</p>}
 
       {e && e.eligible && open && (
-        <form onSubmit={submit} className="rounded-md border border-border bg-surface p-4 space-y-4">
+        <form onSubmit={submit} className="rounded-2xl border border-border bg-surface shadow-card p-4 space-y-4">
           <p className="text-sm font-medium">Which items would you like to return?</p>
           <ul className="space-y-3">
             {e.lines.filter((l) => l.remaining > 0).map((l) => {
@@ -92,7 +92,7 @@ export default function ReturnsSection({ orderNumber, orderStatus, onChanged }) 
           <Field label="Reason"><Select value={reason} onChange={(ev) => setReason(ev.target.value)}><option value="">Select a reason…</option>{REASONS.map((x) => <option key={x} value={x}>{REASON_LABEL[x]}</option>)}</Select></Field>
           <Field label="Details" hint={reason === 'Other' ? 'Required' : 'Optional — anything that helps us'}><Textarea rows={3} maxLength={500} value={details} onChange={(ev) => setDetails(ev.target.value)} /></Field>
           {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <div className="flex flex-col sm:flex-row gap-2"><Button type="submit" className="w-full sm:w-auto" disabled={busy}>{busy ? 'Sending…' : 'Send return request'}</Button><Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button></div>
+          <div className="flex flex-col sm:flex-row gap-2"><Button type="submit" className="w-full sm:w-auto rounded-xl" disabled={busy}>{busy ? 'Sending…' : 'Send return request'}</Button><Button type="button" variant="ghost" className="w-full sm:w-auto rounded-xl" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button></div>
         </form>
       )}
 
