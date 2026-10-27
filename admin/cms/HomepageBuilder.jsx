@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles, ArrowUp, ArrowDown, Copy } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Drawer from '../components/Drawer';
@@ -60,12 +60,32 @@ export default function HomepageBuilder() {
     catch (e) { setNotice(e.message || 'Could not reorder sections.'); }
   };
   const sorted = [...rows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const moveBy = async (id, delta) => {
+    const next = [...sorted];
+    const from = next.findIndex((x) => x.id === id);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= next.length) return;
+    const [moved] = next.splice(from, 1); next.splice(to, 0, moved);
+    try {
+      for (let i = 0; i < next.length; i += 1) await api.update(next[i].id, { sortOrder: i });
+      setNotice('Section order saved.'); reload();
+    } catch (e) { setNotice(e.message || 'Could not reorder sections.'); }
+  };
+  const duplicate = async (item) => {
+    setBusy(true); setNotice('');
+    try {
+      await api.create({ type: item.type, title: item.title || '', config: item.config || {}, sortOrder: (item.sortOrder ?? rows.length) + 1, isEnabled: false });
+      setNotice('Section duplicated as hidden. Review it, then publish it.'); reload();
+    } catch (e) { setNotice(e.message || 'Could not duplicate section.'); }
+    finally { setBusy(false); }
+  };
+
   const common = ['hero', 'video_banner', 'image_banner', 'split_story', 'rich_text'].includes(form.type);
 
   return <div className="space-y-5">
     <div className="rounded-2xl border border-primary-soft-border bg-primary-soft p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div><p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build your storefront like a canvas</h2><p className="text-sm text-ink-muted mt-1">Drag sections, switch them on/off, and edit text, images and videos without touching code.</p></div>
+        <div><p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build your storefront like a canvas</h2><p className="text-sm text-ink-muted mt-1">Drag sections, use ↑↓ on mobile too, duplicate layouts, switch sections on/off, and edit text, images and videos without touching code.</p></div>
         {can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}
       </div>
     </div>
@@ -78,8 +98,13 @@ export default function HomepageBuilder() {
             <button type="button" className="cursor-grab p-2 rounded-xl bg-bg text-ink-muted" aria-label="Drag section"><GripVertical className="w-5 h-5" /></button>
             <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="text-xs font-semibold text-primary">{String(index + 1).padStart(2, '0')}</span><h3 className="font-medium truncate">{item.title || meta?.label || item.type}</h3>{item.type === 'video_banner' && <Video className="w-4 h-4 text-primary" />}{item.type === 'image_banner' && <ImageIcon className="w-4 h-4 text-primary" />}</div><p className="text-xs text-ink-muted mt-1">{meta?.label || item.type}</p></div>
             <span className={item.isEnabled ? 'text-xs rounded-full bg-success-soft text-success px-2.5 py-1' : 'text-xs rounded-full bg-bg text-ink-muted px-2.5 py-1'}>{item.isEnabled ? 'Live' : 'Hidden'}</span>
-            {can('homepage.edit') && <button type="button" onClick={() => api.setActive(item.id, !item.isEnabled).then(reload)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary" title={item.isEnabled ? 'Hide' : 'Show'}><Power className="w-4 h-4" /></button>}
-            {can('homepage.edit') && <button type="button" onClick={() => open(item)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary" title="Edit"><Pencil className="w-4 h-4" /></button>}
+            {can('homepage.edit') && <div className="flex items-center gap-1">
+              <button type="button" disabled={index === 0} onClick={() => moveBy(item.id, -1)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary disabled:opacity-30" title="Move up"><ArrowUp className="w-4 h-4" /></button>
+              <button type="button" disabled={index === sorted.length - 1} onClick={() => moveBy(item.id, 1)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary disabled:opacity-30" title="Move down"><ArrowDown className="w-4 h-4" /></button>
+              <button type="button" onClick={() => duplicate(item)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary" title="Duplicate"><Copy className="w-4 h-4" /></button>
+              <button type="button" onClick={() => api.setActive(item.id, !item.isEnabled).then(reload)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary" title={item.isEnabled ? 'Hide' : 'Show'}><Power className="w-4 h-4" /></button>
+              <button type="button" onClick={() => open(item)} className="p-2 rounded-xl text-ink-muted hover:bg-primary-soft hover:text-primary" title="Edit"><Pencil className="w-4 h-4" /></button>
+            </div>}
             {can('homepage.delete') && <button type="button" onClick={() => setDel(item)} className="p-2 rounded-xl text-ink-muted hover:bg-danger-soft hover:text-danger" title="Delete"><Trash2 className="w-4 h-4" /></button>}
           </div>
         </div>;
