@@ -1,5 +1,4 @@
 import { useSearchParams } from 'react-router-dom';
-import { useState } from 'react';
 import useApi from '../../hooks/useApi';
 import { productsApi } from '../../services';
 import { Select } from '../../../admin/components/FormFields';
@@ -25,15 +24,6 @@ export default function ShopPage() {
   const query = Object.fromEntries(KEYS.map((k) => [k, get(k)]).filter(([, v]) => v));
   const { data, loading, error, reload } = useApi(() => productsApi.list({ ...query, limit: 12 }), [sp.toString()]);
   const list = data?.products || [];
-  const active = KEYS.filter((k) => !['page', 'sort'].includes(k) && get(k));
-
-  const clearFilters = () => {
-    const n = new URLSearchParams();
-    if (get('q')) n.set('q', get('q'));
-    setSp(n);
-    setPrice({ min: '', max: '' });
-    setShowFilters(false);
-  };
 
   return (
     <div className="container-xl shop-page py-16 sm:py-24">
