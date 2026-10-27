@@ -3,6 +3,7 @@ import useApi from '../../hooks/useApi';
 import { productsApi, publicTaxonomyApi, shopContentApi } from '../../services';
 import { Container } from '../ui';
 import HomepageSections from '../HomepageSections';
+import LuxuryEnhancements from '../LuxuryEnhancements';
 import useTitle from '../useTitle';
 
 const DEFAULT_SECTIONS = [
@@ -10,7 +11,7 @@ const DEFAULT_SECTIONS = [
   { id:'default-marquee', type:'marquee', title:'', isEnabled:true, config:{ items:'Afsana Perfumes|Crafted with intention\\nMade to linger|A signature worth remembering' } },
   { id:'default-categories', type:'category_tiles', title:'Find your fragrance world', isEnabled:true, config:{} },
   { id:'default-cinematic', type:'cinematic_statement', title:'Wear the memory. Leave the impression.', isEnabled:true, config:{ eyebrow:'THE ART OF PERFUMERY', body:'Afsana is composed around the moments you want to keep — and the presence you want to leave behind.', buttonText:'Explore the collection', buttonLink:'/shop' } },
-  { id:'default-benefits', type:'benefits', title:'', isEnabled:true, config:{ items:'Signature-worthy sillage|Designed to be remembered\nThoughtful ingredients|Chosen for a beautiful finish\nElegant packaging|Ready to gift or keep\nPakistan-wide delivery|Packed with care' } },
+  { id:'default-benefits', type:'benefits', title:'', isEnabled:true, config:{ items:'Signature-worthy sillage|Designed to be remembered\\nThoughtful ingredients|Chosen for a beautiful finish\\nElegant packaging|Ready to gift or keep\\nPakistan-wide delivery|Packed with care' } },
   { id:'default-best', type:'best_sellers', title:'The Afsana Icons', isEnabled:true, config:{ limit:4 } },
   { id:'default-story', type:'split_story', title:'Luxury is not loud. It lingers.', isEnabled:true, config:{ eyebrow:'THE AFSANA STORY', body:'Every Afsana fragrance is an invitation to leave an impression — quietly, beautifully and unmistakably yours.', buttonText:'Discover the collection', buttonLink:'/shop' } },
   { id:'default-new', type:'new_arrivals', title:'New in the House', isEnabled:true, config:{ limit:4 } },
@@ -36,7 +37,16 @@ export default function HomePage(){
   const sections=content.data?.homepageSections||[];
   const banners=content.data?.banners||[];
   const faqs=content.data?.faqs||[];
-  if(sections.length) return <HomepageSections sections={sections} faqs={faqs}/>;
-  if(banners.length) return <CmsBannerBridge banners={banners}/>;
-  return <HomepageSections sections={DEFAULT_SECTIONS} faqs={faqs}/>;
+  const rendered = sections.length
+    ? <HomepageSections sections={sections} faqs={faqs}/>
+    : banners.length
+      ? <CmsBannerBridge banners={banners}/>
+      : <HomepageSections sections={DEFAULT_SECTIONS} faqs={faqs}/>;
+
+  return <>
+    <LuxuryEnhancements />
+    <div className="relative z-0" data-afsana-home>
+      {rendered}
+    </div>
+  </>;
 }
