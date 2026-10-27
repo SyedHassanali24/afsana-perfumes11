@@ -235,10 +235,10 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={vm.series} margin={{ left: -16, right: 8, top: 6, bottom: 0 }}>
                   <defs><linearGradient id="revenueFillDashboard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#748e40" stopOpacity={0.24} /><stop offset="100%" stopColor="#748e40" stopOpacity={0} /></linearGradient></defs>
-                  <CartesianGrid stroke="var(--border)" vertical={false} strokeDasharray="3 5" />
-                  <XAxis dataKey="date" tick={{ fill: "var(--ink-muted)", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={24} />
-                  <YAxis tick={{ fill: "var(--ink-muted)", fontSize: 11 }} axisLine={false} tickLine={false} width={54} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)} />
-                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12, color: "var(--ink)", boxShadow: "var(--shadow-hover)" }} formatter={(v) => [money(v), "Revenue"]} />
+                  <CartesianGrid stroke="#263e0e1a" vertical={false} strokeDasharray="3 5" />
+                  <XAxis dataKey="date" tick={{ fill: "#5f654f", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={24} />
+                  <YAxis tick={{ fill: "#5f654f", fontSize: 11 }} axisLine={false} tickLine={false} width={54} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)} />
+                  <Tooltip contentStyle={{ background: "#faf8f4", border: "1px solid #263e0e1a", borderRadius: 12, fontSize: 12, color: "#182308", boxShadow: "0 20px 50px rgba(24,35,8,.12)" }} formatter={(v) => [money(v), "Revenue"]} />
                   <Area type="monotone" dataKey="revenue" stroke="#748e40" strokeWidth={3} fill="url(#revenueFillDashboard)" dot={false} activeDot={{ r: 5 }} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -246,13 +246,13 @@ export default function Dashboard() {
           )}
         </Card>
 
-        <Card className="rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-indigo-950/30 dark:via-surface dark:to-violet-950/30">
+        <Card className="rounded-2xl bg-gradient-to-br from-[#e7ead9] via-[#faf8f4] to-[#f3f1e9]">
           <SectionTitle title="Store snapshot" subtitle="Your latest activity at a glance" />
-          <div className="rounded-2xl border border-indigo-100 bg-[#faf8f4]/80 p-5 dark:border-indigo-900/50 dark:bg-white/5">
-            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#182308]">Afsana Perfumes</p><p className="text-xs text-[#5f654f]">Luxury in every scent</p></div></div>
+          <div className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4]/80 p-5">
+            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#263e0e] to-[#748e40] text-white shadow-lg shadow-[#263e0e]/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#182308]">Afsana Perfumes</p><p className="text-xs text-[#5f654f]">Luxury in every scent</p></div></div>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white/80 p-3 dark:bg-white/5"><p className="text-[11px] text-[#5f654f]">Recent orders</p><p className="mt-1 text-xl font-semibold text-[#182308]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p></div>
-              <div className="rounded-xl bg-white/80 p-3 dark:bg-white/5"><p className="text-[11px] text-[#5f654f]">Low stock</p><p className="mt-1 text-xl font-semibold text-[#182308]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p></div>
+              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#5f654f]">Recent orders</p><p className="mt-1 text-xl font-semibold text-[#182308]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p></div>
+              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#5f654f]">Low stock</p><p className="mt-1 text-xl font-semibold text-[#182308]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p></div>
             </div>
             <Link to="/admin/products" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#263e0e] hover:text-[#748e40]">Manage products <ArrowUpRight className="w-3.5 h-3.5" /></Link>
           </div>
@@ -265,7 +265,7 @@ export default function Dashboard() {
           {statusBreakdown.length ? (
             <>
               <div className="h-48 relative">
-                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, color: "var(--ink)" }} /></PieChart></ResponsiveContainer>
+                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "#faf8f4", border: "1px solid #263e0e1a", borderRadius: 10, fontSize: 12, color: "#182308" }} /></PieChart></ResponsiveContainer>
                 <div className="absolute inset-0 grid place-items-center pointer-events-none"><div className="text-center"><p className="text-2xl font-semibold text-[#182308]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#5f654f]">Recent</p></div></div>
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">{statusBreakdown.map((s, i) => <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#5f654f]"><i className="h-2 w-2 rounded-full" style={{ background: STATUS_COLORS[i % STATUS_COLORS.length] }} />{s.name}<b className="ml-auto text-[#182308]">{s.value}</b></span>)}</div>
@@ -276,7 +276,7 @@ export default function Dashboard() {
         <Card className="xl:col-span-2 rounded-2xl" padded={false}>
           <div className="px-5 pt-5"><SectionTitle title="Recent orders" subtitle="Latest customer activity" href="/admin/orders" /></div>
           {!vm.recentOrders ? <div className="px-5 pb-5"><Hidden /></div> : vm.recentOrders.length === 0 ? <p className="px-5 pb-6 text-sm text-[#5f654f]">No orders yet.</p> : (
-            <div className="divide-y divide-[#263e0e]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-indigo-500/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#263e0e]/10 text-[#263e0e]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#182308] truncate">{order.id}</span><span className="block text-[11px] text-[#5f654f] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#182308]">{order.total}</span></Link>)}</div>
+            <div className="divide-y divide-[#263e0e]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#263e0e]/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#263e0e]/10 text-[#263e0e]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#182308] truncate">{order.id}</span><span className="block text-[11px] text-[#5f654f] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#182308]">{order.total}</span></Link>)}</div>
           )}
         </Card>
       </div>
@@ -297,7 +297,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <Card className="rounded-2xl bg-gradient-to-r from-indigo-50 via-white to-violet-50 dark:from-indigo-950/20 dark:via-surface dark:to-violet-950/20">
+      <Card className="rounded-2xl bg-gradient-to-r from-[#e7ead9] via-[#faf8f4] to-[#f3f1e9]">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
           <QuickLink href="/admin/inventory" icon={Package} title="Inventory" text="Check low stock & incoming stock" tone="blue" />
           <QuickLink href="/admin/orders" icon={ShoppingBag} title="Orders" text="Review and manage orders" tone="purple" />
