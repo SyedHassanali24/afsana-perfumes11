@@ -4,11 +4,11 @@ export default function ShipmentInfo({ shipment }) {
   if (!shipment) return null;
   const safe = typeof shipment.trackingUrl === 'string' && /^https:\/\//i.test(shipment.trackingUrl);
   return (
-    <div className="rounded-sm border border-border p-4 space-y-1 text-sm" data-testid="shipment-info">
+    <div className="rounded-xl border border-border bg-surface p-4 shadow-card space-y-1 text-sm" data-testid="shipment-info">
       <p className="text-ink">Delivery: <span className="font-medium">{shipment.status}</span></p>
       {shipment.courier && <p className="text-ink-muted">Courier: {shipment.courier}</p>}
       {shipment.trackingNumber && <p className="text-ink-muted">Tracking number: <span className="text-ink">{shipment.trackingNumber}</span></p>}
-      {safe && <a href={shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-gold hover:underline">Track with courier</a>}
+      {safe && <a href={shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-primary hover:underline">Track with courier</a>}
     </div>
   );
 }
