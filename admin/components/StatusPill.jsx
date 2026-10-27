@@ -28,10 +28,10 @@ const TONE_BY_STATUS = {
 };
 
 const TONE_CLASSES = {
-  success: "bg-success-soft text-success",
-  warning: "bg-warning-soft text-warning",
-  danger: "bg-danger-soft text-danger",
-  gold: "bg-gold-soft text-gold",
+  success: "bg-[#e6f0e4] text-[#3d6b3d]",
+  warning: "bg-[#f5eedb] text-[#8a6a22]",
+  danger: "bg-[#f7e7e5] text-[#9b3f3f]",
+  gold: "bg-[#e7ead9] text-[#748e40]",
 };
 
 export default function StatusPill({ status, tone }) {
