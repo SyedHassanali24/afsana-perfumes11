@@ -111,8 +111,10 @@ async function moderate(ctx, id, status, scopes) {
   if (!ID.test(String(id))) throw E.notFound('Review not found.');
   const before = await Review.findOne({ _id: id, isDeleted: false }).lean();
   if (!before) throw E.notFound('Review not found.');
-  const productVisible = await Product.exists({ _id: before.productId, ...productStoreFilter(scopes, ctx.user._id) });
-  if (!productVisible) throw E.notFound('Review not found.');
+  if (scopes) {
+    const productVisible = await Product.findOne({ _id: before.productId, ...productStoreFilter(scopes, ctx.user._id) }).select('_id').lean();
+    if (!productVisible) throw E.notFound('Review not found.');
+  }
   if (!R.canModerate(before.status, status)) throw E.badRequest(`This review is already ${before.status}.`);
   const after = await Review.findByIdAndUpdate(id, { $set: { status, moderatedBy: ctx.user._id } }, { new: true }).lean();
   await recalcProduct(before.productId);
