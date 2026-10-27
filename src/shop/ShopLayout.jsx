@@ -10,6 +10,7 @@ const nav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal
 export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
+ useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-white/85 hover:text-[#b4bf41] transition focus:outline-none';
  return <div className="storefront-theme min-h-screen bg-[#faf8f4] text-[#263e0e]">
@@ -21,7 +22,7 @@ export default function ShopLayout(){
     <Link to="/" className="logo group shrink-0 text-center"><span className="block font-display text-3xl tracking-[.08em] text-white group-hover:text-[#b4bf41]">AFSANA</span><small className="block text-[7px] uppercase tracking-[.42em] text-[#b4bf41]">THE ART OF SCENT</small></Link>
     <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.22em] transition '+(isActive?'text-[#b4bf41]':'text-white/65 hover:text-white')}>{label}</NavLink>)}</nav>
     <div className="header-actions ml-auto flex items-center">
-      <button className={icon} onClick={()=>setSearch(true)} aria-label="Search"><Search className="w-[18px]"/></button>
+      <button className={icon} onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="w-[18px]"/></button>
       <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label="Account"><User className="w-[18px]"/></Link>
       <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#b4bf41] text-[#263e0e] text-[9px] leading-4 text-center">{count}</span>}</button>
     </div>
@@ -39,7 +40,7 @@ export default function ShopLayout(){
     <Container className="container-xl min-h-full py-8 md:py-12">
       <div className="flex items-center justify-between border-b border-white/10 pb-5">
         <div><div className="eyebrow text-[#b4bf41]">The Afsana search</div><h2 className="font-display text-4xl md:text-6xl mt-3">Search Afsana</h2></div>
-        <button className="icon-btn" onClick={()=>setSearch(false)} aria-label="Close search"><X/></button>
+        <button className="icon-btn" onClick={()=>setSearch(false)} aria-label="Close search" autoFocus><X/></button>
       </div>
       <form onSubmit={submit} className="mt-14 border-b border-white/25 flex items-center">
         <Search className="w-5 h-5 text-[#b4bf41]"/>
