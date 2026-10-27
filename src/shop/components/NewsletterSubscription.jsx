@@ -76,7 +76,7 @@ export default function NewsletterSubscription() {
         {status === 'success' ? (
           <div
             role="status"
-            className="mt-6 p-6 sm:p-8 rounded-2xl bg-[#faf8f4] border border-[#263e0e]/10 shadow-card max-w-lg mx-auto text-center space-y-4 animate-fade-in"
+            className="mt-6 p-6 sm:p-8 rounded-2xl bg-[#faf8f4] border border-[#263e0e]/10 shadow-[0_18px_45px_rgba(24,35,8,.08)] max-w-lg mx-auto text-center space-y-4 animate-fade-in"
           >
             <div className="w-12 h-12 rounded-full bg-[#3d6b3d]/10 border border-[#3d6b3d]/30 flex items-center justify-center text-[#748e40] mx-auto">
               <CheckCircle className="w-6 h-6" />
