@@ -56,7 +56,7 @@ export default function ReturnsList() {
       <div className="flex flex-wrap gap-1 border-b border-border" role="tablist">
         {TABS.map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => { setTab(t); setPage(1); }}
-            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${tab === t ? "border-[var(--gold)] text-ink font-medium" : "border-transparent text-ink-muted hover:text-ink"}`}>
+            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${tab === t ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-ink-muted hover:text-ink hover:bg-[var(--primary-soft)]"}`}>
             {t}{t !== "All" && counts[t] ? <span className="ml-1.5 text-xs text-ink-muted">({counts[t]})</span> : null}
           </button>
         ))}
