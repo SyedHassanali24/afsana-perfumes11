@@ -133,7 +133,7 @@ async function updateProduct(ctx, id, body, scopes) {
 }
 
 const PRICE_FIELDS = ['price', 'salePrice', 'costPrice'];
-async function updateVariant(ctx, productId, variantId, body) {
+async function updateVariant(ctx, productId, variantId, body, scopes) {
   const { confirmPassword, ...patch } = body;
   const touchesPrice = PRICE_FIELDS.some((f) => patch[f] !== undefined);
   if (touchesPrice) {
@@ -142,6 +142,8 @@ async function updateVariant(ctx, productId, variantId, body) {
     await ctx.reauth(confirmPassword); // high-risk
   }
   return withTx(async (session) => {
+    const p = await Product.findOne({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session);
+    if (!p) throw E.notFound('Product not found.');
     const v = await ProductVariant.findOne({ _id: variantId, productId, isDeleted: false }).session(session);
     if (!v) throw E.notFound('Variant not found.');
     const oldValue = Object.fromEntries(PRICE_FIELDS.map((f) => [f, v[f]]));
@@ -154,8 +156,8 @@ async function updateVariant(ctx, productId, variantId, body) {
     return v;
   });
 }
-async function addVariant(ctx, productId, body) {
-  if (!(await Product.exists({ _id: productId, isDeleted: false }))) throw E.notFound('Product not found.');
+async function addVariant(ctx, productId, body, scopes) {
+  if (!(await Product.exists({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }))) throw E.notFound('Product not found.');
   const { stock, costPrice, ...vd } = body;
   return withTx(async (session) => {
     const [v] = await ProductVariant.create([{ ...vd, ...(ctx.perms.deniedFields.has('product.costPrice') ? {} : { costPrice }), productId, label: vd.label || `${vd.sizeMl}ml` }], { session });
@@ -167,8 +169,10 @@ async function addVariant(ctx, productId, body) {
 }
 
 // Soft-deletes ONE size. Blocked while units are reserved for open orders, and the last remaining size can't be removed.
-async function removeVariant(ctx, productId, variantId) {
+async function removeVariant(ctx, productId, variantId, scopes) {
   return withTx(async (session) => {
+    const p = await Product.findOne({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session);
+    if (!p) throw E.notFound('Product not found.');
     const v = await ProductVariant.findOne({ _id: variantId, productId, isDeleted: false }).session(session);
     if (!v) throw E.notFound('Size not found.');
     if ((await ProductVariant.countDocuments({ productId, isDeleted: false }).session(session)) <= 1) throw E.conflict('A product needs at least one size. Delete the product instead.');
