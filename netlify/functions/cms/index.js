@@ -10,10 +10,10 @@ const routes = RESOURCES.flatMap((r) => {
   const m = MODULE_OF[r];
   return [
     { method: 'GET', path: `/${r}`, permission: [m, 'view'], handler: () => Cms.list(r) },
-    { method: 'POST', path: `/${r}`, permission: [m, 'create'], body: S.cmsBody[r], handler: async ({ ctx, body }) => res(201, await Cms.create(ctx, r, body)) },
-    { method: 'PATCH', path: `/${r}/:id/active`, permission: [m, 'edit'], body: S.cmsActiveBody, handler: ({ ctx, params, body }) => Cms.setActive(ctx, r, params.id, body.isActive) },
-    { method: 'PATCH', path: `/${r}/:id`, permission: [m, 'edit'], body: S.cmsPatch[r], handler: ({ ctx, params, body }) => Cms.update(ctx, r, params.id, body) },
-    { method: 'DELETE', path: `/${r}/:id`, permission: [m, 'delete'], handler: ({ ctx, params }) => Cms.remove(ctx, r, params.id) },
+    { method: 'POST', path: `/${r}`, invalidateTags: ['cms'], permission: [m, 'create'], body: S.cmsBody[r], handler: async ({ ctx, body }) => res(201, await Cms.create(ctx, r, body)) },
+    { method: 'PATCH', path: `/${r}/:id/active`, invalidateTags: ['cms'], permission: [m, 'edit'], body: S.cmsActiveBody, handler: ({ ctx, params, body }) => Cms.setActive(ctx, r, params.id, body.isActive) },
+    { method: 'PATCH', path: `/${r}/:id`, invalidateTags: ['cms'], permission: [m, 'edit'], body: S.cmsPatch[r], handler: ({ ctx, params, body }) => Cms.update(ctx, r, params.id, body) },
+    { method: 'DELETE', path: `/${r}/:id`, invalidateTags: ['cms'], permission: [m, 'delete'], handler: ({ ctx, params }) => Cms.remove(ctx, r, params.id) },
   ];
 });
 // Public read for the shop (live banners, FAQs, announcement bar). Static path, listed first.
