@@ -72,7 +72,7 @@ const shippingRateSchema = new Schema({
   baseRate: Number, freeAbove: Number, estDays: String, isActive: { type: Boolean, default: true },
 });
 const shipmentSchema = new Schema({
-  orderId: { type: ObjectId, ref: 'Order', required: true, index: true },
+  orderId: { type: ObjectId, ref: 'Order', required: true, unique: true, index: true },
   courierId: { type: ObjectId, ref: 'Courier' },
   trackingNumber: String,
   status: { type: String, enum: ['Pending', 'Picked Up', 'In Transit', 'Out For Delivery', 'Delivered', 'Failed', 'Returned'], default: 'Pending' },
