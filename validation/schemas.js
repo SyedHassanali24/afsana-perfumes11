@@ -299,6 +299,12 @@ const cmsShape = {
   faqs: z.object({ question: z.string().trim().max(200), answer: z.string().trim().max(2000), sortOrder: cSort, isActive: z.boolean().optional() }),
   announcements: z.object({ text: z.string().trim().max(160), link: cUrl, startsAt: optDate, endsAt: optDate, isActive: z.boolean().optional() }),
 };
+// ---------- visual homepage builder ----------
+const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','image_banner','split_story','benefits','blog_grid','rich_text','faq','spacer'];
+const homepageConfig = z.record(z.string(), z.any()).optional();
+const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
+const homepageSectionPatch = homepageSectionShape.partial();
+
 // Shape here, business rules (required fields, links, dates) in services/cmsRules.crossFieldErrors; a PATCH is re-checked MERGED in cmsService.update.
 const cmsBody = {}; const cmsPatch = {};
 for (const r of CMS.RESOURCES) {
@@ -307,12 +313,6 @@ for (const r of CMS.RESOURCES) {
   cmsPatch[r] = cmsShape[r].partial();
 }
 const cmsActiveBody = z.object({ isActive: z.boolean() });
-
-// ---------- visual homepage builder ----------
-const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','image_banner','split_story','benefits','blog_grid','rich_text','faq','spacer'];
-const homepageConfig = z.record(z.string(), z.any()).optional();
-const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
-const homepageSectionPatch = homepageSectionShape.partial();
 
 // ---------- store settings ----------
 const sText = (n) => z.string().trim().max(n).default('');
