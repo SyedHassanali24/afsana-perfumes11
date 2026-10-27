@@ -1,6 +1,5 @@
 // Maps a status string to a tone. Extend as new statuses are added.
 const TONE_BY_STATUS = {
-  // orders
   New: "warning",
   Confirmed: "gold",
   Processing: "gold",
@@ -12,15 +11,12 @@ const TONE_BY_STATUS = {
   "Return Requested": "warning",
   Returned: "danger",
   Refunded: "danger",
-  // stock
   "In Stock": "success",
   "Low Stock": "warning",
   "Out of Stock": "danger",
-  // purchase orders
   Ordered: "gold",
   "Partially Received": "warning",
   Received: "success",
-  // generic
   Active: "success",
   Inactive: "danger",
   Suspended: "warning",
@@ -41,9 +37,7 @@ const TONE_CLASSES = {
 export default function StatusPill({ status, tone }) {
   const resolvedTone = tone || TONE_BY_STATUS[status] || "gold";
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs font-medium ${TONE_CLASSES[resolvedTone]}`}
-    >
+    <span className={"inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold " + TONE_CLASSES[resolvedTone]}>
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {status}
     </span>
