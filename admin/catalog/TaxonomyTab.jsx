@@ -31,15 +31,15 @@ export default function TaxonomyTab({ type, module, noun, plural }) {
   const flash = (t) => { setNotice(t); setTimeout(() => setNotice(""), 4000); };
 
   const columns = [
-    { key: "name", header: "Name", render: (r) => <span>{r.parentId ? <span className="text-ink-muted">{nameOf(r.parentId) || "…"} › </span> : null}{r.name}</span> },
-    { key: "slug", header: "URL name", render: (r) => <span className="text-ink-muted">{r.slug}</span> },
+    { key: "name", header: "Name", render: (r) => <span>{r.parentId ? <span className="text-[#182308]-muted">{nameOf(r.parentId) || "…"} › </span> : null}{r.name}</span> },
+    { key: "slug", header: "URL name", render: (r) => <span className="text-[#182308]-muted">{r.slug}</span> },
     { key: "productCount", header: "Products", align: "right" },
     { key: "sortOrder", header: "Order", align: "right" },
     { key: "isActive", header: "Status", render: (r) => <StatusPill status={r.isActive ? "Active" : "Inactive"} /> },
     { key: "a", header: "", align: "right", render: (r) => (
       <div className="flex justify-end gap-1">
-        {can(`${module}.edit`) && <button onClick={() => setDrawer({ open: true, item: r })} className="p-1.5 rounded-sm text-ink-muted hover:bg-bg hover:text-ink" aria-label={`Edit ${r.name}`}><Pencil className="w-4 h-4" /></button>}
-        {can(`${module}.delete`) && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-ink-muted hover:bg-danger-soft hover:text-danger" aria-label={`Delete ${r.name}`}><Trash2 className="w-4 h-4" /></button>}
+        {can(`${module}.edit`) && <button onClick={() => setDrawer({ open: true, item: r })} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={`Edit ${r.name}`}><Pencil className="w-4 h-4" /></button>}
+        {can(`${module}.delete`) && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" aria-label={`Delete ${r.name}`}><Trash2 className="w-4 h-4" /></button>}
       </div>
     ) },
   ];
@@ -49,9 +49,9 @@ export default function TaxonomyTab({ type, module, noun, plural }) {
         <div className="w-full sm:w-72"><Input placeholder={`Search ${plural}…`} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
         {can(`${module}.create`) && <Button icon={Plus} onClick={() => setDrawer({ open: true, item: null })}>Add {noun}</Button>}
       </div>
-      {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-success">{notice}</p>}
+      {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-[#3d6b3d]">{notice}</p>}
       <Card padded={false}><div className="p-5">
-        {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
+        {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
           : <DataTable loading={loading} rows={items} columns={columns} emptyMessage={q ? `No ${plural} match.` : `No ${plural} yet.`} pagination={pg && { page: pg.page, totalPages: pg.pages, onPageChange: setPage }} />}
       </div></Card>
       <TaxonomyDrawer open={drawer.open} type={type} noun={noun} item={drawer.item} parents={(parents.data?.items || []).filter((p) => !p.parentId)}
