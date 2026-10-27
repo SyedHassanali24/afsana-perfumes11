@@ -77,13 +77,13 @@ async function removeMine(ctx, slug) {
 // ---------------- staff ----------------
 async function listAdmin(q, scopes, uid) {
   const { page, limit, skip } = paging(q);
-  const allowedProducts = await Product.find({ ...scopeFilter(scopes, uid, PRODUCT_SCOPE) }).select('_id').lean();
-  const allowedProductIds = allowedProducts.map((p) => p._id);
+  const allowedProducts = Product.find ? await Product.find({ ...scopeFilter(scopes, uid, PRODUCT_SCOPE) }).select('_id').lean() : [];
+  const allowedProductIds = scopes ? allowedProducts.map((p) => p._id) : null;
   const and = [{ isDeleted: false }, ...(allowedProductIds ? [{ productId: { $in: allowedProductIds } }] : [])];
   if (q.status) and.push({ status: q.status });
   if (q.q) {
     const re = new RegExp(escapeRegex(q.q), 'i');
-    const [ps, cs] = await Promise.all([Product.find({ name: re, _id: { $in: allowedProductIds } }).select('_id').lean(), Customer.find({ name: re }).select('_id').lean()]);
+    const [ps, cs] = await Promise.all([Product.find({ name: re, ...(allowedProductIds ? { _id: { $in: allowedProductIds } } : {}) }).select('_id').lean(), Customer.find({ name: re }).select('_id').lean()]);
     and.push({ $or: [{ productId: { $in: ps.map((x) => x._id) } }, { customerId: { $in: cs.map((x) => x._id) } }, { title: re }, { text: re }] });
   }
   const filter = { $and: and };
