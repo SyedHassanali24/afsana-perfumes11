@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Heart, Menu, Moon, Search, ShoppingBag, Sun, User, X } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
@@ -23,6 +23,8 @@ export default function ShopLayout() {
   const announcement = content.data?.announcement;
   const { status } = useCustomer();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     try { return localStorage.getItem('afsana-shop-theme') || 'system'; } catch { return 'system'; }
@@ -63,7 +65,7 @@ export default function ShopLayout() {
         </div>
       )}
 
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#24152b]/95 text-white backdrop-blur-md shadow-lg">
+      <header className={`${isHome ? "absolute top-0 left-0 right-0" : "sticky top-0"} z-30 border-b border-white/10 bg-[#24152b]/90 text-white backdrop-blur-md shadow-lg`}>
         <Container className="flex h-14 sm:h-16 items-center gap-1 sm:gap-3">
           <button
             type="button"
@@ -120,7 +122,7 @@ export default function ShopLayout() {
         )}
       </header>
 
-      <main className="flex-1 py-6 sm:py-8"><Outlet /></main>
+      <main className={`flex-1 ${isHome ? "" : "py-6 sm:py-8"}`}><Outlet /></main>
 
       <footer className="border-t border-[#3a2740] mt-12 bg-[#24152b] text-white">
         <Container className="py-10 grid gap-8 sm:grid-cols-3 text-sm">
