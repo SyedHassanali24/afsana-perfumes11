@@ -94,8 +94,8 @@ async function remove(ctx, type, id, scopes) {
   if (!doc) throw E.notFound(`${c.label[0].toUpperCase()}${c.label.slice(1)} not found.`);
   const n = (await usage(c, scopes, ctx.user._id)).get(String(id)) || 0;
   if (n) throw E.conflict(`${n} product${n === 1 ? ' uses' : 's use'} this ${c.label}. Move ${n === 1 ? 'it' : 'them'} first, or mark this ${c.label} inactive instead.`);
-  if (type === 'categories' && (await Category.exists({ parentId: id, isDeleted: false }))) throw E.conflict('This category still has sub-categories.');
-  await c.Model.updateOne({ _id: id }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
+  if (type === 'categories' && (await Category.exists({ parentId: id, isDeleted: false, ...storeFilter(scopes, ctx.user._id) }))) throw E.conflict('This category still has sub-categories.');
+  await c.Model.updateOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
   await audit(ctx, { action: `${c.label.replace(' ', '_')}.deleted`, module: c.module, recordId: id, oldValue: { name: doc.name } });
   return {};
 }
