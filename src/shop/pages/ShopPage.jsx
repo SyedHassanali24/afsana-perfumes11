@@ -50,8 +50,8 @@ export default function ShopPage() {
   };
 
   return (
-    <Container>
-      <PageTitle
+    <div className="container-xl shop-page">
+      <div className="shop-head"><div><div className="eyebrow">The complete collection</div><h1 className="section-title">Choose your<br/><em>story.</em></h1></div></div><PageTitle
         title={get('q') ? 'Results for “' + get('q') + '”' : 'All perfumes'}
         subtitle={data ? data.pagination.total + ' fragrance' + (data.pagination.total === 1 ? '' : 's') : ' '}
       />
@@ -65,7 +65,7 @@ export default function ShopPage() {
         </Select>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-[220px_1fr]">
+      <div className="shop-layout grid gap-8 md:grid-cols-[220px_1fr]">
         <aside>
           <div className={(showFilters ? 'block' : 'hidden') + ' md:block'}>
             <div className="space-y-5 rounded-2xl border border-border bg-surface p-5 shadow-card md:border-0 md:bg-transparent md:p-0">
@@ -148,13 +148,13 @@ export default function ShopPage() {
             empty={!loading && !list.length}
             emptyText="No perfumes match these filters. Try clearing a filter or changing your search."
             skeleton={<CardsSkeleton n={6} />}>
-            <div className={'grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 ' + (loading ? 'opacity-60' : '')}>
+            <div className={'product-grid grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6  + (loading ? 'opacity-60' : '')}>
               {list.map((p) => <ProductCard key={p.id || p._id} product={p} />)}
             </div>
             <Pager pagination={data?.pagination} onPage={(p) => { set({ page: String(p) }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
           </StateBox>
         </div>
       </div>
-    </Container>
+    </div>
   );
 }
