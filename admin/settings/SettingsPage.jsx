@@ -16,7 +16,7 @@ function Section({ title, hint, children, canSave, dirty, error, onSave, saved }
       <div className="space-y-4">
         <div><h2 className="font-display text-lg text-ink">{title}</h2>{hint && <p className="text-sm text-ink-muted mt-0.5">{hint}</p>}</div>
         {children}
-        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
+        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-xl px-3 py-2">{error}</p>}
         {saved && !dirty && <p role="status" className="text-sm text-success">Saved.</p>}
         {canSave && <Button onClick={onSave} disabled={!dirty}>Save {title.toLowerCase()}</Button>}
       </div>
