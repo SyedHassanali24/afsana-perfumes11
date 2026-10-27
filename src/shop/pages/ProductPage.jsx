@@ -27,14 +27,14 @@ export default function ProductPage(){
  const {add}=useCart(); const {has,toggle}=useWishlist();
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
  const [tilt,setTilt]=useState({x:0,y:0});
- const [stagePulse,setStagePulse]=useState(false);
+ const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false);
  const stageRef=useRef(null);
  const p=data?.product, variants=data?.variants||[];
  useTitle(p?.seo?.title||p?.name);
  useEffect(()=>{if(variants.length){setVid((variants.find(v=>v.available>0)||variants[0]).id);setQty(1);setImg(0)}},[data]);
  const media=useMemo(()=>[...(p?.media||[])].sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[p]);
  const v=variants.find(x=>x.id===vid), price=v&&(v.salePrice>0&&v.salePrice<v.price?v.salePrice:v.price), soldOut=!v||v.available<=0, ns=notes(p);
- const addToCart=()=>{if(v&&!soldOut)add(v.id,qty)};
+ const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);window.setTimeout(()=>setAdding(false),650)}};
  const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
  const banners=[imageMedia[0]?.url||'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85',imageMedia[1]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',imageMedia[2]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',imageMedia[3]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85'];
  const onMove=(e)=>{const r=stageRef.current?.getBoundingClientRect();if(!r)return;const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;setTilt({x:y*-7,y:x*10})};
@@ -70,7 +70,7 @@ export default function ProductPage(){
       <div className="mt-7 flex items-end justify-between gap-5"><div className="font-display text-4xl">{v?money(price):'Currently unavailable'}</div>{v?.available>0&&<span className="text-[8px] uppercase tracking-[.22em] text-[#748e40]">{v.available<5?"Limited availability":"In stock"} · Ready to ship</span>}</div>
       <div className="mt-9 border-t border-[#263e0e]/10 pt-6 text-[10px] uppercase tracking-[.25em]">Choose your size</div>
       <div className="mt-3 flex flex-wrap gap-2">{variants.map(x=><button key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} className={'px-5 py-3 border text-[10px] uppercase tracking-[.15em] '+(x.id===vid?'border-[#263e0e] bg-[#e7ead9] text-[#263e0e]':'border-[#263e0e]/15')}>{x.label||x.sizeMl+' ML'}</button>)}</div>
-      <div className="mt-7 flex gap-3"><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/><button disabled={soldOut} onClick={addToCart} className="flex-1 bg-[#263e0e] text-white px-7 py-4 text-[10px] uppercase tracking-[.2em] disabled:opacity-40">Add to bag <span className="ml-3">↗</span></button><button onClick={()=>toggle(p.id||p._id)} className="w-14 border border-[#263e0e]/15 grid place-items-center"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4"/></button></div>
+      <div className="mt-7 flex gap-3"><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/><button disabled={soldOut} onClick={addToCart} className={"flex-1 bg-[#263e0e] text-white px-7 py-4 text-[10px] uppercase tracking-[.2em] disabled:opacity-40 "+(adding?"add-bag-success":"")}>{adding?"Added to bag":"Add to bag" <span className="ml-3">↗</span></button><button onClick={()=>toggle(p.id||p._id)} className="w-14 border border-[#263e0e]/15 grid place-items-center"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4"/></button></div>
       <div className="mt-8 grid grid-cols-3 border-y border-[#263e0e]/10 divide-x divide-[#263e0e]/10">{[['Premium','Fragrance Oils'],['Gift Ready','Luxury Packaging'],['Fast','Nationwide Delivery']].map(([a,b])=><div key={a} className="py-5"><strong className="block font-display text-lg">{a}</strong><small className="text-[9px] uppercase tracking-[.12em] text-[#5f654f]">{b}</small></div>)}</div>
       <div className="mt-7 flex flex-wrap gap-2 text-[8px] uppercase tracking-[.16em] text-[#5f654f]"><span className="border border-[#263e0e]/10 px-3 py-2">Premium Oils</span><span className="border border-[#263e0e]/10 px-3 py-2">Gift Ready</span><span className="border border-[#263e0e]/10 px-3 py-2">Nationwide Delivery</span></div>
     </div>
