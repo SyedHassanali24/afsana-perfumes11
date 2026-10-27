@@ -11,12 +11,26 @@ export default function AdminLayout({ children, notificationCount }) {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen flex bg-bg">
-      <Sidebar activeHref={pathname} onNavigate={navigate} />
-      <div className="flex-1 min-w-0 flex flex-col">
-        <Topbar user={{ name: user?.name || "Staff", role: user?.role?.name || "" }} notificationCount={notificationCount} onLogout={logout} onProfile={() => navigate("/admin/account")} />
-        <main className="flex-1 p-4 sm:p-6 pt-16 md:pt-6">{children}</main>
+    <div className="min-h-screen bg-bg text-ink">
+      <div className="flex min-h-screen">
+        <Sidebar activeHref={pathname} onNavigate={navigate} />
+
+        <div className="min-w-0 flex-1 flex flex-col">
+          <Topbar
+            user={{ name: user?.name || "Staff", role: user?.role?.name || "" }}
+            notificationCount={notificationCount}
+            onLogout={logout}
+            onProfile={() => navigate("/admin/account")}
+          />
+
+          <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+            <div className="mx-auto w-full max-w-[1600px]">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
