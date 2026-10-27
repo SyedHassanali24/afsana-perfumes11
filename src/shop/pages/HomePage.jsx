@@ -11,6 +11,7 @@ const DEFAULT_SECTIONS = [
   { id:'default-best', type:'best_sellers', title:'The Afsana Icons', isEnabled:true, config:{ limit:4 } },
   { id:'default-story', type:'split_story', title:'Luxury is not loud. It lingers.', isEnabled:true, config:{ eyebrow:'THE AFSANA STORY', body:'Every Afsana fragrance is an invitation to leave an impression — quietly, beautifully and unmistakably yours.', buttonText:'Discover the collection', buttonLink:'/shop' } },
   { id:'default-new', type:'new_arrivals', title:'New in the House', isEnabled:true, config:{ limit:4 } },
+  { id:'default-trust', type:'trust_grid', title:'', isEnabled:true, config:{} },
   { id:'default-editorial', type:'blog_grid', title:'Notes from the house', isEnabled:true, config:{} },
   { id:'default-testimonials', type:'testimonials', title:'Loved, remembered, recommended.', isEnabled:true, config:{} },
   { id:'default-faq', type:'faq', title:'Everything you need to know', isEnabled:true, config:{} },
