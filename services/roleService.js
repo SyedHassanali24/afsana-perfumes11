@@ -19,10 +19,18 @@ function normalizeGrants(grants = []) {
 }
 
 const editableBy = (ctx, r) => !r.isUnrestricted && String(r._id) !== String(ctx.role._id) && R.canManageLevel(ctx.role, r.level);
-const shape = (ctx, r, staffCount) => ({
-  id: r._id, key: r.key, name: r.name, description: r.description, isSystem: r.isSystem, isUnrestricted: r.isUnrestricted,
-  level: r.level, grants: r.grants || [], deniedFields: r.deniedFields || [], staffCount, editable: editableBy(ctx, r),
-});
+const shape = (ctx, r, staffCount) => {
+  // Do not disclose the Owner's effective permission map to lower-level staff.
+  // They can see that the system role exists, but its grants are security-sensitive.
+  const canInspectUnrestricted = !!ctx.role?.isUnrestricted;
+  return {
+    id: r._id, key: r.key, name: r.name, description: r.description, isSystem: r.isSystem, isUnrestricted: r.isUnrestricted,
+    level: r.level,
+    grants: r.isUnrestricted && !canInspectUnrestricted ? [] : (r.grants || []),
+    deniedFields: r.isUnrestricted && !canInspectUnrestricted ? [] : (r.deniedFields || []),
+    staffCount, editable: editableBy(ctx, r),
+  };
+};
 
 async function counts() {
   const rows = await Staff.aggregate([{ $match: { isDeleted: false } }, { $group: { _id: '$roleId', n: { $sum: 1 } } }]);
