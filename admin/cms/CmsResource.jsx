@@ -51,9 +51,9 @@ export default function CmsResource({ section }) {
     { key: "status", header: "Status", render: (r) => <StatusPill status={r.status} tone={STATUS_TONE[r.status]} /> },
     { key: "a", header: "", align: "right", render: (r) => (
       <div className="flex justify-end gap-1">
-        {can(`${m}.edit`) && <button onClick={() => act(() => api.setActive(r.id, !r.isActive), r.isActive ? "Switched off." : "Switched on.")} className="p-1.5 rounded-sm text-ink-muted hover:bg-bg hover:text-ink" aria-label={r.isActive ? "Turn off" : "Turn on"} title={r.isActive ? "Turn off" : "Turn on"}><Power className="w-4 h-4" /></button>}
-        {can(`${m}.edit`) && <button onClick={() => open(r.raw)} className="p-1.5 rounded-sm text-ink-muted hover:bg-bg hover:text-ink" aria-label="Edit"><Pencil className="w-4 h-4" /></button>}
-        {can(`${m}.delete`) && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-ink-muted hover:bg-danger-soft hover:text-danger" aria-label="Delete"><Trash2 className="w-4 h-4" /></button>}
+        {can(`${m}.edit`) && <button onClick={() => act(() => api.setActive(r.id, !r.isActive), r.isActive ? "Switched off." : "Switched on.")} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label={r.isActive ? "Turn off" : "Turn on"} title={r.isActive ? "Turn off" : "Turn on"}><Power className="w-4 h-4" /></button>}
+        {can(`${m}.edit`) && <button onClick={() => open(r.raw)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f3f1e9] hover:text-[#182308]" aria-label="Edit"><Pencil className="w-4 h-4" /></button>}
+        {can(`${m}.delete`) && <button onClick={() => setDel(r)} className="p-1.5 rounded-sm text-[#182308]-muted hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" aria-label="Delete"><Trash2 className="w-4 h-4" /></button>}
       </div>
     ) },
   ];
@@ -68,7 +68,7 @@ export default function CmsResource({ section }) {
             : <Input type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"} min={f.type === "number" ? "0" : undefined} {...common} onChange={(e) => set(f.key, e.target.value)} />}
           {f.upload && (
             <div className="mt-2 space-y-2">
-              {form[f.key] && <img src={form[f.key]} alt="" className="h-16 max-w-full rounded-sm object-cover border border-border bg-bg" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />}
+              {form[f.key] && <img src={form[f.key]} alt="" className="h-16 max-w-full rounded-sm object-cover border border-[#263e0e]/10 bg-[#f3f1e9]" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />}
               <ImageUploadButton onUploaded={(url) => set(f.key, url)} />
             </div>
           )}
@@ -80,20 +80,20 @@ export default function CmsResource({ section }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-        <p className="text-sm text-ink-muted">{section.help}</p>
+        <p className="text-sm text-[#182308]-muted">{section.help}</p>
         {can(`${m}.create`) && <Button icon={Plus} onClick={() => open(null)}>{section.addLabel}</Button>}
       </div>
-      {notice && <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}>{notice.text}</p>}
+      {notice && <p role="status" className={`text-sm rounded-sm px-3 py-2 ${notice.type === "ok" ? "bg-success-soft text-[#3d6b3d]" : "bg-[#f7e7e5] text-[#9b3f3f]"}`}>{notice.text}</p>}
       <Card padded={false}>
         <div className="p-5">
-          {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
+          {error ? <div className="py-10 text-center space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
             : <DataTable loading={loading} rows={rows} columns={columns} emptyMessage={section.emptyMessage} />}
         </div>
       </Card>
       <Drawer open={drawer.open} onClose={close} title={drawer.item ? `Edit ${section.singular}` : section.addLabel}
         footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form={`cms-form-${section.key}`} disabled={busy}>{busy ? "Saving…" : "Save"}</Button></>}>
         <form id={`cms-form-${section.key}`} onSubmit={submit} className="space-y-4">
-          {formError && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{formError}</p>}
+          {formError && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{formError}</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{section.fields.filter((f) => f.type !== "check").map(renderField)}</div>
           {section.fields.filter((f) => f.type === "check").map(renderField)}
         </form>
