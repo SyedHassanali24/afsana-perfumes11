@@ -26,7 +26,7 @@ const routes = [
       return { summary: { sizes: r ? r.sizes : 0, units: r ? r.units : 0, outOfStock: r ? r.out : 0, lowStock: r ? r.low : 0 } };
     } },
   { method: 'GET', path: '/', permission: ['inventory', 'view'], query: S.inventoryQuery,
-    async handler({ query, ctx }) {
+    async handler({ query, ctx, scopes }) {
       const { page, limit, skip } = paging(query);
       const filter = { ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) };
       if (query.productId) filter.productId = query.productId;
