@@ -124,7 +124,7 @@ async function cancelMine(customer, returnNumber) {
   const pre = await Return.findOne({ returnNumber: String(returnNumber).toUpperCase(), customerId: customer._id }).select('orderId').lean();
   if (!pre) throw E.notFound('Return not found.');
   const updated = await withTx(async (session) => {
-    const order = await lockOrder(pre.orderId, session, scopes, ctx.user._id);
+    const order = await lockOrder(pre.orderId, session);
     const cur = await Return.findOne({ _id: pre._id }).session(session);
     if (!R.canTransition(cur.status, 'Cancelled')) throw E.conflict(cur.status === 'Cancelled' ? 'This return is already cancelled.' : 'This return can no longer be cancelled. Please contact us.', undefined, 'NOT_CANCELLABLE');
     const upd = await Return.findOneAndUpdate({ _id: cur._id, status: cur.status }, { $set: { status: 'Cancelled' }, $push: { timeline: { event: EVENT.Cancelled, status: 'Cancelled' } } }, { new: true, session });
@@ -153,7 +153,8 @@ async function list(ctx, q, scopes) {
 async function get(ctx, id, scopes) {
   const r = await Return.findOne({ _id: id, ...scopeFilter(scopes, ctx.user._id, RETURN_SCOPE) }).lean();
   if (!r) throw E.notFound('Return not found.');
-  const order = await Order.findById(r.orderId).select('orderNumber status paymentMethod paymentStatus subtotal discount shipping total').lean();
+  const order = await Order.findOne({ _id: r.orderId, ...scopeFilter(scopes, ctx.user._id, ORDER_SCOPE) }).select('orderNumber status paymentMethod paymentStatus subtotal discount shipping total').lean();
+  if (!order) throw E.notFound('Return not found.');
   const orderItems = await OrderItem.find({ orderId: r.orderId }).sort({ _id: 1 }).lean();
   const returns = await Return.find({ orderId: r.orderId }).select('status items').lean();
   const allRefunds = await Refund.find({ orderId: r.orderId }).sort({ createdAt: 1 }).lean();
@@ -188,7 +189,8 @@ async function setStatus(ctx, id, { status, note, condition }, scopes) {
   const pre = await Return.findOne({ _id: id, ...scopeFilter(scopes, ctx.user._id, RETURN_SCOPE) }).select('orderId').lean();
   if (!pre) throw E.notFound('Return not found.');
   const out = await withTx(async (session) => {
-    const order = await lockOrder(pre.orderId, session);
+    const order = await lockOrder(pre.orderId, session, scopes, ctx.user._id);
+    if (!order) throw E.forbidden('This order is outside your access scope.');
     const cur = await Return.findById(id).session(session);
     if (!R.canTransition(cur.status, status)) throw E.badRequest(`Cannot change a return from "${cur.status}" to "${status}".`);
     const set = { status, handledBy: ctx.user._id, ...(note ? { decisionNote: note } : {}) };
@@ -210,7 +212,8 @@ async function issueRefund(ctx, id, { amount, method, reference, reason }, scope
   const pre = await Return.findOne({ _id: id, ...scopeFilter(scopes, ctx.user._id, RETURN_SCOPE) }).select('orderId').lean();
   if (!pre) throw E.notFound('Return not found.');
   const out = await withTx(async (session) => {
-    const order = await lockOrder(pre.orderId, session);
+    const order = await lockOrder(pre.orderId, session, scopes, ctx.user._id);
+    if (!order) throw E.forbidden('This order is outside your access scope.');
     const cur = await Return.findById(id).session(session);
     if (cur.status === 'Refunded') throw E.conflict('This return has already been refunded.', undefined, 'ALREADY_REFUNDED');
     if (cur.status !== 'Received') throw E.conflict('A refund can be issued only after the items have been received back.', undefined, 'NOT_RECEIVED');
