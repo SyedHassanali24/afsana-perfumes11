@@ -14,17 +14,17 @@ const REASON_LABEL = { 'Wrong Product': 'I received the wrong product', Damaged:
 // One returned request, as the shopper sees it (no staff notes, no costs).
 export function ReturnCard({ r, onCancel }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface shadow-card p-4 text-sm space-y-2">
+    <div className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] shadow-[0_18px_50px_rgba(24,35,8,.06)] p-4 text-sm space-y-2">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-        <div><p className="font-medium">{r.returnNumber}</p><p className="text-xs text-ink-muted">Requested {fmtDate(r.createdAt)} · Order {r.orderNumber}</p></div>
+        <div><p className="font-medium">{r.returnNumber}</p><p className="text-xs text-[#5f654f]">Requested {fmtDate(r.createdAt)} · Order {r.orderNumber}</p></div>
         <StatusPill status={r.status} />
       </div>
-      <ul className="text-ink-muted">{r.items.map((i, k) => <li key={k}>{i.quantity} × {i.name}</li>)}</ul>
-      {r.decisionNote && <p className="rounded-sm bg-bg border border-border px-3 py-2">{r.decisionNote}</p>}
-      {r.status === 'Refunded' && <p className="text-success">Refunded {money(r.refundedAmount)}</p>}
-      {r.status === 'Pending' && <p className="text-xs text-ink-muted">We will review your request and get back to you soon.</p>}
-      {r.status === 'Approved' && <p className="text-xs text-ink-muted">Approved. Our team will contact you about sending the items back.</p>}
-      {r.status === 'Received' && <p className="text-xs text-ink-muted">We have received your items. Your refund is being processed.</p>}
+      <ul className="text-[#5f654f]">{r.items.map((i, k) => <li key={k}>{i.quantity} × {i.name}</li>)}</ul>
+      {r.decisionNote && <p className="rounded-sm bg-[#f3f1e9] border border-[#263e0e]/10 px-3 py-2">{r.decisionNote}</p>}
+      {r.status === 'Refunded' && <p className="text-[#3d6b3d]">Refunded {money(r.refundedAmount)}</p>}
+      {r.status === 'Pending' && <p className="text-xs text-[#5f654f]">We will review your request and get back to you soon.</p>}
+      {r.status === 'Approved' && <p className="text-xs text-[#5f654f]">Approved. Our team will contact you about sending the items back.</p>}
+      {r.status === 'Received' && <p className="text-xs text-[#5f654f]">We have received your items. Your refund is being processed.</p>}
       {r.canCancel && onCancel && <Button variant="ghost" size="sm" onClick={() => onCancel(r)}>Cancel this return</Button>}
     </div>
   );
@@ -68,15 +68,15 @@ export default function ReturnsSection({ orderNumber, orderStatus, onChanged }) 
       {returns.map((r) => <ReturnCard key={r.returnNumber} r={r} onCancel={setCancelling} />)}
 
       {e && e.eligible && !open && (
-        <div className="rounded-2xl border border-border bg-surface shadow-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <p className="text-sm text-ink-muted">Not happy with something? You can return items until {fmtDate(e.window.deadline)}.</p>
+        <div className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] shadow-[0_18px_50px_rgba(24,35,8,.06)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-sm text-[#5f654f]">Not happy with something? You can return items until {fmtDate(e.window.deadline)}.</p>
           <Button variant="secondary" size="sm" className="w-full sm:w-auto rounded-xl" onClick={() => { setOpen(true); setError(''); }}>Request a return</Button>
         </div>
       )}
-      {e && !e.eligible && orderStatus === 'Delivered' && returns.length === 0 && <p className="text-sm text-ink-muted">{e.message}</p>}
+      {e && !e.eligible && orderStatus === 'Delivered' && returns.length === 0 && <p className="text-sm text-[#5f654f]">{e.message}</p>}
 
       {e && e.eligible && open && (
-        <form onSubmit={submit} className="rounded-2xl border border-border bg-surface shadow-card p-4 space-y-4">
+        <form onSubmit={submit} className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] shadow-[0_18px_50px_rgba(24,35,8,.06)] p-4 space-y-4">
           <p className="text-sm font-medium">Which items would you like to return?</p>
           <ul className="space-y-3">
             {e.lines.filter((l) => l.remaining > 0).map((l) => {
@@ -91,12 +91,12 @@ export default function ReturnsSection({ orderNumber, orderStatus, onChanged }) 
           </ul>
           <Field label="Reason"><Select value={reason} onChange={(ev) => setReason(ev.target.value)}><option value="">Select a reason…</option>{REASONS.map((x) => <option key={x} value={x}>{REASON_LABEL[x]}</option>)}</Select></Field>
           <Field label="Details" hint={reason === 'Other' ? 'Required' : 'Optional — anything that helps us'}><Textarea rows={3} maxLength={500} value={details} onChange={(ev) => setDetails(ev.target.value)} /></Field>
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="text-sm text-[#9b3f3f]">{error}</p>}
           <div className="flex flex-col sm:flex-row gap-2"><Button type="submit" className="w-full sm:w-auto rounded-xl" disabled={busy}>{busy ? 'Sending…' : 'Send return request'}</Button><Button type="button" variant="ghost" className="w-full sm:w-auto rounded-xl" onClick={() => setOpen(false)} disabled={busy}>Cancel</Button></div>
         </form>
       )}
 
-      {(mine.error || elig.error) && <p className="text-sm text-danger" role="alert">{(mine.error || elig.error).message}</p>}
+      {(mine.error || elig.error) && <p className="text-sm text-[#9b3f3f]" role="alert">{(mine.error || elig.error).message}</p>}
       <ConfirmDialog open={Boolean(cancelling)} title="Cancel this return?" message="Your request will be withdrawn. You can send a new one later if you are still within the return period." confirmLabel="Cancel return" danger
         onClose={() => setCancelling(null)} onConfirm={async () => { try { await myReturnsApi.cancel(cancelling.returnNumber); await refreshAll(); setCancelling(null); } catch (err) { setError(err.message || 'Could not cancel this return. Please try again.'); setCancelling(null); } }} />
     </section>
