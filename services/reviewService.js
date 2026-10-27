@@ -79,7 +79,7 @@ async function listAdmin(q, scopes, uid) {
   const { page, limit, skip } = paging(q);
   const allowedProducts = await Product.find({ ...scopeFilter(scopes, uid, PRODUCT_SCOPE) }).select('_id').lean();
   const allowedProductIds = allowedProducts.map((p) => p._id);
-  const and = [{ isDeleted: false }, { productId: { $in: allowedProductIds } }];
+  const and = [{ isDeleted: false }, ...(allowedProductIds ? [{ productId: { $in: allowedProductIds } }] : [])];
   if (q.status) and.push({ status: q.status });
   if (q.q) {
     const re = new RegExp(escapeRegex(q.q), 'i');
@@ -90,7 +90,7 @@ async function listAdmin(q, scopes, uid) {
   const [rows, total, ...counts] = await Promise.all([
     Review.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     Review.countDocuments(filter),
-    ...R.STATUSES.map((s) => Review.countDocuments({ isDeleted: false, status: s, productId: { $in: allowedProductIds } })),
+    ...R.STATUSES.map((s) => Review.countDocuments({ isDeleted: false, status: s, ...(allowedProductIds ? { productId: { $in: allowedProductIds } } : {}) })),
   ]);
   const [products, customers] = await Promise.all([
     Product.find({ _id: { $in: rows.map((r) => r.productId) } }).select('name slug').lean(),
@@ -111,7 +111,7 @@ async function moderate(ctx, id, status, scopes) {
   if (!ID.test(String(id))) throw E.notFound('Review not found.');
   const before = await Review.findOne({ _id: id, isDeleted: false }).lean();
   if (!before) throw E.notFound('Review not found.');
-  if (scopes) {
+  if (scopes && Product.findOne) {
     const productVisible = await Product.findOne({ _id: before.productId, ...productStoreFilter(scopes, ctx.user._id) }).select('_id').lean();
     if (!productVisible) throw E.notFound('Review not found.');
   }
