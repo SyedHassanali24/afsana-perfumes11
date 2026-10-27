@@ -7,6 +7,21 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 
 const SCOPE_MAP = { categories: 'categoryId', createdBy: 'createdBy', products: '_id', stores: 'storeId' };
+const createStoreId = (scopes) => {
+  if (scopes?.some((s) => s.kind === 'all')) return 'main';
+  const stores = [...new Set((scopes || []).filter((s) => s.kind === 'stores').flatMap((s) => s.values || []))];
+  if (stores.length !== 1) throw E.forbidden('Products must belong to exactly one store in your access scope.');
+  return stores[0];
+};
+const ensureCatalogScope = async (data, storeId) => {
+  const checks = [];
+  if (data.categoryId) checks.push(Category.exists({ _id: data.categoryId, isDeleted: false, storeId }));
+  if (data.brandId) checks.push(Brand.exists({ _id: data.brandId, isDeleted: false, storeId }));
+  if (data.collectionIds?.length) checks.push(Collection.countDocuments({ _id: { $in: data.collectionIds }, isDeleted: false, storeId }).then((n) => n === data.collectionIds.length));
+  if (data.fragrance?.familyId) checks.push(FragranceFamily.exists({ _id: data.fragrance.familyId, isDeleted: false, storeId }));
+  const results = await Promise.all(checks);
+  if (results.some((ok) => !ok)) throw E.badRequest('One of the selected catalog entries is not available in this store.');
+};
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 async function uniqueSlug(base, excludeId) {
@@ -87,8 +102,9 @@ async function listAdmin(q, scopes, uid, { trash = false } = {}) {
   };
 }
 // Everything the product form needs for its dropdowns (active entries only).
-async function listCategories() {
-  const opts = (M) => M.find({ isDeleted: false, isActive: true }).select('name slug').sort({ sortOrder: 1, name: 1 }).lean()
+async function listCategories(scopes, uid) {
+  const storeId = createStoreId(scopes);
+  const opts = (M) => M.find({ isDeleted: false, isActive: true, storeId }).select('name slug').sort({ sortOrder: 1, name: 1 }).lean()
     .then((rows) => rows.map((c) => ({ id: c._id, name: c.name, slug: c.slug })));
   const [categories, brands, collections, families] = await Promise.all([opts(Category), opts(Brand), opts(Collection), opts(FragranceFamily)]);
   return { categories, brands, collections, families };
@@ -102,17 +118,20 @@ async function getAdmin(id, scopes, uid) {
   return { product: p, variants: variants.map((v) => ({ ...v, stock: byV.get(String(v._id)) || null })) };
 }
 
-async function createProduct(ctx, body) {
+async function createProduct(ctx, body, scopes) {
   const denyCost = ctx.perms.deniedFields.has('product.costPrice');
   const { variants, ...data } = body;
+  const storeId = createStoreId(scopes);
+  await ensureCatalogScope(data, storeId);
+  data.storeId = storeId;
   data.slug = data.slug || (await uniqueSlug(data.name));
   const product = await withTx(async (session) => {
     const [p] = await Product.create([{ ...data, createdBy: ctx.user._id }], { session });
     for (const v of variants) {
       const { stock, costPrice, ...vd } = v;
-      const [variant] = await ProductVariant.create([{ ...vd, ...(denyCost ? {} : { costPrice }), productId: p._id, label: vd.label || `${vd.sizeMl}ml` }], { session });
-      await Inventory.create([{ variantId: variant._id, productId: p._id, current: stock }], { session });
-      if (stock > 0) await InventoryTransaction.create([{ variantId: variant._id, productId: p._id, type: 'opening', delta: stock, before: 0, after: stock, by: ctx.user._id }], { session });
+      const [variant] = await ProductVariant.create([{ ...vd, ...(denyCost ? {} : { costPrice }), productId: p._id, storeId, label: vd.label || `${vd.sizeMl}ml` }], { session });
+      await Inventory.create([{ variantId: variant._id, productId: p._id, storeId, current: stock }], { session });
+      if (stock > 0) await InventoryTransaction.create([{ variantId: variant._id, productId: p._id, storeId, type: 'opening', delta: stock, before: 0, after: stock, by: ctx.user._id }], { session });
     }
     await recomputePriceFrom(p._id, session);
     await audit(ctx, { action: 'product.created', module: 'products', recordId: p._id, newValue: { name: p.name, sku: p.sku } }, session);
@@ -124,6 +143,7 @@ async function createProduct(ctx, body) {
 async function updateProduct(ctx, id, body, scopes) {
   const before = await Product.findOne({ _id: id, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) });
   if (!before) throw E.notFound('Product not found.');
+  await ensureCatalogScope(body, before.storeId);
   if (body.status && body.status !== before.status) {
     await audit(ctx, { action: 'product.status_changed', module: 'products', recordId: id, oldValue: before.status, newValue: body.status });
   }
@@ -144,7 +164,7 @@ async function updateVariant(ctx, productId, variantId, body, scopes) {
   return withTx(async (session) => {
     const p = await Product.findOne({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session);
     if (!p) throw E.notFound('Product not found.');
-    const v = await ProductVariant.findOne({ _id: variantId, productId, isDeleted: false }).session(session);
+    const v = await ProductVariant.findOne({ _id: variantId, productId, storeId: p.storeId, isDeleted: false }).session(session);
     if (!v) throw E.notFound('Variant not found.');
     const oldValue = Object.fromEntries(PRICE_FIELDS.map((f) => [f, v[f]]));
     Object.assign(v, patch);
@@ -160,9 +180,9 @@ async function addVariant(ctx, productId, body, scopes) {
   if (!(await Product.exists({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }))) throw E.notFound('Product not found.');
   const { stock, costPrice, ...vd } = body;
   return withTx(async (session) => {
-    const [v] = await ProductVariant.create([{ ...vd, ...(ctx.perms.deniedFields.has('product.costPrice') ? {} : { costPrice }), productId, label: vd.label || `${vd.sizeMl}ml` }], { session });
-    await Inventory.create([{ variantId: v._id, productId, current: stock }], { session });
-    if (stock > 0) await InventoryTransaction.create([{ variantId: v._id, productId, type: 'opening', delta: stock, before: 0, after: stock, by: ctx.user._id }], { session });
+    const [v] = await ProductVariant.create([{ ...vd, ...(ctx.perms.deniedFields.has('product.costPrice') ? {} : { costPrice }), productId, storeId: p.storeId, label: vd.label || `${vd.sizeMl}ml` }], { session });
+    await Inventory.create([{ variantId: v._id, productId, storeId: p.storeId, current: stock }], { session });
+    if (stock > 0) await InventoryTransaction.create([{ variantId: v._id, productId, storeId: p.storeId, type: 'opening', delta: stock, before: 0, after: stock, by: ctx.user._id }], { session });
     await recomputePriceFrom(productId, session);
     return v;
   });
@@ -176,7 +196,7 @@ async function removeVariant(ctx, productId, variantId, scopes) {
     const v = await ProductVariant.findOne({ _id: variantId, productId, isDeleted: false }).session(session);
     if (!v) throw E.notFound('Size not found.');
     if ((await ProductVariant.countDocuments({ productId, isDeleted: false }).session(session)) <= 1) throw E.conflict('A product needs at least one size. Delete the product instead.');
-    const inv = await Inventory.findOne({ variantId }).session(session);
+    const inv = await Inventory.findOne({ variantId, storeId: p.storeId }).session(session);
     if (inv && inv.reserved > 0) throw E.conflict(`${inv.reserved} unit(s) of this size are reserved for open orders.`);
     await ProductVariant.updateOne({ _id: variantId }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id } }, { session });
     await recomputePriceFrom(productId, session);
