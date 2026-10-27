@@ -54,10 +54,13 @@ async function listPublic(q) {
 async function getPublicBySlug(slug) {
   const p = await Product.findOne({ slug, status: 'Active', isDeleted: false }).select('-createdBy').lean();
   if (!p) throw E.notFound('Product not found.');
-  const variants = await ProductVariant.find({ productId: p._id, isActive: true, isDeleted: false }).sort({ sizeMl: 1 }).lean();
-  const inv = await Inventory.find({ productId: p._id }).lean();
+  // These three public detail reads are independent once the product is known; run them together.
+  const [variants, inv, related] = await Promise.all([
+    ProductVariant.find({ productId: p._id, isActive: true, isDeleted: false }).sort({ sizeMl: 1 }).lean(),
+    Inventory.find({ productId: p._id }).select('variantId current reserved').lean(),
+    Product.find({ categoryId: p.categoryId, status: 'Active', isDeleted: false, _id: { $ne: p._id } }).select('name slug priceFrom media').limit(4).lean(),
+  ]);
   const avail = new Map(inv.map((i) => [String(i.variantId), Math.max(0, i.current - i.reserved)]));
-  const related = await Product.find({ categoryId: p.categoryId, status: 'Active', isDeleted: false, _id: { $ne: p._id } }).select('name slug priceFrom media').limit(4).lean();
   return {
     product: p,
     variants: variants.map((v) => ({ id: v._id, label: v.label, sizeMl: v.sizeMl, price: v.price, salePrice: v.salePrice, available: avail.get(String(v._id)) || 0 })), // costPrice never public
