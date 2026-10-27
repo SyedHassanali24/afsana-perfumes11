@@ -177,7 +177,8 @@ async function updateVariant(ctx, productId, variantId, body, scopes) {
   });
 }
 async function addVariant(ctx, productId, body, scopes) {
-  if (!(await Product.exists({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }))) throw E.notFound('Product not found.');
+  const p = await Product.findOne({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).select('storeId').lean();
+  if (!p) throw E.notFound('Product not found.');
   const { stock, costPrice, ...vd } = body;
   return withTx(async (session) => {
     const [v] = await ProductVariant.create([{ ...vd, ...(ctx.perms.deniedFields.has('product.costPrice') ? {} : { costPrice }), productId, storeId: p.storeId, label: vd.label || `${vd.sizeMl}ml` }], { session });
@@ -193,9 +194,9 @@ async function removeVariant(ctx, productId, variantId, scopes) {
   return withTx(async (session) => {
     const p = await Product.findOne({ _id: productId, isDeleted: false, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }).session(session);
     if (!p) throw E.notFound('Product not found.');
-    const v = await ProductVariant.findOne({ _id: variantId, productId, isDeleted: false }).session(session);
+    const v = await ProductVariant.findOne({ _id: variantId, productId, storeId: p.storeId, isDeleted: false }).session(session);
     if (!v) throw E.notFound('Size not found.');
-    if ((await ProductVariant.countDocuments({ productId, isDeleted: false }).session(session)) <= 1) throw E.conflict('A product needs at least one size. Delete the product instead.');
+    if ((await ProductVariant.countDocuments({ productId, storeId: p.storeId, isDeleted: false }).session(session)) <= 1) throw E.conflict('A product needs at least one size. Delete the product instead.');
     const inv = await Inventory.findOne({ variantId, storeId: p.storeId }).session(session);
     if (inv && inv.reserved > 0) throw E.conflict(`${inv.reserved} unit(s) of this size are reserved for open orders.`);
     await ProductVariant.updateOne({ _id: variantId }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id } }, { session });
