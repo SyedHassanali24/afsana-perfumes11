@@ -63,3 +63,26 @@ html{background:var(--bg)}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-feature-settings:"cv11" 1,"ss01" 1;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit}
 ::selection{background:#E8E9FF;color:var(--ink)}
+
+/* Storefront luxury theme — scoped so the admin dashboard keeps its SaaS indigo palette. */
+.storefront-theme{
+  --bg:#fbf7fc;
+  --surface:#ffffff;
+  --surface-raised:#fffafd;
+  --border:#eaddea;
+  --ink:#24152b;
+  --ink-muted:#76677b;
+  --gold:#c49a58;
+  --gold-soft:#f7ecd9;
+  --primary:#743d78;
+  --primary-hover:#5d2e62;
+  --primary-soft:#f1e5f3;
+  --primary-soft-border:#d9c0dc;
+  --table-head:#fbf3fc;
+  --table-row-hover:#fdf8fe;
+  --nav:#24152b;
+  --nav-muted:#e9ddec;
+  --font-display:Georgia,"Times New Roman",serif;
+  --font-body:Inter,ui-sans-serif,system-ui,sans-serif;
+}
+.storefront-theme .font-display{letter-spacing:.01em}
