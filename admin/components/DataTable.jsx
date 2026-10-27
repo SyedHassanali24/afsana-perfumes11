@@ -12,7 +12,7 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#263e0e]/10 bg-[[#f3f1e9]]">
+            <tr className="border-b border-[#263e0e]/10 bg-[#f3f1e9]">
               {columns.map((col) => (
                 <th
                   key={col.key}
@@ -28,7 +28,7 @@ export default function DataTable({
           </thead>
           <tbody>
             {loading && Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-b border-[#263e0e]/10/60">
+              <tr key={i} className="border-b border-[#263e0e]/10">
                 {columns.map((col) => (
                   <td key={col.key} className="py-4 px-4">
                     <div className="h-3 rounded-full bg-[#263e0e]/10 animate-pulse w-3/4" />
@@ -46,8 +46,8 @@ export default function DataTable({
                 key={row.id ?? i}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={[
-                  "border-b border-[#263e0e]/10/60 last:border-0 transition-colors",
-                  onRowClick ? "cursor-pointer hover:bg-[[#eef2e5]]" : "hover:bg-[[#f7f5ee]]",
+                  "border-b border-[#263e0e]/10 last:border-0 transition-colors",
+                  onRowClick ? "cursor-pointer hover:bg-[#eef2e5]" : "hover:bg-[#f7f5ee]",
                 ].join(" ")}
               >
                 {columns.map((col) => (
