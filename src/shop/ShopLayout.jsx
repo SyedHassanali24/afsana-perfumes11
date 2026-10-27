@@ -18,7 +18,7 @@ export default function ShopLayout(){
   <header className={'z-40 text-white '+(isHome?'absolute top-[34px] left-0 right-0':'sticky top-0')}>
    <div className="absolute inset-0 bg-[#182308]/80 backdrop-blur-xl border-b border-white/10"/>
    <Container className="container-xl relative flex h-[76px] items-center">
-    <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Menu">{menu?<X/>:<Menu/>}</button>
+    <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
     <Link to="/" className="logo group shrink-0 text-center"><span className="block font-display text-3xl tracking-[.08em] text-white group-hover:text-[#b4bf41]">AFSANA</span><small className="block text-[7px] uppercase tracking-[.42em] text-[#b4bf41]">THE ART OF SCENT</small></Link>
     <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.22em] transition '+(isActive?'text-[#b4bf41]':'text-white/65 hover:text-white')}>{label}</NavLink>)}</nav>
     <div className="header-actions ml-auto flex items-center">
@@ -27,7 +27,7 @@ export default function ShopLayout(){
       <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#b4bf41] text-[#263e0e] text-[9px] leading-4 text-center">{count}</span>}</button>
     </div>
    </Container>
-   {menu&&<div className="relative md:hidden border-t border-white/10 bg-[#263e0e]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-white/10 py-4 text-[10px] uppercase tracking-[.2em] text-white/75">{label}</Link>)}</nav></div>}
+   {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-white/10 bg-[#263e0e]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-white/10 py-4 text-[10px] uppercase tracking-[.2em] text-white/75">{label}</Link>)}</nav></div>}
   </header>
   <main className={isHome?'':'py-0'}><Outlet/></main>
   <footer className="bg-[#182308] text-white border-t border-[#748e40]/20"><div className="container-xl py-16"><div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
@@ -49,26 +49,27 @@ export default function ShopLayout(){
       </form>
       <div className="mt-14 grid gap-10 md:grid-cols-3">
         <div><div className="eyebrow text-[#b4bf41]">Popular paths</div><div className="mt-5 space-y-3">
-          {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#b4bf41]">{x}</button>)}
+          {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#b4bf41]">{x}</button>)}
         </div></div>
         <div className="md:col-span-2 border-l border-white/10 md:pl-10">
           <div className="eyebrow text-[#b4bf41]">Find your ritual</div>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {['Discover your signature','Choose a gift','Explore the collection'].map((x,i)=><button key={x} onClick={()=>{setSearch(false);navigate(i===0?'/shop':i===1?'/gifting':'/shop')}} className="border border-white/10 p-5 text-left hover:border-[#b4bf41] transition"><span className="text-[9px] uppercase tracking-[.18em] text-[#b4bf41]">0{i+1}</span><span className="block mt-8 font-display text-2xl">{x}</span></button>)}
+            {['Discover your signature','Choose a gift','Explore the collection'].map((x,i)=><button key={x} type="button" onClick={()=>{setSearch(false);navigate(i===0?'/shop':i===1?'/gifting':'/shop')}} className="border border-white/10 p-5 text-left hover:border-[#b4bf41] transition"><span className="text-[9px] uppercase tracking-[.18em] text-[#b4bf41]">0{i+1}</span><span className="block mt-8 font-display text-2xl">{x}</span></button>)}
           </div>
         </div>
       </div>
     </Container>
   </div>}
-  <div className="fixed bottom-5 right-4 z-[55] md:hidden"><button onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-4 py-3 shadow-2xl text-[8px] uppercase tracking-[.18em] border border-[#263e0e]/10">AI Concierge ↗</button></div>\n  <div className="fixed bottom-6 right-6 z-[55] hidden md:block">
+  <div className="fixed bottom-5 right-4 z-[55] md:hidden"><button type="button" aria-label="Open AI Concierge" onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-4 py-3 shadow-2xl text-[8px] uppercase tracking-[.18em] border border-[#263e0e]/10">AI Concierge ↗</button></div>
+  <div className="fixed bottom-6 right-6 z-[55] hidden md:block">
     <div className="group relative">
       <button onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-5 py-3 shadow-xl text-[9px] uppercase tracking-[.2em] hover:scale-105">AI Concierge</button>
       <div className="pointer-events-none absolute bottom-full right-0 mb-3 w-72 translate-y-2 opacity-0 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 transition">
         <div className="bg-[#faf8f4] text-[#263e0e] p-5 shadow-2xl border border-[#748e40]/20">
           <div className="eyebrow text-[#748e40]">Afsana private concierge</div>
           <div className="mt-4 space-y-2">
-            <button onClick={()=>navigate('/shop')} className="w-full border border-[#263e0e]/10 p-3 text-left text-xs">Find my signature scent</button>
-            <button onClick={()=>navigate('/gifting')} className="w-full border border-[#263e0e]/10 p-3 text-left text-xs">Help me choose a gift</button>
+            <button type="button" onClick={()=>navigate('/shop')} className="w-full border border-[#263e0e]/10 p-3 text-left text-xs">Find my signature scent</button>
+            <button type="button" onClick={()=>navigate('/gifting')} className="w-full border border-[#263e0e]/10 p-3 text-left text-xs">Help me choose a gift</button>
             <button onClick={()=>navigate('/shop')} className="w-full border border-[#263e0e]/10 p-3 text-left text-xs">Explore collection</button>
           </div>
         </div>
