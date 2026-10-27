@@ -6,14 +6,18 @@ const S = require('../../../validation/schemas');
 const { adjustStock } = require('../../../services/inventoryService');
 const { E } = require('../../../middleware/errors');
 const { audit } = require('../../../services/audit');
+const { scopeFilter } = require('../../../middleware/permissions');
+const SCOPE_MAP = { stores: 'storeId' };
 
 const stockStatus = (i) => { const a = i.current - i.reserved; return a <= 0 ? 'out' : a <= i.lowStockThreshold ? 'low' : 'ok'; };
 
 const routes = [
   // Headline numbers for the stock screen.
   { method: 'GET', path: '/summary', permission: ['inventory', 'view'],
-    async handler() {
+    async handler({ scopes, ctx }) {
+      const match = scopeFilter(scopes, ctx.user._id, SCOPE_MAP);
       const [r] = await Inventory.aggregate([
+        { $match: match },
         { $project: { current: 1, available: { $subtract: ['$current', '$reserved'] }, low: '$lowStockThreshold' } },
         { $group: { _id: null, sizes: { $sum: 1 }, units: { $sum: '$current' },
           out: { $sum: { $cond: [{ $lte: ['$available', 0] }, 1, 0] } },
@@ -24,7 +28,7 @@ const routes = [
   { method: 'GET', path: '/', permission: ['inventory', 'view'], query: S.inventoryQuery,
     async handler({ query, ctx }) {
       const { page, limit, skip } = paging(query);
-      const filter = {};
+      const filter = { ...scopeFilter(ctx.scopes, ctx.user._id, SCOPE_MAP) };
       if (query.productId) filter.productId = query.productId;
       if (query.q) { const r = new RegExp(escapeRegex(query.q), 'i'); const ps = await Product.find({ isDeleted: false, $or: [{ name: r }, { sku: r }] }).select('_id').limit(200); filter.productId = { $in: ps.map((p) => p._id) }; }
       if (query.low) filter.$expr = { $lte: [{ $subtract: ['$current', '$reserved'] }, '$lowStockThreshold'] };
@@ -37,9 +41,9 @@ const routes = [
       return { items: redact(items, ctx.perms.deniedFields), pagination: pageMeta(total, page, limit) };
     } },
   { method: 'GET', path: '/history', permission: ['inventory', 'view'], query: S.historyQuery,
-    async handler({ query }) {
+    async handler({ query, ctx, scopes }) {
       const { page, limit, skip } = paging(query);
-      const filter = {}; if (query.variantId) filter.variantId = query.variantId; if (query.type) filter.type = query.type;
+      const filter = { ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }; if (query.variantId) filter.variantId = query.variantId; if (query.type) filter.type = query.type;
       const [rows, total] = await Promise.all([
         InventoryTransaction.find(filter).populate('variantId', 'sku label').populate('productId', 'name').populate('by', 'email').sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
         InventoryTransaction.countDocuments(filter),
@@ -48,13 +52,13 @@ const routes = [
     } },
   { method: 'POST', path: '/adjust', permission: ['inventory', 'manageStock'], body: S.adjustBody, reauth: true,
     async handler({ body, ctx }) {
-      const inv = await adjustStock(ctx, body);
+      const inv = await adjustStock(ctx, body, scopes);
       return { stock: { current: inv.current, reserved: inv.reserved, available: inv.current - inv.reserved, damaged: inv.damaged } };
     } },
 ];
 routes.push({ method: 'PATCH', path: '/:variantId/threshold', permission: ['inventory', 'edit'], body: S.thresholdBody,
-  async handler({ params, body, ctx }) {
-    const inv = await Inventory.findOneAndUpdate({ variantId: params.variantId }, { $set: { lowStockThreshold: body.lowStockThreshold } }, { new: false });
+  async handler({ params, body, ctx, scopes }) {
+    const inv = await Inventory.findOneAndUpdate({ variantId: params.variantId, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }, { $set: { lowStockThreshold: body.lowStockThreshold } }, { new: false });
     if (!inv) throw E.notFound('No inventory record for this size.');
     await audit(ctx, { action: 'inventory.threshold_changed', module: 'inventory', recordId: params.variantId, oldValue: { lowStockThreshold: inv.lowStockThreshold }, newValue: { lowStockThreshold: body.lowStockThreshold } });
     return { lowStockThreshold: body.lowStockThreshold };
