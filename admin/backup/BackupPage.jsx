@@ -80,7 +80,7 @@ export default function BackupPage() {
         <form onSubmit={run} className="space-y-4">
           <Field label="Your password" hint="Needed every time, because the file contains your customers' details."><Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
           <Check label="Include product pictures (bigger file)" checked={withPictures} onChange={setWithPictures} />
-          {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
+          {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-xl px-3 py-2">{error}</p>}
           {busy && <p role="status" className="text-sm text-ink-muted">{progress || "Working…"} Please keep this page open.</p>}
           {done && <p role="status" className="text-sm text-success bg-success-soft rounded-sm px-3 py-2">Saved {done.name}: {done.records} records, {done.pics} pictures, {done.mb} MB. Keep it somewhere safe (Google Drive, phone). It is not encrypted.</p>}
           <Button type="submit" icon={DatabaseBackup} disabled={busy}>{busy ? "Preparing…" : "Download backup"}</Button>
