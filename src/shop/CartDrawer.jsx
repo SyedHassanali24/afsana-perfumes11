@@ -43,7 +43,6 @@ export default function CartDrawer() {
     e.preventDefault();
     if (!couponInput.trim()) {
       setCoupon('');
-      setCouponError('');
       return;
     }
     setCoupon(couponInput.trim().toUpperCase());
@@ -108,11 +107,11 @@ export default function CartDrawer() {
         <div className="flex-1 overflow-y-auto p-7 space-y-5 divide-y divide-[#263e0e]/10">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-[#f3f1e9] border border-[#263e0e]/10 flex items-center justify-center text-ink-muted mb-4">
+              <div className="w-16 h-16 rounded-full bg-[#f3f1e9] border border-[#263e0e]/10 flex items-center justify-center text-[#5f654f] mb-4">
                 <ShoppingBag className="w-7 h-7 stroke-[1.5]" />
               </div>
               <h3 className="font-display text-xl mb-1.5">Your Bag is Empty</h3>
-              <p className="text-xs text-ink-muted max-w-xs mb-6">
+              <p className="text-xs text-[#5f654f] max-w-xs mb-6">
                 Discover our signature Extraits de Parfum, hand-poured with rare essences.
               </p>
               <button
@@ -134,7 +133,7 @@ export default function CartDrawer() {
                     {line.image?.url ? (
                       <img src={line.image.url} alt={line.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-ink-muted text-xs">Afsana</div>
+                      <div className="w-full h-full flex items-center justify-center text-[#5f654f] text-xs">Afsana</div>
                     )}
                   </div>
 
@@ -152,13 +151,13 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => remove(line.variantId)}
-                          className="text-ink-muted hover:text-[#9b3f3f] p-1 transition-colors"
+                          className="text-[#5f654f] hover:text-[#9b3f3f] p-1 transition-colors"
                           title="Remove item"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <p className="text-xs text-ink-muted mt-0.5">{line.label} · {line.concentration || 'Extrait de Parfum'}</p>
+                      <p className="text-xs text-[#5f654f] mt-0.5">{line.label} · {line.concentration || 'Extrait de Parfum'}</p>
                     </div>
 
                     <div className="flex items-center justify-between mt-3">
@@ -167,7 +166,7 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => setQty(line.variantId, Math.max(1, qty - 1))}
-                          className="p-1 px-2 text-ink-muted hover:text-[#263e0e] disabled:opacity-30"
+                          className="p-1 px-2 text-[#5f654f] hover:text-[#263e0e] disabled:opacity-30"
                           disabled={qty <= 1}
                         >
                           <Minus className="w-3 h-3" />
@@ -176,7 +175,7 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => setQty(line.variantId, qty + 1)}
-                          className="p-1 px-2 text-ink-muted hover:text-ink"
+                          className="p-1 px-2 text-[#5f654f] hover:text-[#182308]"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -186,7 +185,7 @@ export default function CartDrawer() {
                       <div className="text-right">
                         <p className="font-display text-xl text-[#263e0e]">{money(line.lineTotal)}</p>
                         {qty > 1 && (
-                          <p className="text-[10px] text-ink-muted">{money(line.unitPrice)} each</p>
+                          <p className="text-[10px] text-[#5f654f]">{money(line.unitPrice)} each</p>
                         )}
                       </div>
                     </div>
@@ -203,7 +202,7 @@ export default function CartDrawer() {
             {/* Promo Code Accordion */}
             <form onSubmit={applyCoupon} className="flex gap-2">
               <div className="relative flex-1">
-                <Tag className="w-3.5 h-3.5 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                <Tag className="w-3.5 h-3.5 text-[#5f654f] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={couponInput}
@@ -235,10 +234,10 @@ export default function CartDrawer() {
             )}
 
             {/* Calculations Breakdown */}
-            <div className="space-y-1.5 text-xs text-ink-muted pt-1">
+            <div className="space-y-1.5 text-xs text-[#5f654f] pt-1">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="text-ink font-medium">{money(quote.subtotal)}</span>
+                <span className="text-[#182308] font-medium">{money(quote.subtotal)}</span>
               </div>
               {quote.discount > 0 && (
                 <div className="flex justify-between text-[#3d6b3d]">
@@ -248,8 +247,8 @@ export default function CartDrawer() {
               )}
               <div className="flex justify-between">
                 <span>Express Courier</span>
-                <span className="text-ink font-medium">
-                  {quote.shipping === 0 ? <span className="text-success font-semibold">Complimentary</span> : money(quote.shipping)}
+                <span className="text-[#182308] font-medium">
+                  {quote.shipping === 0 ? <span className="text-[#3d6b3d] font-semibold">Complimentary</span> : money(quote.shipping)}
                 </span>
               </div>
               <div className="flex justify-between font-display text-xl text-[#263e0e] pt-2 border-t border-[#263e0e]/10">
@@ -277,7 +276,7 @@ export default function CartDrawer() {
               </button>
             </div>
 
-            <p className="text-[11px] text-center text-ink-muted pt-1">
+            <p className="text-[11px] text-center text-[#5f654f] pt-1">
               Cash on Delivery & Direct Bank Transfer available
             </p>
           </div>
