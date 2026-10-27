@@ -24,6 +24,11 @@ test('escalation guard: you cannot hand out access you do not hold', () => {
   assert.equal(R.holdsGrant(me, g('staff', ['view'])), false);
   assert.equal(R.holdsGrant(me, g('orders', ['view'], 'all')), false, 'cannot widen scope beyond your own');
   assert.equal(R.holdsGrant(me, g('orders', ['view'], 'createdByMe')), true);
+  const cityScoped = perms([g('customers', ['view'], 'cities', ['Karachi', 'Lahore'])]);
+  assert.equal(R.holdsGrant(cityScoped, g('customers', ['view'], 'cities', ['Karachi'])), true, 'may keep a narrower city scope');
+  assert.equal(R.holdsGrant(cityScoped, g('customers', ['view'], 'cities', ['Karachi', 'Islamabad'])), false, 'cannot add a city outside your scope');
+  assert.equal(R.holdsGrant(cityScoped, g('customers', ['view'], 'cities', ['Lahore', 'Karachi'])), true, 'scope value order must not matter');
+  assert.equal(R.holdsGrant(cityScoped, g('customers', ['view'], 'all')), false, 'cannot widen a scoped grant to all');
   assert.equal(R.holdsGrant(resolve({ role: { isUnrestricted: true } }), g('staff', ['delete'])), true);
   assert.equal(R.missingGrants(me, [g('products', ['view']), g('roles', ['edit'])]).length, 1);
 });
