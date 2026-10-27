@@ -14,7 +14,7 @@ export default function ProductCard({ product }) {
       <Link to={`/product/${p.slug}`} className="block">
         <div className="product-card-stage aspect-[4/5] overflow-hidden rounded-none border border-[#263e0e]/10 bg-[#f3f1e9] relative transition-all duration-700 group-hover:-translate-y-1">
           {p.image?.url ? <><img src={p.image.url} alt={p.image.alt || p.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:opacity-0" />{secondary?.url ? <img src={secondary.url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-0 transition-all duration-1000 group-hover:opacity-100 group-hover:scale-105" /> : null}</> : <Placeholder className="w-full h-full" />}
-          {p.inStock === false && <span className="absolute left-2 top-2 rounded-full bg-bg/90 px-2 py-0.5 text-xs text-ink-muted">Sold out</span>}
+          {p.inStock === false && <span className="absolute left-2 top-2 rounded-full bg-[#faf8f4]/90 px-2 py-0.5 text-xs text-[#5f654f]">Sold out</span>}
         </div>
         <div className="mt-4">
           <p className="text-[8px] uppercase tracking-[.25em] text-[#748e40]">{p.gender || "Extrait de Parfum"}</p>
