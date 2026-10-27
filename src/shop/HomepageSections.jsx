@@ -55,20 +55,33 @@ function ProductsSection({ section }) {
 
 function Hero({ section }) {
   const c=section.config||{};
+  const {data}=useApi(()=>productsApi.list({sort:'popular',limit:1}),[]);
+  const heroProduct=data?.products?.[0];
+  const heroImage=c.imageUrl||heroProduct?.image?.url;
   return <section className="relative isolate min-h-[680px] sm:min-h-[780px] overflow-hidden bg-[#160c19] text-white">
-    {c.imageUrl && <picture>{c.mobileImageUrl&&<source media="(max-width:639px)" srcSet={c.mobileImageUrl}/>}<img src={c.imageUrl} alt="" fetchPriority="high" className="absolute inset-0 -z-20 h-full w-full object-cover object-center"/></picture>}
-    <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_45%,rgba(196,154,88,.28),transparent_30%),linear-gradient(90deg,rgba(18,8,19,.97),rgba(36,18,42,.68),rgba(18,8,19,.2))]"/>
+    {heroImage && <picture>{c.mobileImageUrl&&<source media="(max-width:639px)" srcSet={c.mobileImageUrl}/>}<img src={heroImage} alt="" fetchPriority="high" className="absolute inset-0 -z-20 h-full w-full object-cover object-center opacity-35"/></picture>}
+    <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_74%_42%,rgba(200,161,95,.34),transparent_26%),linear-gradient(90deg,rgba(18,8,19,.98) 0%,rgba(36,18,42,.86) 52%,rgba(18,8,19,.35) 100%)]"/>
     <Container className="relative flex min-h-[680px] sm:min-h-[780px] items-center py-24">
-      <div className="max-w-2xl luxury-reveal">
-        <div className="flex items-center gap-3 text-gold text-[10px] uppercase tracking-[.4em] font-semibold"><span className="w-10 h-px bg-gold"/>{c.eyebrow||'AFSANA PERFUMES'}</div>
-        <h1 className="font-display text-5xl sm:text-7xl lg:text-[6.7rem] leading-[.9] mt-6">{section.title||'A scent that becomes your signature.'}</h1>
-        <p className="mt-7 text-base sm:text-lg leading-8 text-white/75 max-w-xl">{c.subtitle||'Discover refined fragrances composed for presence, memory and everyday luxury.'}</p>
-        {c.body&&<p className="mt-3 text-sm text-white/55 max-w-lg leading-6">{c.body}</p>}
-        <div className="mt-9 flex flex-wrap gap-3">
-          <SmartLink to={c.buttonLink||'/shop'} className="group inline-flex items-center gap-3 rounded-full bg-gold px-7 py-3.5 text-[#24152b] text-sm font-semibold transition hover:bg-white">{c.buttonText||'Shop the collection'}<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1"/></SmartLink>
-          <Link to="/shop?gender=Women" className="inline-flex items-center rounded-full border border-white/30 px-7 py-3.5 text-sm font-medium hover:border-gold hover:text-gold transition">Discover for her</Link>
+      <div className="grid lg:grid-cols-[1.05fr_.95fr] items-center gap-8 lg:gap-14 w-full">
+        <div className="max-w-2xl luxury-reveal">
+          <div className="flex items-center gap-3 text-gold text-[10px] uppercase tracking-[.4em] font-semibold"><span className="w-10 h-px bg-gold"/>{c.eyebrow||'AFSANA PERFUMES'}</div>
+          <h1 className="font-display text-5xl sm:text-7xl lg:text-[6.4rem] leading-[.9] mt-6">{section.title||'A scent that becomes your signature.'}</h1>
+          <p className="mt-7 text-base sm:text-lg leading-8 text-white/75 max-w-xl">{c.subtitle||'Discover refined fragrances composed for presence, memory and everyday luxury.'}</p>
+          {c.body&&<p className="mt-3 text-sm text-white/55 max-w-lg leading-6">{c.body}</p>}
+          <div className="mt-9 flex flex-wrap gap-3">
+            <SmartLink to={c.buttonLink||'/shop'} className="group inline-flex items-center gap-3 rounded-full bg-gold px-7 py-3.5 text-[#24152b] text-sm font-semibold transition hover:bg-white">{c.buttonText||'Shop the collection'}<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1"/></SmartLink>
+            <Link to="/shop?gender=Women" className="inline-flex items-center rounded-full border border-white/30 px-7 py-3.5 text-sm font-medium hover:border-gold hover:text-gold transition">Discover for her</Link>
+          </div>
+          <div className="mt-12 flex items-center gap-7 text-[10px] uppercase tracking-[.22em] text-white/50"><span>Crafted with intention</span><span className="w-1 h-1 rounded-full bg-gold"/><span>Made to linger</span></div>
         </div>
-        <div className="mt-12 flex items-center gap-7 text-[10px] uppercase tracking-[.22em] text-white/50"><span>Crafted with intention</span><span className="w-1 h-1 rounded-full bg-gold"/><span>Made to linger</span></div>
+        <div className="hidden lg:flex justify-center luxury-float">
+          <div className="relative w-[330px] h-[470px]">
+            <div className="absolute inset-8 rounded-full bg-gold/20 blur-3xl"/>
+            <div className="absolute inset-0 rounded-[12rem] border border-gold/30 bg-white/[.04] backdrop-blur-[2px]"/>
+            {heroImage ? <img src={heroImage} alt="" className="absolute inset-10 w-[250px] h-[360px] object-contain drop-shadow-[0_30px_35px_rgba(0,0,0,.55)]"/> : <div className="absolute inset-x-20 top-20 bottom-20 rounded-[5rem] bg-gradient-to-b from-[#e5d1ad] via-[#b9874e] to-[#3a1e3d] shadow-2xl"/>}
+            <div className="absolute bottom-2 inset-x-0 text-center"><p className="text-[9px] uppercase tracking-[.35em] text-gold">The Afsana signature</p><p className="font-display text-xl mt-2">{heroProduct?.name||'Signature Collection'}</p></div>
+          </div>
+        </div>
       </div>
     </Container>
     <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-bg to-transparent"/>
