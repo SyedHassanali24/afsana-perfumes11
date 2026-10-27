@@ -29,7 +29,7 @@ export function Totals({ q }) {
       {row('Delivery', q.shipping === 0 ? 'Free' : money(q.shipping))}
       {q.delivery?.estDays && <p className="text-xs text-ink-muted">Estimated delivery: {q.delivery.estDays}.</p>}
       {q.freeShippingRemaining > 0 && <p className="text-xs text-ink-muted">Add {money(q.freeShippingRemaining)} more for free delivery.</p>}
-      <div className="flex justify-between pt-3 border-t border-border font-display text-xl"><span>Total</span><span>{money(q.total)}</span></div>
+      <div className="flex justify-between pt-4 border-t border-border font-display text-2xl text-primary"><span>Total</span><span>{money(q.total)}</span></div>
     </div>
   );
 }
@@ -41,17 +41,17 @@ export default function CartPage() {
   const [code, setCode] = useState(couponCode);
 
   return (
-    <Container>
-      <PageTitle title="Your cart" />
+    <Container className="pb-12">
+      <PageTitle title="Your cart" subtitle="Review your fragrances before you checkout." />
       {items.length === 0 ? (
         <div className="py-20 text-center space-y-5"><p className="text-ink-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div>
       ) : (
         <StateBox loading={loading && !q} error={error} onRetry={reload}>
           {q && (
             <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_340px]">
-              <ul className="divide-y divide-border border-y border-border">
+              <ul className="divide-y divide-border rounded-2xl border border-border bg-surface shadow-card overflow-hidden">
                 {q.lines.map((l) => (
-                  <li key={l.variantId} className="flex gap-3 sm:gap-4 py-4">
+                  <li key={l.variantId} className="flex gap-3 sm:gap-4 p-4 sm:p-5">
                     <div className="w-16 h-20 sm:w-20 sm:h-24 shrink-0 rounded-xl overflow-hidden border border-border bg-surface shadow-card">{l.image ? <img src={l.image} alt="" className="w-full h-full object-cover" /> : <Placeholder className="w-full h-full" />}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between gap-3">
