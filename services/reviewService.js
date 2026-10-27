@@ -116,7 +116,7 @@ async function moderate(ctx, id, status, scopes) {
     if (!productVisible) throw E.notFound('Review not found.');
   }
   if (!R.canModerate(before.status, status)) throw E.badRequest(`This review is already ${before.status}.`);
-  const after = await Review.findByIdAndUpdate(id, { $set: { status, moderatedBy: ctx.user._id } }, { new: true }).lean();
+  const after = await Review.findOneAndUpdate({ _id: id, isDeleted: false, ...(scopes ? productStoreFilter(scopes, ctx.user._id) : {}) }, { $set: { status, moderatedBy: ctx.user._id } }, { new: true }).lean();
   await recalcProduct(before.productId);
   await audit(ctx, { action: 'review.moderated', module: 'reviews', recordId: id, oldValue: { status: before.status }, newValue: { status } });
   return { review: { _id: after._id, status: after.status } };
