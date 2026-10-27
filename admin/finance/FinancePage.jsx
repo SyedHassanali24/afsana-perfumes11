@@ -56,7 +56,7 @@ export default function FinancePage() {
   const columns = [
     { key: "date", header: "Date" },
     { key: "category", header: "Category" },
-    { key: "description", header: "Note", render: (r) => <span className="text-[#182308]-muted">{r.description || "—"}</span> },
+    { key: "description", header: "Note", render: (r) => <span className="text-[#5f654f]">{r.description || "—"}</span> },
     { key: "amount", header: "Amount", align: "right", render: (r) => money(r.amount) },
     ...(can("expenses.edit") || can("expenses.delete") ? [{ key: "actions", header: "", align: "right", render: (r) => (
       <span className="inline-flex gap-3">
@@ -70,7 +70,7 @@ export default function FinancePage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl text-[#182308]">Finance</h1>
-          <p className="text-sm text-[#182308]-muted mt-1">{s ? `${s.range.from} to ${s.range.to} (Pakistan time)` : " "}</p>
+          <p className="text-sm text-[#5f654f] mt-1">{s ? `${s.range.from} to ${s.range.to} (Pakistan time)` : " "}</p>
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <div className="w-44"><Select value={period} onChange={(e) => { setPeriod(e.target.value); setPage(1); }} aria-label="Period">{PERIODS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</Select></div>
@@ -81,7 +81,7 @@ export default function FinancePage() {
         </div>
       </div>
 
-      {!customReady && <p className="text-sm text-[#182308]-muted">Pick both dates to see the numbers.</p>}
+      {!customReady && <p className="text-sm text-[#5f654f]">Pick both dates to see the numbers.</p>}
       {sum.error && <div className="space-y-3"><p className="text-sm text-[#9b3f3f]">{sum.error.message}</p><Button variant="secondary" onClick={sum.reload}>Try again</Button></div>}
 
       {s && (
@@ -94,15 +94,15 @@ export default function FinancePage() {
             <StatCard label="Expenses" value={money(s.expenses.total)} />
             <StatCard label={s.margin === null ? "Net profit" : `Net profit (${s.margin}% margin)`} value={money(s.netProfit)} />
           </div>
-          {s.missingCost > 0 && <p className="text-xs text-warning" role="note">{s.missingCost} order {s.missingCost === 1 ? "line has" : "lines have"} no cost price, so profit is shown higher than it really is. Add the cost price to those products.</p>}
+          {s.missingCost > 0 && <p className="text-xs text-[#8a6a22]" role="note">{s.missingCost} order {s.missingCost === 1 ? "line has" : "lines have"} no cost price, so profit is shown higher than it really is. Add the cost price to those products.</p>}
 
           <Card>
             <p className="text-sm text-[#182308] mb-3">Expenses by category</p>
-            {!s.expenses.byCategory.length ? <p className="text-sm text-[#182308]-muted">No expenses in this period.</p> : (
+            {!s.expenses.byCategory.length ? <p className="text-sm text-[#5f654f]">No expenses in this period.</p> : (
               <ul className="space-y-2">{s.expenses.byCategory.map((c) => (
                 <li key={c.category} className="text-sm">
-                  <div className="flex justify-between"><span className="text-[#182308]">{c.category}</span><span className="text-[#182308]-muted">{money(c.total)}{c.share !== null ? ` · ${c.share}%` : ""}</span></div>
-                  <div className="h-1.5 mt-1 rounded-full bg-border overflow-hidden"><div className="h-full bg-[var(--primary)]" style={{ width: `${c.share || 0}%` }} /></div>
+                  <div className="flex justify-between"><span className="text-[#182308]">{c.category}</span><span className="text-[#5f654f]">{money(c.total)}{c.share !== null ? ` · ${c.share}%` : ""}</span></div>
+                  <div className="h-1.5 mt-1 rounded-full bg-[#263e0e]/10 overflow-hidden"><div className="h-full bg-[var(--primary)]" style={{ width: `${c.share || 0}%` }} /></div>
                 </li>))}</ul>
             )}
           </Card>
@@ -115,7 +115,7 @@ export default function FinancePage() {
             <div className="flex items-center gap-3">
               <p className="text-sm text-[#182308]">Expenses</p>
               <div className="w-44"><Select value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} aria-label="Category"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</Select></div>
-              {exp.data && <span className="text-xs text-[#182308]-muted">Total shown: {money(exp.data.total)}</span>}
+              {exp.data && <span className="text-xs text-[#5f654f]">Total shown: {money(exp.data.total)}</span>}
             </div>
             {can("expenses.create") && <Button size="sm" onClick={() => open(null)}>Add expense</Button>}
           </div>
