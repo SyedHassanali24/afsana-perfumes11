@@ -17,7 +17,7 @@ function Row({ title, query, to }) {
       <Container>
         <div className="flex items-end justify-between mb-6">
           <h2 className="font-display text-2xl">{title}</h2>
-          <Link to={to} className="text-sm text-gold underline">View all</Link>
+          <Link to={to} className="text-sm text-primary underline underline-offset-4">View all</Link>
         </div>
         <StateBox loading={loading} error={error} onRetry={reload} empty={!list.length} emptyText="New fragrances are coming soon." skeleton={<CardsSkeleton n={4} />}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">{list.map((p) => <ProductCard key={p.id} product={p} />)}</div>
@@ -49,7 +49,7 @@ export default function HomePage() {
               <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/45 to-transparent" />
               <Container className="flex min-h-[360px] sm:min-h-[480px] items-center py-16">
                 <div className="max-w-2xl text-white">
-                  <p className="text-xs uppercase tracking-[0.25em] text-gold">Afsana Perfumes</p>
+                  <p className="text-xs uppercase tracking-[0.25em] text-primary">Afsana Perfumes</p>
                   {banner.heading && <h1 className="font-display text-4xl sm:text-6xl mt-4 leading-tight">{banner.heading}</h1>}
                   {banner.subtitle && <p className="mt-5 max-w-xl text-white/80">{banner.subtitle}</p>}
                   <div className="mt-8 flex flex-wrap gap-3">
@@ -64,7 +64,7 @@ export default function HomePage() {
       ) : (
         <section className="-mt-8 border-b border-border bg-surface">
           <Container className="py-20 sm:py-28 text-center">
-            <p className="text-xs uppercase tracking-[0.25em] text-gold">Afsana Perfumes</p>
+            <p className="text-xs uppercase tracking-[0.25em] text-primary">Afsana Perfumes</p>
             <h1 className="font-display text-4xl sm:text-6xl mt-4 leading-tight">Find the scent that<br />is unmistakably you</h1>
             <p className="text-ink-muted mt-5 max-w-xl mx-auto">Browse our collection, pay on delivery or by bank transfer, and track every order.</p>
             <div className="mt-8 flex justify-center gap-3">
@@ -81,7 +81,7 @@ export default function HomePage() {
             <h2 className="font-display text-2xl mb-6">Shop by category</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {top.map((c) => (
-                <Link key={c.id} to={`/shop?category=${c.slug}`} className="group relative aspect-[16/9] overflow-hidden rounded-md border border-border">
+                <Link key={c.id} to={`/shop?category=${c.slug}`} className="group relative aspect-[16/9] overflow-hidden rounded-2xl border border-border">
                   {c.image?.url ? <img src={c.image.url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <Placeholder className="absolute inset-0" />}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <span className="absolute left-4 bottom-3 font-display text-xl text-white">{c.name}</span>
@@ -104,7 +104,7 @@ export default function HomePage() {
                 {faqs.map((faq) => (
                   <details key={faq.id} className="py-4 group">
                     <summary className="cursor-pointer list-none font-medium flex items-center justify-between gap-4">
-                      <span>{faq.question}</span><span className="text-gold text-xl" aria-hidden="true">+</span>
+                      <span>{faq.question}</span><span className="text-primary text-xl" aria-hidden="true">+</span>
                     </summary>
                     <p className="mt-3 text-sm leading-6 text-ink-muted whitespace-pre-line">{faq.answer}</p>
                   </details>
@@ -118,7 +118,7 @@ export default function HomePage() {
       <section className="mt-16">
         <Container className="grid gap-4 sm:grid-cols-3 text-center text-sm">
           {[['Cash on Delivery', 'Pay when your order arrives.'], ['Bank Transfer', 'Prefer to pay ahead? That works too.'], ['Track every order', 'Follow your parcel with your order number.']].map(([t, d]) => (
-            <div key={t} className="rounded-md border border-border bg-surface p-5"><p className="font-display text-lg">{t}</p><p className="text-ink-muted mt-1">{d}</p></div>
+            <div key={t} className="rounded-2xl border border-border bg-surface p-5"><p className="font-display text-lg">{t}</p><p className="text-ink-muted mt-1">{d}</p></div>
           ))}
         </Container>
       </section>
