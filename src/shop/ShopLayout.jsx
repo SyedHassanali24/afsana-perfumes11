@@ -26,7 +26,7 @@ export default function ShopLayout(){
       <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#b4bf41] text-[#263e0e] text-[9px] leading-4 text-center">{count}</span>}</button>
       <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Mobile navigation">{menu?<X/>:<Menu/>}</button>
     </div>
-   </div>
+   </Container>
    {menu&&<div className="relative md:hidden border-t border-white/10 bg-[#263e0e]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-white/10 py-4 text-[10px] uppercase tracking-[.2em] text-white/75">{label}</Link>)}</nav></div>}
   </header>
   <main className={isHome?'':'py-0'}><Outlet/></main>
