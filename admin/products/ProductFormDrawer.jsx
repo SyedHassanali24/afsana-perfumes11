@@ -11,7 +11,7 @@ import { EMPTY_FORM, toForm, variantsToForm, toCreatePayload, toPatchPayload, to
 
 const NO_OPTIONS = { categories: [], brands: [], collections: [], families: [] };
 const NEW_SIZE = { sizeMl: "", sku: "", price: "", salePrice: "", stock: "0" };
-const Section = ({ title, children }) => <div className="space-y-3 border-t border-border pt-4"><p className="text-sm text-ink">{title}</p>{children}</div>;
+const Section = ({ title, children }) => <div className="space-y-3 border-t border-[#263e0e]/10 pt-4"><p className="text-sm text-[#182308]">{title}</p>{children}</div>;
 
 /**
  * @param {string|null} productId - id to edit, null to create
@@ -133,9 +133,9 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
     <>
       <Drawer open={open} onClose={onClose} size="lg" title={isEdit ? "Edit product" : "Add product"}
         footer={<><Button variant="secondary" onClick={onClose} type="button">Cancel</Button><Button type="submit" form="product-form" disabled={busy || loading}>{busy ? "Saving…" : isEdit ? "Save changes" : "Add product"}</Button></>}>
-        {loading ? <p className="text-sm text-ink-muted">Loading product…</p> : (
+        {loading ? <p className="text-sm text-[#182308]-muted">Loading product…</p> : (
           <form id="product-form" onSubmit={handleSubmit} className="space-y-4 pb-2">
-            {topError && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{topError}</p>}
+            {topError && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{topError}</p>}
 
             <Field label="Product name" error={errors.name}><Input value={values.name} error={!!errors.name} onChange={setField("name")} placeholder="e.g. Oud Rihan" /></Field>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -177,15 +177,15 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
 
             {can("products.manageImages") && (
               <Section title="Pictures">
-                <p className="text-xs text-ink-muted">Upload pictures from your phone or computer, or paste a web address. The first one is the main picture.</p>
-                {uploadError && <p role="alert" className="text-xs text-danger">{uploadError}</p>}
-                {errors.media && <p role="alert" className="text-xs text-danger">{errors.media}</p>}
+                <p className="text-xs text-[#182308]-muted">Upload pictures from your phone or computer, or paste a web address. The first one is the main picture.</p>
+                {uploadError && <p role="alert" className="text-xs text-[#9b3f3f]">{uploadError}</p>}
+                {errors.media && <p role="alert" className="text-xs text-[#9b3f3f]">{errors.media}</p>}
                 {values.images.map((im, i) => (
                   <div key={i} className="grid grid-cols-[2.5rem_1fr_2rem] sm:grid-cols-[2.5rem_1fr_9rem_2rem] gap-2 items-center">
-                    {im.url.trim() ? <img src={im.url} alt="" className="w-10 h-10 rounded-sm object-cover border border-border bg-bg" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} /> : <span className="w-10 h-10 rounded-sm border border-dashed border-border" />}
+                    {im.url.trim() ? <img src={im.url} alt="" className="w-10 h-10 rounded-sm object-cover border border-[#263e0e]/10 bg-[#f3f1e9]" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} /> : <span className="w-10 h-10 rounded-sm border border-dashed border-[#263e0e]/10" />}
                     <Input value={im.url} placeholder="https://…" aria-label={`Picture ${i + 1} address`} onChange={(e) => setImage(i, "url", e.target.value)} />
                     <Input value={im.alt} placeholder="Describe it" aria-label={`Picture ${i + 1} description`} onChange={(e) => setImage(i, "alt", e.target.value)} />
-                    <button type="button" onClick={() => setValues((v) => ({ ...v, images: v.images.filter((_, n) => n !== i) }))} className="p-2 text-ink-muted hover:text-danger" aria-label={`Remove picture ${i + 1}`}><X className="w-4 h-4" /></button>
+                    <button type="button" onClick={() => setValues((v) => ({ ...v, images: v.images.filter((_, n) => n !== i) }))} className="p-2 text-[#182308]-muted hover:text-[#9b3f3f]" aria-label={`Remove picture ${i + 1}`}><X className="w-4 h-4" /></button>
                   </div>
                 ))}
                 <div className="flex flex-wrap gap-2">
@@ -207,25 +207,25 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
                   <Field label="Size SKU" hint="Blank = SKU-size"><Input value={values.variantSku} onChange={setField("variantSku")} /></Field>
                   <Field label="Opening stock" error={errors.stock}><Input type="number" min="0" value={values.stock} error={!!errors.stock} onChange={setField("stock")} /></Field>
                 </div>
-                <p className="text-xs text-ink-muted">More sizes can be added after the product is created.</p>
+                <p className="text-xs text-[#182308]-muted">More sizes can be added after the product is created.</p>
               </Section>
             )}
 
             {isEdit && (
               <Section title="Sizes & prices">
-                {!canPrice && <p className="text-xs text-ink-muted">You don't have permission to change prices.</p>}
+                {!canPrice && <p className="text-xs text-[#182308]-muted">You don't have permission to change prices.</p>}
                 {variants.map((v) => (
                   <div key={v.id} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_2rem] gap-3 items-start">
-                    <div className="text-sm text-ink pt-7">{v.label}<span className="block text-xs text-ink-muted">Stock {v.stock} · change in Inventory</span></div>
+                    <div className="text-sm text-[#182308] pt-7">{v.label}<span className="block text-xs text-[#182308]-muted">Stock {v.stock} · change in Inventory</span></div>
                     <Field label="Price" error={errors[`price_${v.id}`]}><Input type="number" min="0" disabled={!canPrice} value={v.price} onChange={setVariantField(v.id, "price")} /></Field>
                     <Field label="Sale price"><Input type="number" min="0" disabled={!canPrice} value={v.salePrice} onChange={setVariantField(v.id, "salePrice")} placeholder="—" /></Field>
-                    {can("products.delete") && variants.length > 1 ? <button type="button" onClick={() => setDelVariant(v)} className="mt-7 p-1.5 text-ink-muted hover:text-danger" aria-label={`Delete ${v.label}`}><X className="w-4 h-4" /></button> : <span />}
+                    {can("products.delete") && variants.length > 1 ? <button type="button" onClick={() => setDelVariant(v)} className="mt-7 p-1.5 text-[#182308]-muted hover:text-[#9b3f3f]" aria-label={`Delete ${v.label}`}><X className="w-4 h-4" /></button> : <span />}
                   </div>
                 ))}
-                {canPrice && <p className="text-xs text-ink-muted">Changing a price asks for your password and is logged.</p>}
+                {canPrice && <p className="text-xs text-[#182308]-muted">Changing a price asks for your password and is logged.</p>}
                 {can("products.edit") && (
-                  <div className="border border-border rounded-sm p-3 space-y-3">
-                    <p className="text-sm text-ink">Add another size</p>
+                  <div className="border border-[#263e0e]/10 rounded-sm p-3 space-y-3">
+                    <p className="text-sm text-[#182308]">Add another size</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                       <Field label="Size (ml)"><Input type="number" min="1" value={newSize.sizeMl} onChange={(e) => setNewSize({ ...newSize, sizeMl: e.target.value })} /></Field>
                       <Field label="Price"><Input type="number" min="0" value={newSize.price} onChange={(e) => setNewSize({ ...newSize, price: e.target.value })} /></Field>
