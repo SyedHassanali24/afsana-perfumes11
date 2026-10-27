@@ -47,28 +47,28 @@ export default function ReturnsList() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-ink">Returns &amp; refunds</h1>
-          <p className="text-sm text-ink-muted mt-1">Approve or decline return requests, receive the goods back, then refund the customer.</p>
+          <h1 className="font-display text-2xl text-[#182308]">Returns &amp; refunds</h1>
+          <p className="text-sm text-[#182308]-muted mt-1">Approve or decline return requests, receive the goods back, then refund the customer.</p>
         </div>
         {can("returns.create") && <Button icon={Plus} onClick={() => setCreating(true)}>New return</Button>}
       </div>
 
-      <div className="flex flex-wrap gap-1 border-b border-border" role="tablist">
+      <div className="flex flex-wrap gap-1 border-b border-[#263e0e]/10" role="tablist">
         {TABS.map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => { setTab(t); setPage(1); }}
-            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${tab === t ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-ink-muted hover:text-ink hover:bg-[var(--primary-soft)]"}`}>
-            {t}{t !== "All" && counts[t] ? <span className="ml-1.5 text-xs text-ink-muted">({counts[t]})</span> : null}
+            className={`px-4 py-2.5 text-sm border-b-2 -mb-px transition-colors ${tab === t ? "border-[var(--primary)] text-[var(--primary)] font-semibold" : "border-transparent text-[#182308]-muted hover:text-[#182308] hover:bg-[var(--primary-soft)]"}`}>
+            {t}{t !== "All" && counts[t] ? <span className="ml-1.5 text-xs text-[#182308]-muted">({counts[t]})</span> : null}
           </button>
         ))}
       </div>
 
       <Card padded={false}>
-        <div className="p-4 sm:p-5 border-b border-border">
+        <div className="p-4 sm:p-5 border-b border-[#263e0e]/10">
           <div className="w-full sm:max-w-sm"><Input placeholder="Search return, order, name or phone…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
         </div>
         <div className="p-5">
           {error ? (
-            <div className="py-10 text-center space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
+            <div className="py-10 text-center space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
           ) : (
             <DataTable loading={loading} rows={data?.returns || []} columns={columns} onRowClick={(r) => setDetailId(r.id)}
               emptyMessage={q ? "No returns match your search." : status ? `No ${status.toLowerCase()} returns.` : "No returns yet."}
