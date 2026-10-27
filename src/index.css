@@ -282,3 +282,35 @@ body {
  .notes-grid{gap:35px}.note-top{width:62%}.note-heart{width:82%}
  .product-banner-grid{grid-template-columns:1fr}.newsletter-form input{font-size:20px}
 }
+
+
+/* AFSANA final responsive storefront polish */
+@media (max-width:900px){
+  .container-xl{width:min(100% - 32px,1280px)}
+  .hero-content{padding-top:7rem;padding-bottom:5rem}
+  .hero-title{font-size:clamp(3.5rem,13vw,7rem)}
+  .hero-side{margin-top:2rem}
+  .collection-grid,.story-grid,.finder-grid,.newsletter-grid{grid-template-columns:1fr}
+  .video-wall{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .trust-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .editorial-grid{grid-template-columns:1fr}
+  .product-detail-grid{grid-template-columns:1fr}
+  .product-detail-top{padding-top:6rem}
+}
+@media (max-width:560px){
+  .container-xl{width:min(100% - 24px,1280px)}
+  .hero-content{padding-top:6.5rem;padding-bottom:4rem}
+  .hero-buttons .btn,.hero-buttons>a{width:100%;justify-content:center}
+  .hero-card{padding:1rem}
+  .video-wall,.trust-grid{grid-template-columns:1fr}
+  .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .product-grid h3{font-size:1rem}
+  .shop-head{align-items:flex-start;flex-direction:column}
+  .filters{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:.5rem}
+  .filter{white-space:nowrap}
+  .gallery-thumbs{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .product-banners{grid-template-columns:1fr}
+  .tabs{overflow-x:auto;white-space:nowrap}
+  .newsletter-form{flex-direction:column}
+  .newsletter-form>*{width:100%}
+}
