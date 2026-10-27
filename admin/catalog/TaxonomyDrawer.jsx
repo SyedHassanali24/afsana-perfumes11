@@ -39,7 +39,7 @@ export default function TaxonomyDrawer({ open, type, noun, item, parents, onClos
     <Drawer open={open} onClose={onClose} title={item ? `Edit ${noun}` : `Add ${noun}`}
       footer={<><Button variant="secondary" type="button" onClick={onClose}>Cancel</Button><Button type="submit" form="taxonomy-form" disabled={busy}>{busy ? "Saving…" : "Save"}</Button></>}>
       <form id="taxonomy-form" onSubmit={submit} className="space-y-4">
-        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{error}</p>}
         <Field label="Name" error={errors.name}><Input value={v.name} error={!!errors.name} onChange={set("name")} /></Field>
         <Field label="URL name (slug)" error={errors.slug} hint={item ? "Changing this changes the page address" : "Leave blank to create it from the name"}><Input value={v.slug} error={!!errors.slug} onChange={set("slug")} placeholder="e.g. oud-collection" /></Field>
         {type === "categories" && (
@@ -53,7 +53,7 @@ export default function TaxonomyDrawer({ open, type, noun, item, parents, onClos
         <Field label="Description"><Textarea rows={3} value={v.description} onChange={set("description")} /></Field>
         <Field label="Image" error={errors.image} hint="Upload a picture, or paste a link">
           <div className="space-y-2">
-            {v.imageUrl && <img src={v.imageUrl} alt="" className="w-20 h-20 rounded-sm object-cover border border-border bg-bg" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />}
+            {v.imageUrl && <img src={v.imageUrl} alt="" className="w-20 h-20 rounded-sm object-cover border border-[#263e0e]/10 bg-[#f3f1e9]" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />}
             <Input value={v.imageUrl} error={!!errors.image} onChange={set("imageUrl")} placeholder="https://… or use Upload" />
             <ImageUploadButton onUploaded={(url) => setV((x) => ({ ...x, imageUrl: url }))} />
           </div>
@@ -61,8 +61,8 @@ export default function TaxonomyDrawer({ open, type, noun, item, parents, onClos
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Sort order" hint="Lower shows first"><Input type="number" min="0" value={v.sortOrder} onChange={set("sortOrder")} /></Field>
         </div>
-        <div className="border-t border-border pt-4 space-y-3">
-          <p className="text-sm text-ink">Search engine details</p>
+        <div className="border-t border-[#263e0e]/10 pt-4 space-y-3">
+          <p className="text-sm text-[#182308]">Search engine details</p>
           <Field label="Title"><Input value={v.seoTitle} onChange={set("seoTitle")} /></Field>
           <Field label="Description"><Textarea rows={2} value={v.seoDescription} onChange={set("seoDescription")} /></Field>
         </div>
