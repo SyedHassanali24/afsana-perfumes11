@@ -5,5 +5,6 @@
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ],
   "storefrontRevision": "2026-10-28-signature-home",
-  "updatedBy": "Afsana build audit"
+  "updatedBy": "Afsana build audit",
+  "deploymentTarget": "netlify-main"
 }
