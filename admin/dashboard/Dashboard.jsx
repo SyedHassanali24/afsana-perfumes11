@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { AlertTriangle } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -12,6 +12,9 @@ import { analyticsApi } from "../../src/services";
 import { toDashboard, money, HIDDEN } from "../../src/services/mappers/dashboard";
 
 const Hidden = () => <p className="text-sm text-ink-muted">{HIDDEN} — your role cannot see this part.</p>;
+const STATUS_COLORS = ["#B4874B", "#18845B", "#64748B", "#C94B4B", "#8B5CF6"];
+const STATUS_LABELS = { pending: "Pending", processing: "Processing", confirmed: "Confirmed", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled", refunded: "Refunded" };
+
 const Pulse = ({ className = "" }) => <div className={`rounded-sm bg-border/70 animate-pulse ${className}`} />;
 
 const ORDER_COLUMNS = [
@@ -30,9 +33,12 @@ const TOP_COLUMNS = [
 
 function Header() {
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink">Dashboard</h1>
-      <p className="text-sm text-ink-muted mt-1">Here's how the store is doing today.</p>
+    <div className="flex items-end justify-between gap-4">
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold mb-1">Overview</p>
+        <h1 className="text-[26px] font-semibold tracking-[-0.03em] text-ink">Good morning, here’s your store.</h1>
+        <p className="text-sm text-ink-muted mt-1">A clear view of sales, orders and stock — without the clutter.</p>
+      </div>
     </div>
   );
 }
@@ -81,6 +87,12 @@ export default function Dashboard() {
     );
   }
 
+  const statusBreakdown = useMemo(() => {
+    const map = new Map();
+    (vm.recentOrders || []).forEach((o) => map.set(o.status, (map.get(o.status) || 0) + 1));
+    return Array.from(map, ([key, value]) => ({ name: STATUS_LABELS[key] || key, value })).filter((x) => x.value);
+  }, [vm.recentOrders]);
+
   return (
     <div className="space-y-6">
       <Header />
@@ -91,10 +103,10 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Card className="xl:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg text-ink">Revenue, last 30 days</h2>
+            <h2 className="text-[15px] font-semibold text-ink">Revenue, last 30 days</h2>
           </div>
           {!vm.series ? (
             <Hidden />
@@ -131,7 +143,29 @@ export default function Dashboard() {
         </Card>
 
         <Card>
-          <h2 className="font-display text-lg text-ink mb-4">Low stock products</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div><h2 className="text-[15px] font-semibold text-ink">Order status</h2><p className="text-xs text-ink-muted mt-0.5">Recent order mix</p></div>
+          </div>
+          {statusBreakdown.length ? (
+            <div className="h-52 relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={55} outerRadius={78} paddingAngle={3} stroke="none">
+                    {statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, color: "var(--ink)" }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 grid place-items-center pointer-events-none"><div className="text-center"><p className="text-2xl font-semibold text-ink">{(vm.recentOrders || []).length}</p><p className="text-[10px] uppercase tracking-wider text-ink-muted">recent</p></div></div>
+            </div>
+          ) : <p className="text-sm text-ink-muted py-16 text-center">No recent orders yet.</p>}
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
+            {statusBreakdown.map((s, i) => <span key={s.name} className="inline-flex items-center gap-1.5 text-[11px] text-ink-muted"><i className="w-2 h-2 rounded-full" style={{background:STATUS_COLORS[i % STATUS_COLORS.length]}} />{s.name} <b className="text-ink">{s.value}</b></span>)}
+          </div>
+        </Card>
+
+        <Card>
+          <h2 className="text-[15px] font-semibold text-ink mb-4">Low stock products</h2>
           {!vm.lowStock ? (
             <Hidden />
           ) : vm.lowStock.items.length === 0 ? (
@@ -159,7 +193,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Card className="xl:col-span-2" padded={false}>
           <div className="flex items-center justify-between px-5 pt-5 pb-1">
             <h2 className="font-display text-lg text-ink">Recent orders</h2>
