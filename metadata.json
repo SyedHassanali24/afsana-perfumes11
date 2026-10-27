@@ -1,5 +1,9 @@
 {
   "name": "Afsana Perfumes",
   "description": "Luxury Fragrance & Perfume E-Commerce Platform and Enterprise Admin Management System",
-  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "storefrontRevision": "2026-10-28-signature-home",
+  "updatedBy": "Afsana build audit"
 }
