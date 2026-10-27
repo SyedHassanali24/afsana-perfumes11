@@ -1,30 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "../../src/auth/AuthContext";
 import {
-  LayoutDashboard,
-  BarChart3,
-  Package,
-  Warehouse,
-  Tags,
-  ShoppingBag,
-  Truck,
-  RotateCcw,
-  Users,
-  Star,
-  Megaphone,
-  LayoutTemplate,
-  Landmark,
-  ShieldCheck,
-  Settings,
-  DatabaseBackup,
-  ChevronsLeft,
-  ChevronsRight,
-  Menu,
-  X,
+  LayoutDashboard, BarChart3, Package, Warehouse, Tags, ShoppingBag, Truck, RotateCcw,
+  Users, Star, Megaphone, LayoutTemplate, Landmark, ShieldCheck, Settings, DatabaseBackup,
+  ChevronsLeft, ChevronsRight, Menu, X,
 } from "lucide-react";
 
-// Each item's `permission` is `${module}.${action}` using module names from database/constants.js.
-// Hiding here is UX only; the server enforces permissions.
 const NAV_GROUPS = [
   { label: "Overview", items: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "dashboard.view" },
@@ -59,44 +40,27 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { can } = useAuth();
   const go = (href) => { onNavigate?.(href); setMobileOpen(false); };
-  const groups = NAV_GROUPS
-    .map((g) => ({ ...g, items: g.items.filter((i) => can(i.permission)) }))
-    .filter((g) => g.items.length);
+  const groups = NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => can(i.permission)) })).filter((g) => g.items.length);
 
   const navContent = (compact = false) => (
     <nav className="flex-1 overflow-y-auto py-4">
       {groups.map((group) => (
-        <div key={group.label} className="mb-6 px-3">
-          {!compact && (
-            <p className="px-2 mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--nav-muted)]">
-              {group.label}
-            </p>
-          )}
+        <div key={group.label} className="mb-5 px-3">
+          {!compact && <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{group.label}</p>}
           <ul className="space-y-1">
             {group.items.map((item) => {
-              const isActive = item.href === "/admin"
-                ? activeHref === "/admin"
-                : activeHref.startsWith(item.href);
+              const isActive = item.href === "/admin" ? activeHref === "/admin" : activeHref.startsWith(item.href);
               const Icon = item.icon;
               return (
                 <li key={item.href}>
                   <button
                     type="button"
                     onClick={() => go(item.href)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-all border-l-2"
-                    style={{
-                      color: isActive ? "var(--nav-active)" : "var(--nav-muted)",
-                      borderColor: isActive ? "var(--gold)" : "transparent",
-                      background: isActive ? "var(--nav-active-bg)" : undefined,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.045)";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) e.currentTarget.style.background = "";
-                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition-all ${isActive ? "bg-white/15 text-white shadow-sm" : "text-white/70 hover:bg-white/10 hover:text-white"}`}
+                    aria-current={isActive ? "page" : undefined}
+                    title={compact ? item.label : undefined}
                   >
-                    <Icon className="w-[17px] h-[17px] shrink-0" />
+                    <Icon className="w-[18px] h-[18px] shrink-0" />
                     {!compact && <span className={isActive ? "font-semibold" : "font-medium"}>{item.label}</span>}
                   </button>
                 </li>
@@ -111,56 +75,41 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
   return (
     <>
       <aside
-        className={`hidden md:flex h-screen sticky top-0 flex-col transition-[width] duration-200 shadow-[1px_0_0_rgba(255,255,255,0.03)] ${collapsed ? "w-[72px]" : "w-64"}`}
-        style={{ background: "var(--nav)", borderRight: "1px solid var(--border)" }}
+        className={`hidden md:flex h-screen sticky top-0 flex-col transition-[width] duration-200 shadow-2xl ${collapsed ? "w-[76px]" : "w-64"}`}
+        style={{ background: "linear-gradient(180deg, #3438B8 0%, #292E9F 45%, #202675 100%)" }}
       >
-        <div className="flex items-center justify-between px-4 h-[68px] shrink-0 border-b" style={{ borderColor: "var(--border)" }}>
-          {!collapsed && (
-            <span className="font-display text-xl font-semibold tracking-wide" style={{ color: "var(--gold)" }}>
-              Afsana
-            </span>
+        <div className="flex items-center justify-between px-4 h-[82px] shrink-0 border-b border-white/10">
+          {!collapsed ? (
+            <div className="min-w-0">
+              <p className="text-xl font-bold tracking-[0.12em] text-white">AFSANA</p>
+              <p className="text-[9px] font-semibold tracking-[0.34em] text-white/70">PERFUMES</p>
+            </div>
+          ) : (
+            <span className="mx-auto grid h-9 w-9 place-items-center rounded-xl bg-white/15 text-sm font-bold text-white">A</span>
           )}
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-            style={{ color: "var(--nav-muted)" }}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
+          <button type="button" onClick={() => setCollapsed((c) => !c)} className="p-2 rounded-lg text-white/65 hover:bg-white/10 hover:text-white transition-colors" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
             {collapsed ? <ChevronsRight className="w-4 h-4" /> : <ChevronsLeft className="w-4 h-4" />}
           </button>
         </div>
         {navContent(collapsed)}
+        {!collapsed && (
+          <div className="m-3 rounded-2xl border border-white/10 bg-white/10 p-3">
+            <p className="text-xs font-semibold text-white">Afsana Perfumes</p>
+            <p className="mt-1 text-[10px] text-white/60">Luxury in every scent</p>
+          </div>
+        )}
       </aside>
 
-      <button
-        type="button"
-        className="md:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl text-[color:var(--gold)] border border-border shadow-lg"
-        style={{ background: "var(--nav)" }}
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open admin navigation"
-      >
+      <button type="button" className="md:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl text-white shadow-lg" style={{ background: "#3035AD" }} onClick={() => setMobileOpen(true)} aria-label="Open admin navigation">
         <Menu className="w-5 h-5" />
       </button>
 
-      {mobileOpen && (
-        <button
-          type="button"
-          aria-label="Close navigation overlay"
-          className="md:hidden fixed inset-0 z-40 bg-black/50"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      {mobileOpen && <button type="button" aria-label="Close navigation overlay" className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMobileOpen(false)} />}
 
-      <aside
-        className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ background: "var(--nav)", borderColor: "var(--border)" }}
-      >
-        <div className="flex items-center justify-between px-4 h-[68px] border-b" style={{ borderColor: "var(--border)" }}>
-          <span className="font-display text-xl font-semibold tracking-wide" style={{ color: "var(--gold)" }}>Afsana</span>
-          <button type="button" onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-white/5" style={{ color: "var(--nav-muted)" }} aria-label="Close admin navigation">
-            <X className="w-5 h-5" />
-          </button>
+      <aside className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`} style={{ background: "linear-gradient(180deg, #3438B8 0%, #202675 100%)" }}>
+        <div className="flex items-center justify-between px-5 h-[82px] border-b border-white/10">
+          <div><p className="text-xl font-bold tracking-[0.12em] text-white">AFSANA</p><p className="text-[9px] font-semibold tracking-[0.34em] text-white/70">PERFUMES</p></div>
+          <button type="button" onClick={() => setMobileOpen(false)} className="p-2 rounded-lg text-white/70 hover:bg-white/10" aria-label="Close admin navigation"><X className="w-5 h-5" /></button>
         </div>
         {navContent(false)}
       </aside>
