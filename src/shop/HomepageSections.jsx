@@ -4,7 +4,7 @@ import { Container } from './ui';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
 import useApi from '../hooks/useApi';
-import { productsApi } from '../services';
+import { productsApi, publicTaxonomyApi } from '../services';
 
 const itemsFrom = (v) => Array.isArray(v) ? v : String(v || '').split('\n').filter(Boolean).map((x) => {
   const [title, ...rest] = x.split('|'); return { title: title.trim(), text: rest.join('|').trim() };
@@ -108,6 +108,31 @@ function SplitStory({section}) {
   </Container></section>;
 }
 
+
+function CategoryTiles({section}) {
+  const {data,loading}=useApi(()=>publicTaxonomyApi.list('categories'),[]);
+  const cats=(data?.items||[]).filter(x=>!x.parentId).slice(0,6);
+  if(loading) return <section className="py-16"><Container><div className="grid grid-cols-2 md:grid-cols-3 gap-4">{Array.from({length:6}).map((_,i)=><div key={i} className="aspect-[4/3] rounded-[1.5rem] bg-surface-raised animate-pulse"/>)}</div></Container></section>;
+  return <section className="py-20 sm:py-28 bg-bg"><Container><SectionIntro eyebrow="SHOP BY MOOD" title={section.title||'Find your fragrance world'} text={section.config?.subtitle}/>
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">{cats.map((cat,i)=><Link key={cat.id} to={'/shop?category='+encodeURIComponent(cat.slug)} className="group relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-border bg-[#24152b]">
+      {cat.image?.url?<img src={cat.image.url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-75 transition duration-700 group-hover:scale-105 group-hover:opacity-90"/>:<div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,rgba(200,161,95,.55),transparent_30%),linear-gradient(135deg,#24152b,#743d78)]"/>}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#120813] via-transparent to-transparent"/>
+      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-gold">Collection {String(i+1).padStart(2,'0')}</p><h3 className="font-display text-2xl sm:text-3xl mt-1">{cat.name}</h3><span className="inline-flex items-center gap-1 mt-3 text-[10px] uppercase tracking-[.2em] text-white/70">Explore <ArrowRight className="w-3 h-3"/></span></div>
+    </Link>)}</div>
+  </Container></section>;
+}
+
+function Marquee({section}) {
+  const items=itemsFrom(section.config?.items||'Afsana Perfumes|Crafted with intention\nMade to linger|A signature worth remembering');
+  const repeated=[...items,...items,...items,...items];
+  return <section className="overflow-hidden border-y border-gold/20 bg-[#160c19] text-gold"><div className="marquee-track flex items-center py-4">{repeated.map((x,i)=><div key={i} className="flex items-center whitespace-nowrap"><span className="text-[10px] sm:text-xs uppercase tracking-[.3em] font-semibold px-7">{x.title}</span><span className="w-1.5 h-1.5 rounded-full bg-gold/70"/></div>)}</div></section>;
+}
+
+function TrustGrid({section}) {
+  const items=itemsFrom(section.config?.items||'Authentic fragrances|Original Afsana collection\nSecure checkout|Protected customer sessions\nCarefully packed|Every order handled with care\nTrack your order|Stay close to your delivery');
+  return <section className="py-14 sm:py-18 bg-surface"><Container><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{items.slice(0,4).map((x,i)=><div key={i} className="rounded-2xl border border-border p-5 sm:p-6 luxury-card"><Check className="w-4 h-4 text-gold"/><h3 className="font-display text-lg mt-3">{x.title}</h3><p className="text-xs leading-5 text-ink-muted mt-1">{x.text}</p></div>)}</div></Container></section>;
+}
+
 function Benefits({section}) {
   const items=itemsFrom(section.config?.items||'Signature-worthy sillage|Designed to be remembered\nThoughtful ingredients|Chosen for a beautiful finish\nElegant packaging|Ready to gift or keep\nPakistan-wide delivery|Packed with care');
   return <section className="border-y border-border bg-surface-raised py-8 sm:py-10"><Container><div className="grid grid-cols-2 md:grid-cols-4">{items.slice(0,4).map((x,i)=><div key={i} className={`px-4 py-3 text-center ${i?'border-l border-border':''}`}><Sparkles className="w-4 h-4 mx-auto text-gold"/><p className="font-display text-lg mt-2">{x.title}</p><p className="text-[11px] text-ink-muted mt-1 leading-5">{x.text}</p></div>)}</div></Container></section>;
@@ -144,6 +169,9 @@ export default function HomepageSections({sections,faqs}) {
     if(type==='video_banner') return <VideoBanner key={key} section={s}/>;
     if(type==='split_story') return <SplitStory key={key} section={s}/>;
     if(type==='benefits') return <Benefits key={key} section={s}/>;
+    if(type==='category_tiles') return <CategoryTiles key={key} section={s}/>;
+    if(type==='marquee') return <Marquee key={key} section={s}/>;
+    if(type==='trust_grid') return <TrustGrid key={key} section={s}/>;
     if(type==='testimonials') return <Testimonials key={key} section={s}/>;
     if(type==='blog_grid') return <EditorialCards key={key} section={s}/>;
     if(type==='faq') return <Faq key={key} faqs={faqs} section={s}/>;
