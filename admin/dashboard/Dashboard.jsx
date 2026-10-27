@@ -15,7 +15,7 @@ import useApi from "../../src/hooks/useApi";
 import { analyticsApi } from "../../src/services";
 import { toDashboard, money, HIDDEN } from "../../src/services/mappers/dashboard";
 
-const Hidden = () => <p className="text-sm text-[#182308]-muted">{HIDDEN} — your role cannot see this part.</p>;
+const Hidden = () => <p className="text-sm text-[#5f654f]">{HIDDEN} — your role cannot see this part.</p>;
 const STATUS_COLORS = ["#748e40", "#3d6b3d", "#748e40", "#b4bf41", "#9b3f3f", "#748e40"];
 const STATUS_LABELS = {
   pending: "Pending",
@@ -60,7 +60,7 @@ function Header() {
     <div className="flex flex-col gap-1">
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#748e40]">Store overview</p>
       <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.04em] text-[#182308]">Dashboard</h1>
-      <p className="text-sm text-[#182308]-muted">Welcome back. Here&apos;s what&apos;s happening with your store today.</p>
+      <p className="text-sm text-[#5f654f]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p>
     </div>
   );
 }
@@ -70,7 +70,7 @@ function SectionTitle({ title, subtitle, href, action = "View all" }) {
     <div className="flex items-start justify-between gap-4 mb-5">
       <div>
         <h2 className="text-[16px] font-semibold text-[#182308]">{title}</h2>
-        {subtitle && <p className="text-xs text-[#182308]-muted mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-[#5f654f] mt-1">{subtitle}</p>}
       </div>
       {href && <Link to={href} className="inline-flex items-center gap-1 text-xs font-semibold text-[#263e0e] hover:text-[#748e40]">{action}<ChevronRight className="w-3.5 h-3.5" /></Link>}
     </div>
@@ -96,9 +96,9 @@ function StatCard({ card, index }) {
           </span>
         )}
       </div>
-      <p className="mt-4 text-xs font-medium text-[#182308]-muted">{card.label}</p>
+      <p className="mt-4 text-xs font-medium text-[#5f654f]">{card.label}</p>
       <p className="mt-1 text-[25px] leading-tight font-semibold tracking-[-0.035em] text-[#182308]">{card.value}</p>
-      {card.changeLabel && <p className="mt-1 text-[11px] text-[#182308]-muted">{card.changeLabel}</p>}
+      {card.changeLabel && <p className="mt-1 text-[11px] text-[#5f654f]">{card.changeLabel}</p>}
     </div>
   );
 }
@@ -109,9 +109,9 @@ function QuickLink({ href, icon: Icon, title, text, tone }) {
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[tone]}`}><Icon className="w-4.5 h-4.5" /></span>
       <span className="min-w-0">
         <span className="block text-xs font-semibold text-[#182308]">{title}</span>
-        <span className="block truncate text-[11px] text-[#182308]-muted">{text}</span>
+        <span className="block truncate text-[11px] text-[#5f654f]">{text}</span>
       </span>
-      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#182308]-muted group-hover:text-[#748e40]" />
+      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#5f654f] group-hover:text-[#748e40]" />
     </Link>
   );
 }
@@ -158,7 +158,7 @@ export default function Dashboard() {
     return (
       <div className="space-y-6">
         <Header />
-        <Card><p className="text-sm text-[#182308]-muted py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
+        <Card><p className="text-sm text-[#5f654f] py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
       </div>
     );
   }
@@ -177,7 +177,7 @@ export default function Dashboard() {
           {!vm.series ? (
             <Hidden />
           ) : vm.seriesIsEmpty ? (
-            <p className="text-sm text-[#182308]-muted py-20 text-center">No sales in the last 30 days yet.</p>
+            <p className="text-sm text-[#5f654f] py-20 text-center">No sales in the last 30 days yet.</p>
           ) : (
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -204,23 +204,23 @@ export default function Dashboard() {
 
         <Card className="rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-indigo-950/30 dark:via-surface dark:to-violet-950/30">
           <SectionTitle title="Store snapshot" subtitle="Your latest activity at a glance" />
-          <div className="rounded-2xl border border-indigo-100 bg-white/70 p-5 dark:border-indigo-900/50 dark:bg-white/5">
+          <div className="rounded-2xl border border-indigo-100 bg-[#faf8f4]/80 p-5 dark:border-indigo-900/50 dark:bg-white/5">
             <div className="flex items-center gap-4">
               <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/20">
                 <Sparkles className="w-6 h-6" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-[#182308]">Afsana Perfumes</p>
-                <p className="text-xs text-[#182308]-muted">Luxury in every scent</p>
+                <p className="text-xs text-[#5f654f]">Luxury in every scent</p>
               </div>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-white/80 p-3 dark:bg-white/5">
-                <p className="text-[11px] text-[#182308]-muted">Recent orders</p>
+                <p className="text-[11px] text-[#5f654f]">Recent orders</p>
                 <p className="mt-1 text-xl font-semibold text-[#182308]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p>
               </div>
               <div className="rounded-xl bg-white/80 p-3 dark:bg-white/5">
-                <p className="text-[11px] text-[#182308]-muted">Low stock</p>
+                <p className="text-[11px] text-[#5f654f]">Low stock</p>
                 <p className="mt-1 text-xl font-semibold text-[#182308]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p>
               </div>
             </div>
@@ -244,19 +244,19 @@ export default function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 grid place-items-center pointer-events-none">
-                  <div className="text-center"><p className="text-2xl font-semibold text-[#182308]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#182308]-muted">Recent</p></div>
+                  <div className="text-center"><p className="text-2xl font-semibold text-[#182308]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#5f654f]">Recent</p></div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 {statusBreakdown.map((s, i) => (
-                  <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#182308]-muted">
+                  <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#5f654f]">
                     <i className="h-2 w-2 rounded-full" style={{ background: STATUS_COLORS[i % STATUS_COLORS.length] }} />
                     {s.name}<b className="ml-auto text-[#182308]">{s.value}</b>
                   </span>
                 ))}
               </div>
             </>
-          ) : <p className="text-sm text-[#182308]-muted py-16 text-center">No recent orders yet.</p>}
+          ) : <p className="text-sm text-[#5f654f] py-16 text-center">No recent orders yet.</p>}
         </Card>
 
         <Card className="xl:col-span-2 rounded-2xl" padded={false}>
@@ -266,15 +266,15 @@ export default function Dashboard() {
           {!vm.recentOrders ? (
             <div className="px-5 pb-5"><Hidden /></div>
           ) : vm.recentOrders.length === 0 ? (
-            <p className="px-5 pb-6 text-sm text-[#182308]-muted">No orders yet.</p>
+            <p className="px-5 pb-6 text-sm text-[#5f654f]">No orders yet.</p>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-[#263e0e]/10">
               {vm.recentOrders.slice(0, 5).map((order) => (
                 <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-indigo-500/[0.03] transition-colors">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#263e0e]/10 text-[#263e0e]"><ShoppingBag className="w-4 h-4" /></span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-xs font-semibold text-[#182308] truncate">{order.id}</span>
-                    <span className="block text-[11px] text-[#182308]-muted truncate">{order.customer} · {order.date}</span>
+                    <span className="block text-[11px] text-[#5f654f] truncate">{order.customer} · {order.date}</span>
                   </span>
                   <StatusPill status={order.status} />
                   <span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#182308]">{order.total}</span>
@@ -291,15 +291,15 @@ export default function Dashboard() {
           {!vm.topProducts ? (
             <Hidden />
           ) : vm.topProducts.rows.length === 0 ? (
-            <p className="text-sm text-[#182308]-muted py-8">No sales yet.</p>
+            <p className="text-sm text-[#5f654f] py-8">No sales yet.</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-3">
               {vm.topProducts.rows.slice(0, 6).map((product, index) => (
-                <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4]-raised p-3">
+                <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4] p-3">
                   <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[STAT_STYLES[index % STAT_STYLES.length].tone]}`}><Box className="w-4.5 h-4.5" /></div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-semibold text-[#182308]">{product.name}</p>
-                    <p className="mt-0.5 text-[11px] text-[#182308]-muted">{product.units} units · {product.revenue}</p>
+                    <p className="mt-0.5 text-[11px] text-[#5f654f]">{product.units} units · {product.revenue}</p>
                   </div>
                   <span className="text-[11px] font-semibold text-[#182308]">{product.profit === HIDDEN ? HIDDEN : product.profit}</span>
                 </div>
@@ -313,14 +313,14 @@ export default function Dashboard() {
           {!vm.lowStock ? (
             <Hidden />
           ) : vm.lowStock.items.length === 0 ? (
-            <div className="rounded-xl bg-[#3d6b3d]/10 p-4 text-sm text-emerald-700">All products are well stocked.</div>
+            <div className="rounded-xl bg-[#3d6b3d]/10 p-4 text-sm text-[#3d6b3d]">All products are well stocked.</div>
           ) : (
             <div className="space-y-3">
               {vm.lowStock.items.slice(0, 5).map((product) => (
                 <div key={product.id} className="flex items-center gap-3">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#b4bf41]/15 text-[#748e40]"><AlertTriangle className="w-4 h-4" /></span>
                   <span className="min-w-0 flex-1 truncate text-xs font-medium text-[#182308]">{product.name}</span>
-                  <span className="shrink-0 text-[11px] font-semibold text-warning">{product.stock} / {product.threshold}</span>
+                  <span className="shrink-0 text-[11px] font-semibold text-[#8a6a22]">{product.stock} / {product.threshold}</span>
                 </div>
               ))}
               {vm.lowStock.count > 5 && <Link to="/admin/inventory" className="inline-flex items-center gap-1 text-xs font-semibold text-[#263e0e]">View all {vm.lowStock.count}<ChevronRight className="w-3 h-3" /></Link>}
