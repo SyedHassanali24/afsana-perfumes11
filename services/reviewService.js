@@ -2,6 +2,8 @@ const { Review, Product, Order, OrderItem, Customer, Notification } = require('.
 const { E } = require('../middleware/errors');
 const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { audit } = require('./audit');
+const { scopeFilter } = require('../middleware/permissions');
+const PRODUCT_SCOPE = { stores: 'storeId' };
 const R = require('./reviewRules');
 
 const ID = /^[a-f\d]{24}$/i;
@@ -72,20 +74,22 @@ async function removeMine(ctx, slug) {
 }
 
 // ---------------- staff ----------------
-async function listAdmin(q) {
+async function listAdmin(q, scopes, uid) {
   const { page, limit, skip } = paging(q);
-  const and = [{ isDeleted: false }];
+  const allowedProducts = await Product.find({ ...scopeFilter(scopes, uid, PRODUCT_SCOPE) }).select('_id').lean();
+  const allowedProductIds = allowedProducts.map((p) => p._id);
+  const and = [{ isDeleted: false }, { productId: { $in: allowedProductIds } }];
   if (q.status) and.push({ status: q.status });
   if (q.q) {
     const re = new RegExp(escapeRegex(q.q), 'i');
-    const [ps, cs] = await Promise.all([Product.find({ name: re }).select('_id').lean(), Customer.find({ name: re }).select('_id').lean()]);
+    const [ps, cs] = await Promise.all([Product.find({ name: re, _id: { $in: allowedProductIds } }).select('_id').lean(), Customer.find({ name: re }).select('_id').lean()]);
     and.push({ $or: [{ productId: { $in: ps.map((x) => x._id) } }, { customerId: { $in: cs.map((x) => x._id) } }, { title: re }, { text: re }] });
   }
   const filter = { $and: and };
   const [rows, total, ...counts] = await Promise.all([
     Review.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     Review.countDocuments(filter),
-    ...R.STATUSES.map((s) => Review.countDocuments({ isDeleted: false, status: s })),
+    ...R.STATUSES.map((s) => Review.countDocuments({ isDeleted: false, status: s, productId: { $in: allowedProductIds } })),
   ]);
   const [products, customers] = await Promise.all([
     Product.find({ _id: { $in: rows.map((r) => r.productId) } }).select('name slug').lean(),
@@ -102,10 +106,12 @@ async function listAdmin(q) {
     pagination: pageMeta(total, page, limit),
   };
 }
-async function moderate(ctx, id, status) {
+async function moderate(ctx, id, status, scopes) {
   if (!ID.test(String(id))) throw E.notFound('Review not found.');
   const before = await Review.findOne({ _id: id, isDeleted: false }).lean();
   if (!before) throw E.notFound('Review not found.');
+  const productVisible = await Product.exists({ _id: before.productId, ...scopeFilter(scopes, ctx.user._id, PRODUCT_SCOPE) });
+  if (!productVisible) throw E.notFound('Review not found.');
   if (!R.canModerate(before.status, status)) throw E.badRequest(`This review is already ${before.status}.`);
   const after = await Review.findByIdAndUpdate(id, { $set: { status, moderatedBy: ctx.user._id } }, { new: true }).lean();
   await recalcProduct(before.productId);
