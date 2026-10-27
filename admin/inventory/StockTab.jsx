@@ -25,7 +25,7 @@ export default function StockTab() {
   const pg = data?.pagination;
 
   const columns = [
-    { key: "name", header: "Product", render: (r) => <span>{r.productName} <span className="text-ink-muted">· {r.label}</span></span> },
+    { key: "name", header: "Product", render: (r) => <span>{r.productName} <span className="text-[#5f654f]">· {r.label}</span></span> },
     { key: "sku", header: "SKU" },
     { key: "current", header: "On hand", align: "right" },
     { key: "reserved", header: "Reserved", align: "right" },
@@ -33,14 +33,14 @@ export default function StockTab() {
     { key: "incoming", header: "Incoming", align: "right", render: (r) => (r.incoming ? `+${r.incoming}` : "—") },
     { key: "status", header: "Status", render: (r) => <StatusPill status={PILL[r.status]} /> },
     { key: "a", header: "", align: "right", render: (r) => (
-      <button onClick={() => setItem(r)} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs text-ink-muted hover:bg-bg hover:text-ink transition-colors">
+      <button onClick={() => setItem(r)} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs text-[#5f654f] hover:bg-[#f3f1e9] hover:text-[#182308] transition-colors">
         <SlidersHorizontal className="w-3.5 h-3.5" /> Manage
       </button>
     ) },
   ];
   const stat = (label, v, onClick, tone) => (
-    <button onClick={onClick} disabled={!onClick} className={`text-left bg-surface border border-border rounded-md p-4 ${onClick ? "hover:border-[var(--gold)]" : ""}`}>
-      <p className={`font-display text-2xl ${tone || "text-ink"}`}>{v ?? "—"}</p><p className="text-xs text-ink-muted mt-1">{label}</p>
+    <button onClick={onClick} disabled={!onClick} className={`text-left bg-[#faf8f4] border border-[#263e0e]/10 rounded-md p-4 ${onClick ? "hover:border-[var(--gold)]" : ""}`}>
+      <p className={`font-display text-2xl ${tone || "text-[#182308]"}`}>{v ?? "—"}</p><p className="text-xs text-[#5f654f] mt-1">{label}</p>
     </button>
   );
 
@@ -49,18 +49,18 @@ export default function StockTab() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {stat("Sizes tracked", s?.sizes)}
         {stat("Units on hand", s?.units)}
-        {stat("Low stock", s?.lowStock, () => { setLow(true); setPage(1); }, s?.lowStock ? "text-warning" : undefined)}
-        {stat("Out of stock", s?.outOfStock, () => { setLow(true); setPage(1); }, s?.outOfStock ? "text-danger" : undefined)}
+        {stat("Low stock", s?.lowStock, () => { setLow(true); setPage(1); }, s?.lowStock ? "text-[#8a6a22]" : undefined)}
+        {stat("Out of stock", s?.outOfStock, () => { setLow(true); setPage(1); }, s?.outOfStock ? "text-[#9b3f3f]" : undefined)}
       </div>
-      {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-success-soft text-success">{notice}</p>}
+      {notice && <p role="status" className="text-sm rounded-sm px-3 py-2 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
       <Card padded={false}>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 border-b border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-5 border-b border-[#263e0e]/10">
           <div className="flex-1 min-w-[200px]"><Input placeholder="Search product or SKU…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} /></div>
           <Check label="Low & out of stock only" checked={low} onChange={(v) => { setLow(v); setPage(1); }} />
         </div>
         <div className="p-5">
           {error ? (
-            <div className="py-10 text-center space-y-3"><p className="text-sm text-danger">{error.status === 403 ? "You don't have access to inventory." : error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
+            <div className="py-10 text-center space-y-3"><p className="text-sm text-[#9b3f3f]">{error.status === 403 ? "You don't have access to inventory." : error.message}</p><Button variant="secondary" onClick={reload}>Try again</Button></div>
           ) : (
             <DataTable loading={loading} rows={data?.items || []} columns={columns} emptyMessage={q || low ? "Nothing matches." : "No stock records yet. Add a product first."}
               pagination={pg && { page: pg.page, totalPages: pg.pages, onPageChange: setPage }} />
