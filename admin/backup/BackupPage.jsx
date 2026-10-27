@@ -73,20 +73,20 @@ export default function BackupPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="font-display text-2xl text-ink">Backup</h1>
-        <p className="text-sm text-ink-muted mt-1">Save a copy of your shop data (products, stock, orders, customers, coupons, pages) on your phone or computer.</p>
+        <h1 className="font-display text-2xl text-[#182308]">Backup</h1>
+        <p className="text-sm text-[#182308]-muted mt-1">Save a copy of your shop data (products, stock, orders, customers, coupons, pages) on your phone or computer.</p>
       </div>
       <Card>
         <form onSubmit={run} className="space-y-4">
           <Field label="Your password" hint="Needed every time, because the file contains your customers' details."><Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
           <Check label="Include product pictures (bigger file)" checked={withPictures} onChange={setWithPictures} />
-          {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-xl px-3 py-2">{error}</p>}
-          {busy && <p role="status" className="text-sm text-ink-muted">{progress || "Working…"} Please keep this page open.</p>}
-          {done && <p role="status" className="text-sm text-success bg-success-soft rounded-sm px-3 py-2">Saved {done.name}: {done.records} records, {done.pics} pictures, {done.mb} MB. Keep it somewhere safe (Google Drive, phone). It is not encrypted.</p>}
+          {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-xl px-3 py-2">{error}</p>}
+          {busy && <p role="status" className="text-sm text-[#182308]-muted">{progress || "Working…"} Please keep this page open.</p>}
+          {done && <p role="status" className="text-sm text-[#3d6b3d] bg-success-soft rounded-sm px-3 py-2">Saved {done.name}: {done.records} records, {done.pics} pictures, {done.mb} MB. Keep it somewhere safe (Google Drive, phone). It is not encrypted.</p>}
           <Button type="submit" icon={DatabaseBackup} disabled={busy}>{busy ? "Preparing…" : "Download backup"}</Button>
         </form>
       </Card>
-      <p className="text-xs text-ink-muted">Not included: login accounts and passwords, and staff accounts. After a restore, staff are added again and shoppers use "Forgot password". Make a backup after every busy week.</p>
+      <p className="text-xs text-[#182308]-muted">Not included: login accounts and passwords, and staff accounts. After a restore, staff are added again and shoppers use "Forgot password". Make a backup after every busy week.</p>
     </div>
   );
 }
