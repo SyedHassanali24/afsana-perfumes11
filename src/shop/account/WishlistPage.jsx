@@ -16,7 +16,7 @@ export default function WishlistPage() {
   useEffect(() => { if (data) reload(); }, [count]);
   const list = data?.products || [];
   return (
-    <Container>
+    <Container className="pb-12">
       <PageTitle title="Your wishlist" subtitle="Perfumes you have saved." />
       <StateBox loading={loading} error={error} onRetry={reload} skeleton={<CardsSkeleton n={4} />} empty={!list.length}
         emptyText={<span className="space-y-4 block"><span className="block">Nothing saved yet. Tap the heart on any perfume.</span><Link to="/shop" className="inline-block"><Button>Browse perfumes</Button></Link></span>}>
