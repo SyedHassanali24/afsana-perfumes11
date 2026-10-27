@@ -6,6 +6,7 @@ const { audit } = require('./audit');
 const R = require('./customerRules');
 
 const SCOPE_MAP = { cities: 'city' }; // a role limited to some cities sees only customers of those cities
+const ORDER_SCOPE_MAP = { cities: 'shippingAddress.city', stores: 'storeId', createdBy: 'createdBy', assigned: 'assignedTo' };
 const ID = /^[a-f\d]{24}$/i;
 const nonEmpty = (o) => o && Object.keys(o).length > 0;
 const baseParts = (scopes, uid) => { const s = scopeFilter(scopes, uid, SCOPE_MAP); return [{ isDeleted: false }, ...(nonEmpty(s) ? [s] : [])]; };
@@ -36,7 +37,8 @@ async function findScoped(id, scopes, uid) {
 // GET one: profile + last 20 orders. The order rows carry no phone or address.
 async function get(id, scopes, uid, denied) {
   const c = await findScoped(id, scopes, uid);
-  const orders = await Order.find({ customerId: c._id }).select('orderNumber status total paymentStatus createdAt').sort({ createdAt: -1 }).limit(20).lean();
+  const orderScope = scopeFilter(scopes, uid, ORDER_SCOPE_MAP);
+  const orders = await Order.find({ $and: [{ customerId: c._id }, orderScope] }).select('orderNumber status total paymentStatus createdAt').sort({ createdAt: -1 }).limit(20).lean();
   const { customer, hidden } = R.shapeCustomer(c, denied);
   return { customer, orders, hidden };
 }
