@@ -52,13 +52,13 @@ export default function ShopLayout() {
     setOpen(false);
   };
 
-  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-surface hover:text-gold focus:outline-none focus-visible:ring-2 focus-visible:ring-gold';
-  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-ink-muted hover:text-ink'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-gold after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
+  const icon = 'relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-primary-soft hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+  const navClass = ({ isActive }) => `relative py-5 text-sm transition-colors ${isActive ? 'text-ink' : 'text-ink-muted hover:text-ink'} after:absolute after:left-0 after:right-0 after:bottom-0 after:h-px after:bg-primary after:transition-transform ${isActive ? 'scale-x-100' : 'scale-x-0'}`;
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-ink">
       {announcement?.text && (
-        <div className="bg-gold text-bg text-center text-xs sm:text-sm px-4 py-2">
+        <div className="bg-primary text-white text-center text-xs sm:text-sm px-4 py-2">
           {announcement.link ? <SmartLink to={announcement.link} className="underline underline-offset-2">{announcement.text}</SmartLink> : announcement.text}
         </div>
       )}
@@ -75,7 +75,7 @@ export default function ShopLayout() {
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <Link to="/" className="font-display text-[1.55rem] sm:text-2xl tracking-tight shrink-0" style={{ color: 'var(--gold)' }}>
+          <Link to="/" className="font-display text-[1.55rem] sm:text-2xl tracking-tight shrink-0" style={{ color: 'var(--primary)' }}>
             Afsana
           </Link>
 
@@ -83,7 +83,7 @@ export default function ShopLayout() {
             {nav.map((n) => <NavLink key={n.to} to={n.to} end={n.to === '/shop'} className={navClass}>{n.label}</NavLink>)}
           </nav>
 
-          <form onSubmit={search} className="hidden lg:flex ml-auto items-center border border-border rounded-full px-3 w-60 focus-within:border-gold/70 transition-colors" role="search">
+          <form onSubmit={search} className="hidden lg:flex ml-auto items-center border border-border rounded-full px-3 w-60 focus-within:border-primary/70 transition-colors" role="search">
             <Search className="w-4 h-4 text-ink-muted shrink-0" aria-hidden />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-2 text-sm w-full focus:outline-none" />
           </form>
@@ -104,13 +104,13 @@ export default function ShopLayout() {
         {open && (
           <div className="md:hidden border-t border-border bg-bg shadow-lg">
             <div className="px-4 py-4 space-y-4">
-              <form onSubmit={search} className="flex items-center border border-border rounded-full px-3 focus-within:border-gold/70" role="search">
+              <form onSubmit={search} className="flex items-center border border-border rounded-full px-3 focus-within:border-primary/70" role="search">
                 <Search className="w-4 h-4 text-ink-muted shrink-0" aria-hidden />
                 <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search perfumes" aria-label="Search perfumes" className="bg-transparent px-2 py-2.5 text-sm w-full focus:outline-none" />
               </form>
               <nav className="grid grid-cols-2 gap-x-6 gap-y-1" aria-label="Mobile">
                 {nav.map((n) => (
-                  <NavLink key={n.to} to={n.to} end={n.to === '/shop'} onClick={() => setOpen(false)} className={({ isActive }) => `block py-2.5 text-sm border-b border-border ${isActive ? 'text-gold font-medium' : 'text-ink-muted'}`}>
+                  <NavLink key={n.to} to={n.to} end={n.to === '/shop'} onClick={() => setOpen(false)} className={({ isActive }) => `block py-2.5 text-sm border-b border-border ${isActive ? 'text-primary font-medium' : 'text-ink-muted'}`}>
                     {n.label}
                   </NavLink>
                 ))}
