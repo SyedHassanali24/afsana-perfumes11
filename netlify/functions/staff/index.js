@@ -16,7 +16,7 @@ const routes = [
   { method: 'DELETE', path: '/:id', permission: ['staff', 'delete'], reauth: true, handler: ({ ctx, params }) => T.removeStaff(ctx, params.id) },
   { method: 'POST', path: '/:id/overrides', permission: ['temporaryAccess', 'create'], body: S.overrideBody, reauth: true, handler: async ({ ctx, params, body }) => res(201, await T.addOverride(ctx, params.id, body)) },
   { method: 'DELETE', path: '/:id/overrides/:overrideId', permission: ['temporaryAccess', 'delete'], reauth: true, handler: ({ ctx, params }) => T.removeOverride(ctx, params.id, params.overrideId) },
-  { method: 'GET', path: '/:id/sessions', permission: ['sessions', 'view'], handler: ({ params }) => T.listSessions(params.id) },
+  { method: 'GET', path: '/:id/sessions', permission: ['sessions', 'view'], handler: ({ ctx, params }) => T.listSessions(ctx, params.id) },
   { method: 'DELETE', path: '/:id/sessions', permission: ['sessions', 'delete'], reauth: true, handler: ({ ctx, params }) => T.revokeAllSessions(ctx, params.id) },
 ];
 exports.handler = createHandler('staff', routes);
