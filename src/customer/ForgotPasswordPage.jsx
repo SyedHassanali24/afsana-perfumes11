@@ -23,8 +23,8 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={submit} className="space-y-5">
           <Field label="Email or phone number"><Input required autoFocus value={identifier} onChange={(e) => setIdentifier(e.target.value)} /></Field>
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <Button type="submit" className="w-full" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</Button>
+          {error && <p role="alert" className="text-sm text-danger rounded-xl bg-danger-soft px-3 py-2">{error}</p>}
+          <Button type="submit" className="w-full rounded-xl min-h-11" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</Button>
         </form>
       )}
     </AuthCard>
