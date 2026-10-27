@@ -42,7 +42,7 @@ export default function CouponDrawer({ open, coupon, onClose, onSaved }) {
     <Drawer open={open} onClose={onClose} title={coupon ? `Edit ${coupon.code}` : "Add coupon"}
       footer={<><Button variant="secondary" type="button" onClick={onClose}>Cancel</Button><Button type="submit" form="coupon-form" disabled={busy}>{busy ? "Saving…" : "Save"}</Button></>}>
       <form id="coupon-form" onSubmit={submit} className="space-y-4">
-        {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
+        {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{error}</p>}
         <Field label="Code" error={errors.code} hint={used ? "Locked: this coupon has already been used." : "Letters, numbers, - or _ . Shoppers type this at checkout."}>
           <Input value={v.code} error={!!errors.code} disabled={used} maxLength={30} onChange={(e) => setV((x) => ({ ...x, code: e.target.value.toUpperCase() }))} />
         </Field>
