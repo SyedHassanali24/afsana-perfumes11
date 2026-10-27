@@ -4,6 +4,7 @@ const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { audit } = require('./audit');
 const { scopeFilter } = require('../middleware/permissions');
 const PRODUCT_SCOPE = { stores: 'storeId' };
+const productStoreFilter = (scopes, uid) => scopes ? productStoreFilter(scopes, uid) : {};
 const R = require('./reviewRules');
 
 const ID = /^[a-f\d]{24}$/i;
@@ -110,7 +111,7 @@ async function moderate(ctx, id, status, scopes) {
   if (!ID.test(String(id))) throw E.notFound('Review not found.');
   const before = await Review.findOne({ _id: id, isDeleted: false }).lean();
   if (!before) throw E.notFound('Review not found.');
-  const productVisible = await Product.exists({ _id: before.productId, ...scopeFilter(scopes, ctx.user._id, PRODUCT_SCOPE) });
+  const productVisible = await Product.exists({ _id: before.productId, ...productStoreFilter(scopes, ctx.user._id) });
   if (!productVisible) throw E.notFound('Review not found.');
   if (!R.canModerate(before.status, status)) throw E.badRequest(`This review is already ${before.status}.`);
   const after = await Review.findByIdAndUpdate(id, { $set: { status, moderatedBy: ctx.user._id } }, { new: true }).lean();
