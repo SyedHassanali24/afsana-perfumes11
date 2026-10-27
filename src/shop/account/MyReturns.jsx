@@ -16,7 +16,7 @@ export default function MyReturns() {
         {rows.map((r) => (
           <li key={r.returnNumber}>
             <ReturnCard r={r} />
-            <Link to={`/account/orders/${r.orderNumber}`} className="text-xs text-ink-muted hover:text-ink mt-1 inline-block">View order {r.orderNumber} →</Link>
+            <Link to={`/account/orders/${r.orderNumber}`} className="text-xs text-[#5f654f] hover:text-ink mt-1 inline-block">View order {r.orderNumber} →</Link>
           </li>
         ))}
       </ul>
