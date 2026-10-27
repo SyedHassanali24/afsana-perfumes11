@@ -68,6 +68,11 @@ stub('database/models/index.js', {
   Order: { find: (f) => q(ORDERS.filter((d) => match(d, f))) }, Refund: { find: (f) => q(REFUNDS.filter((d) => match(d, f))) }, OrderItem: { find: (f) => q(ITEMS.filter((d) => match(d, f))) },
   Expense: {
     find: (f) => q(EXPS.filter((d) => match(d, f))), countDocuments: async (f) => EXPS.filter((d) => match(d, f)).length,
+    aggregate: async (pipeline) => {
+      const matchStage = pipeline.find((s) => s.$match)?.$match || {};
+      const total = EXPS.filter((d) => match(d, matchStage)).reduce((sum, d) => sum + Number(d.amount || 0), 0);
+      return total ? [{ _id: null, total }] : [];
+    },
     create: async (b) => { const d = { _id: `a${3 + ++seq}`.padEnd(24, '0'), ...b, date: b.date.toISOString() }; EXPS.push(d); return { toObject: () => copy(d) }; },
     findById: (id) => ({ lean: async () => { const d = EXPS.find((x) => x._id === id); return d ? copy(d) : null; } }),
     findByIdAndUpdate: (id, u) => ({ lean: async () => { const d = EXPS.find((x) => x._id === id); Object.assign(d, u.$set, u.$set.date ? { date: u.$set.date.toISOString() } : {}); return copy(d); } }),
