@@ -1,22 +1,53 @@
 /* Afsana Perfumes — shared design tokens */
 :root {
-  --bg:#F5F7FA; --surface:#FFFFFF; --surface-raised:#FBFCFE; --border:#E6EAF0;
-  --ink:#172033; --ink-muted:#718096; --gold:#B4874B; --gold-soft:#F5EBDD;
-  --success:#18845B; --success-soft:#E5F5EE; --danger:#C94B4B; --danger-soft:#FCEAEA;
-  --warning:#B7791F; --warning-soft:#FFF4D9; --nav:#182230; --nav-muted:#9AA7B8;
-  --nav-active:#FFFFFF; --nav-active-bg:rgba(180,135,75,.16);
-  --font-display:"Inter",ui-sans-serif,system-ui,sans-serif; --font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
-  --radius-sm:8px; --radius-md:14px;
-  --shadow-card:0 1px 2px rgba(15,23,42,.03),0 8px 28px rgba(15,23,42,.045);
-  --shadow-hover:0 10px 30px rgba(15,23,42,.08);
+  --bg:#F5F7FF;
+  --surface:#FFFFFF;
+  --surface-raised:#FAFBFF;
+  --border:#E7EAF4;
+  --ink:#17204A;
+  --ink-muted:#7280A2;
+  --gold:#B4874B;
+  --gold-soft:#F5EBDD;
+  --success:#18A875;
+  --success-soft:#E4F8F0;
+  --danger:#E65364;
+  --danger-soft:#FDEBED;
+  --warning:#C98219;
+  --warning-soft:#FFF3D9;
+  --nav:#3035AD;
+  --nav-muted:#D8DCFF;
+  --nav-active:#FFFFFF;
+  --nav-active-bg:rgba(255,255,255,.15);
+  --font-display:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+  --radius-sm:10px;
+  --radius-md:16px;
+  --shadow-card:0 1px 2px rgba(31,41,93,.03),0 8px 26px rgba(31,41,93,.06);
+  --shadow-hover:0 12px 34px rgba(31,41,93,.11);
 }
 :root[data-theme="dark"] {
-  --bg:#0F141B; --surface:#171D26; --surface-raised:#1D2530; --border:#2A3442;
-  --ink:#F4F7FA; --ink-muted:#9AA7B8; --gold:#D1A86B; --gold-soft:#2B2419;
-  --success:#55C796; --success-soft:#173027; --danger:#F18484; --danger-soft:#321F22;
-  --warning:#E5B967; --warning-soft:#332A18; --nav:#0B1016; --nav-muted:#8B98A9;
-  --nav-active:#FFFFFF; --nav-active-bg:rgba(209,168,107,.15);
-  --shadow-card:0 1px 2px rgba(0,0,0,.22),0 10px 28px rgba(0,0,0,.12);
-  --shadow-hover:0 14px 34px rgba(0,0,0,.22);
+  --bg:#0F1330;
+  --surface:#171B3A;
+  --surface-raised:#1D2245;
+  --border:#2B3158;
+  --ink:#F5F7FF;
+  --ink-muted:#A9B2D4;
+  --gold:#D6AE73;
+  --gold-soft:#2B2419;
+  --success:#55D2A2;
+  --success-soft:#17352B;
+  --danger:#FF8A98;
+  --danger-soft:#3A2027;
+  --warning:#F0C26B;
+  --warning-soft:#3B2D17;
+  --nav:#20256F;
+  --nav-muted:#C6CCF4;
+  --nav-active:#FFFFFF;
+  --nav-active-bg:rgba(255,255,255,.14);
+  --shadow-card:0 1px 2px rgba(0,0,0,.22),0 12px 32px rgba(0,0,0,.18);
+  --shadow-hover:0 16px 38px rgba(0,0,0,.25);
 }
-html{background:var(--bg)} body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-feature-settings:"cv11" 1,"ss01" 1;-webkit-font-smoothing:antialiased} button,input,select,textarea{font:inherit} ::selection{background:var(--gold-soft);color:var(--ink)}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-feature-settings:"cv11" 1,"ss01" 1;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+::selection{background:#E8E9FF;color:var(--ink)}
