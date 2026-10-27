@@ -64,7 +64,7 @@ export default function CartDrawer() {
         {/* Header */}
         <div className="p-5 border-b border-border flex items-center justify-between bg-surface-raised">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center text-gold">
+            <div className="w-9 h-9 rounded-full bg-primary-soft border border-primary-soft-border flex items-center justify-center text-primary">
               <ShoppingBag className="w-4 h-4" />
             </div>
             <div>
@@ -75,7 +75,7 @@ export default function CartDrawer() {
           <button
             type="button"
             onClick={closeDrawer}
-            className="p-2 rounded-full hover:bg-surface text-ink-muted hover:text-ink transition-colors"
+            className="p-2 rounded-full hover:bg-surface text-ink-muted hover:text-primary transition-colors"
             aria-label="Close cart drawer"
           >
             <X className="w-5 h-5" />
@@ -83,14 +83,14 @@ export default function CartDrawer() {
         </div>
 
         {/* Free Shipping Meter */}
-        <div className="px-5 py-3.5 bg-gold/5 border-b border-gold/15">
+        <div className="px-5 py-3.5 bg-primary-soft border-b border-primary-soft-border">
           <div className="flex items-center justify-between text-xs mb-1.5">
             {remainingForFree > 0 ? (
               <span className="text-ink-muted">
-                Add <strong className="text-gold font-semibold">{money(remainingForFree)}</strong> for <span className="text-ink font-medium">Complimentary Express Shipping</span>
+                Add <strong className="text-primary font-semibold">{money(remainingForFree)}</strong> for <span className="text-ink font-medium">Complimentary Express Shipping</span>
               </span>
             ) : (
-              <span className="text-gold font-semibold flex items-center gap-1.5">
+              <span className="text-primary font-semibold flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 You unlocked Complimentary Express Shipping!
               </span>
@@ -99,7 +99,7 @@ export default function CartDrawer() {
           </div>
           <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-gold/60 to-gold transition-all duration-500 rounded-full"
+              className="h-full bg-primary transition-all duration-500 rounded-full"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -119,7 +119,7 @@ export default function CartDrawer() {
               <button
                 type="button"
                 onClick={() => { closeDrawer(); navigate('/shop'); }}
-                className="px-6 py-2.5 rounded-sm bg-gold text-bg text-xs font-semibold uppercase tracking-wider hover:bg-gold-hover transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-semibold uppercase tracking-wider hover:bg-gold-hover transition-colors"
               >
                 Explore Collection
               </button>
@@ -131,7 +131,7 @@ export default function CartDrawer() {
               return (
                 <div key={line.variantId} className="pt-4 first:pt-0 flex gap-4">
                   {/* Thumbnail */}
-                  <div className="w-20 h-24 flex-shrink-0 bg-surface-raised rounded-sm border border-border overflow-hidden relative">
+                  <div className="w-20 h-24 flex-shrink-0 bg-surface-raised rounded-xl border border-border overflow-hidden relative">
                     {line.image?.url ? (
                       <img src={line.image.url} alt={line.name} className="w-full h-full object-cover" />
                     ) : (
@@ -146,7 +146,7 @@ export default function CartDrawer() {
                         <Link
                           to={`/product/${line.slug}`}
                           onClick={closeDrawer}
-                          className="font-display text-sm tracking-tight hover:text-gold transition-colors line-clamp-1"
+                          className="font-display text-sm tracking-tight hover:text-primary transition-colors line-clamp-1"
                         >
                           {line.name}
                         </Link>
@@ -168,7 +168,7 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => setQty(line.variantId, Math.max(1, qty - 1))}
-                          className="p-1 px-2 text-ink-muted hover:text-ink disabled:opacity-30"
+                          className="p-1 px-2 text-ink-muted hover:text-primary disabled:opacity-30"
                           disabled={qty <= 1}
                         >
                           <Minus className="w-3 h-3" />
@@ -210,12 +210,12 @@ export default function CartDrawer() {
                   value={couponInput}
                   onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
                   placeholder="Coupon (e.g. WELCOME10)"
-                  className="w-full pl-8 pr-3 py-2 bg-surface border border-border rounded-sm text-xs uppercase focus:outline-none focus:border-gold"
+                  className="w-full pl-8 pr-3 py-2 bg-surface border border-border rounded-sm text-xs uppercase focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 bg-surface border border-border hover:border-gold text-xs font-medium rounded-sm transition-colors"
+                className="px-4 py-2 bg-surface border border-border hover:border-primary hover:text-primary text-xs font-medium rounded-sm transition-colors"
               >
                 Apply
               </button>
@@ -255,7 +255,7 @@ export default function CartDrawer() {
               </div>
               <div className="flex justify-between text-sm font-semibold text-ink pt-2 border-t border-border">
                 <span>Estimated Total</span>
-                <span className="text-gold font-display text-base">{money(quote.total)}</span>
+                <span className="text-primary font-display text-base">{money(quote.total)}</span>
               </div>
             </div>
 
@@ -264,7 +264,7 @@ export default function CartDrawer() {
               <button
                 type="button"
                 onClick={() => { closeDrawer(); navigate('/checkout'); }}
-                className="w-full py-3.5 px-4 rounded-sm bg-gold hover:bg-gold-hover text-bg font-semibold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99]"
+                className="w-full py-3.5 px-4 rounded-xl bg-primary hover:bg-gold-hover text-bg font-semibold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99]"
               >
                 <span>Proceed to Checkout</span>
                 <ArrowRight className="w-4 h-4" />
@@ -272,7 +272,7 @@ export default function CartDrawer() {
               <button
                 type="button"
                 onClick={() => { closeDrawer(); navigate('/cart'); }}
-                className="w-full py-2.5 px-4 rounded-sm border border-border hover:bg-surface text-ink-muted hover:text-ink text-xs font-medium text-center transition-colors"
+                className="w-full py-2.5 px-4 rounded-xl border border-border hover:bg-surface text-ink-muted hover:text-primary text-xs font-medium text-center transition-colors"
               >
                 View Full Bag Details
               </button>
