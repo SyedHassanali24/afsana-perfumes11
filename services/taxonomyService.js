@@ -53,10 +53,10 @@ async function list(type, q, scopes, uid) {
 }
 
 // Categories are at most two levels deep: a parent must itself be top-level.
-async function checkParent(id, parentId) {
+async function checkParent(id, parentId, scopes, uid) {
   if (!parentId) return;
   if (String(parentId) === String(id)) throw E.badRequest('A category cannot be its own parent.');
-  const parent = await Category.findOne({ _id: parentId, isDeleted: false });
+  const parent = await Category.findOne({ _id: parentId, isDeleted: false, ...storeFilter(scopes, uid) });
   if (!parent) throw E.badRequest('Parent category not found.');
   if (parent.parentId) throw E.badRequest('Categories can only be nested one level deep.');
   if (id && (await Category.exists({ parentId: id, isDeleted: false }))) throw E.badRequest('This category has sub-categories, so it cannot become a sub-category itself.');
@@ -66,7 +66,7 @@ async function create(ctx, type, body, scopes) {
   const c = cfg(type);
   const { parentId, ...data } = body;
   data.storeId = createStoreId(scopes);
-  if (type === 'categories') { await checkParent(null, parentId); if (parentId) data.parentId = parentId; }
+  if (type === 'categories') { await checkParent(null, parentId, scopes, ctx.user._id); if (parentId) data.parentId = parentId; }
   if (data.slug) { if (await c.Model.exists({ slug: data.slug })) throw E.conflict('That slug is already used.'); }
   else data.slug = await uniqueSlug(c.Model, data.name);
   const doc = await c.Model.create(data);
@@ -81,7 +81,7 @@ async function update(ctx, type, id, body, scopes) {
   const before = { name: doc.name, slug: doc.slug, isActive: doc.isActive };
   const { parentId, ...data } = body;
   if (data.slug && data.slug !== doc.slug && (await c.Model.exists({ slug: data.slug, _id: { $ne: id } }))) throw E.conflict('That slug is already used.');
-  if (type === 'categories' && parentId !== undefined) { await checkParent(id, parentId); doc.parentId = parentId || undefined; }
+  if (type === 'categories' && parentId !== undefined) { await checkParent(id, parentId, scopes, ctx.user._id); doc.parentId = parentId || undefined; }
   Object.assign(doc, data);
   await doc.save();
   await audit(ctx, { action: `${c.label.replace(' ', '_')}.updated`, module: c.module, recordId: id, oldValue: before, newValue: { name: doc.name, slug: doc.slug, isActive: doc.isActive } });
@@ -92,7 +92,7 @@ async function remove(ctx, type, id, scopes) {
   const c = cfg(type);
   const doc = await c.Model.findOne({ _id: id, isDeleted: false, ...storeFilter(scopes, ctx.user._id) });
   if (!doc) throw E.notFound(`${c.label[0].toUpperCase()}${c.label.slice(1)} not found.`);
-  const n = (await usage(c)).get(String(id)) || 0;
+  const n = (await usage(c, scopes, ctx.user._id)).get(String(id)) || 0;
   if (n) throw E.conflict(`${n} product${n === 1 ? ' uses' : 's use'} this ${c.label}. Move ${n === 1 ? 'it' : 'them'} first, or mark this ${c.label} inactive instead.`);
   if (type === 'categories' && (await Category.exists({ parentId: id, isDeleted: false }))) throw E.conflict('This category still has sub-categories.');
   await c.Model.updateOne({ _id: id }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
