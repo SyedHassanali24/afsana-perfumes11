@@ -10,7 +10,7 @@ export default function StatCard({ label, value, changePct, changeLabel }) {
     <Card className="group min-h-[132px] hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5f654f]">{label}</p>
-        <span className="h-2.5 w-2.5 rounded-full bg-[[#263e0e]]/15 ring-4 ring-[[#263e0e]]/5 mt-1 shrink-0" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#263e0e]/15 ring-4 ring-[#263e0e]/5 mt-1 shrink-0" />
       </div>
       <p className="mt-3 text-[27px] leading-none font-semibold tracking-[-0.03em] text-[#182308]">{value}</p>
       {hasChange && (
