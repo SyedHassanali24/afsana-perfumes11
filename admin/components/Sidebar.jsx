@@ -86,7 +86,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
     <>
       <aside
         className={`hidden md:flex h-screen sticky top-0 flex-col bg-[var(--bg)] border-r border-border transition-[width] duration-200 ${collapsed ? "w-[72px]" : "w-64"}`}
-        style={{ background: "var(--ink)", borderColor: "var(--border)" }}
+        style={{ background: "var(--nav)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center justify-between px-4 h-16 border-b" style={{ borderColor: "var(--border)" }}>
           {!collapsed && (
@@ -120,9 +120,9 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
                         onClick={() => go(item.href)}
                         className={`w-full flex items-center gap-3 pl-3 pr-2.5 py-2 rounded-sm text-sm text-left transition-colors border-l-2 ${isActive ? "font-medium" : "border-transparent hover:bg-white/5"}`}
                         style={{
-                          color: isActive ? "var(--gold)" : "var(--ink-muted)",
+                          color: isActive ? "var(--nav-active)" : "var(--nav-muted)",
                           borderColor: isActive ? "var(--gold)" : "transparent",
-                          background: isActive ? "rgba(198,161,91,0.08)" : undefined,
+                          background: isActive ? "var(--nav-active-bg)" : undefined,
                         }}
                       >
                         <Icon className="w-4 h-4 shrink-0" />
@@ -157,7 +157,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
 
       <aside
         className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-[var(--ink)] border-r border-border shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ background: "var(--ink)", borderColor: "var(--border)" }}
+        style={{ background: "var(--nav)", borderColor: "var(--border)" }}
       >
         <div className="flex items-center justify-between px-4 h-16 border-b" style={{ borderColor: "var(--border)" }}>
           <span className="font-display text-lg tracking-wide" style={{ color: "var(--gold)" }}>Afsana</span>
@@ -180,9 +180,9 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
                         onClick={() => go(item.href)}
                         className={`w-full flex items-center gap-3 pl-3 pr-2.5 py-2 rounded-sm text-sm text-left border-l-2 ${isActive ? "font-medium" : "border-transparent hover:bg-white/5"}`}
                         style={{
-                          color: isActive ? "var(--gold)" : "var(--ink-muted)",
+                          color: isActive ? "var(--nav-active)" : "var(--nav-muted)",
                           borderColor: isActive ? "var(--gold)" : "transparent",
-                          background: isActive ? "rgba(198,161,91,0.08)" : undefined,
+                          background: isActive ? "var(--nav-active-bg)" : undefined,
                         }}
                       >
                         <Icon className="w-4 h-4 shrink-0" />
