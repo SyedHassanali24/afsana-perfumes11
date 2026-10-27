@@ -29,8 +29,8 @@ async function uniqueSlug(Model, base, excludeId) {
   while (await Model.exists({ slug, ...(excludeId ? { _id: { $ne: excludeId } } : {}) })) slug = `${slugify(base)}-${++n}`;
   return slug;
 }
-async function usage(c) {
-  const pipe = [{ $match: { isDeleted: false } }];
+async function usage(c, scopes, uid) {
+  const pipe = [{ $match: { isDeleted: false, ...storeFilter(scopes, uid) } }];
   if (c.array) pipe.push({ $unwind: `$${c.productField}` });
   pipe.push({ $group: { _id: `$${c.productField}`, n: { $sum: 1 } } });
   return new Map((await Product.aggregate(pipe)).filter((r) => r._id).map((r) => [String(r._id), r.n]));
@@ -47,7 +47,7 @@ async function list(type, q, scopes, uid) {
   if (q.active !== undefined) filter.isActive = q.active;
   if (q.q) filter.name = new RegExp(escapeRegex(q.q), 'i');
   const [rows, total, used] = await Promise.all([
-    c.Model.find(filter).sort({ sortOrder: 1, name: 1 }).skip(skip).limit(limit).lean(), c.Model.countDocuments(filter), usage(c),
+    c.Model.find(filter).sort({ sortOrder: 1, name: 1 }).skip(skip).limit(limit).lean(), c.Model.countDocuments(filter), usage(c, scopes, uid),
   ]);
   return { items: rows.map((r) => shape(r, used)), pagination: pageMeta(total, page, limit) };
 }
@@ -85,7 +85,7 @@ async function update(ctx, type, id, body, scopes) {
   Object.assign(doc, data);
   await doc.save();
   await audit(ctx, { action: `${c.label.replace(' ', '_')}.updated`, module: c.module, recordId: id, oldValue: before, newValue: { name: doc.name, slug: doc.slug, isActive: doc.isActive } });
-  return { item: shape(doc.toObject(), await usage(c)) };
+  return { item: shape(doc.toObject(), await usage(c, scopes, ctx.user._id)) };
 }
 
 async function remove(ctx, type, id, scopes) {
