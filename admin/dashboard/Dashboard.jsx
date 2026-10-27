@@ -46,6 +46,12 @@ function Header() {
 export default function Dashboard() {
   const { data, loading, error, reload } = useApi(() => analyticsApi.dashboard(), []);
   const vm = useMemo(() => (data ? toDashboard(data.dashboard) : null), [data]);
+  const statusBreakdown = useMemo(() => {
+    const map = new Map();
+    (vm.recentOrders || []).forEach((o) => map.set(o.status, (map.get(o.status) || 0) + 1));
+    return Array.from(map, ([key, value]) => ({ name: STATUS_LABELS[key] || key, value })).filter((x) => x.value);
+  }, [vm.recentOrders]);
+
 
   if (error) {
     return (
@@ -86,12 +92,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const statusBreakdown = useMemo(() => {
-    const map = new Map();
-    (vm.recentOrders || []).forEach((o) => map.set(o.status, (map.get(o.status) || 0) + 1));
-    return Array.from(map, ([key, value]) => ({ name: STATUS_LABELS[key] || key, value })).filter((x) => x.value);
-  }, [vm.recentOrders]);
 
   return (
     <div className="space-y-6">
