@@ -12,12 +12,12 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-[var(--table-head)]">
+            <tr className="border-b border-[#263e0e]/10 bg-[[#f3f1e9]]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={[
-                    "py-3.5 px-4 text-[11px] uppercase tracking-[0.07em] font-semibold text-ink-muted whitespace-nowrap",
+                    "py-3.5 px-4 text-[11px] uppercase tracking-[0.07em] font-semibold text-[#5f654f] whitespace-nowrap",
                     col.align === "right" ? "text-right" : "text-left",
                   ].join(" ")}
                 >
@@ -28,17 +28,17 @@ export default function DataTable({
           </thead>
           <tbody>
             {loading && Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-b border-border/60">
+              <tr key={i} className="border-b border-[#263e0e]/10/60">
                 {columns.map((col) => (
                   <td key={col.key} className="py-4 px-4">
-                    <div className="h-3 rounded-full bg-border/70 animate-pulse w-3/4" />
+                    <div className="h-3 rounded-full bg-[#263e0e]/10 animate-pulse w-3/4" />
                   </td>
                 ))}
               </tr>
             ))}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={columns.length} className="py-14 px-4 text-center text-ink-muted">{emptyMessage}</td>
+                <td colSpan={columns.length} className="py-14 px-4 text-center text-[#5f654f]">{emptyMessage}</td>
               </tr>
             )}
             {!loading && rows.map((row, i) => (
@@ -46,15 +46,15 @@ export default function DataTable({
                 key={row.id ?? i}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={[
-                  "border-b border-border/60 last:border-0 transition-colors",
-                  onRowClick ? "cursor-pointer hover:bg-[var(--primary-soft)]" : "hover:bg-[var(--table-row-hover)]",
+                  "border-b border-[#263e0e]/10/60 last:border-0 transition-colors",
+                  onRowClick ? "cursor-pointer hover:bg-[[#eef2e5]]" : "hover:bg-[[#f7f5ee]]",
                 ].join(" ")}
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
                     className={[
-                      "py-4 px-4 text-ink whitespace-nowrap",
+                      "py-4 px-4 text-[#182308] whitespace-nowrap",
                       col.align === "right" ? "text-right" : "text-left",
                     ].join(" ")}
                   >
@@ -67,11 +67,11 @@ export default function DataTable({
         </table>
       </div>
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border-t border-border text-sm">
-          <span className="text-ink-muted">Page {pagination.page} of {pagination.totalPages}</span>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border-t border-[#263e0e]/10 text-sm">
+          <span className="text-[#5f654f]">Page {pagination.page} of {pagination.totalPages}</span>
           <div className="flex gap-2 w-full sm:w-auto">
-            <button onClick={() => pagination.onPageChange(pagination.page - 1)} disabled={pagination.page <= 1} className="px-3.5 py-2 rounded-xl border border-border bg-surface text-ink disabled:opacity-40 hover:bg-bg transition-colors flex-1 sm:flex-none">Previous</button>
-            <button onClick={() => pagination.onPageChange(pagination.page + 1)} disabled={pagination.page >= pagination.totalPages} className="px-3.5 py-2 rounded-xl border border-border bg-surface text-ink disabled:opacity-40 hover:bg-bg transition-colors flex-1 sm:flex-none">Next</button>
+            <button onClick={() => pagination.onPageChange(pagination.page - 1)} disabled={pagination.page <= 1} className="px-3.5 py-2 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4] text-[#182308] disabled:opacity-40 hover:bg-[#f3f1e9] transition-colors flex-1 sm:flex-none">Previous</button>
+            <button onClick={() => pagination.onPageChange(pagination.page + 1)} disabled={pagination.page >= pagination.totalPages} className="px-3.5 py-2 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4] text-[#182308] disabled:opacity-40 hover:bg-[#f3f1e9] transition-colors flex-1 sm:flex-none">Next</button>
           </div>
         </div>
       )}
