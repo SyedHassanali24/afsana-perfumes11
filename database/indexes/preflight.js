@@ -20,6 +20,7 @@ const CHECKS = [
   ['orders.idempotencyKey', models.Order, { idempotencyKey: 1 }, { idempotencyKey: { $exists: true, $type: 'string', $ne: '' } }],
   ['returns.returnNumber', models.Return, { returnNumber: 1 }, { returnNumber: { $exists: true, $type: 'string', $ne: '' } }],
   ['inventory.variantId', models.Inventory, { variantId: 1 }, { variantId: { $exists: true } }],
+  ['carts.customerId', models.Cart, { customerId: 1 }, { customerId: { $exists: true, $ne: null } }],
   ['purchaseOrders.poNumber', models.PurchaseOrder, { poNumber: 1 }, { poNumber: { $exists: true, $type: 'string', $ne: '' } }],
 ];
 
