@@ -10,6 +10,7 @@ const bannerSchema = new Schema({
   startsAt: Date, endsAt: Date, isActive: { type: Boolean, default: true }, sortOrder: { type: Number, default: 0 },
 }, { timestamps: true });
 storeScoped(bannerSchema); softDelete(bannerSchema);
+bannerSchema.index({ isDeleted: 1, isActive: 1, sortOrder: 1, createdAt: -1 });
 
 const homepageSectionSchema = new Schema({
   type: { type: String, enum: ['hero', 'featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'testimonials', 'instagram', 'newsletter', 'video_banner', 'image_banner', 'split_story', 'benefits', 'blog_grid', 'rich_text', 'faq', 'spacer'], required: true },
@@ -17,6 +18,7 @@ const homepageSectionSchema = new Schema({
   sortOrder: { type: Number, default: 0, index: true }, isEnabled: { type: Boolean, default: true },
 }, { timestamps: true });
 storeScoped(homepageSectionSchema);
+homepageSectionSchema.index({ isEnabled: 1, sortOrder: 1, createdAt: 1 });
 
 const menuItemSchema = new Schema({ label: String, url: String, visible: { type: Boolean, default: true }, position: Number }, { _id: true });
 menuItemSchema.add({ children: [new Schema({ label: String, url: String, visible: { type: Boolean, default: true }, position: Number })] });
@@ -31,8 +33,12 @@ const pageSchema = new Schema({
 }, { timestamps: true });
 softDelete(pageSchema);
 
-const faqSchema = new Schema({ question: String, answer: String, sortOrder: { type: Number, default: 0 }, isActive: { type: Boolean, default: true } }, { timestamps: true });
+const faqSchema = new Schema({ question: String, answer: String, sortOrder: { type: Number, default: 0, index: true }, isActive: { type: Boolean, default: true } }, { timestamps: true });
+faqSchema.index({ isActive: 1, sortOrder: 1, createdAt: 1 });
+
 const announcementSchema = new Schema({ text: String, link: String, startsAt: Date, endsAt: Date, isActive: { type: Boolean, default: true } }, { timestamps: true });
+announcementSchema.index({ isActive: 1, createdAt: -1 });
+
 const emailTemplateSchema = new Schema({
   event: { type: String, required: true, unique: true }, // order_confirmation, order_shipped...
   subject: String, bodyHtml: String, isActive: { type: Boolean, default: true },
