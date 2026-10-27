@@ -14,7 +14,7 @@ export const PageTitle = ({ title, subtitle, action }) => (
 );
 
 export function Placeholder({ className = '' }) {
-  return <div className={`flex items-center justify-center bg-gold-soft text-gold ${className}`}><ImageOff className="w-6 h-6 opacity-60" aria-hidden /></div>;
+  return <div className={`flex items-center justify-center bg-primary-soft text-primary ${className}`}><ImageOff className="w-6 h-6 opacity-60" aria-hidden /></div>;
 }
 
 export function StateBox({ loading, error, empty, emptyText = 'Nothing here yet.', onRetry, children, skeleton }) {
@@ -31,7 +31,7 @@ export function StateBox({ loading, error, empty, emptyText = 'Nothing here yet.
 
 export const CardsSkeleton = ({ n = 8 }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6" aria-hidden>
-    {Array.from({ length: n }, (_, i) => <div key={i} className="aspect-[4/5] rounded-md bg-surface border border-border animate-pulse" />)}
+    {Array.from({ length: n }, (_, i) => <div key={i} className="aspect-[4/5] rounded-2xl bg-surface border border-border animate-pulse" />)}
   </div>
 );
 
@@ -50,7 +50,7 @@ export function Pager({ pagination, onPage }) {
 export function QtyStepper({ value, onChange, max = 20, min = 1, label = 'Quantity' }) {
   const cap = Math.max(min, Math.min(20, max));
   return (
-    <div className="inline-flex items-center border border-border rounded-sm" role="group" aria-label={label}>
+    <div className="inline-flex items-center border border-border rounded-xl" role="group" aria-label={label}>
       <button type="button" aria-label="Decrease" disabled={value <= min} onClick={() => onChange(value - 1)} className="p-2.5 sm:p-2 text-ink-muted disabled:opacity-30 hover:text-ink transition-colors"><Minus className="w-4 h-4" /></button>
       <span className="w-8 text-center text-sm tabular-nums" aria-live="polite">{value}</span>
       <button type="button" aria-label="Increase" disabled={value >= cap} onClick={() => onChange(value + 1)} className="p-2.5 sm:p-2 text-ink-muted disabled:opacity-30 hover:text-ink transition-colors"><Plus className="w-4 h-4" /></button>
