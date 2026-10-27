@@ -57,11 +57,11 @@ export default function StockAdjustDrawer({ open, item, onClose, onDone }) {
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
             {[["On hand", item.current], ["Reserved", item.reserved], ["Available", item.available]].map(([l, v]) => (
-              <div key={l} className="bg-bg rounded-sm py-3"><p className="text-xl text-ink font-display">{v}</p><p className="text-xs text-ink-muted">{l}</p></div>
+              <div key={l} className="bg-[#f3f1e9] rounded-sm py-3"><p className="text-xl text-[#182308] font-display">{v}</p><p className="text-xs text-[#182308]-muted">{l}</p></div>
             ))}
           </div>
-          {error && <p role="alert" className="text-sm text-danger bg-danger-soft rounded-sm px-3 py-2">{error}</p>}
-          {note && <p role="status" className="text-sm text-success bg-success-soft rounded-sm px-3 py-2">{note}</p>}
+          {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-sm px-3 py-2">{error}</p>}
+          {note && <p role="status" className="text-sm text-[#3d6b3d] bg-success-soft rounded-sm px-3 py-2">{note}</p>}
 
           {canAdjust ? (
             <form id="stock-adjust-form" onSubmit={submit} className="space-y-4">
@@ -71,10 +71,10 @@ export default function StockAdjustDrawer({ open, item, onClose, onDone }) {
               </Field>
               <Field label="Reason"><Textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Supplier delivery, cracked bottles, recount" /></Field>
             </form>
-          ) : <p className="text-sm text-ink-muted">You can view stock but not change it.</p>}
+          ) : <p className="text-sm text-[#182308]-muted">You can view stock but not change it.</p>}
 
           {can("inventory.edit") && (
-            <div className="border-t border-border pt-4 flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="border-t border-[#263e0e]/10 pt-4 flex flex-col sm:flex-row sm:items-end gap-3">
               <div className="flex-1"><Field label="Low-stock alert level" hint="Shown as Low Stock at or below this many available units"><Input type="number" min="0" value={threshold} onChange={(e) => setThreshold(e.target.value)} /></Field></div>
               <Button variant="secondary" onClick={saveThreshold}>Save</Button>
             </div>
