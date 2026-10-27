@@ -37,23 +37,23 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
   return (
     <>
       <Drawer open={Boolean(returnId)} onClose={onClose} size="lg" title={r ? r.returnNumber : "Return"}>
-        {loading && <p className="text-sm text-ink-muted">Loading…</p>}
-        {error && <div className="space-y-3"><p className="text-sm text-danger">{error.message}</p><Button variant="secondary" size="sm" onClick={reload}>Try again</Button></div>}
+        {loading && <p className="text-sm text-[#182308]-muted">Loading…</p>}
+        {error && <div className="space-y-3"><p className="text-sm text-[#9b3f3f]">{error.message}</p><Button variant="secondary" size="sm" onClick={reload}>Try again</Button></div>}
         {r && order && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3"><StatusPill status={r.status} /><span className="text-sm text-ink">{r.customer?.name || "Customer"}</span>{r.source === "staff" && <span className="text-xs text-ink-muted">logged by staff</span>}</div>
-              <p className="text-sm text-ink-muted">Order {r.orderNumber} ({order.status}) · requested {when(r.createdAt)}{r.customer?.phone ? ` · ${r.customer.phone}` : ""}</p>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3"><StatusPill status={r.status} /><span className="text-sm text-[#182308]">{r.customer?.name || "Customer"}</span>{r.source === "staff" && <span className="text-xs text-[#182308]-muted">logged by staff</span>}</div>
+              <p className="text-sm text-[#182308]-muted">Order {r.orderNumber} ({order.status}) · requested {when(r.createdAt)}{r.customer?.phone ? ` · ${r.customer.phone}` : ""}</p>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-ink mb-2">Items being returned</h3>
+              <h3 className="text-sm font-medium text-[#182308] mb-2">Items being returned</h3>
               <div className="overflow-x-auto"><table className="w-full min-w-[520px] text-sm">
-                <thead><tr className="text-left text-xs text-ink-muted border-b border-border"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Qty</th><th className="font-medium text-right">Price</th></tr></thead>
+                <thead><tr className="text-left text-xs text-[#182308]-muted border-b border-[#263e0e]/10"><th className="py-2 font-medium">Product</th><th className="font-medium text-right">Qty</th><th className="font-medium text-right">Price</th></tr></thead>
                 <tbody>
                   {r.items.map((i) => (
-                    <tr key={String(i.orderItemId)} className="border-b border-border/60">
-                      <td className="py-2 text-ink">{i.name}<span className="block text-xs text-ink-muted">{i.sku}</span></td>
+                    <tr key={String(i.orderItemId)} className="border-b border-[#263e0e]/10/60">
+                      <td className="py-2 text-[#182308]">{i.name}<span className="block text-xs text-[#182308]-muted">{i.sku}</span></td>
                       <td className="text-right">{i.quantity}</td><td className="text-right">{money(i.unitPrice * i.quantity)}</td>
                     </tr>
                   ))}
@@ -63,11 +63,11 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
             </div>
 
             <div className="text-sm space-y-1">
-              <p><span className="text-ink-muted">Reason: </span>{r.reason}</p>
-              {r.details && <p className="text-ink-muted">“{r.details}”</p>}
-              {r.decisionNote && <p><span className="text-ink-muted">Note to customer: </span>{r.decisionNote}</p>}
-              {r.condition && <p><span className="text-ink-muted">Condition on arrival: </span>{r.condition}{r.condition === "Damaged" ? " (not restocked)" : " (restocked)"}</p>}
-              {r.status === "Refunded" && <p><span className="text-ink-muted">Refunded: </span>{money(r.refundedAmount)}</p>}
+              <p><span className="text-[#182308]-muted">Reason: </span>{r.reason}</p>
+              {r.details && <p className="text-[#182308]-muted">“{r.details}”</p>}
+              {r.decisionNote && <p><span className="text-[#182308]-muted">Note to customer: </span>{r.decisionNote}</p>}
+              {r.condition && <p><span className="text-[#182308]-muted">Condition on arrival: </span>{r.condition}{r.condition === "Damaged" ? " (not restocked)" : " (restocked)"}</p>}
+              {r.status === "Refunded" && <p><span className="text-[#182308]-muted">Refunded: </span>{money(r.refundedAmount)}</p>}
             </div>
 
             {/* ---- actions ---- */}
@@ -79,16 +79,16 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
               </div>
             )}
             {r.status === "Received" && refund?.canIssue && can("refunds.refund") && mode === null && <Button size="sm" onClick={() => setMode("refund")}>Issue refund</Button>}
-            {r.status === "Received" && !refund?.canIssue && mode === null && <p className="text-xs text-ink-muted">Nothing left to refund on this order, or its payment was never confirmed.</p>}
+            {r.status === "Received" && !refund?.canIssue && mode === null && <p className="text-xs text-[#182308]-muted">Nothing left to refund on this order, or its payment was never confirmed.</p>}
 
             {mode === "reject" && (
-              <div className="space-y-3 border border-border rounded-md p-4">
+              <div className="space-y-3 border border-[#263e0e]/10 rounded-md p-4">
                 <Field label="Reason shown to the customer" hint="Be polite and specific; the customer can read this."><Textarea rows={3} maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
                 <div className="flex gap-2"><Button size="sm" variant="danger" disabled={!note.trim()} onClick={() => setConfirm({ title: "Decline this return?", message: "This cannot be undone.", label: "Decline return", danger: true, run: async () => { await setStatus({ status: "Rejected", note: note.trim() }); await after(); } })}>Decline return</Button><Button size="sm" variant="secondary" onClick={() => setMode(null)}>Back</Button></div>
               </div>
             )}
             {mode === "receive" && (
-              <div className="space-y-3 border border-border rounded-md p-4">
+              <div className="space-y-3 border border-[#263e0e]/10 rounded-md p-4">
                 <Field label="Condition of the items" hint="Resellable items go back into stock. Damaged or opened items are only counted as damaged.">
                   <Select value={condition} onChange={(e) => setCondition(e.target.value)}><option value="Resellable">Resellable — put back in stock</option><option value="Damaged">Damaged / opened — do not restock</option></Select>
                 </Field>
@@ -96,37 +96,37 @@ export default function ReturnDrawer({ returnId, onClose, onChanged }) {
               </div>
             )}
             {mode === "refund" && refund && (
-              <div className="space-y-3 border border-border rounded-md p-4">
-                <p className="text-xs text-ink-muted">Order total {money(order.total)} · already refunded {money(refund.alreadyRefunded)} · you can refund up to {money(refund.cap)}.</p>
+              <div className="space-y-3 border border-[#263e0e]/10 rounded-md p-4">
+                <p className="text-xs text-[#182308]-muted">Order total {money(order.total)} · already refunded {money(refund.alreadyRefunded)} · you can refund up to {money(refund.cap)}.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Amount (PKR)" hint={`Suggested ${money(refund.suggested)}`}><Input type="number" min="1" max={refund.cap} value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></Field>
                   <Field label="Paid back by"><Select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>{METHODS.map((m) => <option key={m}>{m}</option>)}</Select></Field>
                 </div>
                 <Field label="Reference (optional)" hint="Bank transaction id or receipt number"><Input maxLength={100} value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></Field>
                 <Field label="Reason"><Input maxLength={300} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} /></Field>
-                {amountError && <p className="text-xs text-danger">{amountError}</p>}
+                {amountError && <p className="text-xs text-[#9b3f3f]">{amountError}</p>}
                 <div className="flex gap-2"><Button size="sm" disabled={Boolean(amountError)} onClick={() => setAskPw(true)}>Refund {money(amount)}</Button><Button size="sm" variant="secondary" onClick={() => setMode(null)}>Back</Button></div>
               </div>
             )}
 
             {data.refunds?.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-ink mb-2">Refunds on this order</h3>
+                <h3 className="text-sm font-medium text-[#182308] mb-2">Refunds on this order</h3>
                 <ul className="text-sm divide-y divide-border/60">
-                  {data.refunds.map((x) => <li key={x.id} className="py-2 flex justify-between gap-3"><span>{money(x.amount)} · {x.method}{x.reference ? ` · ${x.reference}` : ""}</span><span className="text-ink-muted">{when(x.at)}</span></li>)}
+                  {data.refunds.map((x) => <li key={x.id} className="py-2 flex justify-between gap-3"><span>{money(x.amount)} · {x.method}{x.reference ? ` · ${x.reference}` : ""}</span><span className="text-[#182308]-muted">{when(x.at)}</span></li>)}
                 </ul>
               </div>
             )}
 
             <div>
-              <h3 className="text-sm font-medium text-ink mb-3">History</h3>
-              <ol className="space-y-3 border-l border-border ml-2 pl-5">
+              <h3 className="text-sm font-medium text-[#182308] mb-3">History</h3>
+              <ol className="space-y-3 border-l border-[#263e0e]/10 ml-2 pl-5">
                 {r.timeline.map((t, i) => (
                   <li key={i} className="relative">
                     <span className={`absolute -left-[26px] top-1.5 w-2.5 h-2.5 rounded-full ${i === r.timeline.length - 1 ? "bg-[var(--gold)]" : "bg-border"}`} />
-                    <p className="text-sm text-ink">{t.event}</p>
-                    {t.note && <p className="text-xs text-ink-muted">{t.note}</p>}
-                    <p className="text-xs text-ink-muted">{when(t.at)}</p>
+                    <p className="text-sm text-[#182308]">{t.event}</p>
+                    {t.note && <p className="text-xs text-[#182308]-muted">{t.note}</p>}
+                    <p className="text-xs text-[#182308]-muted">{when(t.at)}</p>
                   </li>
                 ))}
               </ol>
