@@ -4,7 +4,7 @@ const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { audit } = require('./audit');
 const { scopeFilter } = require('../middleware/permissions');
 const PRODUCT_SCOPE = { stores: 'storeId' };
-const productStoreFilter = (scopes, uid) => scopes ? productStoreFilter(scopes, uid) : {};
+const productStoreFilter = (scopes, uid) => scopes ? scopeFilter(scopes, uid, PRODUCT_SCOPE) : {};
 const R = require('./reviewRules');
 
 const ID = /^[a-f\d]{24}$/i;
