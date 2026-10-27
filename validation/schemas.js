@@ -307,6 +307,12 @@ for (const r of CMS.RESOURCES) {
 }
 const cmsActiveBody = z.object({ isActive: z.boolean() });
 
+// ---------- visual homepage builder ----------
+const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','image_banner','split_story','benefits','blog_grid','rich_text','faq','spacer'];
+const homepageConfig = z.record(z.string(), z.any()).optional();
+const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
+const homepageSectionPatch = homepageSectionShape.partial();
+
 // ---------- store settings ----------
 const sText = (n) => z.string().trim().max(n).default('');
 const settingsStore = z.object({ name: z.string().trim().min(2).max(80), tagline: sText(120), phone: sText(30), whatsapp: sText(30),
@@ -326,7 +332,7 @@ module.exports = {
   settingsStore, settingsBank, settingsShipping, settingsReturns,
   backupOverview, backupData, backupPictures,
   uploadBody,
-  cmsBody, cmsPatch, cmsActiveBody,
+  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery,
   customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
