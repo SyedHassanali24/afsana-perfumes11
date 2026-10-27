@@ -1,11 +1,11 @@
-const { Banner, Faq, Announcement } = require('../database/models');
+const { Banner, Faq, Announcement, HomepageSection } = require('../database/models');
 const { E, ApiError } = require('../middleware/errors');
 const { audit } = require('./audit');
 const R = require('./cmsRules');
 
-const MODEL = { banners: Banner, faqs: Faq, announcements: Announcement };
-const NAME = { banners: 'banner', faqs: 'faq', announcements: 'announcement' };
-const SORT = { banners: { sortOrder: 1, createdAt: -1 }, faqs: { sortOrder: 1, createdAt: 1 }, announcements: { createdAt: -1 } };
+const MODEL = { banners: Banner, faqs: Faq, announcements: Announcement, homepage: HomepageSection };
+const NAME = { banners: 'banner', faqs: 'faq', announcements: 'announcement', homepage: 'homepage section' };
+const SORT = { banners: { sortOrder: 1, createdAt: -1 }, faqs: { sortOrder: 1, createdAt: 1 }, announcements: { createdAt: -1 }, homepage: { sortOrder: 1, createdAt: 1 } };
 const base = (r) => (r === 'banners' ? { isDeleted: false } : {}); // banners are soft-deleted; FAQs and announcements are removed for good
 const invalid = (errs) => new ApiError(400, 'VALIDATION_ERROR', 'Please check the highlighted fields.', errs);
 const shape = (r, d, now = new Date()) => ({ id: d._id, ...R.fromDoc(r, d), status: R.cmsStatus(r, d, now), createdAt: d.createdAt });
@@ -64,14 +64,16 @@ module.exports = { list, create, update, setActive, remove };
 async function publicContent() {
   const now = new Date();
   const live = (r, rows) => rows.filter((d) => R.cmsStatus(r, d, now) === 'Live');
-  const [b, f, a] = await Promise.all([
+  const [b, f, a, h] = await Promise.all([
     Banner.find({ isDeleted: false, isActive: true }).sort(SORT.banners).limit(20).lean(),
     Faq.find({ isActive: true }).sort(SORT.faqs).limit(100).lean(),
     Announcement.find({ isActive: true }).sort(SORT.announcements).limit(10).lean(),
+    HomepageSection.find({ isEnabled: true }).sort(SORT.homepage).limit(100).lean(),
   ]);
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
-  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null };
+  const homepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
+  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections };
 }
 module.exports.publicContent = publicContent;
