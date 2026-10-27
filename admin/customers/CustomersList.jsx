@@ -35,7 +35,7 @@ export default function CustomersList() {
 
   const columns = [
     { key: "name", header: "Customer" },
-    { key: "phone", header: "Phone", render: (r) => (r.hidden?.phone ? <span className="text-ink-muted">Hidden</span> : r.phone || "—") },
+    { key: "phone", header: "Phone", render: (r) => (r.hidden?.phone ? <span className="text-[#182308]-muted">Hidden</span> : r.phone || "—") },
     { key: "city", header: "City", render: (r) => r.city || "—" },
     { key: "orders", header: "Orders", align: "right", render: (r) => r.stats.ordersCount },
     { key: "spent", header: "Spent", align: "right", render: (r) => money(r.stats.totalSpent) },
@@ -46,17 +46,17 @@ export default function CustomersList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl text-ink">Customers</h1>
-        <p className="text-sm text-ink-muted mt-1">{pg ? `${pg.total} ${pg.total === 1 ? "customer" : "customers"}${filtered ? " match these filters" : ""}` : " "}</p>
+        <h1 className="font-display text-2xl text-[#182308]">Customers</h1>
+        <p className="text-sm text-[#182308]-muted mt-1">{pg ? `${pg.total} ${pg.total === 1 ? "customer" : "customers"}${filtered ? " match these filters" : ""}` : " "}</p>
       </div>
 
       <Card padded={false}>
-        <div className="space-y-3 p-4 sm:p-5 border-b border-border">
+        <div className="space-y-3 p-4 sm:p-5 border-b border-[#263e0e]/10">
           <Input placeholder="Search name, email or phone…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Search customers" />
           <div className="flex flex-wrap gap-2" role="group" aria-label="Customer group">
-            <button type="button" onClick={() => pick("")} aria-pressed={segment === ""} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === "" ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary-soft)]" : "border-border text-ink-muted hover:bg-bg"}`}>All</button>
+            <button type="button" onClick={() => pick("")} aria-pressed={segment === ""} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === "" ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--primary-soft)]" : "border-[#263e0e]/10 text-[#182308]-muted hover:bg-[#f3f1e9]"}`}>All</button>
             {GROUPS.map((g) => (
-              <button key={g} type="button" onClick={() => pick(g)} aria-pressed={segment === g} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === g ? "border-gold text-ink" : "border-border text-ink-muted"}`}>
+              <button key={g} type="button" onClick={() => pick(g)} aria-pressed={segment === g} className={`px-3 py-1.5 rounded-sm text-xs border ${segment === g ? "border-gold text-[#182308]" : "border-[#263e0e]/10 text-[#182308]-muted"}`}>
                 {g}{counts ? ` (${counts[g] ?? 0})` : ""}
               </button>
             ))}
@@ -66,7 +66,7 @@ export default function CustomersList() {
         <div className="p-5">
           {error ? (
             <div className="py-10 text-center space-y-3">
-              <p className="text-sm text-danger">{error.message}</p>
+              <p className="text-sm text-[#9b3f3f]">{error.message}</p>
               <Button variant="secondary" onClick={reload}>Try again</Button>
             </div>
           ) : (
