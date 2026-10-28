@@ -84,7 +84,7 @@ export default {
     // Preserve authentication/session cookies exactly when the API is proxied through Cloudflare.
     // Auth/admin responses must never be cached at the edge.
     const outHeaders = new Headers(response.headers);
-    if (/^\\/api\\/(auth|admin|account|cart|checkout|orders|wishlist|customers)(\\/|$)/i.test(u.pathname)) {
+    if (/^\/api\/(auth|admin|account|cart|checkout|orders|wishlist|customers)(\/|$)/i.test(u.pathname)) {
       outHeaders.set("Cache-Control", "no-store, private");
       outHeaders.delete("CDN-Cache-Control");
       outHeaders.delete("Cloudflare-CDN-Cache-Control");
