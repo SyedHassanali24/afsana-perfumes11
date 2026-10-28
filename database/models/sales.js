@@ -40,6 +40,8 @@ const orderSchema = new Schema({
 }, { timestamps: true });
 orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ storeId: 1, createdAt: -1 });
+orderSchema.index({ storeId: 1, status: 1, createdAt: -1 });
 orderSchema.index({ 'shippingAddress.city': 1 });
 storeScoped(orderSchema);
 
