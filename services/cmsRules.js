@@ -59,7 +59,7 @@ function crossFieldErrors(r, c) {
     if (str(c.text).length > 160) add('text', 'The announcement can be at most 160 characters.');
     url('link', 'Link'); dates();
   } else if (r === 'homepage') {
-    const allowed = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','image_banner','split_story','benefits','blog_grid','rich_text','faq','spacer'];
+    const allowed = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement','lookbook','values_grid','blog_grid','post_grid','promo_timer','scent_finder','rich_text','faq','spacer'];
     if (!allowed.includes(str(c.type))) add('type', 'Choose a valid section type.');
     if (str(c.title).length > 120) add('title', 'Title can be at most 120 characters.');
     if (!(Number.isInteger(Number(c.sortOrder || 0)) && Number(c.sortOrder || 0) >= 0 && Number(c.sortOrder || 0) <= 9999)) add('sortOrder', 'Order must be a whole number from 0 to 9999.');
