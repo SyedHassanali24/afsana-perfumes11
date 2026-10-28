@@ -5,6 +5,12 @@ on:
     branches: ["main"]
     paths:
       - "cloudflare/**"
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
       - ".github/workflows/cloudflare-worker.yml"
   workflow_dispatch:
 
