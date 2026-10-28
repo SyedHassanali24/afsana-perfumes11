@@ -36,3 +36,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: eb104cb2498331e8ace489bbf746dc15
         run: npx --yes wrangler deploy --config cloudflare/wrangler.toml
+
+# Production redeploy trigger: latest frontend bundle.
