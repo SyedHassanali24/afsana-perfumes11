@@ -10,5 +10,5 @@ class_name = "MongoDBConnection"
 tag = "v1"
 new_classes = ["MongoDBConnection"]
 
-[secrets]
-required = ["MONGODB_URI", "JWT_SECRET"]
+[placement]
+mode = "smart"
