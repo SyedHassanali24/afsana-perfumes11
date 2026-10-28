@@ -1,6 +1,4 @@
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
+const require = globalThis.__afsanaRequire;
 
 const handlers = {
   account: require("../../netlify/functions/account").handler,
