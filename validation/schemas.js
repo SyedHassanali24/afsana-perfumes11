@@ -346,3 +346,11 @@ module.exports = {
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,
   adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
 };
+
+const forgotPasswordRequestBody = z.object({ email: z.string().email().max(254) });
+const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/) });
+const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/), password: z.string().min(8).max(128) });
+
+module.exports.forgotPasswordRequestBody = forgotPasswordRequestBody;
+module.exports.forgotPasswordVerifyBody = forgotPasswordVerifyBody;
+module.exports.forgotPasswordResetBody = forgotPasswordResetBody;
