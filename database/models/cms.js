@@ -18,7 +18,7 @@ const homepageSectionSchema = new Schema({
   sortOrder: { type: Number, default: 0, index: true }, isEnabled: { type: Boolean, default: true },
 }, { timestamps: true });
 storeScoped(homepageSectionSchema);
-homepageSectionSchema.index({ isEnabled: 1, sortOrder: 1, createdAt: 1 });
+homepageSectionSchema.index({ storeId: 1, isEnabled: 1, sortOrder: 1, createdAt: 1 });
 
 const menuItemSchema = new Schema({ label: String, url: String, visible: { type: Boolean, default: true }, position: Number }, { _id: true });
 menuItemSchema.add({ children: [new Schema({ label: String, url: String, visible: { type: Boolean, default: true }, position: Number })] });
