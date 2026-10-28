@@ -92,7 +92,11 @@ function CmsDrivenHome({ sections, faq }) {
 
 export default function AfsanaSignatureHome(){
   const { data } = useApi(() => cmsPublicApi.content(), []);
-  const sections = data?.homepageSections || [];
+  let previewSections = null;
+  if (new URLSearchParams(window.location.search).get('afsanaPreview') === '1') {
+    try { previewSections = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null')?.sections || null; } catch { previewSections = null; }
+  }
+  const sections = previewSections || data?.homepageSections || [];
   if (sections.length) return <CmsDrivenHome sections={sections} faq={data?.faqs || []}/>;
   return <DefaultHome/>;
 }
