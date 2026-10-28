@@ -1,7 +1,7 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
-const API_ORIGIN = "https://afsanaperfume.netlify.app";
+const API_ORIGIN = "https://afsanaperfume.netlify.app/.netlify/functions";
 const API_TTL = 60;
 
 function cors(origin) {
@@ -50,7 +50,8 @@ export default {
 
     // API remains available through the Cloudflare edge while backend migration continues.
     const upstream = new URL(API_ORIGIN);
-    upstream.pathname = u.pathname;
+    const apiPath = u.pathname.replace(/^\/api\//, "/");
+    upstream.pathname = apiPath;
     upstream.search = u.search;
     const can = cacheable(u.pathname, request.method);
     const key = new Request(u.toString(), { method: "GET" });
