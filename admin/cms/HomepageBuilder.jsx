@@ -37,6 +37,7 @@ export default function HomepageBuilder() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [del, setDel] = useState(null);
+  const preview = () => { try { localStorage.setItem('afsana_cms_preview_v1', JSON.stringify({ sections: sorted })); window.open('/?afsanaPreview=1', '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
   const open = (item) => {
@@ -88,7 +89,7 @@ export default function HomepageBuilder() {
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build the storefront like a canvas</h2><p className="text-sm text-[#5f654f] mt-1">Drag sections, set alignment, width, height, columns and spacing. Add up to 4 videos or posts in one row, then preview and publish.</p></div>
-        {can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}
+        <div className="flex gap-2">{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
