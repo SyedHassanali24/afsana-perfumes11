@@ -21,6 +21,8 @@ const userSchema = new Schema({
   resetTokenExpires: Date,
   resetOtpHash: { type: String, select: false },
   resetOtpExpires: Date,
+  resetOtpVerifiedHash: { type: String, select: false },
+  resetOtpVerifiedExpires: Date,
 }, { timestamps: true });
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ phone: 1 }, { unique: true, sparse: true });
