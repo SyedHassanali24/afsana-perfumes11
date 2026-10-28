@@ -300,7 +300,7 @@ const cmsShape = {
   announcements: z.object({ text: z.string().trim().max(160), link: cUrl, startsAt: optDate, endsAt: optDate, isActive: z.boolean().optional() }),
 };
 // ---------- visual homepage builder ----------
-const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','image_banner','split_story','benefits','blog_grid','rich_text','faq','spacer'];
+const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement','lookbook','values_grid','blog_grid','post_grid','promo_timer','scent_finder','rich_text','faq','spacer'];
 const homepageConfig = z.record(z.string(), z.any()).optional();
 const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
 const homepageSectionPatch = homepageSectionShape.partial();
