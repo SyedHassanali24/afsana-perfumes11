@@ -7,6 +7,19 @@ const S = require('../../../validation/schemas');
 const { changeOwnPassword } = require('../../../services/staffService');
 
 const routes = [
+  { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) {
+      const { requestPasswordReset } = require('../../../services/passwordReset');
+      return requestPasswordReset(body.email);
+    } },
+  { method: 'POST', path: '/forgot-password/verify', public: true, body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) {
+      const { verifyPasswordReset } = require('../../../services/passwordReset');
+      return verifyPasswordReset(body.email, body.otp);
+    } },
+  { method: 'POST', path: '/forgot-password/reset', public: true, body: S.forgotPasswordResetBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) {
+      const { resetPassword } = require('../../../services/passwordReset');
+      return resetPassword(body.email, body.otp, body.password);
+    } },
+
   { method: 'POST', path: '/login', public: true, body: S.loginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
     async handler({ body, ip, req }) {
       const { cookie, user, staff } = await login({ ...body, ip, userAgent: req.headers['user-agent'] });
