@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [reset, setReset] = useState({open:false,step:1,email:'',otp:'',password:'',confirm:'',msg:''});
+  const [reset, setReset] = useState({open:false,step:1,email:'',otp:'',resetToken:'',password:'',confirm:'',msg:''});
 
   if (status === 'authed') return <Navigate to={from} replace />;
 
@@ -21,8 +21,8 @@ export default function LoginPage() {
     e.preventDefault(); setError(''); setBusy(true);
     try { const r = await fetch('/api/auth/forgot-password/request',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'afsana'},body:JSON.stringify({email:reset.email.trim()})}); const d=await r.json(); if(!r.ok||!d.success) throw new Error(d?.error?.message||'Unable to send OTP.'); setReset(v=>({...v,step:2,msg:'OTP sent to the administrator email.'})); } catch(e){setError(e.message)} finally{setBusy(false)}
   };
-  const verifyOtp = async () => { setError(''); setBusy(true); try { const r=await fetch('/api/auth/forgot-password/verify',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'afsana'},body:JSON.stringify({email:reset.email.trim(),otp:reset.otp.trim()})}); const d=await r.json(); if(!r.ok||!d.success) throw new Error(d?.error?.message||'Invalid OTP.'); setReset(v=>({...v,step:3,msg:'OTP verified. You can now set a new password.'})); } catch(e){setError(e.message)} finally{setBusy(false)} };
-  const doReset = async (e) => { e.preventDefault(); if(reset.password!==reset.confirm){setError('Passwords do not match.');return} setError('');setBusy(true); try{const r=await fetch('/api/auth/forgot-password/reset',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'afsana'},body:JSON.stringify({email:reset.email.trim(),otp:reset.otp.trim(),password:reset.password})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d?.error?.message||'Unable to reset password.');setReset(v=>({...v,open:false,step:1,password:'',confirm:'',msg:''}));}catch(e){setError(e.message)}finally{setBusy(false)} };
+  const verifyOtp = async () => { setError(''); setBusy(true); try { const r=await fetch('/api/auth/forgot-password/verify',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'afsana'},body:JSON.stringify({email:reset.email.trim(),otp:reset.otp.trim()})}); const d=await r.json(); if(!r.ok||!d.success) throw new Error(d?.error?.message||'Invalid OTP.'); setReset(v=>({...v,step:3,resetToken:d.resetToken,msg:'OTP verified. You can now set a new password.'})); } catch(e){setError(e.message)} finally{setBusy(false)} };
+  const doReset = async (e) => { e.preventDefault(); if(reset.password!==reset.confirm){setError('Passwords do not match.');return} setError('');setBusy(true); try{const r=await fetch('/api/auth/forgot-password/reset',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'afsana'},body:JSON.stringify({email:reset.email.trim(),resetToken:reset.resetToken,password:reset.password})});const d=await r.json();if(!r.ok||!d.success)throw new Error(d?.error?.message||'Unable to reset password.');setReset(v=>({...v,open:false,step:1,otp:'',resetToken:'',password:'',confirm:'',msg:''}));}catch(e){setError(e.message)}finally{setBusy(false)} };
 
   const submit = async (e) => {
     e.preventDefault();
