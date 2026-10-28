@@ -1,34 +1,43 @@
-const require = globalThis.__afsanaRequire;
-
-const handlers = {
-  account: require("../../netlify/functions/account").handler,
-  analytics: require("../../netlify/functions/analytics").handler,
-  audit: require("../../netlify/functions/audit").handler,
-  auth: require("../../netlify/functions/auth").handler,
-  backup: require("../../netlify/functions/backup").handler,
-  cart: require("../../netlify/functions/cart").handler,
-  cms: require("../../netlify/functions/cms").handler,
-  coupons: require("../../netlify/functions/coupons").handler,
-  customers: require("../../netlify/functions/customers").handler,
-  finance: require("../../netlify/functions/finance").handler,
-  health: require("../../netlify/functions/health").handler,
-  inventory: require("../../netlify/functions/inventory").handler,
-  media: require("../../netlify/functions/media").handler,
-  notifications: require("../../netlify/functions/notifications").handler,
-  orders: require("../../netlify/functions/orders").handler,
-  permissions: require("../../netlify/functions/permissions").handler,
-  products: require("../../netlify/functions/products").handler,
-  "purchase-orders": require("../../netlify/functions/purchase-orders").handler,
-  returns: require("../../netlify/functions/returns").handler,
-  reviews: require("../../netlify/functions/reviews").handler,
-  roles: require("../../netlify/functions/roles").handler,
-  settings: require("../../netlify/functions/settings").handler,
-  shipping: require("../../netlify/functions/shipping").handler,
-  staff: require("../../netlify/functions/staff").handler,
-  suppliers: require("../../netlify/functions/suppliers").handler,
-  taxonomy: require("../../netlify/functions/taxonomy").handler,
-  wishlist: require("../../netlify/functions/wishlist").handler,
+const handlerLoaders = {
+  account: () => import("../../netlify/functions/account/index.js"),
+  analytics: () => import("../../netlify/functions/analytics/index.js"),
+  audit: () => import("../../netlify/functions/audit/index.js"),
+  auth: () => import("../../netlify/functions/auth/index.js"),
+  backup: () => import("../../netlify/functions/backup/index.js"),
+  cart: () => import("../../netlify/functions/cart/index.js"),
+  cms: () => import("../../netlify/functions/cms/index.js"),
+  coupons: () => import("../../netlify/functions/coupons/index.js"),
+  customers: () => import("../../netlify/functions/customers/index.js"),
+  finance: () => import("../../netlify/functions/finance/index.js"),
+  health: () => import("../../netlify/functions/health/index.js"),
+  inventory: () => import("../../netlify/functions/inventory/index.js"),
+  media: () => import("../../netlify/functions/media/index.js"),
+  notifications: () => import("../../netlify/functions/notifications/index.js"),
+  orders: () => import("../../netlify/functions/orders/index.js"),
+  permissions: () => import("../../netlify/functions/permissions/index.js"),
+  products: () => import("../../netlify/functions/products/index.js"),
+  "purchase-orders": () => import("../../netlify/functions/purchase-orders/index.js"),
+  returns: () => import("../../netlify/functions/returns/index.js"),
+  reviews: () => import("../../netlify/functions/reviews/index.js"),
+  roles: () => import("../../netlify/functions/roles/index.js"),
+  settings: () => import("../../netlify/functions/settings/index.js"),
+  shipping: () => import("../../netlify/functions/shipping/index.js"),
+  staff: () => import("../../netlify/functions/staff/index.js"),
+  suppliers: () => import("../../netlify/functions/suppliers/index.js"),
+  taxonomy: () => import("../../netlify/functions/taxonomy/index.js"),
+  wishlist: () => import("../../netlify/functions/wishlist/index.js"),
 };
+
+const handlerCache = new Map();
+
+async function getHandler(group) {
+  if (!handlerLoaders[group]) return null;
+  if (!handlerCache.has(group)) {
+    const mod = await handlerLoaders[group]();
+    handlerCache.set(group, mod.handler || mod.default?.handler || mod.default);
+  }
+  return handlerCache.get(group);
+}
 
 function headersObject(headers) {
   const out = {};
@@ -42,23 +51,20 @@ function queryObject(url) {
   return out;
 }
 
-async function netlifyEvent(request, path, context) {
+async function netlifyEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
-  let isBase64Encoded = false;
-
   if (request.method !== "GET" && request.method !== "HEAD") {
     const bytes = new Uint8Array(await request.arrayBuffer());
-    body = Buffer.from(bytes).toString("utf8");
+    body = btoa(String.fromCharCode(...bytes));
   }
-
   return {
     httpMethod: request.method,
     path,
     headers,
     queryStringParameters: queryObject(request.url),
     body,
-    isBase64Encoded,
+    isBase64Encoded: Boolean(body),
   };
 }
 
@@ -71,7 +77,6 @@ function responseFromNetlify(result) {
       for (const value of values) responseHeaders.append(key, String(value));
     }
   }
-
   return new Response(result?.body ?? "", {
     status: result?.statusCode || 200,
     headers: responseHeaders,
@@ -83,14 +88,12 @@ export async function onRequest(context) {
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
   const group = pathParts[0];
   const functionPath = "/" + pathParts.join("/");
+  const handler = await getHandler(group);
 
-  const handler = handlers[group];
   if (!handler) {
     return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
   }
 
-  // The existing backend services use process.env. Bridge Cloudflare Pages
-  // bindings into that interface without exposing any secret to the client.
   process.env.MONGODB_URI = env.MONGODB_URI || "";
   process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
   process.env.JWT_SECRET = env.JWT_SECRET || "";
@@ -98,19 +101,10 @@ export async function onRequest(context) {
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
 
-  const event = await netlifyEvent(request, functionPath, context);
-  const netlifyContext = {
-    ...context,
-    site: { url: new URL(request.url).origin },
-  };
-
+  const event = await netlifyEvent(request, functionPath);
   try {
-    const result = await handler(event, netlifyContext);
-    return responseFromNetlify(result);
-  } catch (error) {
-    return Response.json(
-      { success: false, error: { code: "INTERNAL", message: "Internal server error." } },
-      { status: 500 }
-    );
+    return responseFromNetlify(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
+  } catch {
+    return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
   }
 }
