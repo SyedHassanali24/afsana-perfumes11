@@ -47,6 +47,13 @@ export default {
     if (!u.pathname.startsWith("/api/")) {
       const asset = await env.ASSETS.fetch(request);
       const headers = new Headers(asset.headers);
+      // Vite asset filenames are content-hashed: keep them in browser + edge cache for a year.
+      // The SPA shell is refreshed frequently so new releases become visible quickly.
+      if (u.pathname.startsWith("/assets/")) {
+        headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      } else if (u.pathname === "/" || u.pathname.endsWith(".html")) {
+        headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+      }
       headers.set("X-Afsana-Backend", "cloudflare-assets");
       return new Response(asset.body, { status: asset.status, headers });
     }
