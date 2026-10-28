@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#263e0e] px-4 relative overflow-hidden">
       <div className="absolute -top-24 -left-20 h-64 w-64 rounded-full bg-[#b4bf41]/15 blur-3xl" /><div className="absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-[#748e40]/20 blur-3xl" /><form onSubmit={submit} className="relative w-full max-w-sm bg-[#faf8f4]/95 backdrop-blur border border-[#748e40]/25 rounded-3xl p-8 space-y-5 shadow-2xl">
         <div>
-          <h1 className="font-display text-2xl" className="text-[#263e0e]">Afsana</h1>
+          <h1 className="font-display text-2xl text-[#263e0e]">Afsana</h1>
           <p className="text-sm text-[#5f654f] mt-1">Staff sign in</p>
         </div>
         <Field label="Email">
