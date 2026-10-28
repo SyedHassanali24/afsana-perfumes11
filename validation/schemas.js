@@ -349,7 +349,7 @@ module.exports = {
 
 const forgotPasswordRequestBody = z.object({ email: z.string().email().max(254) });
 const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/) });
-const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/), password: z.string().min(8).max(128) });
+const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), resetToken: z.string().regex(/^[a-f\\d]{64}$/i), password: z.string().min(8).max(128) });
 
 module.exports.forgotPasswordRequestBody = forgotPasswordRequestBody;
 module.exports.forgotPasswordVerifyBody = forgotPasswordVerifyBody;
