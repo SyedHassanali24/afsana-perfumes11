@@ -119,6 +119,8 @@ export const couponsApi = { // Phase 8: marketing (admin). list query: { q, stat
   restore: (id) => api(`/coupons/admin/${id}/restore`, { method: 'POST' }),
 };
 // CMS admin: resource = 'banners' | 'faqs' | 'announcements'. list -> { items }, create/update/setActive -> { item }.
+export const cmsPublicApi = { content: () => api('/cms/public', { cacheTtl: 120000 }) };
+
 export const cmsApi = (resource) => ({
   list: () => api(`/cms/${resource}`),
   create: (body) => api(`/cms/${resource}`, { method: 'POST', body }),
