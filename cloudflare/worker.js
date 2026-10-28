@@ -1,8 +1,8 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
-const API_ORIGIN = "https://afsanaperfume.netlify.app/.netlify/functions";
-const API_FUNCTIONS_PREFIX = "/.netlify/functions";
+const API_ORIGIN = "https://afsanayaar.netlify.app";
+const API_PREFIX = "/api";
 
 function cors(origin) {
   const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
@@ -17,7 +17,6 @@ function cors(origin) {
 function json(data, status, headers = {}) { return Response.json(data, { status, headers }); }
 function cacheable(pathname, method) {
   if (method !== "GET" && method !== "HEAD") return false;
-  // Explicit public-only allowlist. Never edge-cache staff/customer/session data.
   return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
     /^\/api\/taxonomy\/public\//i.test(pathname) ||
     /^\/api\/settings\/public\/?$/i.test(pathname) ||
@@ -45,7 +44,6 @@ export default {
       }
     }
 
-    // Website HTML/CSS/JS/images now come directly from Cloudflare Workers Static Assets.
     if (!u.pathname.startsWith("/api/")) {
       const asset = await env.ASSETS.fetch(request);
       const headers = new Headers(asset.headers);
@@ -53,14 +51,13 @@ export default {
       return new Response(asset.body, { status: asset.status, headers });
     }
 
-    // API remains available through the Cloudflare edge while backend migration continues.
+    // Use the tested public Netlify /api rewrite instead of calling the
+    // internal /.netlify/functions path directly. This keeps Netlify's
+    // production function routing and auth cookie handling intact.
     const upstream = new URL(API_ORIGIN);
-    const apiPath = u.pathname.replace(/^\/api\//, "/");
-    // Keep Netlify's function prefix. Assigning only apiPath here used to turn
-    // /api/auth/login into /auth/login on the Netlify site instead of
-    // /.netlify/functions/auth/login, which broke login and API data loading.
-    upstream.pathname = `${API_FUNCTIONS_PREFIX}${apiPath}`;
+    upstream.pathname = `${API_PREFIX}${u.pathname.slice(4)}`;
     upstream.search = u.search;
+
     const can = cacheable(u.pathname, request.method);
     const key = new Request(u.toString(), { method: "GET" });
 
@@ -76,10 +73,9 @@ export default {
 
     const headers = new Headers(request.headers);
     headers.delete("host");
-    // Netlify Functions should see its own origin, not the Cloudflare browser
-    // origin. Cloudflare handles browser-facing CORS on the response.
     headers.delete("origin");
     headers.set("X-Afsana-Edge", "cloudflare");
+
     let response;
     try {
       response = await fetch(new Request(upstream.toString(), {
@@ -92,12 +88,7 @@ export default {
       return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin));
     }
 
-    // Preserve authentication/session cookies exactly when the API is proxied through Cloudflare.
-    // Auth/admin responses must never be cached at the edge.
     const outHeaders = new Headers(response.headers);
-    // The upstream auth cookie is host-only, but make that invariant explicit
-    // and remove any accidental Domain attribute before it reaches the browser.
-    // This ensures the session belongs to the Cloudflare website origin.
     const setCookies = typeof response.headers.getSetCookie === "function"
       ? response.headers.getSetCookie()
       : (response.headers.get("set-cookie") ? [response.headers.get("set-cookie")] : []);
@@ -107,11 +98,13 @@ export default {
         outHeaders.append("set-cookie", cookie.replace(/;\s*Domain=[^;]+/ig, ""));
       }
     }
+
     if (!can) {
       outHeaders.set("Cache-Control", "no-store, private");
       outHeaders.delete("CDN-Cache-Control");
       outHeaders.delete("Cloudflare-CDN-Cache-Control");
     }
+
     const out = new Response(response.body, { status: response.status, headers: outHeaders });
     Object.entries(cors(origin)).forEach(([k, v]) => out.headers.set(k, v));
     out.headers.set("X-Afsana-Backend", "cloudflare-api");
