@@ -10,6 +10,53 @@ const COOKIE = 'afsana_staff';
 const SESSION_DAYS = 7;
 const MAX_FAILS = 5;
 const LOCK_MINUTES = 15;
+const OTP_TTL_MS = 10 * 60 * 1000;
+const RESET_TTL_MS = 10 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
+
+async function sendResetOtp(email, otp) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM;
+  if (!apiKey || !from) throw new Error('Password reset email service is not configured.');
+  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'AFSANA staff password reset OTP', html: `<p>Your AFSANA password reset code is <strong>${otp}</strong>.</p><p>This code expires in 10 minutes. If you did not request it, ignore this email.</p>` }) });
+  if (!r.ok) throw new Error('Unable to send reset email.');
+}
+async function requestPasswordReset(email) {
+  const target = String(process.env.ADMIN_EMAIL || process.env.EASTWALA_EMAIL || '').trim().toLowerCase();
+  const normalized = String(email || '').trim().toLowerCase();
+  const user = target && normalized === target ? await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+passwordHash') : null;
+  if (!user) return { sent: true };
+  const otp = String(crypto.randomInt(100000, 1000000));
+  user.resetOtpHash = sha256(otp);
+  user.resetOtpExpires = new Date(Date.now() + OTP_TTL_MS);
+  user.resetOtpVerifiedHash = undefined; user.resetOtpVerifiedExpires = undefined;
+  user.resetOtpAttempts = 0; user.resetOtpRequestedAt = new Date();
+  await user.save();
+  await sendResetOtp(normalized, otp);
+  return { sent: true };
+}
+async function verifyPasswordResetOtp(email, otp) {
+  const normalized = String(email || '').trim().toLowerCase();
+  const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+resetOtpHash');
+  if (!user || !user.resetOtpHash || !user.resetOtpExpires || user.resetOtpExpires < new Date()) throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.');
+  if ((user.resetOtpAttempts || 0) >= OTP_MAX_ATTEMPTS) throw new ApiError(429, 'OTP_LOCKED', 'Too many OTP attempts. Request a new code.');
+  if (sha256(String(otp)) !== user.resetOtpHash) { user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1; await user.save(); throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.'); }
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  user.resetOtpVerifiedHash = sha256(resetToken); user.resetOtpVerifiedExpires = new Date(Date.now() + RESET_TTL_MS);
+  user.resetOtpHash = undefined; user.resetOtpExpires = undefined; user.resetOtpAttempts = 0;
+  await user.save();
+  return { resetToken };
+}
+async function resetPasswordWithToken(email, resetToken, newPassword) {
+  const normalized = String(email || '').trim().toLowerCase();
+  const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+resetOtpVerifiedHash');
+  if (!user || !user.resetOtpVerifiedHash || !user.resetOtpVerifiedExpires || user.resetOtpVerifiedExpires < new Date() || sha256(String(resetToken)) !== user.resetOtpVerifiedHash) throw new ApiError(400, 'INVALID_RESET', 'Reset session is invalid or expired.');
+  user.passwordHash = await bcrypt.hash(String(newPassword), 12); user.passwordChangedAt = new Date(); user.mustChangePassword = false;
+  user.resetOtpVerifiedHash = undefined; user.resetOtpVerifiedExpires = undefined; user.resetOtpHash = undefined; user.resetOtpExpires = undefined; user.resetOtpAttempts = 0;
+  await user.save();
+  await Session.updateMany({ userId: user._id, revokedAt: { $exists: false } }, { revokedAt: new Date(), revokedReason: 'password_reset' });
+  return { reset: true };
+}
 
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
 const secret = () => {
