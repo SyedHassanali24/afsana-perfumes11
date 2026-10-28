@@ -17,6 +17,7 @@ const inventorySchema = new Schema({
 }, { timestamps: true });
 inventorySchema.virtual('available').get(function () { return this.current - this.reserved; });
 storeScoped(inventorySchema);
+inventorySchema.index({ storeId: 1, current: 1, reserved: 1 });
 
 // ---- Atomic operations: the condition is INSIDE the update, so two buyers can never both win the last unit ----
 // Returns the updated doc, or null when stock was insufficient. Pass { session } inside a transaction.
