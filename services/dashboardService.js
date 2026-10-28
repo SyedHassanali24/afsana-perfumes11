@@ -103,6 +103,9 @@ async function stockSection(scopes, uid) {
 
 // access = R.sectionAccess(ctx.perms.can); a section the role may not see is returned as null (never partly filled).
 async function getDashboard({ access, uid, denied, now = new Date() }) {
+  const key = cacheKey(access, uid, denied);
+  const cached = dashboardCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.data;
   const [orders, stock] = await Promise.all([
     access.orders ? orderSections(access.orders, uid, now) : null,
     access.inventory ? stockSection(access.inventory, uid) : null,
@@ -115,7 +118,13 @@ async function getDashboard({ access, uid, denied, now = new Date() }) {
     topProducts: orders && orders.topProducts,
     lowStock: stock,
   };
-  return R.applyFieldSecurity(data, denied);
+  const result = R.applyFieldSecurity(data, denied);
+  dashboardCache.set(key, { data: result, expiresAt: Date.now() + DASHBOARD_TTL_MS });
+  if (dashboardCache.size > 100) {
+    const oldest = dashboardCache.keys().next().value;
+    if (oldest) dashboardCache.delete(oldest);
+  }
+  return result;
 }
 
 module.exports = { getDashboard };
