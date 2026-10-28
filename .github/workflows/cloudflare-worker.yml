@@ -1,4 +1,5 @@
 name: Deploy AFSANA Cloudflare Worker
+# Production edge deploy: Cloudflare is the direct storefront origin.
 
 on:
   push:
