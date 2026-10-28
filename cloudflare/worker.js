@@ -2,7 +2,7 @@ import { MongoDBConnection } from "./MongoDBConnection.js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanaperfume.netlify.app/.netlify/functions";
-const API_TTL = 60;
+const API_FUNCTIONS_PREFIX = "/.netlify/functions";
 
 function cors(origin) {
   const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
@@ -16,8 +16,13 @@ function cors(origin) {
 }
 function json(data, status, headers = {}) { return Response.json(data, { status, headers }); }
 function cacheable(pathname, method) {
-  return (method === "GET" || method === "HEAD") &&
-    !/^\/api\/(auth|admin|account|cart|checkout|orders|wishlist|customers)(\/|$)/i.test(pathname);
+  if (method !== "GET" && method !== "HEAD") return false;
+  // Explicit public-only allowlist. Never edge-cache staff/customer/session data.
+  return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
+    /^\/api\/taxonomy\/public\//i.test(pathname) ||
+    /^\/api\/settings\/public\/?$/i.test(pathname) ||
+    /^\/api\/cms\/public\/?$/i.test(pathname) ||
+    /^\/api\/reviews\/product\//i.test(pathname);
 }
 async function health(env) {
   const id = env.MONGODB_CONNECTION.idFromName("afsana-mongodb");
@@ -51,7 +56,10 @@ export default {
     // API remains available through the Cloudflare edge while backend migration continues.
     const upstream = new URL(API_ORIGIN);
     const apiPath = u.pathname.replace(/^\/api\//, "/");
-    upstream.pathname = apiPath;
+    // Keep Netlify's function prefix. Assigning only apiPath here used to turn
+    // /api/auth/login into /auth/login on the Netlify site instead of
+    // /.netlify/functions/auth/login, which broke login and API data loading.
+    upstream.pathname = `${API_FUNCTIONS_PREFIX}${apiPath}`;
     upstream.search = u.search;
     const can = cacheable(u.pathname, request.method);
     const key = new Request(u.toString(), { method: "GET" });
@@ -84,7 +92,7 @@ export default {
     // Preserve authentication/session cookies exactly when the API is proxied through Cloudflare.
     // Auth/admin responses must never be cached at the edge.
     const outHeaders = new Headers(response.headers);
-    if (/^\/api\/(auth|admin|account|cart|checkout|orders|wishlist|customers)(\/|$)/i.test(u.pathname)) {
+    if (!can) {
       outHeaders.set("Cache-Control", "no-store, private");
       outHeaders.delete("CDN-Cache-Control");
       outHeaders.delete("Cloudflare-CDN-Cache-Control");
