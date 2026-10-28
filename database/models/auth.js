@@ -23,6 +23,8 @@ const userSchema = new Schema({
   resetOtpExpires: Date,
   resetOtpVerifiedHash: { type: String, select: false },
   resetOtpVerifiedExpires: Date,
+  resetOtpAttempts: { type: Number, default: 0 },
+  resetOtpRequestedAt: Date,
 }, { timestamps: true });
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ phone: 1 }, { unique: true, sparse: true });
