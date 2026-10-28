@@ -14,22 +14,28 @@ const cacheKey = (access, uid, denied) => JSON.stringify([String(uid), access, d
 // Orders that count as sales (see the REVENUE definition in dashboardRules.js).
 const validOrders = (scope, range) => ({ ...scope, status: { $nin: R.EXCLUDED_STATUSES }, createdAt: { $gte: range.from, $lt: range.to } });
 
-async function sumRevenue(scope, range) {
+async function revenueSummary(scope, rg) {
+  const inRange = (range) => ({ $and: [{ $gte: ['$createdAt', range.from] }, { $lt: ['$createdAt', range.to] }] });
   const [r] = await Order.aggregate([
-    { $match: validOrders(scope, range) },
-    { $group: { _id: null, revenue: { $sum: '$total' }, orders: { $sum: 1 } } },
+    { $match: { ...scope, status: { $nin: R.EXCLUDED_STATUSES }, createdAt: { $gte: rg.prevMonth.from, $lt: rg.today.to } } },
+    { $group: { _id: null,
+      todayRevenue: { $sum: { $cond: [inRange(rg.today), '$total', 0] } },
+      todayOrders: { $sum: { $cond: [inRange(rg.today), 1, 0] } },
+      yesterdayRevenue: { $sum: { $cond: [inRange(rg.yesterday), '$total', 0] } },
+      monthRevenue: { $sum: { $cond: [inRange(rg.month), '$total', 0] } },
+      monthOrders: { $sum: { $cond: [inRange(rg.month), 1, 0] } },
+      prevMonthRevenue: { $sum: { $cond: [inRange(rg.prevMonth), '$total', 0] } },
+      prevMonthOrders: { $sum: { $cond: [inRange(rg.prevMonth), 1, 0] } },
+    } },
   ]);
-  return { revenue: r ? r.revenue : 0, orders: r ? r.orders : 0 };
+  return r || { todayRevenue: 0, todayOrders: 0, yesterdayRevenue: 0, monthRevenue: 0, monthOrders: 0, prevMonthRevenue: 0, prevMonthOrders: 0 };
 }
 
 async function orderSections(scopes, uid, now) {
   const scope = scopeFilter(scopes, uid, SCOPE_MAP);
   const rg = R.ranges(now);
-  const [today, yesterday, month, prevMonth, totalOrders, pendingOrders, dayRows, recent, topRows] = await Promise.all([
-    sumRevenue(scope, rg.today),
-    sumRevenue(scope, rg.yesterday),
-    sumRevenue(scope, rg.month),
-    sumRevenue(scope, rg.prevMonth),
+  const [rev, totalOrders, pendingOrders, dayRows, recent, topRows] = await Promise.all([
+    revenueSummary(scope, rg),
     Order.countDocuments(scope),                                   // every status, same number the Orders screen shows
     Order.countDocuments({ ...scope, status: { $in: R.PENDING_STATUSES } }),
     Order.aggregate([
@@ -56,11 +62,11 @@ async function orderSections(scopes, uid, now) {
 
   return {
     kpis: {
-      todayRevenue: today.revenue, todayOrders: today.orders, todayRevenueChangePct: R.pctChange(today.revenue, yesterday.revenue),
-      monthRevenue: month.revenue, monthRevenueChangePct: R.pctChange(month.revenue, prevMonth.revenue),
+      todayRevenue: rev.todayRevenue, todayOrders: rev.todayOrders, todayRevenueChangePct: R.pctChange(rev.todayRevenue, rev.yesterdayRevenue),
+      monthRevenue: rev.monthRevenue, monthRevenueChangePct: R.pctChange(rev.monthRevenue, rev.prevMonthRevenue),
       totalOrders, pendingOrders,
-      avgOrderValue: R.avg(month.revenue, month.orders),
-      avgOrderValueChangePct: R.pctChange(R.avg(month.revenue, month.orders), R.avg(prevMonth.revenue, prevMonth.orders)),
+      avgOrderValue: R.avg(rev.monthRevenue, rev.monthOrders),
+      avgOrderValueChangePct: R.pctChange(R.avg(rev.monthRevenue, rev.monthOrders), R.avg(rev.prevMonthRevenue, rev.prevMonthOrders)),
     },
     revenueSeries: R.fillSeries(dayRows, now),
     recentOrders: recent.map((o) => ({ id: o._id, orderNumber: o.orderNumber, customerName: (o.customer && o.customer.name) || '', total: o.total, status: o.status, createdAt: o.createdAt })),
