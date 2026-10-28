@@ -81,7 +81,15 @@ export default {
       return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin));
     }
 
-    const out = new Response(response.body, { status: response.status, headers: new Headers(response.headers) });
+    // Preserve authentication/session cookies exactly when the API is proxied through Cloudflare.
+    // Auth/admin responses must never be cached at the edge.
+    const outHeaders = new Headers(response.headers);
+    if (/^\\/api\\/(auth|admin|account|cart|checkout|orders|wishlist|customers)(\\/|$)/i.test(u.pathname)) {
+      outHeaders.set("Cache-Control", "no-store, private");
+      outHeaders.delete("CDN-Cache-Control");
+      outHeaders.delete("Cloudflare-CDN-Cache-Control");
+    }
+    const out = new Response(response.body, { status: response.status, headers: outHeaders });
     Object.entries(cors(origin)).forEach(([k, v]) => out.headers.set(k, v));
     out.headers.set("X-Afsana-Backend", "cloudflare-api");
     out.headers.set("X-Afsana-Cache", can ? "MISS" : "BYPASS");
