@@ -76,6 +76,9 @@ export default {
 
     const headers = new Headers(request.headers);
     headers.delete("host");
+    // Netlify Functions should see its own origin, not the Cloudflare browser
+    // origin. Cloudflare handles browser-facing CORS on the response.
+    headers.delete("origin");
     headers.set("X-Afsana-Edge", "cloudflare");
     let response;
     try {
@@ -92,6 +95,18 @@ export default {
     // Preserve authentication/session cookies exactly when the API is proxied through Cloudflare.
     // Auth/admin responses must never be cached at the edge.
     const outHeaders = new Headers(response.headers);
+    // The upstream auth cookie is host-only, but make that invariant explicit
+    // and remove any accidental Domain attribute before it reaches the browser.
+    // This ensures the session belongs to the Cloudflare website origin.
+    const setCookies = typeof response.headers.getSetCookie === "function"
+      ? response.headers.getSetCookie()
+      : (response.headers.get("set-cookie") ? [response.headers.get("set-cookie")] : []);
+    if (setCookies.length) {
+      outHeaders.delete("set-cookie");
+      for (const cookie of setCookies) {
+        outHeaders.append("set-cookie", cookie.replace(/;\s*Domain=[^;]+/ig, ""));
+      }
+    }
     if (!can) {
       outHeaders.set("Cache-Control", "no-store, private");
       outHeaders.delete("CDN-Cache-Control");
