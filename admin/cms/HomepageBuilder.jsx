@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles, ArrowUp, ArrowDown, Copy, LayoutGrid, AlignLeft, AlignCenter, AlignRight, Monitor, Smartphone } from 'lucide-react';
+import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles, ArrowUp, ArrowDown, Copy, LayoutGrid, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Drawer from '../components/Drawer';
