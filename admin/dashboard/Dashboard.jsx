@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import {
   AlertTriangle, ArrowUpRight, BarChart3, Box, ChevronRight, CircleDollarSign,
-  Package, ShoppingBag, Sparkles, TrendingUp, Users,
+  Package, ShoppingBag, Sparkles, TrendingUp, Users, Zap,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -53,7 +53,7 @@ function Header() {
     <div className="flex flex-col gap-1">
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#748e40]">Store overview</p>
       <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.04em] text-[#182308]">Dashboard</h1>
-      <p className="text-sm text-[#5f654f]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p>
+      <p className="text-sm text-[#5f654f]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p><span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#b4bf41]/35 bg-[#eef2e5] px-2.5 py-1 text-[10px] font-semibold text-[#263e0e]"><Zap className="h-3 w-3" /> Fast mode · dashboard cache 12s</span>
     </div>
   );
 }
