@@ -5,6 +5,7 @@ export class ApiError extends Error {
 
 const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, "");
 const inflightGets = new Map();
+const memoryGets = new Map();
 
 async function executeRequest(url, path, options) {
   const { method = 'GET', body, idempotencyKey } = options;
@@ -30,16 +31,21 @@ async function executeRequest(url, path, options) {
   return data;
 }
 
-export async function api(path, { method = 'GET', body, query, idempotencyKey } = {}) {
+export async function api(path, { method = 'GET', body, query, idempotencyKey, cacheTtl = 0 } = {}) {
   const url = new URL(`/api${path}`, API_ORIGIN);
   Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
 
   if (method === 'GET') {
     const key = url.toString();
+    const now = Date.now();
+    const cached = memoryGets.get(key);
+    if (cached && cached.expiresAt > now) return Promise.resolve(cached.data);
+
     const existing = inflightGets.get(key);
     if (existing) return existing;
 
     const request = executeRequest(url, path, { method, body, idempotencyKey })
+      .then((data) => { if (cacheTtl > 0) memoryGets.set(key, { data, expiresAt: Date.now() + cacheTtl }); return data; })
       .finally(() => inflightGets.delete(key));
     inflightGets.set(key, request);
     return request;
