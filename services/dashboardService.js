@@ -5,6 +5,12 @@ const { scopeFilter } = require('../middleware/permissions');
 const { SCOPE_MAP } = require('./orderService');
 const R = require('./dashboardRules');
 
+// Very short per-user server cache: avoids repeating the expensive dashboard aggregation
+// when the admin shell remounts or the same dashboard is opened twice in a few seconds.
+const dashboardCache = new Map();
+const DASHBOARD_TTL_MS = 10000;
+const cacheKey = (access, uid, denied) => JSON.stringify([String(uid), access, denied]);
+
 // Orders that count as sales (see the REVENUE definition in dashboardRules.js).
 const validOrders = (scope, range) => ({ ...scope, status: { $nin: R.EXCLUDED_STATUSES }, createdAt: { $gte: range.from, $lt: range.to } });
 
