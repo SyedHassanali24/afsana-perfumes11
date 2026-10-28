@@ -1,3 +1,14 @@
 name = "afsana-perfumes11"
 main = "worker.js"
 compatibility_date = "2026-10-28"
+
+[[durable_objects.bindings]]
+name = "MONGODB_CONNECTION"
+class_name = "MongoDBConnection"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["MongoDBConnection"]
+
+[secrets]
+required = ["MONGODB_URI", "JWT_SECRET"]
