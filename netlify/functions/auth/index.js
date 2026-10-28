@@ -1,5 +1,5 @@
 const { createHandler } = require('../../../middleware/withApi');
-const { login, clearCookie, sessionCookie } = require('../../../middleware/auth');
+const { login, clearCookie, sessionCookie, requestPasswordReset, verifyPasswordResetOtp, resetPasswordWithToken } = require('../../../middleware/auth');
 const { res } = require('../../../middleware/http');
 const { E } = require('../../../middleware/errors');
 const { Session } = require('../../../database/models');
@@ -20,6 +20,9 @@ const routes = [
       return resetPassword(body.email, body.otp, body.password);
     } },
 
+  { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 3, windowMs: 15 * 60000 }, async handler({ body }) { await requestPasswordReset(body.email); return { sent: true }; } },
+  { method: 'POST', path: '/forgot-password/verify', public: true, body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) { return verifyPasswordResetOtp(body.email, body.otp); } },
+  { method: 'POST', path: '/forgot-password/reset', public: true, body: S.forgotPasswordResetBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) { return resetPasswordWithToken(body.email, body.resetToken, body.password); } },
   { method: 'POST', path: '/login', public: true, body: S.loginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
     async handler({ body, ip, req }) {
       const { cookie, user, staff } = await login({ ...body, ip, userAgent: req.headers['user-agent'] });
