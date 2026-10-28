@@ -1,5 +1,6 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 
+// deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
