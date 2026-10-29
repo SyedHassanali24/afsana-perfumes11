@@ -4,7 +4,7 @@ const { res } = require('../../../middleware/http');
 const { E } = require('../../../middleware/errors');
 const { Session } = require('../../../database/models');
 const S = require('../../../validation/schemas');
-const { changeOwnPassword } = require('../../../services/staffService');
+const { changeOwnPassword, updateOwnProfile } = require('../../../services/staffService');
 
 const routes = [
   { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) {
@@ -40,8 +40,10 @@ const routes = [
     } },
   { method: 'GET', path: '/me', allowPasswordChange: true,
     async handler({ ctx }) {
-      return { user: { id: ctx.user._id, email: ctx.user.email, name: ctx.staff.name, role: { key: ctx.role.key, name: ctx.role.name, level: ctx.role.level } }, permissions: ctx.perms.toClient(), mustChangePassword: !!ctx.user.mustChangePassword };
+      return { user: { id: ctx.user._id, email: ctx.user.email, name: ctx.staff.name, avatarUrl: ctx.staff.avatarUrl, phone: ctx.user.phone, jobTitle: ctx.staff.jobTitle, department: ctx.staff.department, bio: ctx.staff.bio, address: ctx.staff.address, city: ctx.staff.city, country: ctx.staff.country, role: { key: ctx.role.key, name: ctx.role.name, level: ctx.role.level } }, permissions: ctx.perms.toClient(), mustChangePassword: !!ctx.user.mustChangePassword };
     } },
+  { method: 'PATCH', path: '/profile', allowPasswordChange: true, body: S.staffProfile,
+    handler: ({ ctx, body }) => updateOwnProfile(ctx, body) },
   { method: 'POST', path: '/change-password', allowPasswordChange: true, body: S.changePasswordBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
     handler: ({ ctx, body }) => changeOwnPassword(ctx, body) },
   { method: 'GET', path: '/sessions',
