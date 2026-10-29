@@ -73,8 +73,8 @@ function AfsanaLoader({ suspense = false }) {
 export default function App() {
   return (
     <>
-      {!window.location.pathname.startsWith("/admin") && <AfsanaLoader />}
-      <Suspense fallback={window.location.pathname.startsWith("/admin") ? <div className="min-h-screen bg-[var(--bg)]" /> : <AfsanaLoader suspense />}>
+      {!window.location.pathname.startsWith("/admin/login") && <AfsanaLoader />}
+      <Suspense fallback={window.location.pathname.startsWith("/admin") ? <AfsanaLoader suspense /> : <AfsanaLoader suspense />}>
         <Routes>
           <Route path="/admin/login" element={<LoginPage />} />
           <Route path="/admin/change-password" element={<ChangePasswordPage />} />
