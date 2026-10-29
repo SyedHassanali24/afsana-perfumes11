@@ -55,7 +55,7 @@ export default function Topbar({
   };
 
   return (
-    <header className={`h-[72px] flex items-center gap-3 px-4 sm:px-6 sticky top-0 z-30 transition-all duration-300 ${scrolled ? "bg-white/45 dark:bg-[#0f102f]/45 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_30px_rgba(15,23,42,.05)]" : "bg-transparent border-b border-transparent"}`}>
+    <header className={`admin-glass-header h-[72px] flex items-center gap-3 px-4 sm:px-6 sticky top-0 z-30 transition-all duration-300 ${scrolled ? "is-scrolled" : ""}`}>
       <form onSubmit={submitSearch} className="flex-1 max-w-[430px] relative ml-10 md:ml-0" role="search">
         <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4f46e5]" />
         <input
@@ -63,12 +63,12 @@ export default function Topbar({
           placeholder="Search anything..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-[#f3f4f9] dark:bg-[#1e1b4b]/20 border border-transparent rounded-xl text-sm text-[#172033] placeholder:text-[#64748b] focus:outline-none focus:border-[#4f46e5]/40 focus:ring-2 focus:ring-[#6366f1]/20"
+          className="admin-glass-control w-full pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6366f1]/20"
         />
       </form>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <div className="hidden lg:flex items-center gap-1 rounded-xl border border-[#1e1b4b]/10 bg-white/55 dark:bg-[#0f102f]/40 backdrop-blur px-2 py-1.5" title={`${cacheStats.entries} cached requests · ${formatBytes(cacheStats.bytes)}`}>
+        <div className="admin-glass-control hidden lg:flex items-center gap-1 rounded-xl px-2 py-1.5" title={`${cacheStats.entries} cached requests · ${formatBytes(cacheStats.bytes)}`}>
           <Database className="w-3.5 h-3.5 text-[#4f46e5]" />
           <span className="text-[10px] font-semibold text-[#64748b]">{formatBytes(cacheStats.bytes)}</span>
           <button type="button" onClick={clearApiCache} className="ml-1 p-1 rounded-md hover:bg-[#e11d48]/10 text-[#64748b] hover:text-[#e11d48]" aria-label="Clear dashboard cache" title="Clear cache"><Trash2 className="w-3.5 h-3.5" /></button>
