@@ -52,6 +52,82 @@ function CmsTimer({ endAt }) {
   const total = Math.floor(left / 1000), d = Math.floor(total / 86400), h = Math.floor((total % 86400) / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
   return <div className="cms-timer" aria-label="Offer countdown"><span>{String(d).padStart(2,'0')}d</span><b>:</b><span>{String(h).padStart(2,'0')}h</span><b>:</b><span>{String(m).padStart(2,'0')}m</span><b>:</b><span>{String(s).padStart(2,'0')}s</span></div>;
 }
+function AnimatedValue({ value }) {
+  const raw = String(value ?? '').trim();
+  const numeric = /^\\d+(?:[.,]\\d+)?[kKmM%+]*$/.test(raw);
+  const target = numeric ? Number(raw.replace(/[,kKmM%+]/g, '')) : 0;
+  const [shown, setShown] = useState(numeric ? 0 : raw);
+  useEffect(() => {
+    if (!numeric) return;
+    const duration = 1200, started = Date.now();
+    const tick = () => {
+      const p = Math.min(1, (Date.now() - started) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setShown(Math.round(target * eased));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    const id = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(id);
+  }, [numeric, target, raw]);
+  if (!numeric) return <>{raw}</>;
+  const suffix = raw.match(/[kKmM%+]+$/)?.[0] || '';
+  return <>{shown.toLocaleString()}{suffix}</>;
+}
+function CommunityPulse({ section }) {
+  const c = section.config || {};
+  const items = cmsItems(c.items).slice(0, 6);
+  const fallback = [
+    { title: 'Afsana Circle', text: 'Growing', link: '' },
+    { title: 'Verified Reviews', text: 'Real', link: '' },
+    { title: 'Signature Scents', text: 'Explore', link: '/shop' },
+    { title: 'Gift Moments', text: 'Made to give', link: '/gifting' },
+  ];
+  const rows = items.length ? items : fallback;
+  return <section className="relative overflow-hidden bg-[#0a0d08] text-white border-y border-[#b4bf41]/15">
+    <div className="absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_20%_40%,rgba(180,191,65,.16),transparent_24%),radial-gradient(circle_at_80%_60%,rgba(123,0,58,.18),transparent_25%)]"/>
+    <div className="container-xl relative py-16 sm:py-20">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+        <div>
+          <Eyebrow light>{c.eyebrow || 'THE AFSANA CIRCLE'}</Eyebrow>
+          <h2 className="mt-5 font-display text-4xl sm:text-6xl">{section.title || 'A house people come back to.'}</h2>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-white/55">{c.subtitle || 'A living pulse of the people, stories and fragrances around AFSANA.'}</p>
+        </div>
+        <div className="text-[9px] uppercase tracking-[.22em] text-[#b4bf41]">Live brand pulse</div>
+      </div>
+      <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 overflow-hidden rounded-2xl border border-white/10">
+        {rows.map((x, i) => <Link key={i} to={x.link || '/shop'} className="group bg-white/[.035] p-6 sm:p-8 hover:bg-white/[.07] transition">
+          <div className="font-display text-3xl sm:text-5xl text-[#b4bf41] tabular-nums"><AnimatedValue value={x.text || '—'} /></div>
+          <div className="mt-4 text-[10px] uppercase tracking-[.22em] text-white/80">{x.title || 'AFSANA'}</div>
+          {x.image && <p className="mt-2 text-xs text-white/45">{x.image}</p>}
+          <span className="mt-6 inline-block text-[9px] uppercase tracking-[.2em] text-white/35 group-hover:text-[#b4bf41] transition">Discover ↗</span>
+        </Link>)}
+      </div>
+      <p className="mt-5 text-[9px] uppercase tracking-[.18em] text-white/25">{c.disclaimer || 'Only publish verified numbers in this section. Labels without numbers remain editorial and are never presented as fake activity.'}</p>
+    </div>
+  </section>;
+}
+function PremiumFooterShowcase({ section }) {
+  const c = section.config || {};
+  return <section className="relative overflow-hidden bg-[#f4f0e7] text-[#263e0e] border-t border-[#263e0e]/10">
+    <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#a3c5e9]/25 blur-3xl"/>
+    <div className="absolute -left-24 bottom-0 h-72 w-72 rounded-full bg-[#7b003a]/10 blur-3xl"/>
+    <div className="container-xl relative py-16 sm:py-24">
+      <div className="grid lg:grid-cols-[1.2fr_.8fr] gap-10 items-end">
+        <div>
+          <p className="text-[9px] uppercase tracking-[.4em] text-[#748e40]">{c.eyebrow || 'THE FINAL CHAPTER'}</p>
+          <div className="mt-4 font-display text-[clamp(5rem,15vw,12rem)] leading-[.72] tracking-[-.06em]">AFSANA</div>
+          <p className="mt-8 max-w-xl font-display text-2xl sm:text-4xl leading-tight">{section.title || 'Leave the final impression.'}</p>
+          {c.body && <p className="mt-4 max-w-xl text-sm leading-7 text-[#5f654f]">{c.body}</p>}
+        </div>
+        <div className="rounded-3xl border border-[#263e0e]/10 bg-white/70 p-6 sm:p-8 backdrop-blur">
+          <p className="text-[9px] uppercase tracking-[.28em] text-[#263e0e]">{c.offerLabel || 'PRIVATE ACCESS'}</p>
+          <h3 className="mt-4 font-display text-3xl">{c.offerText || 'Discover your signature scent.'}</h3>
+          {c.buttonText && c.buttonLink && <Link to={c.buttonLink} className="mt-7 inline-flex bg-[#263e0e] text-white px-6 py-3 text-[10px] uppercase tracking-[.2em]">{c.buttonText}<ArrowRight className="ml-2 w-4"/></Link>}
+        </div>
+      </div>
+    </div>
+  </section>;
+}
 function CmsSection({ section, products, faq }) {
   const c = section.config || {};
   const align = c.align === 'center' ? 'text-center items-center' : c.align === 'right' ? 'text-right items-end' : 'text-left items-start';
@@ -70,8 +146,8 @@ function CmsSection({ section, products, faq }) {
   const heading = section.title ? <div className={`mb-8 flex flex-col ${align}`}><Eyebrow light={['hero','video_grid','promo_timer','testimonials','cinematic_statement','lookbook'].includes(section.type)}>{c.eyebrow || 'AFSANA'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl leading-[.95]">{section.title}</h2>{c.subtitle && <p className="mt-4 max-w-2xl text-sm leading-7 text-[#5f654f]">{c.subtitle}</p>}</div> : null;
   const btn = c.buttonText && c.buttonLink ? <Link to={c.buttonLink} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.18em] text-[#263e0e]">{c.buttonText}<ArrowRight className="w-4 h-4"/></Link> : null;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
-  if (section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p><CmsTimer endAt={c.endAt}/>{btn}</div></div></section>;
-  if (section.type === 'video_grid') return <section className="bg-[#182308] text-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><article key={i} className="relative min-h-[280px] overflow-hidden bg-[#263e0e]">{x.image && <video className="absolute inset-0 h-full w-full object-cover" src={x.image} poster={x.link} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/>}<div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-5"><p className="text-[9px] uppercase tracking-[.22em] text-[#b4bf41]">{String(i+1).padStart(2,'0')}</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-xs text-white/60">{x.text}</p></div></article>)}</div></div></section>;
+  if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p><CmsTimer endAt={c.endAt}/>{btn}</div></div></section>;
+  if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;\n  if (section.type === 'footer_showcase') return <PremiumFooterShowcase section={section}/>;\n  if (section.type === 'video_grid') return <section className="bg-[#182308] text-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><article key={i} className="relative min-h-[280px] overflow-hidden bg-[#263e0e]">{x.image && <video className="absolute inset-0 h-full w-full object-cover" src={x.image} poster={x.link} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/>}<div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-5"><p className="text-[9px] uppercase tracking-[.22em] text-[#b4bf41]">{String(i+1).padStart(2,'0')}</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-xs text-white/60">{x.text}</p></div></article>)}</div></div></section>;
   if (section.type === 'post_grid' || section.type === 'blog_grid') return <section className="bg-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><Link to={x.link || '/journal'} key={i} className="group block"><div className="aspect-[1.05] overflow-hidden bg-[#f3f1e9]">{x.image && <img src={x.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />}</div><p className="mt-4 text-[8px] uppercase tracking-[.25em] text-[#263e0e]">AFSANA JOURNAL</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-sm leading-6 text-[#5f654f]">{x.text}</p></Link>)}</div></div></section>;
   if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) return <section className="bg-[#f3f1e9]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{(products||[]).slice(0, Number(c.limit)||4).map(p=><ProductCard key={p.id} product={p}/>)}</div>{btn}</div></section>;
   if (section.type === 'scent_finder') return <Finder/>;
