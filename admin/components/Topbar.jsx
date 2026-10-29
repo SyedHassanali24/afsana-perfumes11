@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Search, Sun, Moon, Monitor, LogOut, ChevronDown, Database, Trash2 } from "lucide-react";
+import { Search, Sun, Moon, LogOut, ChevronDown, Database, Trash2 } from "lucide-react";
 import { CACHE_EVENT, clearApiCache, getApiCacheStats } from "../../src/services/api";
 import NotificationBell from "./NotificationBell";
 import { useNavigate } from "react-router-dom";
 
-const THEME_CYCLE = ["system", "light", "dark"];
-const THEME_ICON = { system: Monitor, light: Sun, dark: Moon };
+const THEME_CYCLE = ["light", "dark"];
+const THEME_ICON = { light: Sun, dark: Moon };
 
 export default function Topbar({
   user = { name: "Admin", role: "Owner" },
@@ -16,7 +16,7 @@ export default function Topbar({
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [theme, setTheme] = useState(() => localStorage.getItem("afsana-theme") || "system");
+  const [theme, setTheme] = useState(() => localStorage.getItem("afsana-theme") || "light");
   const [cacheStats, setCacheStats] = useState(() => getApiCacheStats());
   const [scrolled, setScrolled] = useState(false);
 
@@ -31,8 +31,7 @@ export default function Topbar({
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "system") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", theme);
+    root.setAttribute("data-theme", theme);
     localStorage.setItem("afsana-theme", theme);
   }, [theme]);
 
@@ -89,7 +88,7 @@ export default function Topbar({
           <ChevronDown className="admin-profile-chevron w-4 h-4 hidden sm:block" />
         </button>
         {onLogout && (
-          <button onClick={onLogout} className="p-2.5 rounded-xl text-[#64748b] hover:bg-[#9b3f3f]/10 hover:text-[#9b3f3f] transition-colors" aria-label="Sign out" title="Sign out">
+          <button onClick={onLogout} className="admin-topbar-icon p-2.5 rounded-xl transition-colors" aria-label="Sign out" title="Sign out">
             <LogOut className="w-4 h-4" />
           </button>
         )}
