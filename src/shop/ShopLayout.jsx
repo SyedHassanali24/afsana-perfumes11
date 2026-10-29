@@ -5,10 +5,14 @@ import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
 import { Container } from './ui';
+import useApi from '../hooks/useApi';
+import { cmsPublicApi } from '../services';
 
 const nav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
 export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
+ const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
+ const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
@@ -30,12 +34,33 @@ export default function ShopLayout(){
    {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-white/10 bg-[#263e0e]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-white/10 py-4 text-[10px] uppercase tracking-[.2em] text-white/75">{label}</Link>)}</nav></div>}
   </header>
   <main className={isHome?'':'py-0'}><Outlet/></main>
-  <footer className="bg-[#182308] text-white border-t border-[#748e40]/20"><div className="container-xl py-16"><div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-    <div><div className="font-display text-4xl tracking-[.08em]">AFSANA</div><p className="mt-5 max-w-sm text-sm leading-7 text-white/55">Fragrance as memory.<br/>Designed in chapters.<br/>Created to leave a trace.</p><div className="mt-7 text-[9px] uppercase tracking-[.35em] text-[#b4bf41]">The art of scent</div></div>
-    <div><h4 className="text-[10px] uppercase tracking-[.25em] text-[#b4bf41]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/60"><Link className="block hover:text-white" to="/shop">Collection</Link><Link className="block hover:text-white" to="/about">The House</Link><Link className="block hover:text-white" to="/journal">Journal</Link><Link className="block hover:text-white" to="/gifting">Gifting</Link></div></div>
-    <div><h4 className="text-[10px] uppercase tracking-[.25em] text-[#b4bf41]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/60"><Link className="block hover:text-white" to="/track">Shipping</Link><Link className="block hover:text-white" to="/track">Returns</Link><Link className="block hover:text-white" to="/shop">Fragrance Care</Link><Link className="block hover:text-white" to="/account">Contact</Link></div></div>
-    <div><h4 className="text-[10px] uppercase tracking-[.25em] text-[#b4bf41]">Follow</h4><div className="mt-5 space-y-3 text-sm text-white/60"><a className="block hover:text-white" href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a><a className="block hover:text-white" href="https://www.tiktok.com/" target="_blank" rel="noreferrer">TikTok</a><a className="block hover:text-white" href="https://www.pinterest.com/" target="_blank" rel="noreferrer">Pinterest</a><a className="block hover:text-white" href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a></div></div>
-  </div><div className="mt-14 border-t border-white/10 pt-5 flex flex-col sm:flex-row justify-between gap-3 text-[9px] uppercase tracking-[.2em] text-white/35"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>CRAFTED WITH INTENTION</span></div></div></footer>
+  <footer className="relative overflow-hidden bg-[#070906] text-white border-t border-[#b4bf41]/20">
+   <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_15%,rgba(180,191,65,.10),transparent_24%),radial-gradient(circle_at_88%_70%,rgba(123,0,58,.14),transparent_28%)]"/>
+   <div className="relative">
+    <div className="border-b border-white/10 overflow-hidden"><div className="marquee-track flex min-w-max gap-12 py-3 text-[9px] uppercase tracking-[.32em] text-white/35">{['THE ART OF SCENT','CRAFTED FOR MEMORIES','AFSANA PERFUMES','LEAVE A TRACE','THE PRIVATE COLLECTION','THE ART OF SCENT'].map((x,i)=><span key={i}>{x}<b className="mx-12 text-[#b4bf41]">✦</b></span>)}</div></div>
+    <Container className="container-xl py-16 sm:py-24">
+      <div className="grid lg:grid-cols-[1.3fr_.7fr] gap-12 pb-14 border-b border-white/10">
+        <div>
+          <p className="text-[9px] uppercase tracking-[.4em] text-[#b4bf41]">{footerCms.eyebrow||'THE HOUSE OF AFSANA'}</p>
+          <div className="mt-5 font-display text-[clamp(5rem,14vw,11rem)] leading-[.68] tracking-[-.07em]">AFSANA</div>
+          <p className="mt-10 max-w-xl font-display text-2xl sm:text-4xl leading-tight text-white/90">{footerCms.body||'Fragrance as memory. Designed in chapters. Created to leave a trace.'}</p>
+        </div>
+        <div className="self-end rounded-3xl border border-[#b4bf41]/20 bg-white/[.035] p-6 sm:p-8 backdrop-blur-xl">
+          <p className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">{footerCms.offerLabel||'THE FINAL NOTE'}</p>
+          <h3 className="mt-4 font-display text-3xl">{footerCms.offerText||'Discover the scent that feels like you.'}</h3>
+          <Link to={footerCms.buttonLink||'/shop'} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.2em] text-[#263e0e] hover:bg-white transition">{footerCms.buttonText||'Explore Collection'}<span>↗</span></Link>
+        </div>
+      </div>
+      <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] py-14">
+        <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#b4bf41]">Customer care ↗</Link></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link></div></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">Track order</Link><Link className="block hover:text-white transition" to="/account">Account</Link><Link className="block hover:text-white transition" to="/shop">Fragrance care</Link><Link className="block hover:text-white transition" to="/gifting">Gift guide</Link></div></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2"><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.tiktok.com/" target="_blank" rel="noreferrer">TikTok</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.pinterest.com/" target="_blank" rel="noreferrer">Pinterest</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a></div></div>
+      </div>
+      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
+    </Container>
+   </div>
+  </footer>
   {search&&<div className="fixed inset-0 z-[65] bg-[#182308]/96 backdrop-blur-xl text-white overflow-y-auto">
     <Container className="container-xl min-h-full py-8 md:py-12">
       <div className="flex items-center justify-between border-b border-white/10 pb-5">
