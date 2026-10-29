@@ -87,6 +87,14 @@ const overrideSchema = new Schema({
 const staffSchema = new Schema({
   userId: { type: ObjectId, ref: 'User', required: true, unique: true },
   name: { type: String, required: true },
+  avatarUrl: String,
+  phone: String,
+  jobTitle: String,
+  department: String,
+  bio: String,
+  address: String,
+  city: String,
+  country: { type: String, default: 'Pakistan' },
   roleId: { type: ObjectId, ref: 'Role', required: true, index: true },
   overrides: [overrideSchema],
   deniedFields: [{ type: String, enum: C.RESTRICTABLE_FIELDS }], // added on top of role's
