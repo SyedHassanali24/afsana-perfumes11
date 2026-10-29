@@ -8,7 +8,12 @@ function parsePermission(s) {
   return m ? [m[1], m[2]] : null;
 }
 // can = ctx.perms.can -> (module, action) => scopes | null
-function isVisibleTo(n, can) {
+function isAdmin(ctx) {
+  const role = ctx && ctx.role;
+  return Boolean(role && (role.isUnrestricted || role.key === 'owner' || role.key === 'admin' || Number(role.level || 0) >= 90));
+}
+function isVisibleTo(n, can, ctx) {
+  if (!isAdmin(ctx)) return false;
   if (!n.forPermission) return true;
   const p = parsePermission(n.forPermission);
   return p ? Boolean(can(p[0], p[1])) : false;
@@ -16,10 +21,10 @@ function isVisibleTo(n, can) {
 const isReadBy = (n, uid) => (n.readBy || []).some((id) => String(id) === String(uid));
 const shape = (n, uid) => ({ id: n._id, type: n.type, title: n.title || '', body: n.body || '', link: n.link || '', createdAt: n.createdAt, read: isReadBy(n, uid) });
 // rows: newest first. -> { notifications (first LIST_LIMIT visible), unread (visible + unread among all rows given) }
-function build(rows, can, uid) {
-  const visible = (rows || []).filter((n) => isVisibleTo(n, can));
+function build(rows, can, uid, ctx) {
+  const visible = (rows || []).filter((n) => isVisibleTo(n, can, ctx));
   return { notifications: visible.slice(0, LIST_LIMIT).map((n) => shape(n, uid)), unread: visible.filter((n) => !isReadBy(n, uid)).length };
 }
 // Only links inside the admin are followed from the bell.
 const safeLink = (l) => (typeof l === 'string' && /^\/admin(\/|$)/.test(l) ? l : '/admin');
-module.exports = { LIST_LIMIT, SCAN_LIMIT, parsePermission, isVisibleTo, isReadBy, shape, build, safeLink };
+module.exports = { LIST_LIMIT, SCAN_LIMIT, parsePermission, isAdmin, isVisibleTo, isReadBy, shape, build, safeLink };
