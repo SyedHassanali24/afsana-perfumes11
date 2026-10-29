@@ -133,3 +133,13 @@ button,input,select,textarea{font:inherit}::selection{background:#dfe8c9;color:#
 :root[data-theme="dark"] .admin-shell .text-gray-700,:root[data-theme="dark"] .admin-shell .text-gray-600,:root[data-theme="dark"] .admin-shell .text-slate-700,:root[data-theme="dark"] .admin-shell .text-slate-600,:root[data-theme="dark"] .admin-shell .text-\[\#5f654f\],:root[data-theme="dark"] .admin-shell .text-\[\#64748b\]{color:#aeb8d0!important}
 :root[data-theme="dark"] input,:root[data-theme="dark"] select,:root[data-theme="dark"] textarea{color:#f8faff}
 @media(max-width:639px){.admin-cache-control{padding-left:.45rem;padding-right:.45rem}.admin-cache-control .cache-count{display:none}.admin-cache-control .cache-size{font-size:9px}}
+
+/* Night mode atmosphere polish */
+:root[data-theme="dark"] .admin-shell{overflow:hidden}
+:root[data-theme="dark"] .admin-shell:after{
+ content:"";position:fixed;inset:auto -12vw -18vh auto;width:46vw;height:46vw;border-radius:50%;
+ background:radial-gradient(circle,rgba(59,130,246,.12),transparent 68%);filter:blur(20px);pointer-events:none;z-index:-1;
+}
+:root[data-theme="dark"] .admin-card h1,:root[data-theme="dark"] .admin-card h2,:root[data-theme="dark"] .admin-card h3,
+:root[data-theme="dark"] .admin-card h4,:root[data-theme="dark"] .admin-card strong{color:#f8faff}
+:root[data-theme="dark"] .admin-card .text-indigo-600,:root[data-theme="dark"] .admin-card .text-blue-600{color:#a78bfa!important}
