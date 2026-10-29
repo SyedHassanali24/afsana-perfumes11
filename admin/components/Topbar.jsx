@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Search, Sun, Moon, Monitor, LogOut, ChevronDown } from "lucide-react";
+import { Search, Sun, Moon, Monitor, LogOut, ChevronDown, Database, Trash2 } from "lucide-react";
+import { CACHE_EVENT, clearApiCache, getApiCacheStats } from "../../src/services/api";
 import NotificationBell from "./NotificationBell";
 import { useNavigate } from "react-router-dom";
 
@@ -16,6 +17,17 @@ export default function Topbar({
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [theme, setTheme] = useState(() => localStorage.getItem("afsana-theme") || "system");
+  const [cacheStats, setCacheStats] = useState(() => getApiCacheStats());
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const update = () => setCacheStats(getApiCacheStats());
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener(CACHE_EVENT, update);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => { window.removeEventListener(CACHE_EVENT, update); window.removeEventListener("scroll", onScroll); };
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -35,9 +47,15 @@ export default function Topbar({
 
   const cycleTheme = () => setTheme(THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length]);
   const ThemeIcon = THEME_ICON[theme];
+  const formatBytes = (bytes) => {
+    if (!bytes) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    return `${(bytes / (1024 ** i)).toFixed(i ? 1 : 0)} ${units[i]}`;
+  };
 
   return (
-    <header className="h-[72px] border-b border-[#1e1b4b]/10 bg-[#ffffff]/95 backdrop-blur flex items-center gap-3 px-4 sm:px-6 sticky top-0 z-30">
+    <header className={`h-[72px] flex items-center gap-3 px-4 sm:px-6 sticky top-0 z-30 transition-all duration-300 ${scrolled ? "bg-white/45 dark:bg-[#0f102f]/45 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_30px_rgba(15,23,42,.05)]" : "bg-transparent border-b border-transparent"}`}>
       <form onSubmit={submitSearch} className="flex-1 max-w-[430px] relative ml-10 md:ml-0" role="search">
         <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#4f46e5]" />
         <input
@@ -50,6 +68,11 @@ export default function Topbar({
       </form>
 
       <div className="ml-auto flex items-center gap-1.5">
+        <div className="hidden lg:flex items-center gap-1 rounded-xl border border-[#1e1b4b]/10 bg-white/55 dark:bg-[#0f102f]/40 backdrop-blur px-2 py-1.5" title={`${cacheStats.entries} cached requests · ${formatBytes(cacheStats.bytes)}`}>
+          <Database className="w-3.5 h-3.5 text-[#4f46e5]" />
+          <span className="text-[10px] font-semibold text-[#64748b]">{formatBytes(cacheStats.bytes)}</span>
+          <button type="button" onClick={clearApiCache} className="ml-1 p-1 rounded-md hover:bg-[#e11d48]/10 text-[#64748b] hover:text-[#e11d48]" aria-label="Clear dashboard cache" title="Clear cache"><Trash2 className="w-3.5 h-3.5" /></button>
+        </div>
         <button onClick={cycleTheme} className="p-2.5 rounded-xl text-[#64748b] hover:bg-[#f3f4f9] transition-colors" aria-label={`Theme: ${theme}. Click to change.`} title={`Theme: ${theme}`}>
           <ThemeIcon className="w-4.5 h-4.5" />
         </button>
