@@ -68,25 +68,25 @@ export default function Topbar({
       </form>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <div className="admin-glass-control hidden lg:flex items-center gap-1 rounded-xl px-2 py-1.5" title={`${cacheStats.entries} cached requests · ${formatBytes(cacheStats.bytes)}`}>
+        <div className="admin-cache-control admin-glass-control flex items-center gap-1 rounded-xl px-2 py-1.5" title={`${cacheStats.entries} cached requests · ${formatBytes(cacheStats.bytes)}`}>
           <Database className="w-3.5 h-3.5 text-[#4f46e5]" />
-          <span className="text-[10px] font-semibold text-[#64748b]">{formatBytes(cacheStats.bytes)}</span>
-          <button type="button" onClick={clearApiCache} className="ml-1 p-1 rounded-md hover:bg-[#e11d48]/10 text-[#64748b] hover:text-[#e11d48]" aria-label="Clear dashboard cache" title="Clear cache"><Trash2 className="w-3.5 h-3.5" /></button>
+          <span className="cache-size text-[10px] font-semibold">{formatBytes(cacheStats.bytes)}</span><span className="cache-count hidden sm:inline text-[10px]">· {cacheStats.active} cached</span>
+          <button type="button" onClick={clearApiCache} className="cache-clear ml-1 p-1 rounded-md hover:bg-[#e11d48]/10 hover:text-[#fb7185]" aria-label="Clear dashboard cache" title="Clear cache"><Trash2 className="w-3.5 h-3.5" /></button>
         </div>
-        <button onClick={cycleTheme} className="p-2.5 rounded-xl text-[#64748b] hover:bg-[#f3f4f9] transition-colors" aria-label={`Theme: ${theme}. Click to change.`} title={`Theme: ${theme}`}>
+        <button onClick={cycleTheme} className="admin-topbar-icon p-2.5 rounded-xl transition-colors" aria-label={`Theme: ${theme}. Click to change.`} title={`Theme: ${theme}`}>
           <ThemeIcon className="w-4.5 h-4.5" />
         </button>
         <NotificationBell />
         <div className="h-8 w-px bg-[#1e1b4b]/10 mx-1.5 hidden sm:block" />
-        <button onClick={onProfile} className="flex items-center gap-2.5 text-left rounded-xl px-2 py-1.5 hover:bg-[#f3f4f9] transition-colors" aria-label="My account" title="My account">
+        <button onClick={onProfile} className="admin-profile-control flex items-center gap-2.5 text-left rounded-xl px-2 py-1.5 transition-colors" aria-label="My account" title="My account">
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br from-[#1e1b4b] to-[#4f46e5] shadow-md">
             {user.name.charAt(0)}
           </div>
           <div className="text-left hidden sm:block">
-            <p className="text-sm font-semibold text-[#172033] leading-tight">{user.name}</p>
-            <p className="text-[11px] text-[#64748b] leading-tight">{user.role}</p>
+            <p className="admin-profile-name text-sm font-semibold leading-tight">{user.name}</p>
+            <p className="admin-profile-role text-[11px] leading-tight">{user.role}</p>
           </div>
-          <ChevronDown className="w-4 h-4 text-[#64748b] hidden sm:block" />
+          <ChevronDown className="admin-profile-chevron w-4 h-4 hidden sm:block" />
         </button>
         {onLogout && (
           <button onClick={onLogout} className="p-2.5 rounded-xl text-[#64748b] hover:bg-[#9b3f3f]/10 hover:text-[#9b3f3f] transition-colors" aria-label="Sign out" title="Sign out">
