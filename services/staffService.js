@@ -15,7 +15,7 @@ const roleShape = (r) => r && ({ id: r._id, key: r.key, name: r.name, level: r.l
 const shape = (s) => {
   const u = s.userId && s.userId.email !== undefined ? s.userId : null; // populated user
   return {
-    id: s._id, userId: u ? u._id : s.userId, name: s.name, email: u && u.email, status: s.status,
+    id: s._id, userId: u ? u._id : s.userId, name: s.name, avatarUrl: s.avatarUrl, phone: s.userId?.phone || s.phone, jobTitle: s.jobTitle, department: s.department, bio: s.bio, address: s.address, city: s.city, country: s.country, email: u && u.email, status: s.status,
     role: roleShape(s.roleId && s.roleId.key ? s.roleId : null), workingHours: s.workingHours, deniedFields: s.deniedFields || [],
     lastLoginAt: u && u.lastLoginAt, mustChangePassword: !!(u && u.mustChangePassword), createdAt: s.createdAt,
   };
@@ -176,6 +176,20 @@ async function removeOverride(ctx, id, overrideId) {
   return getStaff(id);
 }
 
+// ---- own profile ----
+async function updateOwnProfile(ctx, body) {
+  const s = await Staff.findOne({ userId: ctx.user._id, isDeleted: false });
+  if (!s) throw E.notFound('Staff profile not found.');
+  if (body.name !== undefined) s.name = body.name;
+  for (const k of ['avatarUrl','jobTitle','department','bio','address','city','country']) if (body[k] !== undefined) s[k] = body[k];
+  await withTx(async (session) => {
+    await s.save({ session });
+    if (body.phone !== undefined) await User.updateOne({ _id: ctx.user._id }, { $set: { phone: body.phone } }, { session });
+    await audit(ctx, { action: 'staff.profile_updated', module: 'staff', recordId: s._id, newValue: { name: s.name, avatarUrl: s.avatarUrl, phone: body.phone, jobTitle: s.jobTitle, department: s.department, bio: s.bio, address: s.address, city: s.city, country: s.country } }, session);
+  });
+  return getStaff(s._id);
+}
+
 // ---- sessions ----
 async function listSessions(ctx, id) {
   const { staff } = await loadManageable(ctx, id);
@@ -205,4 +219,4 @@ async function changeOwnPassword(ctx, { currentPassword, newPassword }) {
   return {};
 }
 
-module.exports = { listStaff, getStaff, assignableRoles, createStaff, updateStaff, resetPassword, removeStaff, addOverride, removeOverride, listSessions, revokeAllSessions, changeOwnPassword };
+module.exports = { listStaff, getStaff, assignableRoles, createStaff, updateStaff, resetPassword, removeStaff, addOverride, removeOverride, listSessions, revokeAllSessions, changeOwnPassword, updateOwnProfile };
