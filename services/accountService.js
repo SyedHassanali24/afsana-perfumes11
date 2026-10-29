@@ -41,7 +41,17 @@ async function login(body, meta) {
 }
 
 async function updateProfile(ctx, patch) {
-  const c = await Customer.findByIdAndUpdate(ctx.customer._id, { $set: patch }, { new: true });
+  const clean = { ...patch };
+  if (clean.email !== undefined) {
+    const email = clean.email ? clean.email.toLowerCase() : undefined;
+    if (email) {
+      const exists = await User.findOne({ kind: 'customer', email, _id: { $ne: ctx.user._id } });
+      if (exists) throw E.conflict('That email is already linked to another account.');
+    }
+    await User.updateOne({ _id: ctx.user._id }, { $set: { email }, ...(email ? {} : { $unset: { email: 1 } }) });
+    clean.email = email;
+  }
+  const c = await Customer.findByIdAndUpdate(ctx.customer._id, { $set: clean }, { new: true });
   return { customer: shape(c) };
 }
 
