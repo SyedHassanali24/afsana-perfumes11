@@ -6,6 +6,29 @@ export class ApiError extends Error {
 const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, "");
 const inflightGets = new Map();
 const memoryGets = new Map();
+const CACHE_EVENT = 'afsana:cache-change';
+
+function cacheBytes() {
+  let bytes = 0;
+  for (const [key, entry] of memoryGets) {
+    try { bytes += new Blob([key, JSON.stringify(entry.data)]).size; } catch {}
+  }
+  return bytes;
+}
+function emitCacheChange() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CACHE_EVENT, { detail: getApiCacheStats() }));
+}
+export function getApiCacheStats() {
+  const now = Date.now();
+  let active = 0;
+  for (const entry of memoryGets.values()) if (entry.expiresAt > now) active += 1;
+  return { entries: memoryGets.size, active, bytes: cacheBytes() };
+}
+export function clearApiCache() {
+  memoryGets.clear();
+  emitCacheChange();
+}
+export { CACHE_EVENT };
 
 async function executeRequest(url, path, options) {
   const { method = 'GET', body, idempotencyKey } = options;
@@ -45,11 +68,20 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
     if (existing) return existing;
 
     const request = executeRequest(url, path, { method, body, idempotencyKey })
-      .then((data) => { if (cacheTtl > 0) memoryGets.set(key, { data, expiresAt: Date.now() + cacheTtl }); return data; })
+      .then((data) => {
+        if (cacheTtl > 0) {
+          memoryGets.set(key, { data, expiresAt: Date.now() + cacheTtl });
+          emitCacheChange();
+        }
+        return data;
+      })
       .finally(() => inflightGets.delete(key));
     inflightGets.set(key, request);
     return request;
   }
 
-  return executeRequest(url, path, { method, body, idempotencyKey });
+  const result = await executeRequest(url, path, { method, body, idempotencyKey });
+  // Mutations can make cached GET data stale. Keep the UI correct and still fast.
+  if (memoryGets.size) clearApiCache();
+  return result;
 }
