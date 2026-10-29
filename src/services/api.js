@@ -7,6 +7,21 @@ const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).r
 const inflightGets = new Map();
 const memoryGets = new Map();
 const CACHE_EVENT = 'afsana:cache-change';
+const PERSIST_PREFIX = 'afsana-api-cache:';
+
+function loadPersistent(key) {
+  try {
+    const raw = sessionStorage.getItem(PERSIST_PREFIX + key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (!entry || entry.expiresAt <= Date.now()) { sessionStorage.removeItem(PERSIST_PREFIX + key); return null; }
+    memoryGets.set(key, entry);
+    return entry;
+  } catch { return null; }
+}
+function persistCache(key, entry) {
+  try { sessionStorage.setItem(PERSIST_PREFIX + key, JSON.stringify(entry)); } catch {}
+}
 
 function cacheBytes() {
   let bytes = 0;
@@ -26,6 +41,12 @@ export function getApiCacheStats() {
 }
 export function clearApiCache() {
   memoryGets.clear();
+  try {
+    for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+      const key = sessionStorage.key(i);
+      if (key?.startsWith(PERSIST_PREFIX)) sessionStorage.removeItem(key);
+    }
+  } catch {}
   emitCacheChange();
 }
 export { CACHE_EVENT };
@@ -61,7 +82,7 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
   if (method === 'GET') {
     const key = url.toString();
     const now = Date.now();
-    const cached = memoryGets.get(key);
+    const cached = memoryGets.get(key) || loadPersistent(key);
     if (cached && cached.expiresAt > now) return Promise.resolve(cached.data);
 
     const existing = inflightGets.get(key);
@@ -70,7 +91,9 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
     const request = executeRequest(url, path, { method, body, idempotencyKey })
       .then((data) => {
         if (cacheTtl > 0) {
-          memoryGets.set(key, { data, expiresAt: Date.now() + cacheTtl });
+          const entry = { data, expiresAt: Date.now() + cacheTtl };
+          memoryGets.set(key, entry);
+          persistCache(key, entry);
           emitCacheChange();
         }
         return data;
