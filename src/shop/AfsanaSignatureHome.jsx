@@ -54,7 +54,7 @@ function CmsTimer({ endAt }) {
 }
 function AnimatedValue({ value }) {
   const raw = String(value ?? '').trim();
-  const numeric = /^\\d+(?:[.,]\\d+)?[kKmM%+]*$/.test(raw);
+  const numeric = /^\d+(?:[.,]\d+)?[kKmM%+]*$/.test(raw);
   const target = numeric ? Number(raw.replace(/[,kKmM%+]/g, '')) : 0;
   const [shown, setShown] = useState(numeric ? 0 : raw);
   useEffect(() => {
@@ -72,6 +72,60 @@ function AnimatedValue({ value }) {
   if (!numeric) return <>{raw}</>;
   const suffix = raw.match(/[kKmM%+]+$/)?.[0] || '';
   return <>{shown.toLocaleString()}{suffix}</>;
+}
+function MuseScene({ section }) {
+  const c = section.config || {};
+  return <section className="relative min-h-[620px] sm:min-h-[760px] overflow-hidden bg-[#080a07] text-white">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_42%,rgba(180,191,65,.22),transparent_22%),radial-gradient(circle_at_30%_70%,rgba(123,0,58,.18),transparent_28%)]"/>
+    <div className="absolute left-[52%] top-1/2 h-[390px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-[48%] bg-gradient-to-b from-white/10 via-[#b4bf41]/10 to-transparent blur-2xl animate-pulse"/>
+    <div className="absolute left-[52%] top-[48%] h-[430px] w-[190px] -translate-x-1/2 -translate-y-1/2 rounded-[46%] border border-[#b4bf41]/25 shadow-[0_0_100px_rgba(180,191,65,.14)]"/>
+    <div className="absolute inset-0 opacity-35 [background-image:radial-gradient(circle,rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:42px_42px]"/>
+    <div className="container-xl relative grid min-h-[620px] sm:min-h-[760px] items-center lg:grid-cols-[.8fr_1.2fr]">
+      <div className="relative z-10 max-w-xl py-20">
+        <Eyebrow light>{c.eyebrow || 'THE AFSANA MUSE'}</Eyebrow>
+        <h2 className="mt-6 font-display text-6xl sm:text-8xl leading-[.82]">{section.title || 'Wear the story.'}</h2>
+        <p className="mt-7 max-w-md text-sm leading-7 text-white/55">{c.body || 'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.'}</p>
+        {c.buttonText && <Link to={c.buttonLink || '/shop'} className="mt-8 inline-flex bg-[#b4bf41] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">{c.buttonText} ↗</Link>}
+      </div>
+      <div className="relative hidden lg:block h-full">
+        <div className="absolute left-1/2 top-1/2 h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 rounded-[45%] bg-gradient-to-b from-[#c8c7bd]/30 via-[#748e40]/12 to-transparent blur-[1px] shadow-[0_30px_120px_rgba(0,0,0,.8)] animate-[afsanaFloat_6s_ease-in-out_infinite]"/>
+        <div className="absolute left-1/2 top-[38%] h-[150px] w-[150px] -translate-x-1/2 rounded-full border border-white/10 bg-white/[.025] backdrop-blur"/>
+        <div className="absolute left-[36%] top-[34%] text-[9px] uppercase tracking-[.3em] text-[#b4bf41] animate-pulse">Presence</div>
+        <div className="absolute right-[18%] top-[54%] text-[9px] uppercase tracking-[.3em] text-white/35">Memory</div>
+      </div>
+    </div>
+  </section>;
+}
+function FragranceDNA({ section }) {
+  const c=section.config||{};
+  const items=cmsItems(c.items).length?cmsItems(c.items):[
+    {title:'OUD',text:'Deep & mysterious'}, {title:'AMBER',text:'Warm & magnetic'},
+    {title:'ROSE',text:'Soft & luminous'}, {title:'MUSK',text:'Clean & intimate'}
+  ];
+  return <section className="bg-[#f4f0e7] py-20 sm:py-28 text-[#263e0e]">
+    <div className="container-xl">
+      <Eyebrow>{c.eyebrow || 'FRAGRANCE DNA'}</Eyebrow>
+      <div className="mt-6 grid lg:grid-cols-[.8fr_1.2fr] gap-12 items-center">
+        <div><h2 className="font-display text-5xl sm:text-7xl leading-[.9]">{section.title || 'Know the notes.'}</h2><p className="mt-6 max-w-md text-sm leading-7 text-[#5f654f]">{c.body || 'Explore the personality behind every composition.'}</p></div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-5">
+          {items.slice(0,4).map((x,i)=><article key={i} className="group relative min-h-[180px] sm:min-h-[220px] overflow-hidden rounded-[2rem] border border-[#263e0e]/10 bg-white p-6 sm:p-8 transition duration-500 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(38,62,14,.14)]">
+            <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#b4bf41]/20 blur-xl group-hover:scale-150 transition duration-700"/>
+            <span className="relative text-[9px] tracking-[.3em] text-[#748e40]">0{i+1}</span><h3 className="relative mt-10 font-display text-3xl sm:text-4xl">{x.title}</h3><p className="relative mt-2 text-xs text-[#5f654f]">{x.text || x.description}</p>
+          </article>)}
+        </div>
+      </div>
+    </div>
+  </section>;
+}
+function InteractiveGallery({ section }) {
+  const c=section.config||{}, items=cmsItems(c.items);
+  return <section className="bg-[#faf8f4] py-20 sm:py-28">
+    <div className="container-xl"><Eyebrow>{c.eyebrow || 'THE VISUAL JOURNEY'}</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">{section.title || 'A scent in motion.'}</h2>
+      <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-width:none]">{(items.length?items:[{title:'The Signature',image:img.signature},{title:'Dark Woods',image:img.woods},{title:'Soft Light',image:img.floral},{title:'Made to Give',image:img.gifting}]).map((x,i)=><Link to={x.link||'/shop'} key={i} className="group relative min-w-[78vw] sm:min-w-[48vw] lg:min-w-[31vw] aspect-[.82] snap-start overflow-hidden rounded-[2rem] bg-[#263e0e]">
+        <img src={x.image||x.link} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-110"/><div className="absolute inset-0 bg-gradient-to-t from-[#080a07] via-transparent to-transparent"/><div className="absolute bottom-0 p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1}</p><h3 className="mt-2 font-display text-3xl">{x.title}</h3><p className="mt-2 text-xs text-white/55">{x.description||x.text}</p></div>
+      </Link>)}</div>
+    </div>
+  </section>;
 }
 function CommunityPulse({ section }) {
   const c = section.config || {};
@@ -147,7 +201,7 @@ function CmsSection({ section, products, faq }) {
   const btn = c.buttonText && c.buttonLink ? <Link to={c.buttonLink} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.18em] text-[#263e0e]">{c.buttonText}<ArrowRight className="w-4 h-4"/></Link> : null;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p><CmsTimer endAt={c.endAt}/>{btn}</div></div></section>;
-  if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;\n  if (section.type === 'footer_showcase') return <PremiumFooterShowcase section={section}/>;\n  if (section.type === 'video_grid') return <section className="bg-[#182308] text-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><article key={i} className="relative min-h-[280px] overflow-hidden bg-[#263e0e]">{x.image && <video className="absolute inset-0 h-full w-full object-cover" src={x.image} poster={x.link} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/>}<div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-5"><p className="text-[9px] uppercase tracking-[.22em] text-[#b4bf41]">{String(i+1).padStart(2,'0')}</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-xs text-white/60">{x.text}</p></div></article>)}</div></div></section>;
+  if (section.type === 'muse_scene') return <MuseScene section={section}/>;\n  if (section.type === 'fragrance_dna') return <FragranceDNA section={section}/>;\n  if (section.type === 'interactive_gallery') return <InteractiveGallery section={section}/>;\n  if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;\n  if (section.type === 'footer_showcase') return <PremiumFooterShowcase section={section}/>;\n  if (section.type === 'video_grid') return <section className="bg-[#182308] text-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><article key={i} className="relative min-h-[280px] overflow-hidden bg-[#263e0e]">{x.image && <video className="absolute inset-0 h-full w-full object-cover" src={x.image} poster={x.link} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/>}<div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-5"><p className="text-[9px] uppercase tracking-[.22em] text-[#b4bf41]">{String(i+1).padStart(2,'0')}</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-xs text-white/60">{x.text}</p></div></article>)}</div></div></section>;
   if (section.type === 'post_grid' || section.type === 'blog_grid') return <section className="bg-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><Link to={x.link || '/journal'} key={i} className="group block"><div className="aspect-[1.05] overflow-hidden bg-[#f3f1e9]">{x.image && <img src={x.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />}</div><p className="mt-4 text-[8px] uppercase tracking-[.25em] text-[#263e0e]">AFSANA JOURNAL</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-sm leading-6 text-[#5f654f]">{x.text}</p></Link>)}</div></div></section>;
   if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) return <section className="bg-[#f3f1e9]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{(products||[]).slice(0, Number(c.limit)||4).map(p=><ProductCard key={p.id} product={p}/>)}</div>{btn}</div></section>;
   if (section.type === 'scent_finder') return <Finder/>;
