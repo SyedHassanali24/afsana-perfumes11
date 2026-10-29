@@ -7,6 +7,7 @@ export const authApi = {
   logoutAll: () => api('/auth/logout-all', { method: 'POST' }),
   me: () => api('/auth/me'),
   changePassword: (currentPassword, newPassword) => api('/auth/change-password', { method: 'POST', body: { currentPassword, newPassword } }),
+  updateProfile: (body) => api('/auth/profile', { method: 'PATCH', body }),
   sessions: () => api('/auth/sessions'),
   revokeSession: (id) => api(`/auth/sessions/${id}`, { method: 'DELETE' }),
 };
