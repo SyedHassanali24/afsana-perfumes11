@@ -24,8 +24,24 @@ function Hero(){
   <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_38%,rgba(163,197,233,.28),transparent_22%),radial-gradient(circle_at_18%_72%,rgba(123,0,58,.24),transparent_26%),linear-gradient(90deg,rgba(8,10,7,.98),rgba(38,62,14,.80),rgba(8,10,7,.42))]"/>
   <div className="hero-light"/><div className="hero-light two"/>
   <div className="container-xl hero-content"><div className="grid w-full items-center lg:grid-cols-[1.08fr_.92fr] gap-12">
-   <div className="luxury-reveal"><Eyebrow light>A new chapter in fragrance</Eyebrow><h1 className="hero-title mt-7 max-w-4xl font-display">SCENTS<br/>WITH A<br/><em className="text-[#ffe500]">STORY.</em></h1><p className="hero-description mt-8">Fragrance is more than a scent. It is a memory, a presence, a quiet signature that remains long after you have left the room.</p><div className="hero-buttons mt-9 flex flex-wrap gap-3"><Link to="/shop" className="group inline-flex items-center gap-3 bg-[#ffe500] px-7 py-4 text-xs font-semibold uppercase tracking-[.16em] text-[#080a07] hover:bg-white transition">Explore Collection <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition"/></Link><a href="#finderSection" className="inline-flex items-center gap-3 border border-white/25 px-7 py-4 text-xs uppercase tracking-[.16em] text-white hover:border-[#b4bf41] hover:text-[#b4bf41] transition">Find Your Scent <span>✦</span></a></div></div>
-   <div className="hero-side hidden lg:block luxury-reveal"><div className="hero-card relative mx-auto hero-card-magical"><div className="hero-card-image"><img src={img.signature} alt="Afsana fragrance"/></div><div className="text-left mt-4"><Eyebrow light>01 — The Signature</Eyebrow><p className="mt-4 font-display text-2xl">A luminous opening of citrus and saffron</p></div></div></div>
+   <div className="luxury-reveal">
+    <Eyebrow light>AN AFSANA BEGINS</Eyebrow>
+    <h1 className="hero-title mt-7 max-w-4xl font-display">SCENTS<br/>WITH A<br/><em className="text-[#ffe500]">A STORY.</em></h1>
+    <p className="mt-4 text-[10px] uppercase tracking-[.42em] text-[#a3c5e9]/80">THE ART OF SCENT • PRIVATE COLLECTION</p>
+    <p className="hero-description mt-8">Some scents are worn. Others become memories. Discover a cinematic fragrance world crafted to leave a trace long after you leave the room.</p>
+    <div className="hero-buttons mt-9 flex flex-wrap gap-3">
+      <Link to="/shop" className="group inline-flex items-center gap-3 bg-[#ffe500] px-7 py-4 text-xs font-semibold uppercase tracking-[.16em] text-[#080a07] hover:bg-white transition">Enter the Story <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition"/></Link>
+      <a href="#finderSection" className="inline-flex items-center gap-3 border border-white/25 px-7 py-4 text-xs uppercase tracking-[.16em] text-white hover:border-[#d6a84f] hover:text-[#ffe500] transition">Find Your AFSANA <span>✦</span></a>
+    </div>
+    <div className="mt-8 flex flex-wrap gap-3 text-[8px] uppercase tracking-[.25em] text-white/45"><span className="border border-white/10 bg-white/[.03] px-3 py-2">Premium Oils</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">Long Lasting</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">Gift Ready</span></div>
+   </div>
+   <div className="hero-side hidden lg:block luxury-reveal">
+    <div className="hero-card relative mx-auto hero-card-magical">
+      <div className="absolute -top-4 -right-4 z-10 rounded-full border border-[#d6a84f]/40 bg-[#070807]/70 px-4 py-2 text-[8px] uppercase tracking-[.28em] text-[#ffe500] backdrop-blur">01 • Signature</div>
+      <div className="hero-card-image"><img src={img.signature} alt="Afsana fragrance"/></div>
+      <div className="text-left mt-4"><Eyebrow light>THE SIGNATURE</Eyebrow><p className="mt-4 font-display text-2xl">Citrus, saffron & a magnetic trail.</p></div>
+    </div>
+   </div>
   </div></div>
   <div className="absolute bottom-7 left-1/2 -translate-x-1/2 text-center text-[8px] uppercase tracking-[.35em] text-white/45"><span>Scroll to discover</span><div className="mx-auto mt-3 h-12 w-px bg-gradient-to-b from-[#b4bf41] to-transparent"/></div>
  </section>;
