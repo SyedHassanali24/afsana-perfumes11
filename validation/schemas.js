@@ -81,7 +81,7 @@ const historyQuery = z.object({ variantId: objectId.optional(), type: z.enum(C.S
 const phone = z.string().trim().regex(/^[0-9+\-\s]{10,15}$/, 'Enter a valid phone number').transform(normalizePhone);
 const checkoutBody = z.object({
   items: z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(20) })).min(1).max(30),
-  customer: z.object({ name: z.string().trim().min(2).max(100), phone, email: z.string().email().max(200).optional().or(z.literal('')) }),
+  customer: z.object({ name: z.string().trim().min(2).max(100), phone, email: z.string().email().max(200) }),
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
   couponCode: z.string().trim().max(40).optional(),
