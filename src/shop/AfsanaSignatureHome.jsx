@@ -248,9 +248,11 @@ function CmsDrivenHome({ sections, faq }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
   const safe = Array.isArray(sections) ? sections : [];
+  const hasOffer = safe.some((s) => s?.type === 'offer_timer' || s?.type === 'promo_timer');
   const hasPulse = safe.some((s) => s?.type === 'community_pulse');
   const hasFooterShowcase = safe.some((s) => s?.type === 'footer_showcase');
   const tail = [
+    ...(!hasOffer ? [{ id: '__default-offer-timer', type: 'offer_timer', title: 'A moment worth discovering.', config: { label:'PRIVATE COLLECTION OFFER', endAt:'2026-11-05T23:59:00+05:00', offerText:'Discover the AFSANA private collection before this chapter closes.', buttonText:'Shop the offer', buttonLink:'/shop' }, isEnabled:true }] : []),
     ...(!hasPulse ? [{ id: '__default-community-pulse', type: 'community_pulse', title: 'A house people come back to.', config: {}, isEnabled: true }] : []),
     ...(!hasFooterShowcase ? [{ id: '__default-footer-showcase', type: 'footer_showcase', title: 'Leave the final impression.', config: {}, isEnabled: true }] : []),
   ];
