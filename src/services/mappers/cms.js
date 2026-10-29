@@ -100,6 +100,7 @@ export const HOMEPAGE_SECTION_TYPES = [
   { key: 'community_pulse', label: 'Community / verified activity pulse' },
   { key: 'footer_showcase', label: 'Premium footer showcase' },
   { key: 'muse_scene', label: 'AFSANA Muse / cinematic character' },
+  { key: 'product_3d_showcase', label: '3D Product Theatre' },
   { key: 'fragrance_dna', label: 'Interactive Fragrance DNA' },
   { key: 'interactive_gallery', label: 'Cinematic interactive gallery' },
   { key: 'scent_finder', label: 'Scent finder' },
