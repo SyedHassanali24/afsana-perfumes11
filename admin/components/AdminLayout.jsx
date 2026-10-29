@@ -13,7 +13,7 @@ export default function AdminLayout({ children, notificationCount }) {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#f3f1e9] text-[#182308]">
+    <div className="min-h-screen bg-[#f3f4f9] text-[#172033]">
       <div className="flex min-h-screen">
         <Sidebar activeHref={pathname} onNavigate={navigate} />
 
