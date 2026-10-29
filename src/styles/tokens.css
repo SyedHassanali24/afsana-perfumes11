@@ -51,3 +51,11 @@ button,input,select,textarea{font:inherit}::selection{background:#dfe8c9;color:#
 .cms-timer b{opacity:.45}
 @media(max-width:900px){.cms-grid{grid-template-columns:repeat(min(var(--cms-cols,4),2),minmax(0,1fr))}}
 @media(max-width:560px){.cms-grid{grid-template-columns:1fr}.cms-timer{gap:6px}.cms-timer span{min-width:52px;font-size:14px;padding:10px 6px}}
+
+/* Admin SaaS dark-mode overrides */
+:root[data-theme="dark"] .dashboard-stat-card{background:#17182f!important;border-color:rgba(148,163,184,.16)!important}
+:root[data-theme="dark"] .dashboard-stat-card p{color:#e5e7eb}
+:root[data-theme="dark"] .dashboard-stat-card p.text-\[\#64748b\]{color:#94a3b8}
+:root[data-theme="dark"] .bg-white{background-color:#17182f}
+:root[data-theme="dark"] .text-\[\#172033\]{color:#f8fafc}
+:root[data-theme="dark"] .text-\[\#64748b\]{color:#a8b1c1}
