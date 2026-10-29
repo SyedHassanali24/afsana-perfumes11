@@ -15,6 +15,12 @@ const S = require('../../../validation/schemas');
 const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit']];
 
 const api = createHandler('media', [
+  { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
+      const c = checkUpload(body); if (!c.ok) throw E.badRequest(c.message);
+      const doc = await Media.create({ contentType: c.contentType, size: c.buffer.length, data: c.buffer, filename: body.filename || 'profile-avatar', uploadedBy: ctx.user._id });
+      await audit(ctx, { action: 'media.profile_uploaded', module: 'staff', recordId: doc._id, newValue: { size: doc.size, contentType: doc.contentType } });
+      return res(201, { url: `/api/media/${doc._id}`, size: doc.size });
+    } },
   { method: 'POST', path: '/admin', body: S.uploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
     handler: async ({ ctx, body }) => {
       if (!UPLOADERS.some(([m, a]) => ctx.perms.can(m, a))) throw E.forbidden();
