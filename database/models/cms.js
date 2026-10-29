@@ -13,7 +13,7 @@ storeScoped(bannerSchema); softDelete(bannerSchema);
 bannerSchema.index({ isDeleted: 1, isActive: 1, sortOrder: 1, createdAt: -1 });
 
 const homepageSectionSchema = new Schema({
-  type: { type: String, enum: ['hero', 'featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'testimonials', 'instagram', 'newsletter', 'video_banner', 'video_grid', 'image_banner', 'split_story', 'benefits', 'category_tiles', 'marquee', 'trust_grid', 'cinematic_statement', 'lookbook', 'values_grid', 'blog_grid', 'post_grid', 'promo_timer', 'offer_timer', 'community_pulse', 'footer_showcase', 'muse_scene', 'fragrance_dna', 'interactive_gallery', 'scent_finder', 'rich_text', 'faq', 'spacer'], required: true },
+  type: { type: String, enum: ['hero', 'featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'testimonials', 'instagram', 'newsletter', 'video_banner', 'video_grid', 'image_banner', 'split_story', 'benefits', 'category_tiles', 'marquee', 'trust_grid', 'cinematic_statement', 'lookbook', 'values_grid', 'blog_grid', 'post_grid', 'promo_timer', 'offer_timer', 'community_pulse', 'footer_showcase', 'muse_scene','product_3d_showcase', 'fragrance_dna', 'interactive_gallery', 'scent_finder', 'rich_text', 'faq', 'spacer'], required: true },
   title: String, config: Schema.Types.Mixed, // e.g. { collectionId, limit }
   sortOrder: { type: Number, default: 0, index: true }, isEnabled: { type: Boolean, default: true },
 }, { timestamps: true });
