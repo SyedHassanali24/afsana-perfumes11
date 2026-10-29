@@ -4,6 +4,7 @@ const { E, ApiError } = require('../middleware/errors');
 const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
+const { notifyAdmin } = require('./notificationService');
 const R = require('./accessRules');
 
 const hash = (pw) => bcrypt.hash(pw, 12);
@@ -187,7 +188,9 @@ async function updateOwnProfile(ctx, body) {
     if (body.phone !== undefined) await User.updateOne({ _id: ctx.user._id }, { $set: { phone: body.phone } }, { session });
     await audit(ctx, { action: 'staff.profile_updated', module: 'staff', recordId: s._id, newValue: { name: s.name, avatarUrl: s.avatarUrl, phone: body.phone, jobTitle: s.jobTitle, department: s.department, bio: s.bio, address: s.address, city: s.city, country: s.country } }, session);
   });
-  return getStaff(s._id);
+  const result = await getStaff(s._id);
+  await notifyAdmin({ type: 'profile_change', title: 'Staff profile updated', body: s.name, link: '/admin/staff', forPermission: 'staff.view' });
+  return result;
 }
 
 // ---- sessions ----
