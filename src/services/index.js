@@ -48,7 +48,7 @@ export const ordersApi = {
 };
 
 export const analyticsApi = {
-  dashboard: () => api('/analytics/dashboard', { cacheTtl: 12000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }; a section is null when the role may not see it
+  dashboard: () => api('/analytics/dashboard', { cacheTtl: 60000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }; a section is null when the role may not see it
 };
 
 // ---- Phase 4: team & access (all writes need confirmPassword) ----
