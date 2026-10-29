@@ -112,6 +112,7 @@ const staffCreate = z.object({
   name: z.string().trim().min(2).max(100), email: z.string().trim().email().max(200), roleId: objectId,
   password: passwordRule(10).optional(), workingHours: workingHours.optional(), deniedFields: deniedFields.optional(),
 });
+const staffProfile = z.object({ avatarUrl: imageAddress.optional(), phone: z.string().trim().max(30).optional(), jobTitle: z.string().trim().max(100).optional(), department: z.string().trim().max(100).optional(), bio: z.string().trim().max(1000).optional(), address: z.string().trim().max(250).optional(), city: z.string().trim().max(80).optional(), country: z.string().trim().max(80).optional() });
 const staffPatch = z.object({
   name: z.string().trim().min(2).max(100), roleId: objectId, status: z.enum(['Active', 'Suspended', 'Disabled']),
   workingHours, deniedFields,
@@ -341,7 +342,7 @@ module.exports = {
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
   quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,
   taxonomyBody, taxonomyPatch, taxonomyQuery, supplierBody, supplierPatch, supplierQuery, poCreate, poPatch, poReceive, poQuery, thresholdBody,
-  changePasswordBody, staffQuery, staffCreate, staffPatch, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
+  changePasswordBody, staffQuery, staffCreate, staffPatch, staffProfile, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
   registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, resetBody,
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,
   adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
