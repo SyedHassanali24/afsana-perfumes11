@@ -84,3 +84,13 @@ button,input,select,textarea{font:inherit}::selection{background:#dfe8c9;color:#
 :root[data-theme="dark"] .text-\[\#172033\]{color:#f4f6fb!important}
 :root[data-theme="dark"] .text-\[\#64748b\]{color:#98a2b5!important}
 :root[data-theme="dark"] .border-\[\#1e1b4b\]\/10{border-color:rgba(148,163,184,.12)!important}
+
+/* Admin dark-mode legibility + always-visible cache controls */
+.admin-cache-control{color:#64748b}.cache-clear{color:#64748b}.admin-topbar-icon{color:#64748b}.admin-topbar-icon:hover,.admin-profile-control:hover{background:rgba(99,102,241,.07)}.admin-profile-name{color:#172033}.admin-profile-role,.admin-profile-chevron{color:#64748b}
+:root[data-theme="dark"] .admin-shell :is(h1,h2,h3,h4,h5,h6,p,label,th,td,span,a,button){color:inherit}
+:root[data-theme="dark"] .admin-shell{color:#f4f6fb}
+:root[data-theme="dark"] .admin-shell .text-black,:root[data-theme="dark"] .admin-shell .text-gray-900,:root[data-theme="dark"] .admin-shell .text-slate-900,:root[data-theme="dark"] .admin-shell .text-\[\#182308\],:root[data-theme="dark"] .admin-shell .text-\[\#172033\]{color:#f4f6fb!important}
+:root[data-theme="dark"] .admin-shell .text-gray-700,:root[data-theme="dark"] .admin-shell .text-gray-600,:root[data-theme="dark"] .admin-shell .text-slate-700,:root[data-theme="dark"] .admin-shell .text-slate-600,:root[data-theme="dark"] .admin-shell .text-\[\#5f654f\],:root[data-theme="dark"] .admin-shell .text-\[\#64748b\]{color:#a8b1c1!important}
+:root[data-theme="dark"] .admin-profile-name{color:#fff!important}:root[data-theme="dark"] .admin-profile-role,:root[data-theme="dark"] .admin-profile-chevron,:root[data-theme="dark"] .admin-topbar-icon,:root[data-theme="dark"] .admin-cache-control,:root[data-theme="dark"] .cache-clear{color:#cbd5e1!important}
+:root[data-theme="dark"] input,:root[data-theme="dark"] select,:root[data-theme="dark"] textarea{color:#f8fafc}
+@media(max-width:639px){.admin-cache-control{padding-left:.45rem;padding-right:.45rem}.admin-cache-control .cache-count{display:none}.admin-cache-control .cache-size{font-size:9px}}
