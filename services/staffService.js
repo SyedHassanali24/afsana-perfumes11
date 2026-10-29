@@ -20,7 +20,7 @@ const shape = (s) => {
     lastLoginAt: u && u.lastLoginAt, mustChangePassword: !!(u && u.mustChangePassword), createdAt: s.createdAt,
   };
 };
-const populate = (q) => q.populate('userId', 'email lastLoginAt mustChangePassword').populate('roleId', 'key name level isUnrestricted');
+const populate = (q) => q.populate('userId', 'email phone lastLoginAt mustChangePassword').populate('roleId', 'key name level isUnrestricted');
 
 async function listStaff(q) {
   const { page, limit, skip } = paging(q);
