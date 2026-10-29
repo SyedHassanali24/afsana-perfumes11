@@ -13,7 +13,7 @@ const mediaSchema = new Schema({
 storeScoped(mediaSchema);
 
 const notificationSchema = new Schema({
-  type: { type: String, enum: ['new_order', 'low_stock', 'new_review', 'return_request', 'new_customer', 'payment_received', 'security_alert'], required: true },
+  type: { type: String, enum: ['new_order', 'order_update', 'low_stock', 'new_review', 'return_request', 'new_customer', 'payment_received', 'refund_issued', 'staff_change', 'profile_change', 'product_change', 'inventory_change', 'cms_change', 'settings_change', 'security_alert'], required: true },
   title: String, body: String, link: String,
   forPermission: String, // only staff holding this permission see it
   readBy: [{ type: ObjectId, ref: 'User' }],
