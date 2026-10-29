@@ -21,4 +21,10 @@ async function markAllRead(ctx) {
   if (ids.length) await Notification.updateMany({ _id: { $in: ids } }, { $addToSet: { readBy: ctx.user._id } });
   return { marked: ids.length };
 }
-module.exports = { list, markRead, markAllRead };
+async function notifyAdmin({ type = 'security_alert', title, body = '', link = '/admin', forPermission }) {
+  return Notification.create({ type, title, body, link: R.safeLink(link), ...(forPermission ? { forPermission } : {}) }).catch((err) => {
+    console.error('Admin notification failed:', err?.message || err);
+    return null;
+  });
+}
+module.exports = { list, markRead, markAllRead, notifyAdmin };
