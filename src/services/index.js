@@ -211,7 +211,8 @@ export const myReturnsApi = {
 
 // ---- picture upload (staff with products.manageImages) ----
 export const mediaApi = {
-  upload: (body) => api('/media/admin', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
+  upload: (body) => api('/media/admin', { method: 'POST', body }),
+  uploadProfile: (body) => api('/media/profile', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
 };
 
 // ---- backup (owner only; every call needs the password) ----
