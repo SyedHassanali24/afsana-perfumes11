@@ -88,10 +88,34 @@ function MuseScene({ section }) {
         {c.buttonText && <Link to={c.buttonLink || '/shop'} className="mt-8 inline-flex bg-[#b4bf41] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">{c.buttonText} ↗</Link>}
       </div>
       <div className="relative hidden lg:block h-full">
-        <div className="absolute left-1/2 top-1/2 h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 rounded-[45%] bg-gradient-to-b from-[#c8c7bd]/30 via-[#748e40]/12 to-transparent blur-[1px] shadow-[0_30px_120px_rgba(0,0,0,.8)] animate-[afsanaFloat_6s_ease-in-out_infinite]"/>
+        {c.characterImageUrl ? <img src={c.characterImageUrl} alt="" className="absolute left-1/2 top-1/2 h-[600px] w-[360px] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_35px_90px_rgba(180,191,65,.25)] animate-[afsanaFloat_6s_ease-in-out_infinite]" /> : <div className="absolute left-1/2 top-1/2 h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 rounded-[45%] bg-gradient-to-b from-white/20 via-[#a3c5e9]/12 to-[#7b003a]/10 blur-[1px] shadow-[0_30px_120px_rgba(0,0,0,.8)] animate-[afsanaFloat_6s_ease-in-out_infinite]"/>}
         <div className="absolute left-1/2 top-[38%] h-[150px] w-[150px] -translate-x-1/2 rounded-full border border-white/10 bg-white/[.025] backdrop-blur"/>
         <div className="absolute left-[36%] top-[34%] text-[9px] uppercase tracking-[.3em] text-[#b4bf41] animate-pulse">Presence</div>
         <div className="absolute right-[18%] top-[54%] text-[9px] uppercase tracking-[.3em] text-white/35">Memory</div>
+      </div>
+    </div>
+  </section>;
+}
+function Product3DShowcase({ section, products=[] }) {
+  const c=section.config||{};
+  const chosen=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug)) || products[0];
+  const media=[...(chosen?.media||[])].filter(x=>x?.url).slice(0,8);
+  const frames=media.length?media:[{url:c.imageUrl||img.signature}];
+  const [frame,setFrame]=useState(0),[auto,setAuto]=useState(true);
+  useEffect(()=>{if(!auto||frames.length<2)return;const id=window.setInterval(()=>setFrame(v=>(v+1)%frames.length),900);return()=>window.clearInterval(id)},[auto,frames.length]);
+  return <section className="relative overflow-hidden bg-[#080a07] text-white py-20 sm:py-28">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(163,197,233,.18),transparent_22%),radial-gradient(circle_at_25%_70%,rgba(123,0,58,.20),transparent_28%)]"/>
+    <div className="container-xl relative grid items-center gap-12 lg:grid-cols-[.85fr_1.15fr]">
+      <div><Eyebrow light>{c.eyebrow||'THE AFSANA OBJECT'}</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">{section.title||chosen?.name||'The bottle in motion.'}</h2><p className="mt-6 max-w-xl text-sm leading-7 text-white/55">{c.body||'Explore the signature bottle through a cinematic multi-frame experience.'}</p>
+      {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
+      <div className="relative min-h-[500px] flex items-center justify-center">
+        <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
+        <div className="relative h-[440px] w-[330px] flex items-center justify-center" style={{perspective:'1200px'}}>
+          <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
+            <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
+          </div>
+        </div>
+        <button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
       </div>
     </div>
   </section>;
@@ -202,6 +226,7 @@ function CmsSection({ section, products, faq }) {
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p><CmsTimer endAt={c.endAt}/>{btn}</div></div></section>;
   if (section.type === 'muse_scene') return <MuseScene section={section}/>;
+    if (section.type === 'product_3d_showcase') return <Product3DShowcase section={section} products={products}/>;
     if (section.type === 'fragrance_dna') return <FragranceDNA section={section}/>;
     if (section.type === 'interactive_gallery') return <InteractiveGallery section={section}/>;
     if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;
