@@ -34,7 +34,7 @@ const defaults = (type) => ({
     giftImage1Url:'', giftImage2Url:'', giftImage3Url:''
   } : {}),
   ...(type === 'custom_footer' ? { brandName:'AFSANA', tagline:'THE ART OF SCENT', description:'Fragrance is more than a note. It is a memory, a feeling, a signature.', email:'', phone:'', instagramUrl:'', facebookUrl:'', footerNote:'The Art of Scent. Crafted for memories.', items:'Collection|Explore the fragrances||/shop\nThe House|Our story||/about\nJournal|Stories and rituals||/journal\nGifting|Thoughtful gifts||/gifting' } : {}),
-  ...(type === 'nav_menu' ? { items:'Home|/\nCollection|/shop\nThe House|/about\nJournal|/journal\nGifting|/gifting' } : {}),
+  ...(type === 'nav_menu' ? { items:'Home|/\nCollection|/shop\nScent finder|/discover\nJournal|/journal\nThe house|/about\nGifting|/gifting' } : {}),
   ...(type === 'whatsapp_float' ? { label: 'Chat with AFSANA', phone: '', message: 'Assalam-o-alaikum, I need help choosing an AFSANA fragrance.' } : {}),
   ...(type === 'ai_concierge' ? { label: 'Scent Concierge', subtitle: 'A guided fragrance discovery assistant.' } : {}),
   ...(type === 'muse_scene' ? { eyebrow: 'THE AFSANA MUSE', characterImageUrl: '', body: 'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.', buttonText: 'Meet the collection', buttonLink: '/shop' } : {}),
