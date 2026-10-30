@@ -10,8 +10,8 @@ import { cmsApi } from '../../src/services';
 import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 
-const PAGE_OPTIONS = [["home","Homepage"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"]];
-const PAGE_PREVIEW_PATHS = { home:'/', site_header_after:'/', site_footer_before:'/', collection_before:'/shop', collection_after:'/shop', product_before:'/product/preview', product_after:'/product/preview', house:'/about', journal:'/journal', gifting:'/gifting', cart_before:'/cart', cart_after:'/cart', checkout_before:'/checkout', checkout_after:'/checkout', track_before:'/track', track_after:'/track' };
+const PAGE_OPTIONS = [["home","Homepage"],["site_navigation","Header navigation"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"]];
+const PAGE_PREVIEW_PATHS = { home:'/', site_navigation:'/', site_header_after:'/', site_footer_before:'/', collection_before:'/shop', collection_after:'/shop', product_before:'/product/preview', product_after:'/product/preview', house:'/about', journal:'/journal', gifting:'/gifting', cart_before:'/cart', cart_after:'/cart', checkout_before:'/checkout', checkout_after:'/checkout', track_before:'/track', track_after:'/track' };
 
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
@@ -24,6 +24,7 @@ const defaults = (type) => ({
   ...(type === 'promo_timer' || type === 'offer_timer' ? { endAt: '2026-11-05T23:59', label: 'PRIVATE COLLECTION OFFER', offerText: 'A special AFSANA offer ends soon.', buttonText: 'Shop the offer', buttonLink: '/shop' } : {}),
   ...(type === 'community_pulse' ? { eyebrow: 'THE AFSANA CIRCLE', subtitle: 'Use only verified brand numbers. Non-numeric values are treated as editorial labels.', disclaimer: 'Only publish verified numbers here.', items: 'Verified Reviews|0|Real customer feedback|/journal\nAfsana Circle|0|Community members|/account\nSignature Scents|0|Fragrances discovered|/shop\nGift Moments|0|Gifts created|/gifting' } : {}),
   ...(type === 'footer_showcase' ? { eyebrow: 'THE FINAL CHAPTER', body: 'Every scent leaves a trace. Make yours unforgettable.', offerLabel: 'PRIVATE ACCESS', offerText: 'Discover your signature scent.', buttonText: 'Explore Collection', buttonLink: '/shop' } : {}),
+  ...(type === 'nav_menu' ? { items:'Home|/\nCollection|/shop\nThe House|/about\nJournal|/journal\nGifting|/gifting' } : {}),
   ...(type === 'whatsapp_float' ? { label: 'Chat with AFSANA', phone: '', message: 'Assalam-o-alaikum, I need help choosing an AFSANA fragrance.' } : {}),
   ...(type === 'ai_concierge' ? { label: 'Scent Concierge', subtitle: 'A guided fragrance discovery assistant.' } : {}),
   ...(type === 'muse_scene' ? { eyebrow: 'THE AFSANA MUSE', characterImageUrl: '', body: 'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.', buttonText: 'Meet the collection', buttonLink: '/shop' } : {}),
@@ -103,7 +104,7 @@ export default function HomepageBuilder() {
     e.preventDefault(); setBusy(true); setNotice('');
     try {
       const cfg = { ...form.config };
-      const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse'];
+      const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu'];
       if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
       const targetPage = form.pageKey || 'home';
       const payload = { type: form.type, title: form.title.trim(), pageKey: targetPage, config: cfg, sortOrder: drawer.item?.sortOrder ?? sorted.length, isEnabled: !!form.isEnabled };
@@ -151,7 +152,8 @@ export default function HomepageBuilder() {
   };
 
   const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
-  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid'];
+  const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'nav_menu') : HOMEPAGE_SECTION_TYPES.filter((x) => x.key !== 'nav_menu');
+  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','nav_menu'];
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -186,7 +188,7 @@ export default function HomepageBuilder() {
     <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
         <Field label="Place this section on"><Select value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
-        <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{HOMEPAGE_SECTION_TYPES.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
+        <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{formPageTypes.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
 
         <div className="rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4 space-y-3">
@@ -216,6 +218,7 @@ export default function HomepageBuilder() {
         {form.type === 'product_3d_showcase' && <><Field label="Product slug (optional)"><Input value={form.config.productSlug || ''} onChange={(e) => setConfig('productSlug', e.target.value)} placeholder="e.g. signature-oud" /></Field><Field label="Fallback bottle image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The homepage theatre uses the product media already stored in Products. Add multiple product images in Admin → Products for the strongest 360° effect.</p></>}
         {form.type === 'community_pulse' && <><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Verified-number disclaimer"><Input value={form.config.disclaimer || ''} onChange={(e) => setConfig('disclaimer', e.target.value)} /></Field></>}
         {form.type === 'footer_showcase' && <><Field label="Body"><Textarea rows={4} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Offer label"><Input value={form.config.offerLabel || ''} onChange={(e) => setConfig('offerLabel', e.target.value)} /></Field><Field label="Offer text"><Input value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></div></>}
+        {form.type === 'nav_menu' && <><Field label="Navigation links" hint="One per line: Label|/internal-route. Example: Journal|/journal"><Textarea rows={8} value={typeof form.config.items === 'string' ? form.config.items : itemText(form.config.items)} onChange={(e) => setConfig('items', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The order here becomes the desktop and mobile navigation order. Use routes such as /shop, /about and /journal.</p></>}
         {form.type === 'whatsapp_float' && <><Field label="WhatsApp phone (international digits)"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} placeholder="923001234567" /></Field><Field label="Button label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="First message"><Textarea rows={3} value={form.config.message || ''} onChange={(e) => setConfig('message', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This becomes a floating WhatsApp button on every page when placed in the global footer area.</p></>}
         {form.type === 'ai_concierge' && <><Field label="Assistant label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Description"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This opens the guided scent discovery experience. It is a front-end guided assistant, not a connected LLM service yet.</p></>}
         {form.type === 'rich_text' && <Field label="Content"><Textarea rows={10} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field>}
