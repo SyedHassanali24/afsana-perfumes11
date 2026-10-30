@@ -30,8 +30,9 @@ const defaults = (type) => ({
     filmAtmosphereVideoUrl:'', filmBotanicalVideoUrl:'', filmCraftVideoUrl:'', filmEmotionVideoUrl:'',
     worldDarkImageUrl:'', worldSoftImageUrl:'', worldBoldImageUrl:'',
     filmAtmosphereImageUrl:'', filmBotanicalImageUrl:'', filmCraftImageUrl:'', filmEmotionImageUrl:'',
-    journalImage1Url:'', journalImage2Url:'', journalImage3Url:'',
-    giftImage1Url:'', giftImage2Url:'', giftImage3Url:''
+    journalHeroImageUrl:'', journalImage1Url:'', journalImage2Url:'', journalImage3Url:'',
+    aboutHeroImageUrl:'', aboutStoryImageUrl:'', giftingHeroImageUrl:'', giftImage1Url:'', giftImage2Url:'', giftImage3Url:'',
+    discoverHeroImageUrl:'', discoverEnergyImageUrl:'', discoverSoftImageUrl:'', discoverNightImageUrl:'', collectionHeroImageUrl:''
   } : {}),
   ...(type === 'custom_footer' ? { brandName:'AFSANA', tagline:'THE ART OF SCENT', description:'Fragrance is more than a note. It is a memory, a feeling, a signature.', email:'', phone:'', instagramUrl:'', facebookUrl:'', footerNote:'The Art of Scent. Crafted for memories.', items:'Collection|Explore the fragrances||/shop\nThe House|Our story||/about\nJournal|Stories and rituals||/journal\nGifting|Thoughtful gifts||/gifting' } : {}),
   ...(type === 'nav_menu' ? { items:'Home|/\nCollection|/shop\nScent finder|/discover\nJournal|/journal\nThe house|/about\nGifting|/gifting' } : {}),
@@ -60,6 +61,29 @@ const AFSANA_EXPERIENCE_SECTIONS = [
       { type:'video_grid', title:'Feel the fragrance.', config:{ ...defaults('video_grid'), eyebrow:'THE AFSANA MOVING IMAGE', items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
       { type:'blog_grid', title:'The scent journal.', config:{ eyebrow:'NOTES FROM THE HOUSE', items:parseItems(defaults('post_grid').items).slice(0,3), columns:3, limit:3 } },
       { type:'newsletter', title:'Good things linger.', config:{ eyebrow:'THE PRIVATE LIST', body:'Be first to discover new drops, private offers, scent rituals and stories from the AFSANA universe.' } },
+];
+
+const AFSANA_INNER_SECTIONS = [
+  { slot:'house-hero', pageKey:'house', type:'hero', title:'We make memories visible.', config:{ layout:'inner', eyebrow:'A house with a point of view', subtitle:'AFSANA is built around a simple belief: fragrance is more than what you wear. It is what you leave behind. We create modern scent objects designed to become part of your story.' } },
+  { slot:'house-story', pageKey:'house', type:'rich_text', title:'A little unexpected. A lot unforgettable.', config:{ eyebrow:'OUR PHILOSOPHY', body:'From the first bright note to the final warm trace, our approach is rooted in contrast. We pair familiar ingredients in unfamiliar ways, creating fragrances that feel personal, expressive and unmistakably yours.' } },
+  { slot:'house-3d', pageKey:'house', type:'product_3d_showcase', title:'A scent object, from every angle.', config:{ eyebrow:'THE AFSANA OBJECT', body:'Explore the object behind the memory. Turn the bottle, discover its details and find the fragrance that feels like yours.' } },
+  { slot:'journal-hero', pageKey:'journal', type:'hero', title:'A world in every note.', config:{ layout:'inner', eyebrow:'STORIES, RITUALS & OLFACTORY CURIOSITIES', subtitle:'Explore the art of wearing fragrance, the craft of composition and the memories that scent makes possible.' } },
+  { slot:'journal-stories', pageKey:'journal', type:'blog_grid', title:'Stories from the house.', config:{ eyebrow:'NOTES FROM AFSANA', items:parseItems(defaults('post_grid').items).slice(0,3), columns:3, limit:3 } },
+  { slot:'gifting-hero', pageKey:'gifting', type:'hero', title:'Wrap up the extraordinary.', config:{ layout:'inner', eyebrow:'GIVE THEM A FEELING', subtitle:'For the person who has everything, give them something they will remember. Thoughtful fragrance gifts, discovery sizes and signature sets.', buttonText:'Explore gift-worthy scents', buttonLink:'/shop' } },
+  { slot:'gifting-worlds', pageKey:'gifting', type:'category_tiles', title:'Give them a feeling.', config:{ eyebrow:'THE ART OF GIFTING', subtitle:'Thoughtful fragrance gifts, discovery sizes and signature sets.', columns:3, items:[{title:'Signature gifting',text:'A fragrance as individual as they are.',image:'',link:'/shop'},{title:'Discovery set',text:'Let them find a new favourite.',image:'',link:'/shop'},{title:'Gift-ready moments',text:'Details that make it feel special.',image:'',link:'/shop'}] } },
+  { slot:'discover-hero', pageKey:'discover', type:'hero', title:'There is a scent for that.', config:{ layout:'inner', eyebrow:'AFSANA SCENT INTELLIGENCE / BETA', subtitle:'Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.', buttonText:'Begin your scent match', buttonLink:'#finderSection' } },
+  { slot:'discover-worlds', pageKey:'discover', type:'category_tiles', title:'Choose a feeling.', config:{ eyebrow:'A MORE PERSONAL DISCOVERY', subtitle:'Fragrance is personal. Let your instinct lead, and explore a scent world that matches your energy.', columns:3, items:[{title:'Make a statement',text:'Confident, vivid, unforgettable.',image:'',link:'/shop'},{title:'Feel luminous',text:'Soft, airy, effortless.',image:'',link:'/shop'},{title:'Stay mysterious',text:'Deep, warm, magnetic.',image:'',link:'/shop'}] } },
+  { slot:'discover-finder', pageKey:'discover', type:'scent_finder', title:'Find your fragrance.', config:{ eyebrow:'AFSANA SCENT INTELLIGENCE' } }
+];
+const AFSANA_GLOBAL_SECTIONS = [
+  { slot:'site-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:defaults('custom_footer'), sortOrder:0, isEnabled:true },
+  { slot:'site-footer-before-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:defaults('ai_concierge'), sortOrder:0, isEnabled:true },
+  { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:false }
+];
+const AFSANA_EXPECTED_SLOTS = [
+  ...AFSANA_EXPERIENCE_SECTIONS.map((_,index)=>`home-${index}`),
+  ...AFSANA_INNER_SECTIONS.map((item)=>item.slot),
+  ...AFSANA_GLOBAL_SECTIONS.map((item)=>item.slot)
 ];
 
 export default function HomepageBuilder() {
@@ -271,8 +295,9 @@ export default function HomepageBuilder() {
             {[
               ['worldDarkImageUrl','Dark & magnetic world'],['worldSoftImageUrl','Soft & luminous world'],['worldBoldImageUrl','Bright & bold world'],
               ['filmAtmosphereImageUrl','Film 01 — Atmosphere'],['filmBotanicalImageUrl','Film 02 — Botanical'],['filmCraftImageUrl','Film 03 — Craft'],['filmEmotionImageUrl','Film 04 — Emotion'],
-              ['journalImage1Url','Journal image 01'],['journalImage2Url','Journal image 02'],['journalImage3Url','Journal image 03'],
-              ['giftImage1Url','Gifting image 01'],['giftImage2Url','Gifting image 02'],['giftImage3Url','Gifting image 03']
+              ['journalHeroImageUrl','Journal page hero'],['journalImage1Url','Journal image 01'],['journalImage2Url','Journal image 02'],['journalImage3Url','Journal image 03'],
+              ['aboutHeroImageUrl','The House page hero'],['aboutStoryImageUrl','The House story image'],['giftingHeroImageUrl','Gifting page hero'],['giftImage1Url','Gifting image 01'],['giftImage2Url','Gifting image 02'],['giftImage3Url','Gifting image 03'],
+              ['discoverHeroImageUrl','Scent finder page hero'],['discoverEnergyImageUrl','Discover — Energy seeker image'],['discoverSoftImageUrl','Discover — Soft romantic image'],['discoverNightImageUrl','Discover — Night thinker image'],['collectionHeroImageUrl','Collection page hero']
             ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded media URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload image" onUploaded={(url) => setConfig(key, url)} /></Field>)}
           </div>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
