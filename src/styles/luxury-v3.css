@@ -276,3 +276,5 @@
 /* Premium offer countdown */
 .cms-timer{display:inline-flex;align-items:center;gap:9px;margin-top:22px;padding:11px 15px;border:1px solid rgba(217,255,85,.28);border-radius:999px;background:rgba(16,13,36,.55);box-shadow:0 14px 40px rgba(0,0,0,.18);color:#fff;font:700 11px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;backdrop-filter:blur(10px)}
 .cms-timer span{min-width:43px;text-align:center;color:#d9ff55}.cms-timer b{color:#aaa3bd;font-weight:400}
+
+.afsana-video-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(24,35,8,.96),rgba(38,62,14,.62),rgba(24,35,8,.28));pointer-events:none}
