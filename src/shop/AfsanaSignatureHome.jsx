@@ -260,28 +260,51 @@ function CmsSection({ section, products, faq }) {
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
   return null;
 }
-function CmsDrivenHome({ sections, faq }) {
+function CmsSectionList({ sections, faq, includeHomeFinish = false }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
-  const safe = Array.isArray(sections) ? sections : [];
+  const safe = (Array.isArray(sections) ? sections : []).filter((s) => s?.isEnabled !== false);
   const hasOffer = safe.some((s) => s?.type === 'offer_timer' || s?.type === 'promo_timer');
   const hasPulse = safe.some((s) => s?.type === 'community_pulse');
   const hasFooterShowcase = safe.some((s) => s?.type === 'footer_showcase');
-  const tail = [
+  const tail = includeHomeFinish ? [
     ...(!hasOffer ? [{ id: '__default-offer-timer', type: 'offer_timer', title: 'A moment worth discovering.', config: { label:'PRIVATE COLLECTION OFFER', endAt:'2026-11-05T23:59:00+05:00', offerText:'Discover the AFSANA private collection before this chapter closes.', buttonText:'Shop the offer', buttonLink:'/shop' }, isEnabled:true }] : []),
     ...(!hasPulse ? [{ id: '__default-community-pulse', type: 'community_pulse', title: 'A house people come back to.', config: {}, isEnabled: true }] : []),
     ...(!hasFooterShowcase ? [{ id: '__default-footer-showcase', type: 'footer_showcase', title: 'Leave the final impression.', config: {}, isEnabled: true }] : []),
-  ];
-  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].filter((s) => s?.isEnabled !== false).map((s) => <CmsSection key={s.id} section={s} products={products} faq={faq}/>)}</div>;
+  ] : [];
+  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <CmsSection key={s.id} section={s} products={products} faq={faq}/>)}</div>;
+}
+
+function CmsDrivenHome({ sections, faq }) {
+  return <CmsSectionList sections={sections} faq={faq} includeHomeFinish/>;
+}
+
+function readCmsPreview() {
+  try {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('afsanaPreview') !== '1') return null;
+    const current = JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null');
+    if (current && Array.isArray(current.sections)) return current;
+    const legacy = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null');
+    return legacy && Array.isArray(legacy.sections) ? { pageKey: 'home', sections: legacy.sections } : null;
+  } catch { return null; }
+}
+
+export function ManagedCmsPage({ pageKey, fallback = null }) {
+  const { data } = useApi(() => cmsPublicApi.content(), [pageKey]);
+  const preview = readCmsPreview();
+  const queryPage = new URLSearchParams(window.location.search).get('afsanaPageKey');
+  const previewSections = preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
+  const sections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
+  if (!sections.length) return fallback;
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} includeHomeFinish={pageKey === 'home'}/>;
 }
 
 export default function AfsanaSignatureHome(){
   const { data } = useApi(() => cmsPublicApi.content(), []);
-  let previewSections = null;
-  if (new URLSearchParams(window.location.search).get('afsanaPreview') === '1') {
-    try { previewSections = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null')?.sections || null; } catch { previewSections = null; }
-  }
-  const sections = previewSections || data?.homepageSections || [];
+  const preview = readCmsPreview();
+  const previewSections = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
+  const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
   if (sections.length) return <CmsDrivenHome sections={sections} faq={data?.faqs || []}/>;
   return <DefaultHome/>;
 }
