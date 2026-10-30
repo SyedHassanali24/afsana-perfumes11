@@ -19,8 +19,7 @@ new_sqlite_classes = ["MongoDBConnection"]
 [placement]
 mode = "smart"
 
+previews = {}
+
 [cache]
 enabled = true
-
-# Cloudflare Worker Previews require an explicit previews block.
-previews = {}
