@@ -109,7 +109,7 @@ export default function HomepageBuilder() {
     e.preventDefault(); setBusy(true); setNotice('');
     try {
       const cfg = { ...form.config };
-      const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu'];
+      const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu','custom_footer'];
       if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
       const targetPage = form.pageKey || 'home';
       const payload = { type: form.type, title: form.title.trim(), pageKey: targetPage, config: cfg, sortOrder: drawer.item?.sortOrder ?? sorted.length, isEnabled: !!form.isEnabled };
@@ -158,7 +158,7 @@ export default function HomepageBuilder() {
 
   const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
   const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'nav_menu') : form.pageKey === 'site_footer' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'custom_footer') : HOMEPAGE_SECTION_TYPES.filter((x) => !['nav_menu','custom_footer'].includes(x.key));
-  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','nav_menu'];
+  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','nav_menu','custom_footer'];
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
