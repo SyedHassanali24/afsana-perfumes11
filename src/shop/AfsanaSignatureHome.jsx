@@ -316,8 +316,10 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const queryPage = new URLSearchParams(window.location.search).get('afsanaPageKey');
   const previewSections = preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
-  if (!sections.length) return fallback;
-  return <CmsSectionList sections={sections} faq={data?.faqs || []} includeHomeFinish={pageKey === 'home'}/>;
+  const isPreviewPage = preview && (queryPage || preview.pageKey || 'home') === pageKey;
+  const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
+  if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} includeHomeFinish={false}/ >;
 }
 
 export default function AfsanaSignatureHome(){
@@ -325,6 +327,8 @@ export default function AfsanaSignatureHome(){
   const preview = readCmsPreview();
   const previewSections = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
-  if (sections.length) return <CmsDrivenHome sections={sections} faq={data?.faqs || []}/>;
+  const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
+  const hasManagedHome = (data?.managedPageKeys || []).includes('home');
+  if (sections.length || previewHome || hasManagedHome) return <CmsDrivenHome sections={sections} faq={data?.faqs || []}/>;
   return <DefaultHome/>;
 }
