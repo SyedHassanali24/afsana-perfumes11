@@ -404,18 +404,36 @@ function CmsDrivenHome({ sections, faq, referenceAssets = {} }) {
   return <CmsSectionList sections={sections} faq={faq} inheritedAssets={referenceAssets}/>;
 }
 
+function readCmsPreview() {
+  try {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('afsanaPreview') !== '1') return null;
+    const current = JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null');
+    if (current && Array.isArray(current.sections)) return current;
+    const legacy = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null');
+    return legacy && Array.isArray(legacy.sections) ? { pageKey: 'home', sections: legacy.sections } : null;
+  } catch { return null; }
+}
+
 export function ManagedCmsPage({ pageKey, fallback = null }) {
   const { data } = useApi(() => cmsPublicApi.content(), [pageKey]);
-  const sections = data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
+  const preview = readCmsPreview();
+  const queryPage = new URLSearchParams(window.location.search).get('afsanaPageKey');
+  const previewSections = Array.isArray(preview?.layouts?.[pageKey]) ? preview.layouts[pageKey] : preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
+  const sections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
+  const isPreviewPage = !!preview && (Array.isArray(preview.layouts?.[pageKey]) || (queryPage || preview.pageKey || 'home') === pageKey);
   const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
-  if (!sections.length && !hasManagedLayout) return fallback;
-  const referenceAssets = (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
+  if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
+  const previewAssets = preview?.layouts?.home?.find((item) => item.type === 'reference_assets')?.config || {};
+  const referenceAssets = Object.keys(previewAssets).length ? previewAssets : (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
   return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
 }
 
 export function ScentFinderPage(){
   const {data}=useApi(()=>cmsPublicApi.content(),[]);
-  const referenceAssets=(data?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
+  const preview=readCmsPreview();
+  const previewAssets=preview?.layouts?.home?.find((item)=>item.type==='reference_assets')?.config||{};
+  const referenceAssets=Object.keys(previewAssets).length?previewAssets:(data?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
   const sections=[
     {id:'discover-fallback-hero',type:'hero',pageKey:'discover',title:'There is a scent for that.',config:{layout:'inner',eyebrow:'AFSANA SCENT INTELLIGENCE / BETA',subtitle:'Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.'}},
     {id:'discover-fallback-worlds',type:'category_tiles',pageKey:'discover',title:'Choose a feeling.',config:{eyebrow:'A MORE PERSONAL DISCOVERY',subtitle:'Fragrance is personal. Let your instinct lead, and explore a scent world that matches your energy.',items:[{title:'Make a statement',text:'Confident, vivid, unforgettable.',link:'/shop'},{title:'Feel luminous',text:'Soft, airy, effortless.',link:'/shop'},{title:'Stay mysterious',text:'Deep, warm, magnetic.',link:'/shop'}]}}
@@ -425,8 +443,11 @@ export function ScentFinderPage(){
 
 export default function AfsanaSignatureHome(){
   const { data } = useApi(() => cmsPublicApi.content(), []);
-  const sections = data?.pageSections?.home || data?.homepageSections || [];
-  if (sections.length) {
+  const preview = readCmsPreview();
+  const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
+  const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
+  const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
+  if (sections.length || previewHome) {
     return <CmsDrivenHome
       sections={sections}
       faq={data?.faqs || []}
