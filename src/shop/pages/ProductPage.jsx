@@ -5,7 +5,7 @@ import useApi from '../../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../../services';
 import { Container, StateBox, QtyStepper, Placeholder } from '../ui';
 import ProductCard from '../ProductCard';
-import ReviewsSection from '../ReviewsSection';
+import ReviewsSection, { Stars } from '../ReviewsSection';
 import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
@@ -26,7 +26,6 @@ export default function ProductPage(){
  const {data,loading,error,reload}=useApi(()=>productsApi.bySlug(slug),[slug]);
  const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
  const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
- useEffect(()=>{if(!referenceAssets.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[referenceAssets.product3dModelUrl]);
  const {add}=useCart(); const {has,toggle}=useWishlist();
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
  const [tilt,setTilt]=useState({x:0,y:0});
@@ -35,8 +34,11 @@ export default function ProductPage(){
  const p=data?.product, variants=data?.variants||[];
  useTitle(p?.seo?.title||p?.name);
  useEffect(()=>{if(variants.length){setVid((variants.find(v=>v.available>0)||variants[0]).id);setQty(1);setImg(0)}},[data]);
+ const media=useMemo(()=>[...(p?.media||[])].filter((item)=>item.kind!=='model3d').sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[p]);
+ const product3dUrl=(p?.media||[]).find((item)=>item.kind==='model3d')?.url || referenceAssets.product3dModelUrl || '';
  useEffect(()=>{if(!autoRotate || media.length<2)return;const id=window.setInterval(()=>setImg(i=>(i+1)%media.length),1400);return()=>window.clearInterval(id)},[autoRotate,media.length]);
- const media=useMemo(()=>[...(p?.media||[])].sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[p]);
+ useEffect(()=>{if(!product3dUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[product3dUrl]);
+ const ratingAvg=Number(p?.ratingAvg||0),ratingCount=Number(p?.ratingCount||0);
  const v=variants.find(x=>x.id===vid), price=v&&(v.salePrice>0&&v.salePrice<v.price?v.salePrice:v.price), soldOut=!v||v.available<=0, ns=notes(p);
  const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);window.setTimeout(()=>setAdding(false),650)}};
  const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
@@ -55,11 +57,11 @@ export default function ProductPage(){
       <div className="gallery-thumbs space-y-3">{(media.length?media:[{url:''}]).map((m,i)=><button key={i} onClick={()=>selectMedia(i)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#b4bf41] shadow-[0_8px_25px_rgba(38,62,14,.12)]':'border-[#263e0e]/10')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#b4bf41]"/>}</button>)}</div>
       <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={(e)=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative min-h-[560px] sm:min-h-[650px] bg-[#f3f1e9] overflow-hidden flex items-center justify-center">
        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(180,191,65,.22),transparent_26%),radial-gradient(circle_at_50%_85%,rgba(116,142,64,.12),transparent_34%)]"/>
-       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#5f654f]">AFSANA / {String(img+1).padStart(2,"0")}</div><div className="absolute top-6 right-6 z-10 flex items-center gap-2 border border-[#263e0e]/10 bg-white/55 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.2em] text-[#5f654f]"><Rotate3D className="w-3.5 h-3.5"/> 3D / 360° View</div>
+       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#5f654f]">AFSANA / {String(img+1).padStart(2,"0")}</div><div className="absolute top-6 right-6 z-10 flex items-center gap-2 border border-[#263e0e]/10 bg-white/55 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.2em] text-[#5f654f]"><Rotate3D className="w-3.5 h-3.5"/> {product3dUrl?'Interactive 3D model':'360° image gallery'}</div>
        {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-6 z-10 border border-[#263e0e]/10 bg-white/65 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.2em] text-[#263e0e]">{autoRotate?'Stop 360°':'Auto 360°'}</button>}
        <div className="absolute bottom-10 w-[52%] h-10 rounded-[50%] bg-black/18 blur-2xl transition-transform duration-500" style={{transform:`translateX(${tilt.y*1.4}px) scaleX(${1+Math.abs(tilt.y)/180})`}}/>
-       {referenceAssets.product3dModelUrl
-         ? <model-viewer src={referenceAssets.product3dModelUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'82%',height:'84%',background:'transparent','--poster-color':'transparent'}}/>
+       {product3dUrl
+         ? <model-viewer src={product3dUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'82%',height:'84%',background:'transparent','--poster-color':'transparent'}}/>
          : <div className={"product-3d relative w-[70%] h-[84%] "+(stagePulse?"stage-pulse":"")} style={{transform:`perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out',transformStyle:'preserve-3d'}}>
          <div className="absolute inset-[5%] rounded-[38%] bg-[#748e40]/12 blur-3xl" style={{transform:'translateZ(-70px) scale(.92)'}}/>
          <div className="absolute inset-[4%] rounded-[32%] border border-[#748e40]/20 opacity-60" style={{transform:'translateZ(-28px) rotateY(5deg)'}}/>
@@ -69,19 +71,19 @@ export default function ProductPage(){
          </div>
          <div className="absolute left-[10%] right-[10%] bottom-[7%] h-[14%] rounded-[50%] bg-white/20 blur-xl" style={{transform:'translateZ(15px)'}}/>
        </div>}
-       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center text-[8px] uppercase tracking-[.25em] text-[#5f654f]/65">Drag / swipe to rotate · {media[img]?.kind==="video"?"Live film":"Cinematic view"}</div>
+       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center text-[8px] uppercase tracking-[.25em] text-[#5f654f]/65">{product3dUrl?'Drag to rotate the real 3D model':'Swipe to explore product images'} · {media[img]?.kind==="video"?"Live film":"Product media"}</div>
       </div>
     </div>
     <div className="lg:pt-5">
       <div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">{p.fragrance?.gender||'Signature'} {p.fragrance?.concentration&&' · '+p.fragrance.concentration}</div>
       <h1 className="mt-4 font-display text-5xl sm:text-7xl leading-[.88]">{p.name}</h1>
-      <div className="mt-6 flex items-center gap-4"><span className="text-[#748e40] tracking-[.2em]">★★★★★</span><span className="text-[10px] text-[#5f654f]">4.9 / 5 · 186 reviews</span></div>
+      <div className="mt-6 flex flex-wrap items-center gap-3">{ratingCount>0?<><Stars value={ratingAvg} size="text-lg"/><span className="text-[10px] text-[#5f654f]">{ratingAvg.toFixed(1)} / 5 · {ratingCount} approved {ratingCount===1?'review':'reviews'}</span></>:<span className="text-xs text-[#5f654f]">No approved reviews yet — be the first to share your experience.</span>}</div>
       <p className="mt-7 text-sm leading-8 text-[#5f654f]">{p.content?.shortDescription||'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.'}</p>
       <div className="mt-7 flex items-end justify-between gap-5"><div className="font-display text-4xl">{v?money(price):'Currently unavailable'}</div>{v?.available>0&&<span className="text-[8px] uppercase tracking-[.22em] text-[#748e40]">{v.available<5?"Limited availability":"In stock"} · Ready to ship</span>}</div>
       <div className="mt-9 border-t border-[#263e0e]/10 pt-6 text-[10px] uppercase tracking-[.25em]">Choose your size</div>
       <div className="mt-3 flex flex-wrap gap-2">{variants.map(x=><button key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} className={'px-5 py-3 border text-[10px] uppercase tracking-[.15em] '+(x.id===vid?'border-[#263e0e] bg-[#e7ead9] text-[#263e0e]':'border-[#263e0e]/15')}>{x.label||x.sizeMl+' ML'}</button>)}</div>
       <div className="mt-7 flex gap-3"><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/><button disabled={soldOut} onClick={addToCart} className={"flex-1 bg-[#263e0e] text-white px-7 py-4 text-[10px] uppercase tracking-[.2em] disabled:opacity-40 "+(adding?"add-bag-success":"")}>{adding ? "Added to bag" : <>Add to bag <span className="ml-3">↗</span></>}</button><button onClick={()=>toggle(p.id||p._id)} className="w-14 border border-[#263e0e]/15 grid place-items-center"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4"/></button></div>
-      <div className="mt-8 grid grid-cols-3 border-y border-[#263e0e]/10 divide-x divide-[#263e0e]/10">{[['Premium','Fragrance Oils'],['Gift Ready','Luxury Packaging'],['Fast','Nationwide Delivery']].map(([a,b])=><div key={a} className="py-5"><strong className="block font-display text-lg">{a}</strong><small className="text-[9px] uppercase tracking-[.12em] text-[#5f654f]">{b}</small></div>)}</div>
+      <div className="mt-8 grid grid-cols-3 border-y border-[#263e0e]/10 divide-x divide-[#263e0e]/10">{[['Premium','Fragrance Oils'],['Gift Ready','Luxury Packaging'],['Fast','Nationwide Delivery']].map(([a,b])=><div key={a} className="py-5"><strong className="block font-display text-lg">{a}</strong><small className="text-[9px] uppercase tracking-[.12em] text-[#5f654f]">{b}</small></div>)}</div><div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">{[['Longevity',p.fragrance?.longevity],['Projection',p.fragrance?.projection],['Concentration',p.fragrance?.concentration],['Gender',p.fragrance?.gender],['Season',p.fragrance?.seasons?.join(', ')],['Occasion',p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="rounded-xl border border-[#263e0e]/10 bg-white/70 p-4"><p className="text-[8px] uppercase tracking-[.2em] text-[#748e40]">{label}</p><p className="mt-2 text-xs text-[#263e0e]">{value}</p></div>)}</div>
       <div className="mt-7 flex flex-wrap gap-2 text-[8px] uppercase tracking-[.16em] text-[#5f654f]"><span className="border border-[#263e0e]/10 px-3 py-2">Premium Oils</span><span className="border border-[#263e0e]/10 px-3 py-2">Gift Ready</span><span className="border border-[#263e0e]/10 px-3 py-2">Nationwide Delivery</span></div>
     </div>
    </div>
