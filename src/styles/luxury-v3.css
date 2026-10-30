@@ -128,3 +128,63 @@
 .afsana-cms-theme-neon [class*="text-[#263e0e]"],.afsana-cms-theme-neon [class*="text-[#182308]"]{color:#100d24!important}
 .afsana-cms-theme-neon [class*="border-[#263e0e]"]{border-color:rgba(115,87,255,.25)!important}
 .afsana-cms-section{position:relative}
+
+
+/* Reference-site layout matching the supplied AFSANA — Scent, Reimagined HTML. */
+.afsana-ref-hero{position:relative;isolation:isolate;overflow:hidden;background:#100d24;color:#fff;min-height:690px}
+.afsana-ref-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 70% 44%,rgba(112,78,255,.42),transparent 34%),radial-gradient(ellipse at 90% 12%,rgba(255,107,181,.12),transparent 26%),linear-gradient(115deg,#100d24 8%,#171137 56%,#24104a)}
+.afsana-ref-hero:after{content:"A";position:absolute;right:-1vw;top:-16vw;font:700 60vw/.8 Georgia,serif;color:rgba(255,255,255,.025);z-index:-1;pointer-events:none}
+.afsana-ref-hero-grid{display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:690px;gap:20px;padding:65px 0 80px}
+.afsana-ref-hero-copy{position:relative;z-index:3}.afsana-ref-eyebrow,.afsana-ref-tag{font:500 10px ui-monospace,monospace;letter-spacing:.2em;text-transform:uppercase;color:#d9ff55}
+.afsana-ref-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:25px}.afsana-ref-eyebrow:before{content:"";width:32px;height:1px;background:#d9ff55}
+.afsana-ref-hero h1{font:500 clamp(62px,7.2vw,108px)/.88 'Playfair Display',Georgia,serif;letter-spacing:-.07em;margin:0;max-width:650px}.afsana-ref-hero h1 em{color:#d9ff55;font-weight:500}
+.afsana-ref-hero-sub{max-width:400px;color:#bcb5d0;font-size:13px;line-height:1.9;margin:28px 0 30px}
+.afsana-ref-actions{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.afsana-ref-btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:15px 22px;border-radius:99px;background:#d9ff55;color:#100d24;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;min-height:48px;transition:transform .3s,background .3s}
+.afsana-ref-btn:hover{transform:translateY(-4px);background:#e7ff8b}.afsana-ref-btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff}
+.afsana-ref-hero-meta{display:flex;gap:33px;margin-top:54px}.afsana-ref-meta{display:flex;gap:33px;margin-top:54px}.afsana-ref-meta strong{display:block;color:#d9ff55;font:500 23px 'Playfair Display',Georgia,serif}.afsana-ref-meta span{display:block;color:#9b95af;font:9px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;margin-top:5px}
+.afsana-ref-hero-stage{height:540px;position:relative;display:grid;place-items:center;perspective:1100px}
+.afsana-ref-orbit{position:absolute;width:min(470px,90%);aspect-ratio:1;border:1px solid rgba(217,255,85,.2);border-radius:50%;animation:afsana-ref-spin 32s linear infinite}
+.afsana-ref-orbit:before,.afsana-ref-orbit:after{content:"";position:absolute;border:1px solid rgba(165,140,255,.22);border-radius:50%;inset:9% -7%;transform:rotate(55deg)}
+.afsana-ref-orbit:after{inset:-7% 9%;transform:rotate(-45deg)}
+.afsana-ref-orbit i{position:absolute;top:16%;left:12%;width:10px;height:10px;border-radius:50%;background:#d9ff55;box-shadow:0 0 22px #d9ff55}
+@keyframes afsana-ref-spin{to{transform:rotate(360deg)}}
+.afsana-ref-glow{position:absolute;width:340px;height:340px;border-radius:50%;background:rgba(119,87,255,.4);filter:blur(90px);animation:afsana-ref-pulse 4s ease-in-out infinite alternate}
+@keyframes afsana-ref-pulse{to{transform:scale(1.28);opacity:.5}}
+.afsana-ref-bottle-img{position:relative;z-index:2;max-width:min(320px,74%);max-height:460px;object-fit:contain;filter:drop-shadow(0 35px 55px rgba(0,0,0,.55));animation:afsana-ref-float 5s ease-in-out infinite}
+@keyframes afsana-ref-float{0%,100%{transform:translateY(0) rotateY(-8deg)}50%{transform:translateY(-17px) rotateY(8deg)}}
+.afsana-ref-bottle-css{position:relative;z-index:2;width:172px;height:272px;border-radius:29px 29px 37px 37px;background:linear-gradient(90deg,#5c3bff,#c2b5ff 30%,#6e53d9 52%,#3b277f);box-shadow:inset 9px 0 16px #ffffff55,inset -12px 0 18px #05011a55,0 35px 65px #0400168c;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#211a3c;animation:afsana-ref-float 5s ease-in-out infinite}
+.afsana-ref-bottle-css:before{content:"";position:absolute;top:-78px;width:82px;height:49px;background:linear-gradient(90deg,#d8d5e6,#fff,#9b94ae);border-radius:9px 9px 6px 6px}
+.afsana-ref-bottle-css:after{content:"";position:absolute;top:-33px;width:64px;height:35px;background:linear-gradient(90deg,#d7c5ff,#fff,#8e7bd3);border-radius:8px 8px 0 0}
+.afsana-ref-bottle-css b{background:#f6f2e8;padding:17px 12px;font:500 19px Georgia,serif;letter-spacing:.17em}.afsana-ref-bottle-css small{color:#f6f2e8;font:8px ui-monospace,monospace;letter-spacing:.21em;margin-top:10px}
+.afsana-ref-sticker{position:absolute;right:5%;top:15%;width:94px;height:94px;border:1px solid rgba(217,255,85,.6);border-radius:50%;display:grid;place-items:center;color:#d9ff55;font:9px ui-monospace,monospace;letter-spacing:.15em;text-align:center;transform:rotate(15deg);background:#100d2452;backdrop-filter:blur(5px);animation:afsana-ref-sticker 6s ease-in-out infinite}
+@keyframes afsana-ref-sticker{50%{transform:translateY(-14px) rotate(-8deg)}}
+.afsana-ref-index{position:absolute;right:1%;bottom:12%;font:10px ui-monospace,monospace;letter-spacing:.2em;color:#9f96c0;writing-mode:vertical-rl}
+.afsana-ref-scroll{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);font:9px ui-monospace,monospace;letter-spacing:.2em;color:#aaa4ba;text-transform:uppercase}
+.afsana-ref-scroll:after{content:"";height:36px;width:1px;background:linear-gradient(#d9ff55,transparent);position:absolute;top:20px;left:50%}
+.afsana-ref-worlds{background:#f7f4ed;padding:112px 0}.afsana-ref-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:44px}.afsana-ref-section-head h2{font:500 clamp(42px,5.4vw,70px)/.98 'Playfair Display',Georgia,serif;letter-spacing:-.055em;margin:14px 0 0;color:#100d24}.afsana-ref-section-head h2 em{color:#7357ff}.afsana-ref-section-head>p{max-width:350px;font-size:12px;line-height:1.8;color:#777187;margin:0}
+.afsana-ref-tag{display:inline-flex;align-items:center;gap:9px;color:#766f86}.afsana-ref-tag:before{content:"";width:7px;height:7px;border-radius:50%;background:#7357ff}
+.afsana-ref-world-grid{display:grid;grid-template-columns:1.12fr .88fr .88fr;gap:16px}
+.afsana-ref-world-card{height:390px;position:relative;overflow:hidden;border-radius:26px;color:#fff;isolation:isolate;background:linear-gradient(145deg,#25184f,#7357ff)}
+.afsana-ref-world-card:nth-child(2),.afsana-ref-world-card:nth-child(3){height:340px;margin-top:50px}
+.afsana-ref-world-card img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;z-index:-2;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.afsana-ref-world-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#0d091dcc,transparent 70%);z-index:-1}
+.afsana-ref-world-card:hover img{transform:scale(1.08)}
+.afsana-ref-world-info{position:absolute;left:25px;right:25px;bottom:24px}.afsana-ref-world-info small{font:9px ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:#e4dcff}.afsana-ref-world-info h3{font:500 34px 'Playfair Display',Georgia,serif;margin:8px 0}.afsana-ref-world-info p{font-size:11px;color:#ddd7e8;margin:0}
+.afsana-ref-world-arrow{position:absolute;right:24px;bottom:25px;width:42px;height:42px;border:1px solid #ffffff99;border-radius:50%;display:grid;place-items:center;transition:.3s}
+.afsana-ref-world-card:hover .afsana-ref-world-arrow{background:#d9ff55;color:#100d24;border-color:#d9ff55;transform:rotate(-40deg)}
+.afsana-ref-films{background:#fff;padding:112px 0}.afsana-ref-film-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.afsana-ref-film-card{height:310px;position:relative;border-radius:20px;overflow:hidden;background:#1b1735;color:#fff;isolation:isolate}
+.afsana-ref-film-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.afsana-ref-film-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#0d091ddd,transparent 75%);z-index:-1}
+.afsana-ref-film-card>div{position:absolute;bottom:23px;left:22px}.afsana-ref-film-card small{font:9px ui-monospace,monospace;letter-spacing:.15em;color:#d6ff73}.afsana-ref-film-card h3{font:500 28px 'Playfair Display',Georgia,serif;margin:7px 0 0}
+.afsana-ref-film-card video[poster]{object-fit:cover}.afsana-ref-film-play{position:absolute;top:20px;right:20px;width:43px;height:43px;border-radius:50%;border:1px solid #fff9;background:#ffffff22;backdrop-filter:blur(6px);display:grid;place-items:center}
+.afsana-ref-journal{background:#eeebf3;padding:112px 0}.afsana-ref-journal-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:17px}
+.afsana-ref-journal-img{height:250px;border-radius:19px;overflow:hidden;position:relative;background:#d8d1e5}
+.afsana-ref-journal-img img{width:100%;height:100%;object-fit:cover;transition:transform .8s}.afsana-ref-journal-card:hover img{transform:scale(1.08)}
+.afsana-ref-journal-card small{display:block;margin-top:17px;font:9px ui-monospace,monospace;letter-spacing:.15em;color:#817a91;text-transform:uppercase}
+.afsana-ref-journal-card h3{font:500 27px/1.05 'Playfair Display',Georgia,serif;margin:9px 0 10px;color:#100d24}.afsana-ref-journal-card p{font-size:11px;line-height:1.8;color:#777187;margin:0;max-width:380px}.afsana-ref-journal-card span{font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.12em;margin-top:15px;display:inline-flex;gap:9px;color:#7357ff}
+.afsana-ref-section-head .afsana-ref-btn{flex-shrink:0}
+.storefront-theme .afsana-ref-hero a{color:inherit}
+@media(max-width:1000px){.afsana-ref-world-grid{grid-template-columns:1fr 1fr}.afsana-ref-world-card:first-child{grid-row:span 2;height:100%}.afsana-ref-world-card:nth-child(2),.afsana-ref-world-card:nth-child(3){margin:0;height:280px}.afsana-ref-film-grid{grid-template-columns:repeat(2,1fr)}.afsana-ref-film-card{height:260px}.afsana-ref-journal-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.afsana-ref-hero{min-height:unset}.afsana-ref-hero-grid{grid-template-columns:1fr;padding:75px 0 90px;gap:0}.afsana-ref-hero h1{font-size:clamp(60px,17vw,94px)}.afsana-ref-hero-sub{font-size:12px;margin:22px 0}.afsana-ref-meta{margin-top:33px;gap:25px}.afsana-ref-hero-stage{height:410px;margin-top:10px}.afsana-ref-orbit{width:330px}.afsana-ref-worlds,.afsana-ref-films,.afsana-ref-journal{padding:75px 0}.afsana-ref-section-head{display:block;margin-bottom:30px}.afsana-ref-section-head>p{margin-top:16px}.afsana-ref-world-grid{grid-template-columns:1fr 1fr;gap:10px}.afsana-ref-world-card{height:240px!important;margin:0!important;border-radius:17px}.afsana-ref-world-card:first-child{grid-column:span 2;grid-row:auto;height:290px!important}.afsana-ref-world-info{left:16px;bottom:17px}.afsana-ref-world-info h3{font-size:25px}.afsana-ref-world-info p{font-size:9px;max-width:180px}.afsana-ref-world-arrow{width:33px;height:33px;right:15px;bottom:15px}.afsana-ref-film-grid{gap:10px}.afsana-ref-film-card{height:220px;border-radius:15px}.afsana-ref-film-card>div{left:15px;bottom:15px}.afsana-ref-film-card h3{font-size:22px}.afsana-ref-journal-grid{grid-template-columns:1fr;gap:30px}.afsana-ref-journal-img{height:230px}.afsana-ref-sticker{right:1%;width:75px;height:75px;font-size:7px}}
