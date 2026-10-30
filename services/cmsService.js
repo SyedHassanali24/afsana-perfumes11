@@ -112,7 +112,7 @@ async function publishExperience(ctx, body, scopes) {
       const current = bySlot.get(section.slot);
       if (current) {
         // Retries preserve existing edits and hidden states.
-        operations.push({ updateOne: { filter: { _id: current._id, storeId }, update: { $set: { sortOrder: normalized.sortOrder } } } });
+        operations.push({ updateOne: { filter: { _id: current._id, storeId }, update: { $set: { sortOrder: normalized.sortOrder, isEnabled: normalized.isEnabled !== false } } } });
       } else {
         operations.push({ insertOne: { document: { ...R.toDoc('homepage', normalized), storeId, isDeleted: false } } });
         created += 1;
