@@ -11,7 +11,7 @@ import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 
 const PAGE_OPTIONS = [["home","Homepage"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"]];
-const PAGE_PREVIEW_PATHS = { home:'/', site_header_after:'/', site_footer_before:'/', collection_before:'/shop', collection_after:'/shop', product_before:'/shop', product_after:'/shop', house:'/about', journal:'/journal', gifting:'/gifting', cart_before:'/cart', cart_after:'/cart', checkout_before:'/checkout', checkout_after:'/checkout', track_before:'/track', track_after:'/track' };
+const PAGE_PREVIEW_PATHS = { home:'/', site_header_after:'/', site_footer_before:'/', collection_before:'/shop', collection_after:'/shop', product_before:'/product/preview', product_after:'/product/preview', house:'/about', journal:'/journal', gifting:'/gifting', cart_before:'/cart', cart_after:'/cart', checkout_before:'/checkout', checkout_after:'/checkout', track_before:'/track', track_after:'/track' };
 
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
@@ -50,6 +50,41 @@ export default function HomepageBuilder() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [del, setDel] = useState(null);
+  const addExperienceLayout = async () => {
+    if (rows.some((item) => item.config?.templateId === 'afsana-neon-experience-v1')) {
+      setNotice('The AFSANA experience layout has already been added. Edit or reorder its sections below.');
+      return;
+    }
+    setBusy(true); setNotice('');
+    const starter = [
+      { type:'hero', title:'A scent that becomes your signature.', config:{ eyebrow:'AFSANA — THE ART OF SCENT', subtitle:'A new world of fragrance, memory and personal expression.', imageUrl:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=2200&q=85' } },
+      { type:'marquee', title:'The AFSANA signature', config:{ items:[{title:'SCENT, REIMAGINED'},{title:'CRAFTED FOR MEMORIES'},{title:'DISCOVER YOUR SIGNATURE'},{title:'THE PRIVATE COLLECTION'}] } },
+      { type:'product_3d_showcase', title:'The bottle in motion.', config:{ eyebrow:'THE AFSANA OBJECT', body:'Explore your chosen fragrance through its imagery and scent story.', buttonText:'Explore the collection', buttonLink:'/shop' } },
+      { type:'category_tiles', title:'Choose your fragrance world.', config:{ columns:3, items:[{title:'Fresh & luminous',text:'Clean, bright and effortless.',link:'/shop?category=fresh'},{title:'Dark & woody',text:'Oud, woods and magnetic depth.',link:'/shop?category=oud'},{title:'Soft & floral',text:'Elegant, expressive and luminous.',link:'/shop?category=floral'}] } },
+      { type:'best_sellers', title:'The most wanted fragrances.', config:{ limit:4, query:'sort:popular' } },
+      { type:'scent_finder', title:'Let your fragrance find you.', config:{ eyebrow:'THE AFSANA SCENT CONCIERGE', theme:'neon' } },
+      { type:'muse_scene', title:'Wear the story.', config:{ eyebrow:'THE AFSANA MUSE', body:'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.', buttonText:'Meet the collection', buttonLink:'/shop' } },
+      { type:'video_grid', title:'Four moments. One fragrance house.', config:{ ...defaults('video_grid'), items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
+      { type:'offer_timer', title:'A limited AFSANA experience.', config:{ ...defaults('offer_timer'), label:'THE PRIVATE COLLECTION', offerText:'Discover the fragrance that feels like you.', endAt:'' } },
+      { type:'fragrance_dna', title:'Discover the notes behind the feeling.', config:{ eyebrow:'FRAGRANCE DNA', body:'Explore the personality behind each composition.' } },
+      { type:'blog_grid', title:'Stories worth remembering.', config:{ items:parseItems(defaults('post_grid').items), columns:3, limit:3 } },
+      { type:'testimonials', title:'A fragrance that stays with you.', config:{ columns:3, items:[{title:'A beautiful first impression',text:'A fragrance experience that feels considered from opening to dry down.'},{title:'A signature of my own',text:'The scent feels distinctive, elegant and easy to make your own.'},{title:'A gift worth giving',text:'Thoughtful presentation makes the whole experience memorable.'}] } },
+      { type:'footer_showcase', title:'Leave the final impression.', config:defaults('footer_showcase') },
+      { type:'newsletter', title:'Enter the AFSANA private list.', config:{ eyebrow:'PRIVATE ACCESS', body:'Be first to hear about new fragrances, launches and special edits.' } },
+    ];
+    try {
+      let order = rows.filter((item) => (item.pageKey || 'home') === 'home').length;
+      for (const section of starter) {
+        const config = { ...section.config, theme:'neon', templateId:'afsana-neon-experience-v1' };
+        await api.create({ type:section.type, title:section.title, pageKey:'home', config, sortOrder:order++, isEnabled:true });
+      }
+      await api.create({ type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:{ ...defaults('ai_concierge'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer_before').length, isEnabled:true });
+      await api.create({ type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:{ ...defaults('whatsapp_float'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer_before').length+1, isEnabled:false });
+      setPageKey('home'); setNotice('AFSANA experience layout added. All sections are editable, reorderable and removable; WhatsApp remains off until you add your number.'); reload();
+    } catch (e) { setNotice(e.message || 'Could not add the AFSANA experience layout.'); }
+    finally { setBusy(false); }
+  };
+
   const preview = () => { try { localStorage.setItem('afsana_cms_preview_v2', JSON.stringify({ pageKey, sections: sorted })); const target = PAGE_PREVIEW_PATHS[pageKey] || '/'; window.open(`${target}?afsanaPreview=1&afsanaPageKey=${encodeURIComponent(pageKey)}`, '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
@@ -97,6 +132,7 @@ export default function HomepageBuilder() {
   };
   const pageRows = rows.filter((item) => (item.pageKey || 'home') === pageKey);
   const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const hasExperienceTemplate = rows.some((item) => item.config?.templateId === 'afsana-neon-experience-v1');
   const moveBy = async (id, delta) => {
     const next = [...sorted], from = next.findIndex((x) => x.id === id), to = from + delta;
     if (from < 0 || to < 0 || to >= next.length) return;
@@ -120,7 +156,7 @@ export default function HomepageBuilder() {
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
-        <div className="flex flex-wrap items-center gap-2"><Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview this page</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+        <div className="flex flex-wrap items-center gap-2"><Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.create') && pageKey === 'home' && <Button variant="secondary" disabled={busy || hasExperienceTemplate} onClick={addExperienceLayout}>{hasExperienceTemplate ? 'Experience layout added' : 'Add AFSANA experience layout'}</Button>}{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview this page</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
