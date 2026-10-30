@@ -79,7 +79,7 @@ export default function ShopLayout(){
       <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
     </Container>
    </div>
-  </footer>
+  </footer>}
   {search&&<div className="fixed inset-0 z-[65] bg-[#182308]/96 backdrop-blur-xl text-white overflow-y-auto">
     <Container className="container-xl min-h-full py-8 md:py-12">
       <div className="flex items-center justify-between border-b border-white/10 pb-5">
