@@ -55,10 +55,11 @@ const AFSANA_EXPERIENCE_SECTIONS = [
       { type:'category_tiles', title:'Enter a scent world.', config:{ eyebrow:'CHOOSE YOUR ATMOSPHERE', subtitle:'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.', columns:3, items:[{title:'Dark & magnetic',text:'Warm woods. Smoked amber. Quiet confidence.',image:'',link:'/shop?category=signature'},{title:'Soft & luminous',text:'Airy florals. Clean skin. Open windows.',image:'',link:'/shop?category=fresh'},{title:'Bright & bold',text:'Citrus sparks. Electric energy. No apologies.',image:'',link:'/shop?category=bold'}] } },
       { type:'best_sellers', title:'Objects of desire.', config:{ eyebrow:'THE AFSANA SELECTION', subtitle:'Discover the fragrances that define the house.', limit:4, query:'sort:popular', columns:4 } },
       { type:'product_3d_showcase', title:'Meet your scent in 3D.', config:{ eyebrow:'BEYOND THE BOTTLE', body:'Turn it. Tilt it. Get closer. Explore the AFSANA object from every angle with an interactive product experience made for curious minds.', buttonText:'Enter the 3D studio', buttonLink:'/shop' } },
-      { type:'offer_timer', title:'Good taste. Even better delivery.', config:{ label:'A LITTLE EXTRA FROM THE HOUSE', offerText:'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.', buttonText:'Explore the private edit', buttonLink:'/shop', hideTimer:true } },
+      { type:'offer_timer', title:'Good taste. Even better delivery.', config:{ label:'A LITTLE EXTRA FROM THE HOUSE', offerText:'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.', endAt:'2026-11-30T23:59', buttonText:'Explore the private edit', buttonLink:'/shop', hideTimer:false } },
       { type:'scent_finder', title:'Your mood has a fragrance. Let’s find it.', config:{ eyebrow:'A LITTLE SCIENCE. A LOT OF INSTINCT.' } },
       { type:'video_grid', title:'Feel the fragrance.', config:{ ...defaults('video_grid'), eyebrow:'THE AFSANA MOVING IMAGE', items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
       { type:'blog_grid', title:'The scent journal.', config:{ eyebrow:'NOTES FROM THE HOUSE', items:parseItems(defaults('post_grid').items).slice(0,3), columns:3, limit:3 } },
+      { type:'community_pulse', title:'A house people come back to.', config:defaults('community_pulse') },
       { type:'newsletter', title:'Good things linger.', config:{ eyebrow:'THE PRIVATE LIST', body:'Be first to discover new drops, private offers, scent rituals and stories from the AFSANA universe.' } },
 ];
 
@@ -78,7 +79,7 @@ const AFSANA_GLOBAL_SECTIONS = [
   { slot:'site-navigation', type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', config:defaults('nav_menu'), sortOrder:0, isEnabled:true },
   { slot:'site-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:defaults('custom_footer'), sortOrder:0, isEnabled:true },
   { slot:'site-footer-before-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:defaults('ai_concierge'), sortOrder:0, isEnabled:true },
-  { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:false }
+  { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:true }
 ];
 const AFSANA_EXPECTED_SLOTS = [
   ...AFSANA_EXPERIENCE_SECTIONS.map((_,index)=>`home-${index}`),
@@ -163,62 +164,46 @@ export default function HomepageBuilder() {
 
   const addExperienceLayout = async () => {
     const templateId = 'afsana-neon-experience-v1';
-    const templateRows = rows.filter((item) => item.config?.templateId === templateId);
-    const existingSlots = new Set(templateRows.map((item) => item.config?.templateSlot).filter(Boolean));
-    const expectedSlots = AFSANA_EXPECTED_SLOTS;
-    if (expectedSlots.every((slot) => existingSlots.has(slot))) {
-      setNotice('The AFSANA experience layout is already installed. Edit, hide, reorder or remove its sections below.');
+    const sections = [
+      ...AFSANA_EXPERIENCE_SECTIONS.map((section,index) => ({
+        slot:`home-${index}`, type:section.type, title:section.title, pageKey:'home', sortOrder:index, isEnabled:true,
+        config:{
+          ...section.config,
+          ...(section.type==='reference_assets'?(rows.find((item)=>(item.pageKey||'home')==='home'&&item.type==='reference_assets')?.config||{}):{}),
+          theme:'neon', templateId, templateSlot:`home-${index}`
+        }
+      })),
+      ...AFSANA_INNER_SECTIONS.map((section,index) => ({
+        slot:section.slot, type:section.type, title:section.title, pageKey:section.pageKey, sortOrder:index, isEnabled:true,
+        config:{...section.config,theme:'neon',templateId,templateSlot:section.slot}
+      })),
+      ...AFSANA_GLOBAL_SECTIONS.map((section) => ({
+        slot:section.slot, type:section.type, title:section.title, pageKey:section.pageKey,
+        sortOrder:section.sortOrder, isEnabled:section.isEnabled,
+        config:{...section.config,theme:'neon',templateId,templateSlot:section.slot}
+      }))
+    ];
+    const slots = new Set(rows.filter((item)=>item.config?.templateId===templateId).map((item)=>item.config?.templateSlot));
+    const allSlotsExist = sections.every((section)=>slots.has(section.slot));
+    const enabledSlotsExist = sections.filter((section)=>section.isEnabled).every((section)=>rows.some((row)=>row.config?.templateId===templateId&&row.config?.templateSlot===section.slot&&row.isEnabled!==false));
+    if (allSlotsExist && enabledSlotsExist) {
+      setNotice('The AFSANA experience layout is already published. Edit, hide, reorder or remove its sections below.');
       return;
     }
     setBusy(true); setNotice('');
-    const starter = AFSANA_EXPERIENCE_SECTIONS;
     try {
-      const existingHome = rows.filter((item) => (item.pageKey || 'home') === 'home' && item.config?.templateId !== templateId).sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-      for (let index = 0; index < starter.length; index += 1) {
-        const section = starter[index], slot = `home-${index}`;
-        const existing = templateRows.find((item) => item.config?.templateSlot === slot);
-        if (existing) { await api.update(existing.id, { sortOrder:index }); continue; }
-        const config = { ...section.config, theme:'neon', templateId, templateSlot:slot };
-        await api.create({ type:section.type, title:section.title, pageKey:'home', config, sortOrder:index, isEnabled:true });
-        existingSlots.add(slot);
-      }
-      // Retire every previous homepage row so the new reference is the only live design.
-      await Promise.all(existingHome.map((item) => api.update(item.id, { isEnabled: false })));
-      const innerPageKeys = [...new Set(AFSANA_INNER_SECTIONS.map((item) => item.pageKey))];
-      for (const pageKey of innerPageKeys) {
-        const pageTemplate = AFSANA_INNER_SECTIONS.filter((item) => item.pageKey === pageKey);
-        const legacyRows = rows.filter((item) => (item.pageKey || 'home') === pageKey && item.config?.templateId !== templateId).sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-        for (let index = 0; index < pageTemplate.length; index += 1) {
-          const section = pageTemplate[index];
-          if (existingSlots.has(section.slot)) {
-            const current = templateRows.find((item) => item.config?.templateSlot === section.slot);
-            if (current) await api.update(current.id, { sortOrder:index });
-            continue;
-          }
-          const config = { ...section.config, theme:'neon', templateId, templateSlot:section.slot };
-          await api.create({ type:section.type, title:section.title, pageKey, config, sortOrder:index, isEnabled:true });
-          existingSlots.add(section.slot);
-        }
-        // Keep old records recoverable, but remove their sections from live pages.
-        await Promise.all(legacyRows.map((item) => api.update(item.id, { isEnabled: false })));
-      }
-      const globalSections = AFSANA_GLOBAL_SECTIONS;
-      const globalPageKeys = [...new Set(globalSections.map((item) => item.pageKey))];
-      for (const globalPageKey of globalPageKeys) {
-        const oldGlobalRows = rows.filter((item) => (item.pageKey || 'home') === globalPageKey && item.config?.templateId !== templateId);
-        await Promise.all(oldGlobalRows.map((item) => api.update(item.id, { isEnabled: false })));
-      }
-      for (const item of globalSections) {
-        if (existingSlots.has(item.slot)) continue;
-        const config = { ...item.config, theme:'neon', templateId, templateSlot:item.slot };
-        await api.create({ type:item.type, title:item.title, pageKey:item.pageKey, config, sortOrder:item.sortOrder, isEnabled:item.isEnabled });
-        existingSlots.add(item.slot);
-      }
+      const result = await api.publishExperience({templateId,sections});
       try { localStorage.removeItem('afsana_cms_preview_v3'); localStorage.removeItem('afsana_cms_preview_v2'); localStorage.removeItem('afsana_cms_preview_v1'); } catch {}
       setLayoutPreviewed(false);
-      setPageKey('home'); setNotice('AFSANA layout confirmed and published. Previous sections are hidden; the new design is now permanent and editable.'); reload();
-    } catch (e) { setNotice(e.message || 'Some layout sections may have saved. Run Add AFSANA experience layout again to safely complete any missing items.'); reload(); }
-    finally { setBusy(false); }
+      setPageKey('home');
+      setNotice(`AFSANA layout confirmed and published. ${result.created || 0} new sections added; previous sections hidden. The new layout is now permanent and editable.`);
+      reload();
+    } catch (e) {
+      setNotice(e.message || 'Publish failed. No partial CMS layout was applied; check your connection and try again.');
+      reload();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
@@ -296,7 +281,7 @@ export default function HomepageBuilder() {
   const pageRows = canonicalPageRows.length ? canonicalPageRows : allPageRows;
   const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const experienceSlots = new Set(rows.filter((item) => item.config?.templateId === canonicalTemplateId).map((item) => item.config?.templateSlot));
-  const hasExperienceTemplate = AFSANA_EXPECTED_SLOTS.every((slot) => experienceSlots.has(slot));
+  const hasExperienceTemplate = AFSANA_EXPECTED_SLOTS.every((slot) => experienceSlots.has(slot)) && AFSANA_GLOBAL_SECTIONS.filter((section)=>section.isEnabled).every((section)=>rows.some((item)=>item.config?.templateId===canonicalTemplateId&&item.config?.templateSlot===section.slot&&item.isEnabled!==false));
   const moveBy = async (id, delta) => {
     const next = [...sorted], from = next.findIndex((x) => x.id === id), to = from + delta;
     if (from < 0 || to < 0 || to >= next.length) return;
@@ -316,7 +301,7 @@ export default function HomepageBuilder() {
 
   const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
   const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'nav_menu') : form.pageKey === 'site_footer' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'custom_footer') : HOMEPAGE_SECTION_TYPES.filter((x) => !['nav_menu','custom_footer'].includes(x.key));
-  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','nav_menu','custom_footer'];
+  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu','custom_footer'];
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -416,7 +401,7 @@ export default function HomepageBuilder() {
             ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded MP4/WebM URL" /><MediaUploadButton accept="video/mp4,video/webm" label="Upload campaign video" onUploaded={(url) => setConfig(key, url)} /></Field>)}
           </div>
         </div>}
-        {form.type === 'custom_footer' && <><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || ''} onChange={(e) => setConfig('tagline', e.target.value)} /></Field><Field label="Footer description"><Textarea rows={3} value={form.config.description || ''} onChange={(e) => setConfig('description', e.target.value)} /></Field><Field label="Footer links" hint="One per line: Label|Description||/internal-route"><Textarea rows={7} value={typeof form.config.items === 'string' ? form.config.items : itemText(form.config.items)} onChange={(e) => setConfig('items', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Contact email"><Input value={form.config.email || ''} onChange={(e) => setConfig('email', e.target.value)} /></Field><Field label="Contact phone"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} /></Field><Field label="Instagram URL"><Input value={form.config.instagramUrl || ''} onChange={(e) => setConfig('instagramUrl', e.target.value)} /></Field><Field label="Facebook URL"><Input value={form.config.facebookUrl || ''} onChange={(e) => setConfig('facebookUrl', e.target.value)} /></Field></div><Field label="Bottom copyright / note"><Input value={form.config.footerNote || ''} onChange={(e) => setConfig('footerNote', e.target.value)} /></Field></>}
+        {form.type === 'custom_footer' && <><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || ''} onChange={(e) => setConfig('tagline', e.target.value)} /></Field><Field label="Footer description"><Textarea rows={3} value={form.config.description || ''} onChange={(e) => setConfig('description', e.target.value)} /></Field><Field label="Footer links" hint="One per line: Label|Description||/internal-route"><Textarea rows={7} value={typeof form.config.items === 'string' ? form.config.items : itemText(form.config.items)} onChange={(e) => setConfig('items', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Contact email"><Input value={form.config.email || ''} onChange={(e) => setConfig('email', e.target.value)} /></Field><Field label="Contact phone"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} /></Field><Field label="Instagram URL"><Input value={form.config.instagramUrl || ''} onChange={(e) => setConfig('instagramUrl', e.target.value)} placeholder="https://instagram.com/your-page" /></Field><Field label="Facebook URL"><Input value={form.config.facebookUrl || ''} onChange={(e) => setConfig('facebookUrl', e.target.value)} placeholder="https://facebook.com/your-page" /></Field><Field label="TikTok URL"><Input value={form.config.tiktokUrl || ''} onChange={(e) => setConfig('tiktokUrl', e.target.value)} placeholder="https://tiktok.com/@your-page" /></Field><Field label="YouTube URL"><Input value={form.config.youtubeUrl || ''} onChange={(e) => setConfig('youtubeUrl', e.target.value)} placeholder="https://youtube.com/@your-channel" /></Field><Field label="Pinterest URL"><Input value={form.config.pinterestUrl || ''} onChange={(e) => setConfig('pinterestUrl', e.target.value)} placeholder="https://pinterest.com/your-page" /></Field><Field label="X / Twitter URL"><Input value={form.config.xUrl || ''} onChange={(e) => setConfig('xUrl', e.target.value)} placeholder="https://x.com/your-page" /></Field></div><Field label="Bottom copyright / note"><Input value={form.config.footerNote || ''} onChange={(e) => setConfig('footerNote', e.target.value)} /></Field></>}
         {form.type === 'nav_menu' && <>
           <Field label="Header logo image"><Input value={form.config.logoUrl || ''} onChange={(e) => setConfig('logoUrl', e.target.value)} placeholder="Uploaded logo image URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload header logo" onUploaded={(url) => setConfig('logoUrl', url)} /></Field>
           <div className="grid grid-cols-2 gap-3"><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || 'THE ART OF SCENT'} onChange={(e) => setConfig('tagline', e.target.value)} /></Field></div>
