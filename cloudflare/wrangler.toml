@@ -21,5 +21,3 @@ mode = "smart"
 
 previews = {}
 
-[cache]
-enabled = true
