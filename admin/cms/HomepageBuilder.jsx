@@ -10,6 +10,9 @@ import { cmsApi } from '../../src/services';
 import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 
+const PAGE_OPTIONS = [["home","Homepage"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"]];
+const PAGE_PREVIEW_PATHS = { home:'/', site_header_after:'/', site_footer_before:'/', collection_before:'/shop', collection_after:'/shop', product_before:'/shop', product_after:'/shop', house:'/about', journal:'/journal', gifting:'/gifting', cart_before:'/cart', cart_after:'/cart', checkout_before:'/checkout', checkout_after:'/checkout', track_before:'/track', track_after:'/track' };
+
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
   buttonText: '', buttonLink: '', limit: 4, query: '', height: 'auto',
@@ -39,43 +42,59 @@ export default function HomepageBuilder() {
   const rows = data?.items || [];
   const [dragId, setDragId] = useState(null);
   const [drawer, setDrawer] = useState({ open: false, item: null });
+  const [pageKey, setPageKey] = useState('home');
+  const [insertAfter, setInsertAfter] = useState(null);
   const [form, setForm] = useState({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [del, setDel] = useState(null);
-  const preview = () => { try { localStorage.setItem('afsana_cms_preview_v1', JSON.stringify({ sections: sorted })); window.open('/?afsanaPreview=1', '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
+  const preview = () => { try { localStorage.setItem('afsana_cms_preview_v2', JSON.stringify({ pageKey, sections: sorted })); const target = PAGE_PREVIEW_PATHS[pageKey] || '/'; window.open(`${target}?afsanaPreview=1&afsanaPageKey=${encodeURIComponent(pageKey)}`, '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
-  const open = (item) => {
+  const open = (item, afterItem = null) => {
+    setInsertAfter(afterItem);
     if (item) {
+      setPageKey(item.pageKey || 'home');
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
       cfg.items = itemText(cfg.items);
-      setForm({ type: item.type, title: item.title || '', config: cfg, isEnabled: item.isEnabled !== false });
-    } else setForm({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
+      setForm({ type: item.type, title: item.title || '', pageKey: item.pageKey || 'home', config: cfg, isEnabled: item.isEnabled !== false });
+    } else setForm({ type: 'hero', title: '', pageKey, config: defaults('hero'), isEnabled: true });
     setDrawer({ open: true, item: item || null });
   };
-  const close = () => setDrawer({ open: false, item: null });
+  const close = () => { setDrawer({ open: false, item: null }); setInsertAfter(null); };
   const save = async (e) => {
     e.preventDefault(); setBusy(true); setNotice('');
     try {
       const cfg = { ...form.config };
       const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse'];
       if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
-      const payload = { type: form.type, title: form.title.trim(), config: cfg, sortOrder: drawer.item?.sortOrder ?? rows.length, isEnabled: !!form.isEnabled };
-      if (drawer.item) await api.update(drawer.item.id, payload); else await api.create(payload);
-      close(); setNotice('Section saved.'); reload();
+      const targetPage = form.pageKey || 'home';
+      const payload = { type: form.type, title: form.title.trim(), pageKey: targetPage, config: cfg, sortOrder: drawer.item?.sortOrder ?? sorted.length, isEnabled: !!form.isEnabled };
+      if (drawer.item) {
+        if ((drawer.item.pageKey || 'home') !== targetPage) {
+          const destinationCount = rows.filter((x) => (x.pageKey || 'home') === targetPage && x.id !== drawer.item.id).length;
+          payload.sortOrder = destinationCount;
+        }
+        await api.update(drawer.item.id, payload);
+      } else {
+        const insertIndex = insertAfter ? Math.max(0, sorted.findIndex((x) => x.id === insertAfter.id) + 1) : sorted.length;
+        await api.create({ ...payload, sortOrder: insertIndex });
+        await Promise.all(sorted.map((item, i) => api.update(item.id, { sortOrder: i < insertIndex ? i : i + 1 })));
+      }
+      setPageKey(targetPage); close(); setNotice('Section saved in the selected page layout.'); reload();
     } catch (e2) { setNotice(e2.message || 'Could not save section.'); } finally { setBusy(false); }
   };
   const reorder = async (sourceId, targetId) => {
     if (!sourceId || !targetId || sourceId === targetId) return;
-    const next = [...rows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    const next = [...sorted];
     const from = next.findIndex((x) => x.id === sourceId), to = next.findIndex((x) => x.id === targetId);
     if (from < 0 || to < 0) return;
     const [moved] = next.splice(from, 1); next.splice(to, 0, moved);
     try { await Promise.all(next.map((item, i) => api.update(item.id, { sortOrder: i }))); setNotice('Section order saved.'); reload(); }
     catch (e) { setNotice(e.message || 'Could not reorder sections.'); }
   };
-  const sorted = [...rows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const pageRows = rows.filter((item) => (item.pageKey || 'home') === pageKey);
+  const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const moveBy = async (id, delta) => {
     const next = [...sorted], from = next.findIndex((x) => x.id === id), to = from + delta;
     if (from < 0 || to < 0 || to >= next.length) return;
@@ -85,8 +104,12 @@ export default function HomepageBuilder() {
   };
   const duplicate = async (item) => {
     setBusy(true); setNotice('');
-    try { await api.create({ type: item.type, title: item.title || '', config: item.config || {}, sortOrder: (item.sortOrder ?? rows.length) + 1, isEnabled: false }); setNotice('Section duplicated as hidden. Review it, then publish it.'); reload(); }
-    catch (e) { setNotice(e.message || 'Could not duplicate section.'); } finally { setBusy(false); }
+    try {
+      const insertIndex = Math.max(0, sorted.findIndex((x) => x.id === item.id) + 1);
+      await api.create({ type: item.type, title: item.title || '', pageKey: item.pageKey || pageKey, config: item.config || {}, sortOrder: insertIndex, isEnabled: false });
+      await Promise.all(sorted.map((row, i) => api.update(row.id, { sortOrder: i < insertIndex ? i : i + 1 })));
+      setNotice('Section duplicated just below the original as hidden. Review it, then publish it.'); reload();
+    } catch (e) { setNotice(e.message || 'Could not duplicate section.'); } finally { setBusy(false); }
   };
 
   const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
@@ -94,8 +117,8 @@ export default function HomepageBuilder() {
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build the storefront like a canvas</h2><p className="text-sm text-[#5f654f] mt-1">Drag sections, set alignment, width, height, columns and spacing. Add up to 4 videos or posts in one row, then preview and publish.</p></div>
-        <div className="flex gap-2">{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+        <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
+        <div className="flex flex-wrap items-center gap-2"><Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview this page</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
@@ -108,6 +131,7 @@ export default function HomepageBuilder() {
             <button type="button" className="cursor-grab p-2 rounded-xl bg-[#f3f1e9] text-[#5f654f]" aria-label="Drag section"><GripVertical className="w-5 h-5" /></button>
             <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="text-xs font-semibold text-[#748e40]">{String(index + 1).padStart(2, '0')}</span><h3 className="font-medium truncate">{item.title || meta?.label || item.type}</h3>{item.type.includes('video') && <Video className="w-4 h-4 text-[#263e0e]" />}{item.type.includes('image') && <ImageIcon className="w-4 h-4 text-[#263e0e]" />}</div><p className="text-xs text-[#5f654f] mt-1">{meta?.label || item.type} · {cfg.columns || 1} columns · {cfg.align || 'left'} · {cfg.width || 100}%</p></div>
             <span className={item.isEnabled ? 'text-xs rounded-full bg-[#e6f0e4] text-[#3d6b3d] px-2.5 py-1' : 'text-xs rounded-full bg-[#f3f1e9] text-[#5f654f] px-2.5 py-1'}>{item.isEnabled ? 'Live' : 'Hidden'}</span>
+            {can('homepage.create') && <button type="button" onClick={() => open(null, item)} className="p-2 rounded-xl text-[#748e40] hover:bg-[#eef2e5]" title="Insert a new section after this one"><Plus className="w-4 h-4" /></button>}
             {can('homepage.edit') && <div className="flex items-center gap-1">
               <button type="button" disabled={index === 0} onClick={() => moveBy(item.id, -1)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move up"><ArrowUp className="w-4 h-4" /></button>
               <button type="button" disabled={index === sorted.length - 1} onClick={() => moveBy(item.id, 1)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move down"><ArrowDown className="w-4 h-4" /></button>
@@ -119,10 +143,11 @@ export default function HomepageBuilder() {
           </div>
         </div>;
       })}
-      {!sorted.length && <Card><div className="py-10 text-center"><Sparkles className="w-8 h-8 mx-auto text-[#748e40]" /><p className="font-medium mt-3">Your canvas is empty</p><p className="text-sm text-[#5f654f] mt-1">Add a hero, product row, story, video grid, post grid, offer timer or another section.</p></div></Card>}
+      {!sorted.length && <Card><div className="py-10 text-center"><Sparkles className="w-8 h-8 mx-auto text-[#748e40]" /><p className="font-medium mt-3">No sections on this page yet</p><p className="text-sm text-[#5f654f] mt-1">Add a hero, product row, story, video grid, post grid, 3D theatre, offer timer or any other section.</p></div></Card>}
     </div>}
     <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
+        <Field label="Place this section on"><Select value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
         <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{HOMEPAGE_SECTION_TYPES.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
 
