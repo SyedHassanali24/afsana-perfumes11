@@ -109,4 +109,6 @@ export const HOMEPAGE_SECTION_TYPES = [
   { key: 'instagram', label: 'Social / Instagram' },
   { key: 'rich_text', label: 'Rich text' },
   { key: 'spacer', label: 'Spacer' },
+  { key: 'whatsapp_float', label: 'Floating WhatsApp contact' },
+  { key: 'ai_concierge', label: 'Guided scent concierge toggle' },
 ];
