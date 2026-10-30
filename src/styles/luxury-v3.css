@@ -271,3 +271,8 @@
 .afsana-ref-match strong{font-size:16px;color:#fff}
 @media(max-width:900px){.afsana-ref-finder-grid{grid-template-columns:1fr}.afsana-ref-finder-box{width:100%}}
 @media(max-width:700px){.afsana-ref-offer-inner{grid-template-columns:1fr}.afsana-ref-offer-stamp{width:85px;height:85px;font-size:7px}.afsana-ref-offer-stamp b{font-size:22px}.afsana-ref-finder{padding:43px 0}.afsana-ref-finder-grid{grid-template-columns:1fr auto;gap:12px}.afsana-ref-finder-grid>div:first-child h2{font-size:35px}.afsana-ref-finder-box{grid-column:1/-1;padding:20px}.afsana-ref-finder-options{grid-template-columns:1fr}}
+
+
+/* Premium offer countdown */
+.cms-timer{display:inline-flex;align-items:center;gap:9px;margin-top:22px;padding:11px 15px;border:1px solid rgba(217,255,85,.28);border-radius:999px;background:rgba(16,13,36,.55);box-shadow:0 14px 40px rgba(0,0,0,.18);color:#fff;font:700 11px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;backdrop-filter:blur(10px)}
+.cms-timer span{min-width:43px;text-align:center;color:#d9ff55}.cms-timer b{color:#aaa3bd;font-weight:400}
