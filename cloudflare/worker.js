@@ -4,6 +4,7 @@ import { MongoDBConnection } from "./MongoDBConnection.js";
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
+const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https://app.netlify.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
 function cors(origin) {
   const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
@@ -55,6 +56,8 @@ export default {
       } else if (u.pathname === "/" || u.pathname.endsWith(".html")) {
         headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
       }
+      headers.set("Content-Security-Policy", SITE_CSP);
+      headers.set("X-Content-Type-Options", "nosniff");
       headers.set("X-Afsana-Backend", "cloudflare-assets");
       return new Response(asset.body, { status: asset.status, headers });
     }
