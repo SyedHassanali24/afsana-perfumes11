@@ -109,8 +109,9 @@ async function publicContent() {
   const groupedSections = rawHomepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
   const pageSections = Object.fromEntries(Object.entries(groupedSections).map(([key, sections]) => {
     const canonical = sections.filter((section) => section.config?.templateId === canonicalTemplateId || section.config?.theme === 'neon');
-    const reference = sections.filter((section) => referenceTypes.has(section.type));
-    return [key, canonical.length ? canonical : reference];
+    // The previous CMS layout is never a fallback. Pages without an installed
+    // reference layout return no old sections instead of resurfacing legacy design.
+    return [key, canonical];
   }));
   const homepageSections = pageSections.home || [];
   const managedPageKeys = [...new Set(allLayouts.map((d) => d.pageKey || 'home'))];
