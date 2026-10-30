@@ -94,12 +94,23 @@ async function publicContent() {
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
+  // Public storefront content must follow the latest AFSANA reference template.
+  // Never re-introduce legacy homepage rows merely because an older CMS record
+  // does not yet have templateId/theme metadata.
   const canonicalTemplateId = 'afsana-neon-experience-v1';
+  const referenceTypes = new Set([
+    'hero','reference_assets','nav_menu','category_tiles','video_grid','post_grid','blog_grid',
+    'featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','scent_finder',
+    'split_story','video_banner','offer_timer','promo_timer','product_3d_showcase','fragrance_dna',
+    'interactive_gallery','community_pulse','footer_showcase','custom_footer','benefits',
+    'trust_grid','values_grid','testimonials','newsletter','whatsapp_float','ai_concierge','marquee'
+  ]);
   const rawHomepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
   const groupedSections = rawHomepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
   const pageSections = Object.fromEntries(Object.entries(groupedSections).map(([key, sections]) => {
-    const canonical = sections.filter((section) => section.config?.templateId === canonicalTemplateId);
-    return [key, canonical.length ? canonical : sections];
+    const canonical = sections.filter((section) => section.config?.templateId === canonicalTemplateId || section.config?.theme === 'neon');
+    const reference = sections.filter((section) => referenceTypes.has(section.type));
+    return [key, canonical.length ? canonical : reference];
   }));
   const homepageSections = pageSections.home || [];
   const managedPageKeys = [...new Set(allLayouts.map((d) => d.pageKey || 'home'))];
