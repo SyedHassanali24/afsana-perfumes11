@@ -28,7 +28,7 @@ export default function MediaUploadButton({ onUploaded, accept='image/*', label=
     setBusy(true); setError(''); setUploaded(false);
     try {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      const contentType = file.type || TYPE_BY_EXTENSION[ext] || '';
+      const contentType = TYPE_BY_EXTENSION[ext] || file.type || '';
       const payload = contentType.startsWith('image/')
         ? await shrinkImage(file)
         : { filename: file.name, contentType, data: await toBase64(file) };
