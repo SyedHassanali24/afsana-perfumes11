@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, MessageCircle, Sparkles, X } from 'lucide-react';
 import useApi from '../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../services';
 import ProductCard from './ProductCard';
@@ -222,6 +222,19 @@ function PremiumFooterShowcase({ section }) {
     </div>
   </section>;
 }
+function ConciergeFloat({ section }) {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const choices = [['Fresh & clean', 'fresh'], ['Warm & sensual', 'amber'], ['Dark & woody', 'oud'], ['Soft & floral', 'floral']];
+  return <div className="fixed bottom-6 right-6 z-[85]">
+    {open && <div className="mb-3 w-[min(330px,calc(100vw-32px))] rounded-3xl border border-white/15 bg-[#100d24] p-5 text-white shadow-2xl">
+      <div className="flex items-start justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.24em] text-[#d9ff55]">AFSANA PRIVATE CONCIERGE</p><h3 className="mt-2 font-display text-2xl">Find your scent mood.</h3><p className="mt-2 text-xs text-white/60">Choose the feeling you want your fragrance to leave.</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Close concierge"><X className="h-4 w-4"/></button></div>
+      <div className="mt-4 grid grid-cols-2 gap-2">{choices.map(([label,value]) => <button key={value} type="button" onClick={() => navigate('/shop?category='+value)} className="rounded-xl border border-white/15 px-3 py-3 text-left text-xs hover:border-[#d9ff55] hover:bg-white/5">{label}</button>)}</div>
+    </div>}
+    <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 rounded-full bg-[#d9ff55] px-5 py-3 text-xs font-semibold text-[#100d24] shadow-xl hover:scale-105"><Sparkles className="h-4 w-4"/>{section.config?.label || 'Scent Concierge'}</button>
+  </div>;
+}
+
 function CmsSection({ section, products, faq }) {
   const c = section.config || {};
   const align = c.align === 'center' ? 'text-center items-center' : c.align === 'right' ? 'text-right items-end' : 'text-left items-start';
@@ -239,6 +252,13 @@ function CmsSection({ section, products, faq }) {
   const gridStyle = { '--cms-cols': cols, gap: `${gap}px` };
   const heading = section.title ? <div className={`mb-8 flex flex-col ${align}`}><Eyebrow light={['hero','video_grid','promo_timer','testimonials','cinematic_statement','lookbook'].includes(section.type)}>{c.eyebrow || 'AFSANA'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl leading-[.95]">{section.title}</h2>{c.subtitle && <p className="mt-4 max-w-2xl text-sm leading-7 text-[#5f654f]">{c.subtitle}</p>}</div> : null;
   const btn = c.buttonText && c.buttonLink ? <Link to={c.buttonLink} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.18em] text-[#263e0e]">{c.buttonText}<ArrowRight className="w-4 h-4"/></Link> : null;
+  if (section.type === 'whatsapp_float') {
+    const phone = String(c.phone || '').replace(/[^0-9]/g, '');
+    if (!phone) return null;
+    const href = `https://wa.me/${phone}?text=${encodeURIComponent(c.message || 'Assalam-o-alaikum, I need help with AFSANA fragrances.')}`;
+    return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-6 left-6 z-[84] inline-flex items-center gap-2 rounded-full bg-[#20c768] px-5 py-3 text-xs font-semibold text-white shadow-2xl hover:scale-105"><MessageCircle className="h-4 w-4"/>{c.label || 'WhatsApp us'}</a>;
+  }
+  if (section.type === 'ai_concierge') return <ConciergeFloat section={section}/>;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p><CmsTimer endAt={c.endAt}/>{btn}</div></div></section>;
   if (section.type === 'muse_scene') return <MuseScene section={section}/>;
@@ -272,7 +292,7 @@ function CmsSectionList({ sections, faq, includeHomeFinish = false }) {
     ...(!hasPulse ? [{ id: '__default-community-pulse', type: 'community_pulse', title: 'A house people come back to.', config: {}, isEnabled: true }] : []),
     ...(!hasFooterShowcase ? [{ id: '__default-footer-showcase', type: 'footer_showcase', title: 'Leave the final impression.', config: {}, isEnabled: true }] : []),
   ] : [];
-  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <CmsSection key={s.id} section={s} products={products} faq={faq}/>)}</div>;
+  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq}/></div>)}</div>;
 }
 
 function CmsDrivenHome({ sections, faq }) {
