@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, MessageCircle, Sparkles, X } from 'lucide-react';
 import useApi from '../hooks/useApi';
@@ -118,7 +118,11 @@ function Product3DShowcase({ section, products=[] }) {
   const media=[...(chosen?.media||[])].filter(x=>x?.url).slice(0,8);
   const frames=media.length?media:[{url:c.imageUrl||img.signature}];
   const [frame,setFrame]=useState(0),[auto,setAuto]=useState(true);
+  const drag=useRef({active:false,x:0});
   useEffect(()=>{if(!auto||frames.length<2)return;const id=window.setInterval(()=>setFrame(v=>(v+1)%frames.length),900);return()=>window.clearInterval(id)},[auto,frames.length]);
+  const startTurn=(event)=>{if(frames.length<2)return;setAuto(false);drag.current={active:true,x:event.clientX};event.currentTarget.setPointerCapture?.(event.pointerId);};
+  const moveTurn=(event)=>{if(!drag.current.active||frames.length<2)return;const delta=event.clientX-drag.current.x;const steps=Math.trunc(delta/22);if(!steps)return;drag.current.x+=steps*22;setFrame((current)=>(current-steps+frames.length)%frames.length);};
+  const endTurn=()=>{drag.current.active=false;};
   return <section className="relative overflow-hidden bg-[#080a07] text-white py-20 sm:py-28">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(163,197,233,.18),transparent_22%),radial-gradient(circle_at_25%_70%,rgba(123,0,58,.20),transparent_28%)]"/>
     <div className="container-xl relative grid items-center gap-12 lg:grid-cols-[.85fr_1.15fr]">
@@ -126,12 +130,12 @@ function Product3DShowcase({ section, products=[] }) {
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
-        <div className="relative h-[440px] w-[330px] flex items-center justify-center" style={{perspective:'1200px'}}>
+        <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
             <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
           </div>
         </div>
-        <button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
+        <div className="absolute bottom-4 left-0 text-[8px] uppercase tracking-[.18em] text-white/45">Drag to rotate · {frames.length} gallery angles</div><button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
       </div>
     </div>
   </section>;
