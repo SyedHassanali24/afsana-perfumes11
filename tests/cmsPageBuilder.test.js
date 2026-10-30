@@ -18,10 +18,12 @@ test('unsupported page positions are rejected instead of silently being publishe
 });
 
 test('floating WhatsApp and guided scent concierge are valid visual section types', () => {
-  for (const type of ['whatsapp_float', 'ai_concierge', 'custom_footer']) {
+  for (const [type, pageKey] of [['whatsapp_float','site_footer_before'],['ai_concierge','site_footer_before'],['nav_menu','site_navigation'],['custom_footer','site_footer']]) {
     assert.ok(CMS.HOMEPAGE_SECTION_TYPES.includes(type));
-    assert.deepEqual(CMS.crossFieldErrors('homepage', CMS.normalize('homepage', { type, pageKey: 'site_footer_before' })), []);
+    assert.deepEqual(CMS.crossFieldErrors('homepage', CMS.normalize('homepage', { type, pageKey })), []);
   }
+  assert.ok(CMS.crossFieldErrors('homepage', CMS.normalize('homepage', { type:'nav_menu', pageKey:'home' })).some((issue) => issue.path === 'pageKey'));
+  assert.ok(CMS.crossFieldErrors('homepage', CMS.normalize('homepage', { type:'custom_footer', pageKey:'site_footer_before' })).some((issue) => issue.path === 'pageKey'));
 });
 
 test('homepage sections are soft-deletable without being treated as another content module', () => {
