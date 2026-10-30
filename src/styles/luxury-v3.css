@@ -105,3 +105,26 @@
   .afsana-experience-particles,.storefront-theme main:before{display:none}
   .afsana-observe{opacity:1;transform:none;transition:none}
 }
+
+
+/* Electric violet / acid-lime direction ported from the AFSANA interactive preview. */
+.storefront-theme{
+  --lux-forest:#100d24;--lux-forest-2:#1b1535;--lux-olive:#7357ff;--lux-lime:#d9ff55;
+  --lux-amber:#d9ff55;--lux-yellow:#d9ff55;--lux-plum:#7357ff;--lux-wine:#2b1749;
+  --lux-ivory:#f7f4ed;--lux-milk:#efebf8;--lux-ink:#100d24;
+  background:radial-gradient(900px 520px at 10% 8%,rgba(115,87,255,.12),transparent 56%),radial-gradient(760px 520px at 95% 30%,rgba(217,255,85,.07),transparent 58%),var(--lux-ivory);
+}
+.storefront-theme header>div:first-child{background:linear-gradient(110deg,rgba(16,13,36,.96),rgba(43,23,73,.88),rgba(115,87,255,.34))!important}
+.storefront-theme [class*="bg-[#263e0e]"],.storefront-theme [class*="bg-[#182308]"],.storefront-theme [class*="bg-[#080a07]"]{background-color:#100d24!important}
+.storefront-theme [class*="bg-[#b4bf41]"],.storefront-theme [class*="bg-[#ffe500]"]{background-color:#d9ff55!important}
+.storefront-theme [class*="text-[#263e0e]"],.storefront-theme [class*="text-[#182308]"]{color:#100d24!important}
+.storefront-theme [class*="text-[#b4bf41]"],.storefront-theme [class*="text-[#748e40]"],.storefront-theme [class*="text-[#ffe500]"]{color:#7357ff!important}
+.storefront-theme [class*="border-[#263e0e]"]{border-color:rgba(115,87,255,.24)!important}
+.storefront-theme .main-product-stage,.storefront-theme .product-card-stage{background:radial-gradient(circle at 50% 24%,rgba(115,87,255,.18),transparent 32%),linear-gradient(145deg,#f7f4ed,#eee9f8)}
+.storefront-theme footer{background:radial-gradient(circle at 84% 15%,rgba(115,87,255,.28),transparent 26%),radial-gradient(circle at 14% 82%,rgba(217,255,85,.07),transparent 24%),#100d24!important}
+.afsana-cms-theme-neon [class*="bg-[#263e0e]"],.afsana-cms-theme-neon [class*="bg-[#182308]"],.afsana-cms-theme-neon [class*="bg-[#080a07]"]{background-color:#100d24!important}
+.afsana-cms-theme-neon [class*="bg-[#b4bf41]"],.afsana-cms-theme-neon [class*="bg-[#ffe500]"]{background-color:#d9ff55!important}
+.afsana-cms-theme-neon [class*="text-[#b4bf41]"],.afsana-cms-theme-neon [class*="text-[#748e40]"]{color:#d9ff55!important}
+.afsana-cms-theme-neon [class*="text-[#263e0e]"],.afsana-cms-theme-neon [class*="text-[#182308]"]{color:#100d24!important}
+.afsana-cms-theme-neon [class*="border-[#263e0e]"]{border-color:rgba(115,87,255,.25)!important}
+.afsana-cms-section{position:relative}
