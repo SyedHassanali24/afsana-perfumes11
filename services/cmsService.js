@@ -98,13 +98,7 @@ async function publicContent() {
   // Never re-introduce legacy homepage rows merely because an older CMS record
   // does not yet have templateId/theme metadata.
   const canonicalTemplateId = 'afsana-neon-experience-v1';
-  const referenceTypes = new Set([
-    'hero','reference_assets','nav_menu','category_tiles','video_grid','post_grid','blog_grid',
-    'featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','scent_finder',
-    'split_story','video_banner','offer_timer','promo_timer','product_3d_showcase','fragrance_dna',
-    'interactive_gallery','community_pulse','footer_showcase','custom_footer','benefits',
-    'trust_grid','values_grid','testimonials','newsletter','whatsapp_float','ai_concierge','marquee'
-  ]);
+
   const rawHomepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
   const groupedSections = rawHomepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
   const pageSections = Object.fromEntries(Object.entries(groupedSections).map(([key, sections]) => {
