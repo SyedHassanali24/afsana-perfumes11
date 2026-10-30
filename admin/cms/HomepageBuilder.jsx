@@ -65,7 +65,7 @@ export default function HomepageBuilder() {
       { type:'scent_finder', title:'Let your fragrance find you.', config:{ eyebrow:'THE AFSANA SCENT CONCIERGE', theme:'neon' } },
       { type:'muse_scene', title:'Wear the story.', config:{ eyebrow:'THE AFSANA MUSE', body:'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.', buttonText:'Meet the collection', buttonLink:'/shop' } },
       { type:'video_grid', title:'Four moments. One fragrance house.', config:{ ...defaults('video_grid'), items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
-      { type:'offer_timer', title:'A limited AFSANA experience.', config:{ ...defaults('offer_timer'), label:'THE PRIVATE COLLECTION', offerText:'Discover the fragrance that feels like you.', endAt:'' } },
+      { type:'offer_timer', title:'A limited AFSANA experience.', config:{ ...defaults('offer_timer'), label:'THE PRIVATE COLLECTION', offerText:'Discover the fragrance that feels like you.', endAt:'2026-12-31T23:59' } },
       { type:'fragrance_dna', title:'Discover the notes behind the feeling.', config:{ eyebrow:'FRAGRANCE DNA', body:'Explore the personality behind each composition.' } },
       { type:'blog_grid', title:'Stories worth remembering.', config:{ items:parseItems(defaults('post_grid').items), columns:3, limit:3 } },
       { type:'testimonials', title:'A fragrance that stays with you.', config:{ columns:3, items:[{title:'A beautiful first impression',text:'A fragrance experience that feels considered from opening to dry down.'},{title:'A signature of my own',text:'The scent feels distinctive, elegant and easy to make your own.'},{title:'A gift worth giving',text:'Thoughtful presentation makes the whole experience memorable.'}] } },
