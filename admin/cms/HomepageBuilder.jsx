@@ -12,7 +12,6 @@ import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 
 const PAGE_OPTIONS = [["home","Homepage"],["site_navigation","Header navigation"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["discover","Scent finder page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"],["site_footer","Complete site footer"]];
-const PAGE_PREVIEW_PATHS = { home:'/', site_navigation:'/', site_header_after:'/', site_footer_before:'/', site_footer:'/', collection_before:'/shop', collection_after:'/shop', product_before:'/product/preview', product_after:'/product/preview', house:'/about', journal:'/journal', gifting:'/gifting', discover:'/discover', cart_before:'/cart', cart_after:'/cart', checkout_before:'/checkout', checkout_after:'/checkout', track_before:'/track', track_after:'/track' };
 
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
@@ -113,32 +112,6 @@ export default function HomepageBuilder() {
     const next = query.toString();
     window.history.replaceState({}, '', window.location.pathname + (next ? '?' + next : '') + window.location.hash);
   }, [loading, rows.length, drawer.open]);
-  const previewExperienceLayout = () => {
-    try {
-      const innerLayouts = Object.fromEntries(
-        ['house','journal','gifting','discover'].map((pageKey) => [
-          pageKey,
-          AFSANA_INNER_SECTIONS.filter((section) => section.pageKey === pageKey).map((section,index) => ({
-            ...section,
-            id:`preview-${section.slot}`,
-            sortOrder:index,
-            isEnabled:true,
-            config:{...section.config,theme:'neon',templateId:'afsana-neon-experience-v1',templateSlot:section.slot}
-          }))
-        ])
-      );
-      const layouts = {
-        home: AFSANA_EXPERIENCE_SECTIONS.map((section,index) => ({...section,id:`preview-home-${index}`,pageKey:'home',sortOrder:index,isEnabled:true,config:{...section.config,...(section.type==='reference_assets'?(rows.find((item)=>(item.pageKey||'home')==='home'&&item.type==='reference_assets')?.config||{}):{}),theme:'neon',templateId:'afsana-neon-experience-v1'}})),
-        ...innerLayouts,
-        site_navigation:[{id:'preview-navigation',type:'nav_menu',title:'AFSANA navigation',pageKey:'site_navigation',sortOrder:0,isEnabled:true,config:{items:parseItems(defaults('nav_menu').items),theme:'neon'}}],
-        site_footer:[{id:'preview-footer',type:'custom_footer',title:'AFSANA custom footer',pageKey:'site_footer',sortOrder:0,isEnabled:true,config:{...defaults('custom_footer'),items:parseItems(defaults('custom_footer').items),theme:'neon'}}],
-        site_footer_before:[{id:'preview-ai',type:'ai_concierge',title:'Scent Concierge',pageKey:'site_footer_before',sortOrder:0,isEnabled:true,config:{...defaults('ai_concierge'),theme:'neon'}}]
-      };
-      localStorage.setItem('afsana_cms_preview_v2',JSON.stringify({pageKey:'home',sections:layouts.home,layouts}));
-      window.open('/?afsanaPreview=1&afsanaPageKey=home','_blank','noopener,noreferrer');
-    } catch { setNotice('The AFSANA preview could not be opened in this browser.'); }
-  };
-
   const addExperienceLayout = async () => {
     const templateId = 'afsana-neon-experience-v1';
     const templateRows = rows.filter((item) => item.config?.templateId === templateId);
@@ -197,7 +170,6 @@ export default function HomepageBuilder() {
     finally { setBusy(false); }
   };
 
-  const preview = () => { try { localStorage.setItem('afsana_cms_preview_v2', JSON.stringify({ pageKey, sections: sorted })); const target = PAGE_PREVIEW_PATHS[pageKey] || '/'; window.open(`${target}?afsanaPreview=1&afsanaPageKey=${encodeURIComponent(pageKey)}`, '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
   const open = (item, afterItem = null) => {
@@ -298,7 +270,7 @@ export default function HomepageBuilder() {
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
-        <div className="flex flex-wrap items-center gap-2">{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}<Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}{can('homepage.create') && pageKey === 'home' && <Button variant="secondary" disabled={busy || hasExperienceTemplate} onClick={addExperienceLayout}>{hasExperienceTemplate ? 'Experience layout added' : 'Add AFSANA experience layout'}</Button>}{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview this page</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+        <div className="flex flex-wrap items-center gap-2">{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}<Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.create') && pageKey === 'home' && <Button variant="secondary" disabled={busy || hasExperienceTemplate} onClick={addExperienceLayout}>{hasExperienceTemplate ? 'Experience layout added' : 'Add AFSANA experience layout'}</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
