@@ -83,25 +83,40 @@ export default function HomepageBuilder() {
   };
 
   const addExperienceLayout = async () => {
-    if (rows.some((item) => item.config?.templateId === 'afsana-neon-experience-v1')) {
-      setNotice('The AFSANA experience layout has already been added. Edit or reorder its sections below.');
+    const templateId = 'afsana-neon-experience-v1';
+    const templateRows = rows.filter((item) => item.config?.templateId === templateId);
+    const existingSlots = new Set(templateRows.map((item) => item.config?.templateSlot).filter(Boolean));
+    const expectedSlots = [...AFSANA_EXPERIENCE_SECTIONS.map((_, index) => `home-${index}`), 'site-footer', 'site-footer-before-ai', 'site-footer-before-whatsapp'];
+    if (expectedSlots.every((slot) => existingSlots.has(slot))) {
+      setNotice('The AFSANA experience layout is already installed. Edit, hide, reorder or remove its sections below.');
       return;
     }
     setBusy(true); setNotice('');
     const starter = AFSANA_EXPERIENCE_SECTIONS;
     try {
-      const existingHome = rows.filter((item) => (item.pageKey || 'home') === 'home').sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-      let order = 0;
-      for (const section of starter) {
-        const config = { ...section.config, theme:'neon', templateId:'afsana-neon-experience-v1' };
-        await api.create({ type:section.type, title:section.title, pageKey:'home', config, sortOrder:order++, isEnabled:true });
+      const existingHome = rows.filter((item) => (item.pageKey || 'home') === 'home' && item.config?.templateId !== templateId).sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      for (let index = 0; index < starter.length; index += 1) {
+        const section = starter[index], slot = `home-${index}`;
+        const existing = templateRows.find((item) => item.config?.templateSlot === slot);
+        if (existing) { await api.update(existing.id, { sortOrder:index }); continue; }
+        const config = { ...section.config, theme:'neon', templateId, templateSlot:slot };
+        await api.create({ type:section.type, title:section.title, pageKey:'home', config, sortOrder:index, isEnabled:true });
+        existingSlots.add(slot);
       }
       await Promise.all(existingHome.map((item, index) => api.update(item.id, { sortOrder: starter.length + index })));
-      await api.create({ type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:{ ...defaults('custom_footer'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer').length, isEnabled:true });
-      await api.create({ type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:{ ...defaults('ai_concierge'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer_before').length, isEnabled:true });
-      await api.create({ type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:{ ...defaults('whatsapp_float'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer_before').length+1, isEnabled:false });
-      setPageKey('home'); setNotice('AFSANA experience layout added. All sections are editable, reorderable and removable; WhatsApp remains off until you add your number.'); reload();
-    } catch (e) { setNotice(e.message || 'Could not add the AFSANA experience layout.'); }
+      const globalSections = [
+        { slot:'site-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:defaults('custom_footer'), sortOrder:0, isEnabled:true },
+        { slot:'site-footer-before-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:defaults('ai_concierge'), sortOrder:0, isEnabled:true },
+        { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:false }
+      ];
+      for (const item of globalSections) {
+        if (existingSlots.has(item.slot)) continue;
+        const config = { ...item.config, theme:'neon', templateId, templateSlot:item.slot };
+        await api.create({ type:item.type, title:item.title, pageKey:item.pageKey, config, sortOrder:item.sortOrder, isEnabled:item.isEnabled });
+        existingSlots.add(item.slot);
+      }
+      setPageKey('home'); setNotice('AFSANA experience layout added before your existing sections. Everything is editable; WhatsApp stays off until you enter its number.'); reload();
+    } catch (e) { setNotice(e.message || 'Some layout sections may have saved. Run Add AFSANA experience layout again to safely complete any missing items.'); reload(); }
     finally { setBusy(false); }
   };
 
@@ -155,7 +170,8 @@ export default function HomepageBuilder() {
   };
   const pageRows = rows.filter((item) => (item.pageKey || 'home') === pageKey);
   const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-  const hasExperienceTemplate = rows.some((item) => item.config?.templateId === 'afsana-neon-experience-v1');
+  const experienceSlots = new Set(rows.filter((item) => item.config?.templateId === 'afsana-neon-experience-v1').map((item) => item.config?.templateSlot));
+  const hasExperienceTemplate = [...AFSANA_EXPERIENCE_SECTIONS.map((_, index) => `home-${index}`), 'site-footer', 'site-footer-before-ai', 'site-footer-before-whatsapp'].every((slot) => experienceSlots.has(slot));
   const moveBy = async (id, delta) => {
     const next = [...sorted], from = next.findIndex((x) => x.id === id), to = from + delta;
     if (from < 0 || to < 0 || to >= next.length) return;
