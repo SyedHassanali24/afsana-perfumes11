@@ -8,7 +8,7 @@ const HOMEPAGE_SECTION_TYPES = [
 ];
 const HOMEPAGE_PAGE_KEYS = [
   'home','site_navigation','site_header_after','collection_before','collection_after','product_before','product_after',
-  'house','journal','gifting','cart_before','cart_after','checkout_before','checkout_after','track_before','track_after',
+  'house','journal','gifting','discover','cart_before','cart_after','checkout_before','checkout_after','track_before','track_after',
   'site_footer_before','site_footer'
 ];
 const MODULE_OF = { banners: 'banners', faqs: 'faq', announcements: 'announcements', homepage: 'homepage' }; // permission module per resource
