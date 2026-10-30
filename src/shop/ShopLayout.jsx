@@ -15,14 +15,17 @@ export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
- const footerPreview = new URLSearchParams(location.search).get('afsanaPreview') === '1' && new URLSearchParams(location.search).get('afsanaPageKey') === 'site_footer';
+ let previewLayout = null;
+ try { if (new URLSearchParams(location.search).get('afsanaPreview') === '1') previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null'); } catch {}
+ const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer) || (new URLSearchParams(location.search).get('afsanaPreview') === '1' && new URLSearchParams(location.search).get('afsanaPageKey') === 'site_footer');
  const hasManagedFooter = footerPreview || (cmsData?.managedPageKeys || []).includes('site_footer');
  let navigationSections = cmsData?.pageSections?.site_navigation || [];
  try {
    const query = new URLSearchParams(location.search);
    if (query.get('afsanaPreview') === '1' && query.get('afsanaPageKey') === 'site_navigation') {
-     const preview = JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null');
-     if (Array.isArray(preview?.sections)) navigationSections = preview.sections;
+     const preview = previewLayout || JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null');
+     if (Array.isArray(preview?.layouts?.site_navigation)) navigationSections = preview.layouts.site_navigation;
+     else if (Array.isArray(preview?.sections)) navigationSections = preview.sections;
    }
  } catch {}
  const navigation = navigationSections.find((s) => s.type === 'nav_menu')?.config?.items;
