@@ -21,3 +21,6 @@ mode = "smart"
 
 [cache]
 enabled = true
+
+# Cloudflare Worker Previews require an explicit previews block.
+previews = {}
