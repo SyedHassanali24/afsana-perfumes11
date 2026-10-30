@@ -18,7 +18,7 @@ test('unsupported page positions are rejected instead of silently being publishe
 });
 
 test('floating WhatsApp and guided scent concierge are valid visual section types', () => {
-  for (const type of ['whatsapp_float', 'ai_concierge']) {
+  for (const type of ['whatsapp_float', 'ai_concierge', 'custom_footer']) {
     assert.ok(CMS.HOMEPAGE_SECTION_TYPES.includes(type));
     assert.deepEqual(CMS.crossFieldErrors('homepage', CMS.normalize('homepage', { type, pageKey: 'site_footer_before' })), []);
   }
