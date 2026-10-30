@@ -7,7 +7,7 @@ const HOMEPAGE_SECTION_TYPES = [
   'product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','rich_text','faq','spacer','whatsapp_float','ai_concierge'
 ];
 const HOMEPAGE_PAGE_KEYS = [
-  'home','site_header_after','collection_before','collection_after','product_before','product_after',
+  'home','site_navigation','site_header_after','collection_before','collection_after','product_before','product_after',
   'house','journal','gifting','cart_before','cart_after','checkout_before','checkout_after','track_before','track_after',
   'site_footer_before'
 ];
