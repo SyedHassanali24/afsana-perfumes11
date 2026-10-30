@@ -101,14 +101,27 @@ export default function HomepageBuilder() {
   const [del, setDel] = useState(null);
   const previewExperienceLayout = () => {
     try {
+      const innerLayouts = Object.fromEntries(
+        ['house','journal','gifting','discover'].map((pageKey) => [
+          pageKey,
+          AFSANA_INNER_SECTIONS.filter((section) => section.pageKey === pageKey).map((section,index) => ({
+            ...section,
+            id:`preview-${section.slot}`,
+            sortOrder:index,
+            isEnabled:true,
+            config:{...section.config,theme:'neon',templateId:'afsana-neon-experience-v1',templateSlot:section.slot}
+          }))
+        ])
+      );
       const layouts = {
-        home: AFSANA_EXPERIENCE_SECTIONS.map((section, index) => ({ ...section, id:`preview-home-${index}`, pageKey:'home', sortOrder:index, isEnabled:true, config:{ ...section.config, theme:'neon', templateId:'afsana-neon-experience-v1' } })),
-        site_navigation: [{ id:'preview-navigation', type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', sortOrder:0, isEnabled:true, config:{ items:parseItems(defaults('nav_menu').items), theme:'neon' } }],
-        site_footer: [{ id:'preview-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', sortOrder:0, isEnabled:true, config:{ ...defaults('custom_footer'), items:parseItems(defaults('custom_footer').items), theme:'neon' } }],
-        site_footer_before: [{ id:'preview-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', sortOrder:0, isEnabled:true, config:{ ...defaults('ai_concierge'), theme:'neon' } }]
+        home: AFSANA_EXPERIENCE_SECTIONS.map((section,index) => ({...section,id:`preview-home-${index}`,pageKey:'home',sortOrder:index,isEnabled:true,config:{...section.config,theme:'neon',templateId:'afsana-neon-experience-v1'}})),
+        ...innerLayouts,
+        site_navigation:[{id:'preview-navigation',type:'nav_menu',title:'AFSANA navigation',pageKey:'site_navigation',sortOrder:0,isEnabled:true,config:{items:parseItems(defaults('nav_menu').items),theme:'neon'}}],
+        site_footer:[{id:'preview-footer',type:'custom_footer',title:'AFSANA custom footer',pageKey:'site_footer',sortOrder:0,isEnabled:true,config:{...defaults('custom_footer'),items:parseItems(defaults('custom_footer').items),theme:'neon'}}],
+        site_footer_before:[{id:'preview-ai',type:'ai_concierge',title:'Scent Concierge',pageKey:'site_footer_before',sortOrder:0,isEnabled:true,config:{...defaults('ai_concierge'),theme:'neon'}}]
       };
-      localStorage.setItem('afsana_cms_preview_v2', JSON.stringify({ pageKey:'home', sections:layouts.home, layouts }));
-      window.open('/?afsanaPreview=1&afsanaPageKey=home', '_blank', 'noopener,noreferrer');
+      localStorage.setItem('afsana_cms_preview_v2',JSON.stringify({pageKey:'home',sections:layouts.home,layouts}));
+      window.open('/?afsanaPreview=1&afsanaPageKey=home','_blank','noopener,noreferrer');
     } catch { setNotice('The AFSANA preview could not be opened in this browser.'); }
   };
 
