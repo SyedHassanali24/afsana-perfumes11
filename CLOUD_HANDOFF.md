@@ -16,7 +16,7 @@ Netlify is only a visual/reference source and API upstream; do not deploy Netlif
 ## Repository
 https://github.com/SyedHassanali24/afsana-perfumes11
 Working branch: feat/universal-afsana-page-builder
-Latest branch head: 0af66718ea181cbef1f5cc65254e0e873bde3f4b
+Latest branch head: fad3610bbcaaa16f9fbb1cd48a4903c780c5ce07 (documentation-only handoff commit; application code deployed is 0af66718ea181cbef1f5cc65254e0e873bde3f4b)
 
 ## Work completed
 1. Removed old conflicting global olive/forest storefront CSS from src/index.css; kept the shared base minimal and aligned loader to the violet/acid-lime reference style. src/styles/luxury-v3.css remains the main detailed storefront stylesheet.
