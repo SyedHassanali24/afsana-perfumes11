@@ -130,11 +130,11 @@ function Product3DShowcase({ section, products=[] }) {
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
-        <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
+        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={c.product3dPosterUrl || c.imageUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
             <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
           </div>
-        </div>
+        </div>}
         <div className="absolute bottom-4 left-0 text-[8px] uppercase tracking-[.18em] text-white/45">Drag to rotate · {frames.length} gallery angles</div><button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
       </div>
     </div>
@@ -239,8 +239,8 @@ function ConciergeFloat({ section }) {
   </div>;
 }
 
-function CmsSection({ section, products, faq }) {
-  const c = section.config || {};
+function CmsSection({ section, products, faq, referenceAssets = {} }) {
+  const c = { ...referenceAssets, ...(section.config || {}) };
   const align = c.align === 'center' ? 'text-center items-center' : c.align === 'right' ? 'text-right items-end' : 'text-left items-start';
   const style = {
     width: `${Math.min(100, Math.max(20, Number(c.width) || 100))}%`,
@@ -261,7 +261,7 @@ function CmsSection({ section, products, faq }) {
     const socials = [['Instagram',c.instagramUrl],['Facebook',c.facebookUrl]].filter((x) => x[1]);
     return <footer className="relative overflow-hidden bg-[#100d24] text-white"><div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(115,87,255,.24),transparent_28%),radial-gradient(circle_at_88%_75%,rgba(217,255,85,.08),transparent_25%)]"/><div className="container-xl relative py-16 sm:py-24"><div className="grid gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]"><div><p className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{c.tagline || 'THE ART OF SCENT'}</p><h2 className="mt-5 font-display text-6xl tracking-[-.04em]">{c.brandName || 'AFSANA'}</h2><p className="mt-6 max-w-sm text-sm leading-7 text-white/55">{c.description}</p>{socials.length > 0 && <div className="mt-6 flex gap-4">{socials.map(([label,url]) => <a key={label} href={url} target="_blank" rel="noreferrer" className="text-[9px] uppercase tracking-[.2em] text-[#d9ff55]">{label}</a>)}</div>}</div><div className="lg:col-span-2"><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">EXPLORE THE HOUSE</p><div className="mt-6 grid grid-cols-2 gap-4">{links.map((item,i) => <div key={i}><p className="text-base font-display">{item.title}</p><p className="mt-1 text-xs text-white/45">{item.text}</p>{item.link && <Link className="mt-3 inline-flex text-[9px] uppercase tracking-[.2em] text-[#d9ff55]" to={item.link}>Discover ↗</Link>}</div>)}</div></div><div><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">CONTACT</p>{c.email && <a href={'mailto:'+c.email} className="mt-6 block text-sm text-white/65">{c.email}</a>}{c.phone && <p className="mt-3 text-sm text-white/65">{c.phone}</p>}</div></div><div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 text-[9px] uppercase tracking-[.22em] text-white/35 sm:flex-row sm:items-center sm:justify-between"><span>{c.footerNote || 'AFSANA — THE ART OF SCENT'}</span><span>Made to leave a memory.</span></div></div></footer>;
   }
-  if (section.type === 'nav_menu') return null;
+  if (section.type === 'reference_assets' || section.type === 'nav_menu') return null;
   if (section.type === 'whatsapp_float') {
     const phone = String(c.phone || '').replace(/[^0-9]/g, '');
     if (!phone) return null;
@@ -293,9 +293,11 @@ function CmsSection({ section, products, faq }) {
 function CmsSectionList({ sections, faq }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
-  const safe = (Array.isArray(sections) ? sections : []).filter((s) => s?.isEnabled !== false);
+  const source = Array.isArray(sections) ? sections : [];
+  const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'reference_assets');
+  const referenceAssets = source.find((s) => s?.type === 'reference_assets')?.config || {};
   const tail = []; // Render exactly what the owner enabled; deleted or hidden sections are never auto-inserted.
-  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq}/></div>)}</div>;
+  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/></div>)}</div>;
 }
 
 function CmsDrivenHome({ sections, faq }) {
