@@ -89,7 +89,8 @@ async function publicContent() {
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
-  const homepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
-  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections };
+  const homepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
+  const pageSections = homepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
+  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections: pageSections.home || [], pageSections };
 }
 module.exports.publicContent = publicContent;
