@@ -235,3 +235,39 @@
 .afsana-ref-story-image:before{content:"";position:absolute;inset:16px;border:1px solid rgba(115,87,255,.35);z-index:1;pointer-events:none}
 .afsana-ref-story-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 @media(max-width:700px){.afsana-ref-collection-hero{min-height:390px;padding:70px 0 65px}.afsana-ref-collection-hero h1{font-size:clamp(52px,14vw,76px)}.afsana-ref-story{padding:75px 0}.afsana-ref-story-image{min-height:300px}}
+
+/* AFSANA reference offer banner and five-step scent intelligence. */
+.afsana-ref-offer-banner{position:relative;overflow:hidden;background:#17122f;color:#fff;padding:54px 0}
+.afsana-ref-offer-banner:before{content:"";position:absolute;inset:-50%;background:conic-gradient(from 80deg at 72% 50%,transparent 0 22%,rgba(115,87,255,.22) 27%,transparent 40% 100%);animation:afsana-ref-spin 28s linear infinite}
+.afsana-ref-offer-inner{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:30px}
+.afsana-ref-offer-inner h2{font:500 clamp(36px,5vw,60px)/.95 'Playfair Display',Georgia,serif;letter-spacing:-.05em;margin:12px 0}
+.afsana-ref-offer-inner>div:first-child>p:not(.afsana-ref-eyebrow){font-size:11px;line-height:1.8;color:#c0b8d4;max-width:510px;margin:0}
+.afsana-ref-offer-stamp{width:116px;height:116px;border-radius:50%;border:1px solid #d9ff55;color:#d9ff55;display:grid;place-items:center;text-align:center;font:9px ui-monospace,monospace;letter-spacing:.14em;transform:rotate(12deg);box-shadow:0 0 0 10px rgba(217,255,85,.05),0 0 45px rgba(115,87,255,.27)}
+.afsana-ref-offer-stamp b{font:500 28px 'Playfair Display',Georgia,serif;display:block;letter-spacing:0}
+.afsana-ref-finder{background:#d9ff55;padding:56px 0;color:#100d24}
+.afsana-ref-finder-grid{display:grid;grid-template-columns:1fr auto;align-items:center;gap:35px}
+.afsana-ref-finder-grid>div:first-child h2{font:500 clamp(34px,4vw,54px)/.98 'Playfair Display',Georgia,serif;margin:10px 0 0;max-width:700px;letter-spacing:-.04em}
+.afsana-ref-finder-grid>div:first-child>p:not(.afsana-ref-eyebrow){font-size:12px;line-height:1.8;max-width:600px;margin:14px 0 0;color:#474b2a}
+.afsana-ref-finder-box{width:min(560px,48vw);min-height:330px;border:1px solid rgba(16,13,36,.32);border-radius:26px;background:#100d24;color:#fff;padding:25px 28px;box-shadow:0 24px 60px rgba(13,8,36,.18)}
+.afsana-ref-finder-progress{height:3px;background:#3e3655;border-radius:99px;margin-bottom:25px;overflow:hidden}
+.afsana-ref-finder-progress span{display:block;height:100%;background:#d9ff55;transition:width .4s}
+.afsana-ref-finder-step{font:9px ui-monospace,monospace;letter-spacing:.17em;text-transform:uppercase;color:#d9ff55}
+.afsana-ref-finder-box h3{font:500 clamp(25px,3vw,38px)/1.05 'Playfair Display',Georgia,serif;margin:15px 0 0}
+.afsana-ref-finder-sub{font-size:11px;line-height:1.7;color:#aaa3bd;margin-top:10px}
+.afsana-ref-finder-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:23px}
+.afsana-ref-finder-options button{border:1px solid #ffffff2a;border-radius:15px;padding:15px;background:#ffffff08;color:#fff;text-align:left;transition:.25s}
+.afsana-ref-finder-options button:hover,.afsana-ref-finder-options button.selected{border-color:#d9ff55;background:#d9ff5515;transform:translateY(-2px)}
+.afsana-ref-finder-options b{display:block;font-size:12px;margin-bottom:5px}
+.afsana-ref-finder-options small{display:block;color:#aaa3bf;font-size:10px;line-height:1.55}
+.afsana-ref-finder-footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px}
+.afsana-ref-finder-footer button{border:1px solid rgba(255,255,255,.28);border-radius:99px;background:transparent;color:#fff;padding:12px 15px;font:9px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase}
+.afsana-ref-finder-footer button:last-child{background:#d9ff55;border-color:#d9ff55;color:#100d24;font-weight:800}
+.afsana-ref-finder-footer button:disabled{opacity:.3;cursor:not-allowed}
+.afsana-ref-match{margin-top:18px;border:1px solid #ffffff21;border-radius:20px;padding:18px;background:linear-gradient(135deg,#ffffff0b,#7357ff22)}
+.afsana-ref-match>p:first-child{font:9px ui-monospace,monospace;color:#d9ff55;letter-spacing:.12em}
+.afsana-ref-match h4{font:500 32px 'Playfair Display',Georgia,serif;margin:5px 0}
+.afsana-ref-match span{font:9px ui-monospace,monospace;letter-spacing:.12em;color:#d9ff55;text-transform:uppercase}
+.afsana-ref-match p{font-size:11px;line-height:1.7;color:#c2bbd6;margin:10px 0}
+.afsana-ref-match strong{font-size:16px;color:#fff}
+@media(max-width:900px){.afsana-ref-finder-grid{grid-template-columns:1fr}.afsana-ref-finder-box{width:100%}}
+@media(max-width:700px){.afsana-ref-offer-inner{grid-template-columns:1fr}.afsana-ref-offer-stamp{width:85px;height:85px;font-size:7px}.afsana-ref-offer-stamp b{font-size:22px}.afsana-ref-finder{padding:43px 0}.afsana-ref-finder-grid{grid-template-columns:1fr auto;gap:12px}.afsana-ref-finder-grid>div:first-child h2{font-size:35px}.afsana-ref-finder-box{grid-column:1/-1;padding:20px}.afsana-ref-finder-options{grid-template-columns:1fr}}
