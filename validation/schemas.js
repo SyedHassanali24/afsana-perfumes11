@@ -3,7 +3,7 @@ const C = require('../database/constants');
 const { isAllowedImageUrl } = require('../services/mediaRules');
 // picture address: normal https link OR one of our own uploads (/api/media/<id>)
 const imageAddress = z.string().trim().max(500).refine(isAllowedImageUrl, 'Enter a valid picture address');
-const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(980000) });
+const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(5600000) });
 const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
