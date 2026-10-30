@@ -17,7 +17,7 @@ const R = require('./cmsRules');
 const MODEL = { banners: Banner, faqs: Faq, announcements: Announcement, homepage: HomepageSection };
 const NAME = { banners: 'banner', faqs: 'faq', announcements: 'announcement', homepage: 'homepage section' };
 const SORT = { banners: { sortOrder: 1, createdAt: -1 }, faqs: { sortOrder: 1, createdAt: 1 }, announcements: { createdAt: -1 }, homepage: { sortOrder: 1, createdAt: 1 } };
-const base = (r) => (r === 'banners' ? { isDeleted: false } : {}); // banners are soft-deleted; FAQs and announcements are removed for good
+const base = (r) => r === 'banners' ? { isDeleted: false } : r === 'homepage' ? { $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }] } : {}; // banners and page sections are soft-deleted
 const invalid = (errs) => new ApiError(400, 'VALIDATION_ERROR', 'Please check the highlighted fields.', errs);
 const shape = (r, d, now = new Date()) => ({ id: d._id, ...R.fromDoc(r, d), status: R.cmsStatus(r, d, now), createdAt: d.createdAt });
 const mod = (r) => R.MODULE_OF[r];
@@ -69,6 +69,7 @@ async function remove(ctx, r, id, scopes) {
   if (!d) throw E.notFound('Not found.');
   const old = R.fromDoc(r, d);
   if (r === 'banners') await Banner.updateOne({ _id: id, ...storeFilter(scopes, ctx.user._id) }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isActive: false } });
+  else if (r === 'homepage') await HomepageSection.updateOne({ _id: id, ...adminFilter(r, scopes, ctx.user._id) }, { $set: { isDeleted: true, deletedAt: new Date(), deletedBy: ctx.user._id, isEnabled: false } });
   else await MODEL[r].deleteOne({ _id: id });
   await audit(ctx, { action: `${NAME[r]}.deleted`, module: mod(r), recordId: id, oldValue: old });
   return {};
@@ -80,17 +81,19 @@ module.exports = { list, create, update, setActive, remove };
 async function publicContent() {
   const now = new Date();
   const live = (r, rows) => rows.filter((d) => R.cmsStatus(r, d, now) === 'Live');
-  const [b, f, a, h] = await Promise.all([
+  const [b, f, a, h, allLayouts] = await Promise.all([
     Banner.find({ isDeleted: false, isActive: true }).sort(SORT.banners).limit(20).lean(),
     Faq.find({ isActive: true }).sort(SORT.faqs).limit(100).lean(),
     Announcement.find({ isActive: true }).sort(SORT.announcements).limit(10).lean(),
-    HomepageSection.find({ isEnabled: true }).sort(SORT.homepage).limit(100).lean(),
+    HomepageSection.find({ isEnabled: true, $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }] }).sort(SORT.homepage).limit(200).lean(),
+    HomepageSection.find({}, { pageKey: 1 }).limit(1000).lean(),
   ]);
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
   const homepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
   const pageSections = homepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
-  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections: pageSections.home || [], pageSections };
+  const managedPageKeys = [...new Set(allLayouts.map((d) => d.pageKey || 'home'))];
+  return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections: pageSections.home || [], pageSections, managedPageKeys };
 }
 module.exports.publicContent = publicContent;
