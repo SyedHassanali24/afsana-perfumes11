@@ -10,7 +10,7 @@ import { cmsPublicApi } from '../services';
 import LuxuryExperienceLayer from './LuxuryExperienceLayer';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
-const defaultNav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
+const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
 export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
@@ -35,23 +35,23 @@ export default function ShopLayout(){
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
- const icon='icon-btn grid h-10 w-10 place-items-center text-white/85 hover:text-[#b4bf41] transition focus:outline-none';
+ const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
  return <div className="storefront-theme min-h-screen bg-[#faf8f4] text-[#263e0e]">
   <LuxuryExperienceLayer/>
-  <div className="overflow-hidden border-b border-[#748e40]/20 bg-[#263e0e] text-[#e7ead9]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#748e40]">•</b>{x}<b className="text-[#748e40]">•</b></span>)}</div></div>
-  <header className={'z-40 text-white '+(isHome?'absolute top-[34px] left-0 right-0':'sticky top-0')}>
-   <div className="absolute inset-0 bg-[#182308]/80 backdrop-blur-xl border-b border-white/10"/>
-   <Container className="container-xl relative flex h-[76px] items-center">
+  <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#748e40]">•</b></span>)}</div></div>
+  <header className="sticky top-0 z-40 text-[#100d24]">
+   <div className="absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/92 backdrop-blur-xl shadow-[0_10px_40px_rgba(16,13,36,.07)]"/>
+   <Container className="container-xl relative flex h-[84px] items-center">
     <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
-    <Link to="/" className="logo group shrink-0 text-center"><span className="block font-display text-3xl tracking-[.08em] text-white group-hover:text-[#b4bf41]">AFSANA</span><small className="block text-[7px] uppercase tracking-[.42em] text-[#b4bf41]">THE ART OF SCENT</small></Link>
-    <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.22em] transition '+(isActive?'text-[#b4bf41]':'text-white/65 hover:text-white')}>{label}</NavLink>)}</nav>
+    <Link to="/" className="logo group flex shrink-0 items-center gap-3"><span className="grid h-[31px] w-[31px] place-items-center rounded-full bg-[#100d24] font-display text-[19px] italic text-[#d9ff55]">A</span><span className="block font-display text-[20px] tracking-[.17em] text-[#100d24]">AFSANA<small className="mt-[1px] block font-mono text-[8px] tracking-[.32em] text-[#80798f]">THE ART OF SCENT</small></span></Link>
+    <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.13em] transition '+(isActive?'text-[#7357ff]':'text-[#514b62] hover:text-[#100d24]')}>{label}</NavLink>)}</nav>
     <div className="header-actions ml-auto flex items-center">
       <button className={icon} onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="w-[18px]"/></button>
       <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label="Account"><User className="w-[18px]"/></Link>
       <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#b4bf41] text-[#263e0e] text-[9px] leading-4 text-center">{count}</span>}</button>
     </div>
    </Container>
-   {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-white/10 bg-[#263e0e]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-white/10 py-4 text-[10px] uppercase tracking-[.2em] text-white/75">{label}</Link>)}</nav></div>}
+   {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-[#100d24]/10 bg-[#f7f4ed]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-[#100d24]/10 py-4 text-[10px] uppercase tracking-[.2em] text-[#514b62]">{label}</Link>)}</nav></div>}
   </header>
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_header_after" /></Suspense>
   <main className={isHome?'':'py-0'}><Outlet/></main>
