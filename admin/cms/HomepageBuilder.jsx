@@ -147,7 +147,7 @@ export default function HomepageBuilder() {
         site_footer:[{id:'preview-footer',type:'custom_footer',title:'AFSANA custom footer',pageKey:'site_footer',sortOrder:0,isEnabled:true,config:{...defaults('custom_footer'),items:parseItems(defaults('custom_footer').items),theme:'neon',templateId:'afsana-neon-experience-v1'}}],
         site_footer_before:[{id:'preview-ai',type:'ai_concierge',title:'Scent Concierge',pageKey:'site_footer_before',sortOrder:0,isEnabled:true,config:{...defaults('ai_concierge'),theme:'neon',templateId:'afsana-neon-experience-v1'}}]
       };
-      localStorage.setItem('afsana_cms_preview_v2',JSON.stringify({pageKey:'home',sections:layouts.home,layouts}));
+      localStorage.setItem('afsana_cms_preview_v3',JSON.stringify({pageKey:'home',sections:layouts.home,layouts}));
       const previewWindow = window.open('/?afsanaPreview=1&afsanaPageKey=home','_blank');
       if (!previewWindow) {
         setNotice('Preview tab was blocked. Allow pop-ups for this site, then click Preview again.');
@@ -214,7 +214,7 @@ export default function HomepageBuilder() {
         await api.create({ type:item.type, title:item.title, pageKey:item.pageKey, config, sortOrder:item.sortOrder, isEnabled:item.isEnabled });
         existingSlots.add(item.slot);
       }
-      try { localStorage.removeItem('afsana_cms_preview_v2'); localStorage.removeItem('afsana_cms_preview_v1'); } catch {}
+      try { localStorage.removeItem('afsana_cms_preview_v3'); localStorage.removeItem('afsana_cms_preview_v2'); localStorage.removeItem('afsana_cms_preview_v1'); } catch {}
       setLayoutPreviewed(false);
       setPageKey('home'); setNotice('AFSANA layout confirmed and published. Previous sections are hidden; the new design is now permanent and editable.'); reload();
     } catch (e) { setNotice(e.message || 'Some layout sections may have saved. Run Add AFSANA experience layout again to safely complete any missing items.'); reload(); }
