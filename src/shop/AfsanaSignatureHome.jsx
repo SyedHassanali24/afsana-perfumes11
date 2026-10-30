@@ -380,13 +380,7 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   // neon rows, but also recognise the reference section types when older CMS
   // records do not carry templateId yet.
   const canonicalTemplateId = 'afsana-neon-experience-v1';
-  const referenceTypes = new Set([
-    'hero','reference_assets','nav_menu','category_tiles','video_grid','post_grid','blog_grid',
-    'featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','scent_finder',
-    'split_story','video_banner','offer_timer','promo_timer','product_3d_showcase','fragrance_dna',
-    'interactive_gallery','community_pulse','footer_showcase','custom_footer','benefits',
-    'trust_grid','values_grid','testimonials','newsletter','whatsapp_float','ai_concierge','marquee'
-  ]);
+
   const canonicalRows = source.filter((s) =>
     s?.config?.templateId === canonicalTemplateId ||
     s?.config?.theme === 'neon'
