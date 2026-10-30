@@ -11,7 +11,10 @@ const createStoreId = (scopes) => {
   if (stores.length !== 1) throw E.forbidden('CMS content must belong to exactly one store in your access scope.');
   return stores[0];
 };
-const adminFilter = (r, scopes, uid) => ({ ...base(r), ...(isStoreScoped(r) ? storeFilter(scopes, uid) : {}) });
+const adminFilter = (r, scopes, uid) => {
+  const parts = [base(r), isStoreScoped(r) ? storeFilter(scopes, uid) : {}].filter((x) => x && Object.keys(x).length);
+  return parts.length > 1 ? { $and: parts } : (parts[0] || {});
+};
 const R = require('./cmsRules');
 
 const MODEL = { banners: Banner, faqs: Faq, announcements: Announcement, homepage: HomepageSection };
