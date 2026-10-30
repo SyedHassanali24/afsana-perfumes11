@@ -15,6 +15,8 @@ export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
+ const footerPreview = new URLSearchParams(location.search).get('afsanaPreview') === '1' && new URLSearchParams(location.search).get('afsanaPageKey') === 'site_footer';
+ const hasManagedFooter = footerPreview || (cmsData?.managedPageKeys || []).includes('site_footer');
  let navigationSections = cmsData?.pageSections?.site_navigation || [];
  try {
    const query = new URLSearchParams(location.search);
@@ -51,7 +53,7 @@ export default function ShopLayout(){
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_header_after" /></Suspense>
   <main className={isHome?'':'py-0'}><Outlet/></main>
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer_before" /></Suspense>
-  <footer className="relative overflow-hidden bg-[#070906] text-white border-t border-[#b4bf41]/20">
+  {hasManagedFooter ? <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer" /></Suspense> : <footer className="relative overflow-hidden bg-[#070906] text-white border-t border-[#b4bf41]/20">
    <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_15%,rgba(180,191,65,.10),transparent_24%),radial-gradient(circle_at_88%_70%,rgba(123,0,58,.14),transparent_28%)]"/>
    <div className="relative">
     <div className="border-b border-white/10 overflow-hidden"><div className="marquee-track flex min-w-max gap-12 py-3 text-[9px] uppercase tracking-[.32em] text-white/35">{['THE ART OF SCENT','CRAFTED FOR MEMORIES','AFSANA PERFUMES','LEAVE A TRACE','THE PRIVATE COLLECTION','THE ART OF SCENT'].map((x,i)=><span key={i}>{x}<b className="mx-12 text-[#b4bf41]">✦</b></span>)}</div></div>
