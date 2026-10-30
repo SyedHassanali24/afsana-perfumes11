@@ -22,10 +22,10 @@ export default function ShopLayout(){
  let navigationSections = cmsData?.pageSections?.site_navigation || [];
  try {
    const query = new URLSearchParams(location.search);
-   if (query.get('afsanaPreview') === '1' && query.get('afsanaPageKey') === 'site_navigation') {
+   if (query.get('afsanaPreview') === '1') {
      const preview = previewLayout || JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null');
      if (Array.isArray(preview?.layouts?.site_navigation)) navigationSections = preview.layouts.site_navigation;
-     else if (Array.isArray(preview?.sections)) navigationSections = preview.sections;
+     else if (query.get('afsanaPageKey') === 'site_navigation' && Array.isArray(preview?.sections)) navigationSections = preview.sections;
    }
  } catch {}
  const navigation = navigationSections.find((s) => s.type === 'nav_menu')?.config?.items;
