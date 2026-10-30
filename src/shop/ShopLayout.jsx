@@ -10,11 +10,23 @@ import { cmsPublicApi } from '../services';
 import LuxuryExperienceLayer from './LuxuryExperienceLayer';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
-const nav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
+const defaultNav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
 export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
+ let navigationSections = cmsData?.pageSections?.site_navigation || [];
+ try {
+   const query = new URLSearchParams(location.search);
+   if (query.get('afsanaPreview') === '1' && query.get('afsanaPageKey') === 'site_navigation') {
+     const preview = JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null');
+     if (Array.isArray(preview?.sections)) navigationSections = preview.sections;
+   }
+ } catch {}
+ const navigation = navigationSections.find((s) => s.type === 'nav_menu')?.config?.items;
+ const nav = Array.isArray(navigation) && navigation.length
+   ? navigation.map((item) => [item.text || '/', item.title || '']).filter(([to,label]) => to.startsWith('/') && label)
+   : (cmsData?.managedPageKeys || []).includes('site_navigation') ? [] : defaultNav;
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
