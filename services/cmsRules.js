@@ -4,7 +4,7 @@ const HOMEPAGE_SECTION_TYPES = [
   'hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter',
   'video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement',
   'lookbook','values_grid','blog_grid','post_grid','promo_timer','offer_timer','community_pulse','footer_showcase','muse_scene',
-  'product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','rich_text','faq','spacer','whatsapp_float','ai_concierge','nav_menu','custom_footer'
+  'product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','rich_text','faq','spacer','whatsapp_float','ai_concierge','nav_menu','custom_footer','reference_assets'
 ];
 const HOMEPAGE_PAGE_KEYS = [
   'home','site_navigation','site_header_after','collection_before','collection_after','product_before','product_after',
