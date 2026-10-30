@@ -375,8 +375,11 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
   const source = Array.isArray(sections) ? sections : [];
-  const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'reference_assets');
-  const referenceAssets = { ...inheritedAssets, ...(source.find((s) => s?.type === 'reference_assets')?.config || {}) };
+  const canonicalTemplateId = 'afsana-neon-experience-v1';
+  const canonicalRows = source.filter((s) => s?.config?.templateId === canonicalTemplateId);
+  const activeSource = canonicalRows.length ? canonicalRows : source;
+  const safe = activeSource.filter((s) => s?.isEnabled !== false && s?.type !== 'reference_assets');
+  const referenceAssets = { ...inheritedAssets, ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {}) };
   const tail = []; // Render exactly what the owner enabled; deleted or hidden sections are never auto-inserted.
   return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/></div>)}</div>;
 }
