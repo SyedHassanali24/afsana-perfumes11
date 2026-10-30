@@ -76,6 +76,7 @@ const AFSANA_INNER_SECTIONS = [
   { slot:'discover-finder', pageKey:'discover', type:'scent_finder', title:'Find your fragrance.', config:{ eyebrow:'AFSANA SCENT INTELLIGENCE' } }
 ];
 const AFSANA_GLOBAL_SECTIONS = [
+  { slot:'site-navigation', type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', config:defaults('nav_menu'), sortOrder:0, isEnabled:true },
   { slot:'site-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:defaults('custom_footer'), sortOrder:0, isEnabled:true },
   { slot:'site-footer-before-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:defaults('ai_concierge'), sortOrder:0, isEnabled:true },
   { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:false }
@@ -159,7 +160,8 @@ export default function HomepageBuilder() {
         await api.create({ type:section.type, title:section.title, pageKey:'home', config, sortOrder:index, isEnabled:true });
         existingSlots.add(slot);
       }
-      await Promise.all(existingHome.map((item, index) => api.update(item.id, { sortOrder: starter.length + index })));
+      // Retire every previous homepage row so the new reference is the only live design.
+      await Promise.all(existingHome.map((item) => api.update(item.id, { isEnabled: false })));
       const innerPageKeys = [...new Set(AFSANA_INNER_SECTIONS.map((item) => item.pageKey))];
       for (const pageKey of innerPageKeys) {
         const pageTemplate = AFSANA_INNER_SECTIONS.filter((item) => item.pageKey === pageKey);
@@ -175,16 +177,22 @@ export default function HomepageBuilder() {
           await api.create({ type:section.type, title:section.title, pageKey, config, sortOrder:index, isEnabled:true });
           existingSlots.add(section.slot);
         }
-        await Promise.all(legacyRows.map((item, index) => api.update(item.id, { sortOrder: pageTemplate.length + index })));
+        // Keep old records recoverable, but remove their sections from live pages.
+        await Promise.all(legacyRows.map((item) => api.update(item.id, { isEnabled: false })));
       }
       const globalSections = AFSANA_GLOBAL_SECTIONS;
+      const globalPageKeys = [...new Set(globalSections.map((item) => item.pageKey))];
+      for (const globalPageKey of globalPageKeys) {
+        const oldGlobalRows = rows.filter((item) => (item.pageKey || 'home') === globalPageKey && item.config?.templateId !== templateId);
+        await Promise.all(oldGlobalRows.map((item) => api.update(item.id, { isEnabled: false })));
+      }
       for (const item of globalSections) {
         if (existingSlots.has(item.slot)) continue;
         const config = { ...item.config, theme:'neon', templateId, templateSlot:item.slot };
         await api.create({ type:item.type, title:item.title, pageKey:item.pageKey, config, sortOrder:item.sortOrder, isEnabled:item.isEnabled });
         existingSlots.add(item.slot);
       }
-      setPageKey('home'); setNotice('AFSANA reference website layouts added across Home, House, Journal, Gifting and Discover. Your previous sections remain below them; every new section is editable and removable.'); reload();
+      setPageKey('home'); setNotice('AFSANA reference layout saved. Previous sections are now hidden from the live site; the new layout is editable and removable.'); reload();
     } catch (e) { setNotice(e.message || 'Some layout sections may have saved. Run Add AFSANA experience layout again to safely complete any missing items.'); reload(); }
     finally { setBusy(false); }
   };
