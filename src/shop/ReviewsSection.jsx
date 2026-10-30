@@ -10,7 +10,7 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 
 export function Stars({ value, size = 'text-base' }) {
   const v = Math.round(Number(value) || 0);
-  return <span className={`${size} text-[#d4af37]` role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#5f654f]/40">{'★'.repeat(5 - v)}</span></span>;
+  return <span className={`${size} text-[#d4af37]`} role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#5f654f]/40">{'★'.repeat(5 - v)}</span></span>;
 }
 const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
