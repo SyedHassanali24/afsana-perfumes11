@@ -114,6 +114,7 @@ function MuseScene({ section }) {
 }
 function Product3DShowcase({ section, products=[] }) {
   const c=section.config||{};
+  useEffect(()=>{if(!c.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[c.product3dModelUrl]);
   const chosen=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug)) || products[0];
   const media=[...(chosen?.media||[])].filter(x=>x?.url).slice(0,8);
   const frames=media.length?media:[{url:c.imageUrl||img.signature}];
@@ -298,7 +299,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p>{!c.hideTimer && c.endAt ? <CmsTimer endAt={c.endAt}/> : null}{btn}</div></div></section>;
   if (section.type === 'muse_scene') return <MuseScene section={section}/>;
-    if (section.type === 'product_3d_showcase') return <Product3DShowcase section={section} products={products}/>;
+    if (section.type === 'product_3d_showcase') return <Product3DShowcase section={{...section,config:c}} products={products}/>;
     if (section.type === 'fragrance_dna') return <FragranceDNA section={section}/>;
     if (section.type === 'interactive_gallery') return <InteractiveGallery section={section}/>;
     if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;
@@ -367,6 +368,8 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
   return <CmsSectionList sections={sections} faq={data?.faqs || []} />;
 }
+
+export function ScentFinderPage(){ return <div className="bg-[#faf8f4]"><Finder/></div>; }
 
 export default function AfsanaSignatureHome(){
   const { data } = useApi(() => cmsPublicApi.content(), []);
