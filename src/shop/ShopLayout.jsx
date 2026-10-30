@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useCart } from './CartContext';
@@ -9,6 +9,7 @@ import useApi from '../hooks/useApi';
 import { cmsPublicApi } from '../services';
 import LuxuryExperienceLayer from './LuxuryExperienceLayer';
 
+const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const nav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
 export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
@@ -20,7 +21,7 @@ export default function ShopLayout(){
  const icon='icon-btn grid h-10 w-10 place-items-center text-white/85 hover:text-[#b4bf41] transition focus:outline-none';
  return <div className="storefront-theme min-h-screen bg-[#faf8f4] text-[#263e0e]">
   <LuxuryExperienceLayer/>
-  <div className="overflow-hidden border-b border-[#748e40]/20 bg-[#263e0e] text-[#e7ead9]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{['COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION'].concat(['COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#748e40]">•</b>{x}<b className="text-[#748e40]">•</b></span>)}</div></div>
+  <div className="overflow-hidden border-b border-[#748e40]/20 bg-[#263e0e] text-[#e7ead9]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#748e40]">•</b>{x}<b className="text-[#748e40]">•</b></span>)}</div></div>
   <header className={'z-40 text-white '+(isHome?'absolute top-[34px] left-0 right-0':'sticky top-0')}>
    <div className="absolute inset-0 bg-[#182308]/80 backdrop-blur-xl border-b border-white/10"/>
    <Container className="container-xl relative flex h-[76px] items-center">
@@ -35,7 +36,9 @@ export default function ShopLayout(){
    </Container>
    {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-white/10 bg-[#263e0e]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-white/10 py-4 text-[10px] uppercase tracking-[.2em] text-white/75">{label}</Link>)}</nav></div>}
   </header>
+  <Suspense fallback={null}><ManagedCmsPage pageKey="site_header_after" /></Suspense>
   <main className={isHome?'':'py-0'}><Outlet/></main>
+  <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer_before" /></Suspense>
   <footer className="relative overflow-hidden bg-[#070906] text-white border-t border-[#b4bf41]/20">
    <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_15%,rgba(180,191,65,.10),transparent_24%),radial-gradient(circle_at_88%_70%,rgba(123,0,58,.14),transparent_28%)]"/>
    <div className="relative">
