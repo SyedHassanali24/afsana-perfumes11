@@ -90,11 +90,13 @@ export default function HomepageBuilder() {
     setBusy(true); setNotice('');
     const starter = AFSANA_EXPERIENCE_SECTIONS;
     try {
-      let order = rows.filter((item) => (item.pageKey || 'home') === 'home').length;
+      const existingHome = rows.filter((item) => (item.pageKey || 'home') === 'home').sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      let order = 0;
       for (const section of starter) {
         const config = { ...section.config, theme:'neon', templateId:'afsana-neon-experience-v1' };
         await api.create({ type:section.type, title:section.title, pageKey:'home', config, sortOrder:order++, isEnabled:true });
       }
+      await Promise.all(existingHome.map((item, index) => api.update(item.id, { sortOrder: starter.length + index })));
       await api.create({ type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:{ ...defaults('custom_footer'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer').length, isEnabled:true });
       await api.create({ type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:{ ...defaults('ai_concierge'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer_before').length, isEnabled:true });
       await api.create({ type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:{ ...defaults('whatsapp_float'), theme:'neon', templateId:'afsana-neon-experience-v1' }, sortOrder:rows.filter((item)=>(item.pageKey||'home')==='site_footer_before').length+1, isEnabled:false });
