@@ -241,6 +241,14 @@ function ConciergeFloat({ section }) {
 }
 
 function ReferenceHero({ section, config, products }) {
+  if (config.layout === 'inner') {
+    const pageImage = section.pageKey === 'house' ? config.aboutHeroImageUrl
+      : section.pageKey === 'journal' ? config.journalHeroImageUrl
+      : section.pageKey === 'gifting' ? config.giftingHeroImageUrl
+      : section.pageKey === 'discover' ? config.discoverHeroImageUrl
+      : config.collectionHeroImageUrl;
+    return <section className="afsana-ref-inner-hero">{pageImage && <img src={pageImage} alt="" className="afsana-ref-inner-image"/>}<div className="afsana-ref-inner-overlay"/><div className="container-xl relative z-10"><p className="afsana-ref-eyebrow">{config.eyebrow || 'THE ART OF SCENT'}</p><h1>{section.title || 'A world in every note.'}</h1>{config.subtitle && <p>{config.subtitle}</p>}{config.buttonText && <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText} <span>↗</span></Link>}</div></section>;
+  }
   const product = products?.[0];
   const bottle = config.heroBottleImageUrl || product?.image?.url || product?.media?.find((m) => m.kind === 'main')?.url || product?.media?.[0]?.url;
   return <section className="afsana-ref-hero">
@@ -321,8 +329,13 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   if (section.type === 'newsletter') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.eyebrow || 'THE PRIVATE LIST'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl">{section.title || 'Be the first to know.'}</h2><p className="mt-4 max-w-xl text-sm text-white/60">{c.body || 'Early access to new compositions, private drops and exclusive stories.'}</p><NewsletterSubscription/></div></div></section>;
   if (section.type === 'faq') return <section className="bg-[#faf8f4]"><div className="container-xl" style={style}>{heading}<div className="max-w-3xl space-y-3">{(faq||[]).map((x,i)=><details key={i} className="border-b border-[#263e0e]/10 py-4"><summary className="cursor-pointer font-display text-xl">{x.question}</summary><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.answer}</p></details>)}</div></div></section>;
   if (section.type === 'category_tiles') {
-    const worlds = cmsItems(c.items).map((item, i) => ({ ...item, image: item.image || [c.worldDarkImageUrl,c.worldSoftImageUrl,c.worldBoldImageUrl][i] || '' }));
-    return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>Enter a scent <em>world.</em></h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image && <img src={x.image} alt={x.title}/>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
+    const assetImages = section.pageKey === 'gifting'
+      ? [c.giftImage1Url,c.giftImage2Url,c.giftImage3Url]
+      : section.pageKey === 'discover'
+        ? [c.discoverEnergyImageUrl,c.discoverSoftImageUrl,c.discoverNightImageUrl]
+        : [c.worldDarkImageUrl,c.worldSoftImageUrl,c.worldBoldImageUrl];
+    const worlds = cmsItems(c.items).map((item, i) => ({ ...item, image: item.image || assetImages[i] || '' }));
+    return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>{section.pageKey === 'gifting' ? 'Give them a feeling.' : section.pageKey === 'discover' ? 'Choose a feeling.' : <>Enter a scent <em>world.</em></>}</h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image && <img src={x.image} alt={x.title}/>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {section.pageKey === 'gifting' ? ['THE PERSONAL TOUCH','THE FIRST CHAPTER','THE LITTLE EXTRA'][i] : section.pageKey === 'discover' ? ['THE ENERGY SEEKER','THE SOFT ROMANTIC','THE NIGHT THINKER'][i] : ['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
   }
   if (['benefits','trust_grid','values_grid','testimonials'].includes(section.type)) return <section className={section.type === 'testimonials' ? 'bg-[#263e0e] text-white' : 'bg-[#faf8f4]'}><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).map((x,i)=><article key={i} className="rounded-2xl border border-[#263e0e]/10 bg-white p-6"><span className="text-2xl text-[#748e40]">✦</span><h3 className="mt-5 font-display text-2xl">{x.title}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.text}</p>{x.link && <Link to={x.link} className="mt-5 inline-block text-[9px] uppercase tracking-[.2em] text-[#263e0e]">Discover ↗</Link>}</article>)}</div></div></section>;
   if (section.type === 'marquee') return <section className="overflow-hidden bg-[#b4bf41] text-[#263e0e]"><div className="marquee-track flex gap-12 py-4 text-[10px] font-bold uppercase tracking-[.25em]">{cmsItems(c.items).concat(cmsItems(c.items)).map((x,i)=><span key={i}>{x.title || x.text || 'THE ART OF SCENT'} ✦</span>)}</div></section>;
@@ -332,18 +345,18 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
   return null;
 }
-function CmsSectionList({ sections, faq }) {
+function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
   const source = Array.isArray(sections) ? sections : [];
   const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'reference_assets');
-  const referenceAssets = source.find((s) => s?.type === 'reference_assets')?.config || {};
+  const referenceAssets = { ...inheritedAssets, ...(source.find((s) => s?.type === 'reference_assets')?.config || {}) };
   const tail = []; // Render exactly what the owner enabled; deleted or hidden sections are never auto-inserted.
   return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/></div>)}</div>;
 }
 
-function CmsDrivenHome({ sections, faq }) {
-  return <CmsSectionList sections={sections} faq={faq}/>;
+function CmsDrivenHome({ sections, faq, referenceAssets = {} }) {
+  return <CmsSectionList sections={sections} faq={faq} inheritedAssets={referenceAssets}/>;
 }
 
 function readCmsPreview() {
@@ -366,7 +379,8 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const isPreviewPage = !!preview && (Array.isArray(preview.layouts?.[pageKey]) || (queryPage || preview.pageKey || 'home') === pageKey);
   const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
-  return <CmsSectionList sections={sections} faq={data?.faqs || []} />;
+  const referenceAssets = (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
 }
 
 export function ScentFinderPage(){ return <div className="bg-[#faf8f4]"><Finder/></div>; }
@@ -378,6 +392,6 @@ export default function AfsanaSignatureHome(){
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
   const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
   const hasManagedHome = (data?.managedPageKeys || []).includes('home');
-  if (sections.length || previewHome || hasManagedHome) return <CmsDrivenHome sections={sections} faq={data?.faqs || []}/>;
+  if (sections.length || previewHome || hasManagedHome) return <CmsDrivenHome sections={sections} faq={data?.faqs || []} referenceAssets={(data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {}}/>;
   return <DefaultHome/>;
 }
