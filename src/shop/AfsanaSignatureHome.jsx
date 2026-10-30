@@ -317,9 +317,9 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const { data } = useApi(() => cmsPublicApi.content(), [pageKey]);
   const preview = readCmsPreview();
   const queryPage = new URLSearchParams(window.location.search).get('afsanaPageKey');
-  const previewSections = preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
+  const previewSections = Array.isArray(preview?.layouts?.[pageKey]) ? preview.layouts[pageKey] : preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
-  const isPreviewPage = preview && (queryPage || preview.pageKey || 'home') === pageKey;
+  const isPreviewPage = !!preview && (Array.isArray(preview.layouts?.[pageKey]) || (queryPage || preview.pageKey || 'home') === pageKey);
   const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
   return <CmsSectionList sections={sections} faq={data?.faqs || []} />;
@@ -328,7 +328,7 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
 export default function AfsanaSignatureHome(){
   const { data } = useApi(() => cmsPublicApi.content(), []);
   const preview = readCmsPreview();
-  const previewSections = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
+  const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
   const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
   const hasManagedHome = (data?.managedPageKeys || []).includes('home');
