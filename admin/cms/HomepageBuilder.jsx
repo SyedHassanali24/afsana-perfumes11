@@ -27,6 +27,7 @@ const defaults = (type) => ({
   ...(type === 'footer_showcase' ? { eyebrow: 'THE FINAL CHAPTER', body: 'Every scent leaves a trace. Make yours unforgettable.', offerLabel: 'PRIVATE ACCESS', offerText: 'Discover your signature scent.', buttonText: 'Explore Collection', buttonLink: '/shop' } : {}),
   ...(type === 'reference_assets' ? {
     heroBottleImageUrl:'', product3dModelUrl:'', product3dPosterUrl:'',
+    filmAtmosphereVideoUrl:'', filmBotanicalVideoUrl:'', filmCraftVideoUrl:'', filmEmotionVideoUrl:'',
     worldDarkImageUrl:'', worldSoftImageUrl:'', worldBoldImageUrl:'',
     filmAtmosphereImageUrl:'', filmBotanicalImageUrl:'', filmCraftImageUrl:'', filmEmotionImageUrl:'',
     journalImage1Url:'', journalImage2Url:'', journalImage3Url:'',
@@ -48,20 +49,17 @@ const parseItems = (text) => String(text || '').split('\n').map((x) => x.trim())
 const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
 
 const AFSANA_EXPERIENCE_SECTIONS = [
-      { type:'hero', title:'A scent that becomes your signature.', config:{ eyebrow:'AFSANA — THE ART OF SCENT', subtitle:'A new world of fragrance, memory and personal expression.', imageUrl:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=2200&q=85' } },
-      { type:'marquee', title:'The AFSANA signature', config:{ items:[{title:'SCENT, REIMAGINED'},{title:'CRAFTED FOR MEMORIES'},{title:'DISCOVER YOUR SIGNATURE'},{title:'THE PRIVATE COLLECTION'}] } },
-      { type:'product_3d_showcase', title:'The bottle in motion.', config:{ eyebrow:'THE AFSANA OBJECT', body:'Explore your chosen fragrance through its imagery and scent story.', buttonText:'Explore the collection', buttonLink:'/shop' } },
-      { type:'category_tiles', title:'Choose your fragrance world.', config:{ columns:3, items:[{title:'Fresh & luminous',text:'Clean, bright and effortless.',link:'/shop?category=fresh'},{title:'Dark & woody',text:'Oud, woods and magnetic depth.',link:'/shop?category=oud'},{title:'Soft & floral',text:'Elegant, expressive and luminous.',link:'/shop?category=floral'}] } },
-      { type:'best_sellers', title:'The most wanted fragrances.', config:{ limit:4, query:'sort:popular' } },
-      { type:'scent_finder', title:'Let your fragrance find you.', config:{ eyebrow:'THE AFSANA SCENT CONCIERGE', theme:'neon' } },
-      { type:'muse_scene', title:'Wear the story.', config:{ eyebrow:'THE AFSANA MUSE', body:'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.', buttonText:'Meet the collection', buttonLink:'/shop' } },
-      { type:'video_grid', title:'Four moments. One fragrance house.', config:{ ...defaults('video_grid'), items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
-      { type:'offer_timer', title:'A limited AFSANA experience.', config:{ ...defaults('offer_timer'), label:'THE PRIVATE COLLECTION', offerText:'Discover the fragrance that feels like you.', endAt:'2026-12-31T23:59' } },
-      { type:'fragrance_dna', title:'Discover the notes behind the feeling.', config:{ eyebrow:'FRAGRANCE DNA', body:'Explore the personality behind each composition.' } },
-      { type:'blog_grid', title:'Stories worth remembering.', config:{ items:parseItems(defaults('post_grid').items), columns:3, limit:3 } },
-      { type:'testimonials', title:'A fragrance that stays with you.', config:{ columns:3, items:[{title:'A beautiful first impression',text:'A fragrance experience that feels considered from opening to dry down.'},{title:'A signature of my own',text:'The scent feels distinctive, elegant and easy to make your own.'},{title:'A gift worth giving',text:'Thoughtful presentation makes the whole experience memorable.'}] } },
-      { type:'footer_showcase', title:'Leave the final impression.', config:defaults('footer_showcase') },
-      { type:'newsletter', title:'Enter the AFSANA private list.', config:{ eyebrow:'PRIVATE ACCESS', body:'Be first to hear about new fragrances, launches and special edits.' } },
+      { type:'reference_assets', title:'AFSANA image & 3D asset library', config:defaults('reference_assets') },
+      { type:'hero', title:'SCENT IS YOUR ENERGY.', config:{ eyebrow:'A new dimension of fragrance', subtitle:'Not just a fragrance. A feeling that enters the room before you do. Explore a world of unexpected notes, bold presence and unforgettable rituals.', heroKicker:'A new dimension of fragrance', buttonText:'Explore the collection', buttonLink:'/shop', secondaryButtonText:'Find your scent', secondaryButtonLink:'/discover', layout:'reference' } },
+      { type:'marquee', title:'Make an entrance. Leave a memory.', config:{ items:[{title:'MAKE AN ENTRANCE'},{title:'LEAVE A MEMORY'},{title:'BE YOUR OWN SIGNATURE'},{title:'SCENT IS A LANGUAGE'}] } },
+      { type:'category_tiles', title:'Enter a scent world.', config:{ eyebrow:'CHOOSE YOUR ATMOSPHERE', subtitle:'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.', columns:3, items:[{title:'Dark & magnetic',text:'Warm woods. Smoked amber. Quiet confidence.',image:'',link:'/shop?category=signature'},{title:'Soft & luminous',text:'Airy florals. Clean skin. Open windows.',image:'',link:'/shop?category=fresh'},{title:'Bright & bold',text:'Citrus sparks. Electric energy. No apologies.',image:'',link:'/shop?category=bold'}] } },
+      { type:'best_sellers', title:'Objects of desire.', config:{ eyebrow:'THE AFSANA SELECTION', subtitle:'Discover the fragrances that define the house.', limit:4, query:'sort:popular', columns:4 } },
+      { type:'product_3d_showcase', title:'Meet your scent in 3D.', config:{ eyebrow:'BEYOND THE BOTTLE', body:'Turn it. Tilt it. Get closer. Explore the AFSANA object from every angle with an interactive product experience made for curious minds.', buttonText:'Enter the 3D studio', buttonLink:'/shop' } },
+      { type:'offer_timer', title:'Good taste. Even better delivery.', config:{ label:'A LITTLE EXTRA FROM THE HOUSE', offerText:'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.', buttonText:'Explore the private edit', buttonLink:'/shop', hideTimer:true } },
+      { type:'scent_finder', title:'Your mood has a fragrance. Let’s find it.', config:{ eyebrow:'A LITTLE SCIENCE. A LOT OF INSTINCT.' } },
+      { type:'video_grid', title:'Feel the fragrance.', config:{ ...defaults('video_grid'), eyebrow:'THE AFSANA MOVING IMAGE', items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
+      { type:'blog_grid', title:'The scent journal.', config:{ eyebrow:'NOTES FROM THE HOUSE', items:parseItems(defaults('post_grid').items).slice(0,3), columns:3, limit:3 } },
+      { type:'newsletter', title:'Good things linger.', config:{ eyebrow:'THE PRIVATE LIST', body:'Be first to discover new drops, private offers, scent rituals and stories from the AFSANA universe.' } },
 ];
 
 export default function HomepageBuilder() {
@@ -276,6 +274,12 @@ export default function HomepageBuilder() {
               ['journalImage1Url','Journal image 01'],['journalImage2Url','Journal image 02'],['journalImage3Url','Journal image 03'],
               ['giftImage1Url','Gifting image 01'],['giftImage2Url','Gifting image 02'],['giftImage3Url','Gifting image 03']
             ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded media URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload image" onUploaded={(url) => setConfig(key, url)} /></Field>)}
+          </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            {[
+              ['filmAtmosphereVideoUrl','Film 01 — Atmosphere video'],['filmBotanicalVideoUrl','Film 02 — Botanical video'],
+              ['filmCraftVideoUrl','Film 03 — Craft video'],['filmEmotionVideoUrl','Film 04 — Emotion video']
+            ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded MP4/WebM URL" /><MediaUploadButton accept="video/mp4,video/webm" label="Upload campaign video" onUploaded={(url) => setConfig(key, url)} /></Field>)}
           </div>
         </div>}
         {form.type === 'custom_footer' && <><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || ''} onChange={(e) => setConfig('tagline', e.target.value)} /></Field><Field label="Footer description"><Textarea rows={3} value={form.config.description || ''} onChange={(e) => setConfig('description', e.target.value)} /></Field><Field label="Footer links" hint="One per line: Label|Description||/internal-route"><Textarea rows={7} value={typeof form.config.items === 'string' ? form.config.items : itemText(form.config.items)} onChange={(e) => setConfig('items', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Contact email"><Input value={form.config.email || ''} onChange={(e) => setConfig('email', e.target.value)} /></Field><Field label="Contact phone"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} /></Field><Field label="Instagram URL"><Input value={form.config.instagramUrl || ''} onChange={(e) => setConfig('instagramUrl', e.target.value)} /></Field><Field label="Facebook URL"><Input value={form.config.facebookUrl || ''} onChange={(e) => setConfig('facebookUrl', e.target.value)} /></Field></div><Field label="Bottom copyright / note"><Input value={form.config.footerNote || ''} onChange={(e) => setConfig('footerNote', e.target.value)} /></Field></>}
