@@ -9,7 +9,7 @@ const HOMEPAGE_SECTION_TYPES = [
 const HOMEPAGE_PAGE_KEYS = [
   'home','site_navigation','site_header_after','collection_before','collection_after','product_before','product_after',
   'house','journal','gifting','cart_before','cart_after','checkout_before','checkout_after','track_before','track_after',
-  'site_footer_before'
+  'site_footer_before','site_footer'
 ];
 const MODULE_OF = { banners: 'banners', faqs: 'faq', announcements: 'announcements', homepage: 'homepage' }; // permission module per resource
 const DOC_KEYS = { // top-level fields of the Mongoose document the admin may write (a missing key is CLEARED on update)
