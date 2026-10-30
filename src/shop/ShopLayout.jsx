@@ -38,7 +38,7 @@ export default function ShopLayout(){
  const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
  return <div className="storefront-theme min-h-screen bg-[#faf8f4] text-[#263e0e]">
   <LuxuryExperienceLayer/>
-  <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#748e40]">•</b></span>)}</div></div>
+  <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div></div>
   <header className="sticky top-0 z-40 text-[#100d24]">
    <div className="absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/92 backdrop-blur-xl shadow-[0_10px_40px_rgba(16,13,36,.07)]"/>
    <Container className="container-xl relative flex h-[84px] items-center">
