@@ -6,7 +6,7 @@ import { StateBox, CardsSkeleton, Pager } from '../ui';
 import ProductCard from '../ProductCard';
 import useTitle from '../useTitle';
 
-const SORTS = [['newest', 'Newest'], ['price_asc', 'Price: low to high'], ['price_desc', 'Price: high to low'], ['popular', 'Most loved']];
+const SORTS = [['newest', 'Newest'], ['price_asc', 'Price: low to high'], ['price_desc', 'Price: high to low'], ['popular', 'Featured']];
 const KEYS = ['q', 'category', 'collection', 'brand', 'gender', 'sort', 'minPrice', 'maxPrice', 'page'];
 
 export default function ShopPage() {
