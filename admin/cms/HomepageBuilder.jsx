@@ -192,6 +192,17 @@ export default function HomepageBuilder() {
     }
     setDrawer({ open: true, item: item || null });
   };
+  const openHeroAssetLibrary = () => {
+    const assetSection = rows.find((item) => (item.pageKey || 'home') === 'home' && item.type === 'reference_assets');
+    if (assetSection) {
+      open(assetSection);
+      return;
+    }
+    setPageKey('home');
+    setInsertAfter(null);
+    setForm({ type: 'reference_assets', title: 'AFSANA image & 3D asset library', pageKey: 'home', config: defaults('reference_assets'), isEnabled: true });
+    setDrawer({ open: true, item: null });
+  };
   const close = () => { setDrawer({ open: false, item: null }); setInsertAfter(null); };
   const save = async (e) => {
     e.preventDefault(); setBusy(true); setNotice('');
@@ -252,7 +263,7 @@ export default function HomepageBuilder() {
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
-        <div className="flex flex-wrap items-center gap-2"><Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}{can('homepage.create') && pageKey === 'home' && <Button variant="secondary" disabled={busy || hasExperienceTemplate} onClick={addExperienceLayout}>{hasExperienceTemplate ? 'Experience layout added' : 'Add AFSANA experience layout'}</Button>}{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview this page</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+        <div className="flex flex-wrap items-center gap-2">{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}<Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}{can('homepage.create') && pageKey === 'home' && <Button variant="secondary" disabled={busy || hasExperienceTemplate} onClick={addExperienceLayout}>{hasExperienceTemplate ? 'Experience layout added' : 'Add AFSANA experience layout'}</Button>}{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview this page</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
