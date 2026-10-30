@@ -16,8 +16,17 @@ export default function ShopLayout(){
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
- const hasManagedFooter = (cmsData?.managedPageKeys || []).includes('site_footer');
- const navigationSections = cmsData?.pageSections?.site_navigation || [];
+ const isPreviewRequested = new URLSearchParams(location.search).get('afsanaPreview') === '1';
+ let previewLayout = null;
+ try { if (isPreviewRequested) previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v2') || 'null'); } catch {}
+ const isCmsPreview = isPreviewRequested && !!previewLayout;
+ const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer);
+ const hasManagedFooter = footerPreview || (cmsData?.managedPageKeys || []).includes('site_footer');
+ let navigationSections = cmsData?.pageSections?.site_navigation || [];
+ if (isCmsPreview) {
+   if (Array.isArray(previewLayout?.layouts?.site_navigation)) navigationSections = previewLayout.layouts.site_navigation;
+   else if (new URLSearchParams(location.search).get('afsanaPageKey') === 'site_navigation' && Array.isArray(previewLayout?.sections)) navigationSections = previewLayout.sections;
+ }
  const navConfig = navigationSections.find((s) => s.type === 'nav_menu')?.config || {};
  const navigation = navConfig.items;
  const nav = Array.isArray(navigation) && navigation.length
@@ -35,6 +44,7 @@ export default function ShopLayout(){
  const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
 
  return <div className="storefront-theme min-h-screen bg-[#f7f4ed] text-[#100d24]">
+   {isCmsPreview && <div className="relative z-[60] bg-[#7357ff] px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[.18em] text-white">Preview only — this design is not live. Return to Admin CMS and click Confirm &amp; Publish after checking.</div>}
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
   <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]">
