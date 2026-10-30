@@ -16,7 +16,7 @@ Netlify is only a visual/reference source and API upstream; do not deploy Netlif
 ## Repository
 https://github.com/SyedHassanali24/afsana-perfumes11
 Working branch: feat/universal-afsana-page-builder
-Latest branch head: fad3610bbcaaa16f9fbb1cd48a4903c780c5ce07 (documentation-only handoff commit; application code deployed is 0af66718ea181cbef1f5cc65254e0e873bde3f4b)
+Latest branch head: 39257f3ea9d5edb366ca5d6f204f1033391a3470 (application code; latest reference-only CMS filtering changes)
 
 ## Work completed
 1. Removed old conflicting global olive/forest storefront CSS from src/index.css; kept the shared base minimal and aligned loader to the violet/acid-lime reference style. src/styles/luxury-v3.css remains the main detailed storefront stylesheet.
@@ -35,10 +35,10 @@ Recent commits:
 Important: Old MongoDB CMS documents have NOT been physically deleted. They are hidden/excluded when a canonical template exists. Do not say they were deleted. Only physically delete if user explicitly asks and relevant records/backups are checked.
 
 ## Latest Cloudflare deployment
-Latest deployment ID: 43833d55-9e90-4807-8284-8e717c9126de
-Latest Worker version: e891edb4-6b67-4dd4-a516-80161971cac3
+Latest deployment ID: 457359c4-f1db-4811-92c1-601ae1365fd6
+Latest Worker version: 260cfeb9-75a2-41a8-8a1e-5fb5d7670a3f
 Traffic: 100%
-Latest commit sent for deployment: 0af66718ea181cbef1f5cc65254e0e873bde3f4b
+Latest commit sent for deployment: 39257f3ea9d5edb366ca5d6f204f1033391a3470
 Cloudflare build trigger is already configured for this Worker; caching is enabled.
 
 ## Existing Worker architecture
@@ -55,6 +55,6 @@ Do not silently change API upstream without testing existing backend.
 2. Runtime-check live Worker: /, /shop, /admin/login, /admin/cms, Mongo health, /api/cms/public, asset cache headers.
 3. Verify only canonical sections are returned/rendered; investigate any old CMS rows still appearing.
 4. Run tests/build and fix actual errors; never claim all errors are cleared without evidence.
-5. Remove any remaining conflicting older storefront style layers while preserving reference style and real commerce.
+5. Keep the Cloud home strictly reference-only: canonical/neon/reference section rows are allowed; legacy homepage rows must never be resurrected when the canonical layout is absent.
 
 User prefers quick, direct progress and does not want repeated questions or long recaps.
