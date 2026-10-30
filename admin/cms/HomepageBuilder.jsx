@@ -101,9 +101,14 @@ export default function HomepageBuilder() {
   const [del, setDel] = useState(null);
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    if (query.get('openHeroAssetLibrary') !== '1' || loading || drawer.open) return;
-    openHeroAssetLibrary();
-    query.delete('openHeroAssetLibrary');
+    if (loading || drawer.open) return;
+    if (query.get('openHeroAssetLibrary') === '1') {
+      openHeroAssetLibrary();
+      query.delete('openHeroAssetLibrary');
+    } else if (query.get('openLogoSettings') === '1') {
+      openLogoSettings();
+      query.delete('openLogoSettings');
+    } else return;
     const next = query.toString();
     window.history.replaceState({}, '', window.location.pathname + (next ? '?' + next : '') + window.location.hash);
   }, [loading, rows.length, drawer.open]);
@@ -210,6 +215,17 @@ export default function HomepageBuilder() {
     setInsertAfter(null);
     setForm({ type: 'reference_assets', title: 'AFSANA image & 3D asset library', pageKey: 'home', config: defaults('reference_assets'), isEnabled: true });
     setDrawer({ open: true, item: null });
+  };
+  const openLogoSettings = () => {
+    const navSection = rows.find((item) => item.pageKey === 'site_navigation' && item.type === 'nav_menu');
+    setPageKey('site_navigation');
+    setInsertAfter(null);
+    if (navSection) {
+      open(navSection);
+      return;
+    }
+    setForm({ type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', config:defaults('nav_menu'), isEnabled:true });
+    setDrawer({ open:true, item:null });
   };
   const close = () => { setDrawer({ open: false, item: null }); setInsertAfter(null); };
   const save = async (e) => {
