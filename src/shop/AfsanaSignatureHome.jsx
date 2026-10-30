@@ -281,13 +281,10 @@ function CmsSection({ section, products, faq }) {
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
   return null;
 }
-function CmsSectionList({ sections, faq, includeHomeFinish = false }) {
+function CmsSectionList({ sections, faq }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
   const safe = (Array.isArray(sections) ? sections : []).filter((s) => s?.isEnabled !== false);
-  const hasOffer = safe.some((s) => s?.type === 'offer_timer' || s?.type === 'promo_timer');
-  const hasPulse = safe.some((s) => s?.type === 'community_pulse');
-  const hasFooterShowcase = safe.some((s) => s?.type === 'footer_showcase');
   const tail = []; // Render exactly what the owner enabled; deleted or hidden sections are never auto-inserted.
   return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq}/></div>)}</div>;
 }
@@ -316,7 +313,7 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const isPreviewPage = preview && (queryPage || preview.pageKey || 'home') === pageKey;
   const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
-  return <CmsSectionList sections={sections} faq={data?.faqs || []} includeHomeFinish={false} />;
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} />;
 }
 
 export default function AfsanaSignatureHome(){
