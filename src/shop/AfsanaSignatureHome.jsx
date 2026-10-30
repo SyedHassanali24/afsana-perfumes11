@@ -229,7 +229,7 @@ function ConciergeFloat({ section }) {
   return <div className="fixed bottom-6 right-6 z-[85]">
     {open && <div className="mb-3 w-[min(330px,calc(100vw-32px))] rounded-3xl border border-white/15 bg-[#100d24] p-5 text-white shadow-2xl">
       <div className="flex items-start justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.24em] text-[#d9ff55]">AFSANA PRIVATE CONCIERGE</p><h3 className="mt-2 font-display text-2xl">Find your scent mood.</h3><p className="mt-2 text-xs text-white/60">Choose the feeling you want your fragrance to leave.</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Close concierge"><X className="h-4 w-4"/></button></div>
-      <div className="mt-4 grid grid-cols-2 gap-2">{choices.map(([label,value]) => <button key={value} type="button" onClick={() => navigate('/shop?category='+value)} className="rounded-xl border border-white/15 px-3 py-3 text-left text-xs hover:border-[#d9ff55] hover:bg-white/5">{label}</button>)}</div>
+      <div className="mt-4 grid grid-cols-2 gap-2">{choices.map(([label,value]) => <button key={value} type="button" onClick={() => navigate('/shop?q='+encodeURIComponent(value))} className="rounded-xl border border-white/15 px-3 py-3 text-left text-xs hover:border-[#d9ff55] hover:bg-white/5">{label}</button>)}</div>
     </div>}
     <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 rounded-full bg-[#d9ff55] px-5 py-3 text-xs font-semibold text-[#100d24] shadow-xl hover:scale-105"><Sparkles className="h-4 w-4"/>{section.config?.label || 'Scent Concierge'}</button>
   </div>;
@@ -287,11 +287,7 @@ function CmsSectionList({ sections, faq, includeHomeFinish = false }) {
   const hasOffer = safe.some((s) => s?.type === 'offer_timer' || s?.type === 'promo_timer');
   const hasPulse = safe.some((s) => s?.type === 'community_pulse');
   const hasFooterShowcase = safe.some((s) => s?.type === 'footer_showcase');
-  const tail = includeHomeFinish ? [
-    ...(!hasOffer ? [{ id: '__default-offer-timer', type: 'offer_timer', title: 'A moment worth discovering.', config: { label:'PRIVATE COLLECTION OFFER', endAt:'2026-11-05T23:59:00+05:00', offerText:'Discover the AFSANA private collection before this chapter closes.', buttonText:'Shop the offer', buttonLink:'/shop' }, isEnabled:true }] : []),
-    ...(!hasPulse ? [{ id: '__default-community-pulse', type: 'community_pulse', title: 'A house people come back to.', config: {}, isEnabled: true }] : []),
-    ...(!hasFooterShowcase ? [{ id: '__default-footer-showcase', type: 'footer_showcase', title: 'Leave the final impression.', config: {}, isEnabled: true }] : []),
-  ] : [];
+  const tail = []; // Render exactly what the owner enabled; deleted or hidden sections are never auto-inserted.
   return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq}/></div>)}</div>;
 }
 
@@ -319,7 +315,7 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const isPreviewPage = preview && (queryPage || preview.pageKey || 'home') === pageKey;
   const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
-  return <CmsSectionList sections={sections} faq={data?.faqs || []} includeHomeFinish={false}/ >;
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} includeHomeFinish={false} />;
 }
 
 export default function AfsanaSignatureHome(){
