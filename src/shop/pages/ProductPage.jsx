@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Heart, ArrowRight, Rotate3D } from 'lucide-react';
 import useApi from '../../hooks/useApi';
-import { productsApi } from '../../services';
+import { productsApi, cmsPublicApi } from '../../services';
 import { Container, StateBox, QtyStepper, Placeholder } from '../ui';
 import ProductCard from '../ProductCard';
 import ReviewsSection from '../ReviewsSection';
@@ -24,6 +24,9 @@ function Media({item,alt,className=''}) {
 export default function ProductPage(){
  const {slug}=useParams();
  const {data,loading,error,reload}=useApi(()=>productsApi.bySlug(slug),[slug]);
+ const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
+ const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
+ useEffect(()=>{if(!referenceAssets.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[referenceAssets.product3dModelUrl]);
  const {add}=useCart(); const {has,toggle}=useWishlist();
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
  const [tilt,setTilt]=useState({x:0,y:0});
@@ -55,7 +58,9 @@ export default function ProductPage(){
        <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#5f654f]">AFSANA / {String(img+1).padStart(2,"0")}</div><div className="absolute top-6 right-6 z-10 flex items-center gap-2 border border-[#263e0e]/10 bg-white/55 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.2em] text-[#5f654f]"><Rotate3D className="w-3.5 h-3.5"/> 3D / 360° View</div>
        {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-6 z-10 border border-[#263e0e]/10 bg-white/65 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.2em] text-[#263e0e]">{autoRotate?'Stop 360°':'Auto 360°'}</button>}
        <div className="absolute bottom-10 w-[52%] h-10 rounded-[50%] bg-black/18 blur-2xl transition-transform duration-500" style={{transform:`translateX(${tilt.y*1.4}px) scaleX(${1+Math.abs(tilt.y)/180})`}}/>
-       <div className={"product-3d relative w-[70%] h-[84%] "+(stagePulse?"stage-pulse":"")} style={{transform:`perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out',transformStyle:'preserve-3d'}}>
+       {referenceAssets.product3dModelUrl
+         ? <model-viewer src={referenceAssets.product3dModelUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'82%',height:'84%',background:'transparent','--poster-color':'transparent'}}/>
+         : <div className={"product-3d relative w-[70%] h-[84%] "+(stagePulse?"stage-pulse":"")} style={{transform:`perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out',transformStyle:'preserve-3d'}}>
          <div className="absolute inset-[5%] rounded-[38%] bg-[#748e40]/12 blur-3xl" style={{transform:'translateZ(-70px) scale(.92)'}}/>
          <div className="absolute inset-[4%] rounded-[32%] border border-[#748e40]/20 opacity-60" style={{transform:'translateZ(-28px) rotateY(5deg)'}}/>
          <div className="absolute inset-[8%] overflow-hidden rounded-[18%] opacity-20 blur-[2px]" style={{transform:'translateZ(-18px) scale(.96)'}}><Media item={media[img]} alt="" className="w-full h-full object-cover"/></div>
@@ -63,7 +68,7 @@ export default function ProductPage(){
            <div key={img} className="media-transition h-full w-full"><Media item={media[img]} alt={p.name} className="max-h-full max-w-full w-full h-full object-contain drop-shadow-[0_38px_48px_rgba(20,30,10,.30)]"/></div>
          </div>
          <div className="absolute left-[10%] right-[10%] bottom-[7%] h-[14%] rounded-[50%] bg-white/20 blur-xl" style={{transform:'translateZ(15px)'}}/>
-       </div>
+       </div>}
        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center text-[8px] uppercase tracking-[.25em] text-[#5f654f]/65">Drag / swipe to rotate · {media[img]?.kind==="video"?"Live film":"Cinematic view"}</div>
       </div>
     </div>
