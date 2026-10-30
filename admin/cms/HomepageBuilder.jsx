@@ -97,6 +97,7 @@ export default function HomepageBuilder() {
   const [insertAfter, setInsertAfter] = useState(null);
   const [form, setForm] = useState({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
   const [busy, setBusy] = useState(false);
+  const [layoutPreviewed, setLayoutPreviewed] = useState(false);
   const [notice, setNotice] = useState('');
   const [del, setDel] = useState(null);
   useEffect(() => {
@@ -112,6 +113,54 @@ export default function HomepageBuilder() {
     const next = query.toString();
     window.history.replaceState({}, '', window.location.pathname + (next ? '?' + next : '') + window.location.hash);
   }, [loading, rows.length, drawer.open]);
+  const previewExperienceLayout = () => {
+    try {
+      const innerLayouts = Object.fromEntries(
+        ['house','journal','gifting','discover'].map((targetPageKey) => [
+          targetPageKey,
+          AFSANA_INNER_SECTIONS.filter((section) => section.pageKey === targetPageKey).map((section,index) => ({
+            ...section,
+            id:`preview-${section.slot}`,
+            sortOrder:index,
+            isEnabled:true,
+            config:{...section.config,theme:'neon',templateId:'afsana-neon-experience-v1',templateSlot:section.slot}
+          }))
+        ])
+      );
+      const layouts = {
+        home: AFSANA_EXPERIENCE_SECTIONS.map((section,index) => ({
+          ...section,
+          id:`preview-home-${index}`,
+          pageKey:'home',
+          sortOrder:index,
+          isEnabled:true,
+          config:{
+            ...section.config,
+            ...(section.type==='reference_assets'?(rows.find((item)=>(item.pageKey||'home')==='home'&&item.type==='reference_assets')?.config||{}):{}),
+            theme:'neon',
+            templateId:'afsana-neon-experience-v1',
+            templateSlot:`home-${index}`
+          }
+        })),
+        ...innerLayouts,
+        site_navigation:[{id:'preview-navigation',type:'nav_menu',title:'AFSANA navigation',pageKey:'site_navigation',sortOrder:0,isEnabled:true,config:{...defaults('nav_menu'),items:parseItems(defaults('nav_menu').items),theme:'neon',templateId:'afsana-neon-experience-v1'}}],
+        site_footer:[{id:'preview-footer',type:'custom_footer',title:'AFSANA custom footer',pageKey:'site_footer',sortOrder:0,isEnabled:true,config:{...defaults('custom_footer'),items:parseItems(defaults('custom_footer').items),theme:'neon',templateId:'afsana-neon-experience-v1'}}],
+        site_footer_before:[{id:'preview-ai',type:'ai_concierge',title:'Scent Concierge',pageKey:'site_footer_before',sortOrder:0,isEnabled:true,config:{...defaults('ai_concierge'),theme:'neon',templateId:'afsana-neon-experience-v1'}}]
+      };
+      localStorage.setItem('afsana_cms_preview_v2',JSON.stringify({pageKey:'home',sections:layouts.home,layouts}));
+      const previewWindow = window.open('/?afsanaPreview=1&afsanaPageKey=home','_blank');
+      if (!previewWindow) {
+        setNotice('Preview tab was blocked. Allow pop-ups for this site, then click Preview again.');
+        return;
+      }
+      try { previewWindow.opener = null; } catch {}
+      setLayoutPreviewed(true);
+      setNotice('Preview opened. Check the new design first; nothing is live until you click Confirm & Publish.');
+    } catch {
+      setNotice('The AFSANA preview could not be opened in this browser.');
+    }
+  };
+
   const addExperienceLayout = async () => {
     const templateId = 'afsana-neon-experience-v1';
     const templateRows = rows.filter((item) => item.config?.templateId === templateId);
@@ -165,7 +214,9 @@ export default function HomepageBuilder() {
         await api.create({ type:item.type, title:item.title, pageKey:item.pageKey, config, sortOrder:item.sortOrder, isEnabled:item.isEnabled });
         existingSlots.add(item.slot);
       }
-      setPageKey('home'); setNotice('AFSANA reference layout saved. Previous sections are now hidden from the live site; the new layout is editable and removable.'); reload();
+      try { localStorage.removeItem('afsana_cms_preview_v2'); localStorage.removeItem('afsana_cms_preview_v1'); } catch {}
+      setLayoutPreviewed(false);
+      setPageKey('home'); setNotice('AFSANA layout confirmed and published. Previous sections are hidden; the new design is now permanent and editable.'); reload();
     } catch (e) { setNotice(e.message || 'Some layout sections may have saved. Run Add AFSANA experience layout again to safely complete any missing items.'); reload(); }
     finally { setBusy(false); }
   };
@@ -270,7 +321,7 @@ export default function HomepageBuilder() {
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
-        <div className="flex flex-wrap items-center gap-2">{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}<Select aria-label="Website page" value={pageKey} onChange={(e) => setPageKey(e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.create') && pageKey === 'home' && <Button variant="secondary" disabled={busy || hasExperienceTemplate} onClick={addExperienceLayout}>{hasExperienceTemplate ? 'Experience layout added' : 'Add AFSANA experience layout'}</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+        <div className="flex flex-wrap items-center gap-2">{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}<Select aria-label="Website page" value={pageKey} onChange={(e) => { setPageKey(e.target.value); setLayoutPreviewed(false); }}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}{can('homepage.create') && pageKey === 'home' && <Button disabled={busy || hasExperienceTemplate || !layoutPreviewed} onClick={addExperienceLayout}>{busy ? 'Publishing…' : hasExperienceTemplate ? 'Already published' : 'Confirm & Publish'}</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
