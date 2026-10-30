@@ -38,6 +38,7 @@ for (const d of dirs) {
 const STAFF_NO_PERMISSION = new Set([
   'notifications GET /admin', 'notifications POST /admin/read-all', 'notifications POST /admin/:id/read',
   'permissions GET /catalog',   // static labels only
+  'media POST /profile',        // signed-in staff may upload their own profile avatar
   'media POST /admin',          // checks "can upload for any content module" inside the handler
 ]);
 // Routes that are intentionally public (login, health, storefront reads).
