@@ -17,6 +17,7 @@ const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categ
 const api = createHandler('media', [
   { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
       const c = checkUpload(body); if (!c.ok) throw E.badRequest(c.message);
+      if (!c.contentType.startsWith('image/')) throw E.badRequest('Profile photos must be JPEG, PNG or WebP images.');
       const doc = await Media.create({ contentType: c.contentType, size: c.buffer.length, data: c.buffer, filename: body.filename || 'profile-avatar', uploadedBy: ctx.user._id });
       await audit(ctx, { action: 'media.profile_uploaded', module: 'staff', recordId: doc._id, newValue: { size: doc.size, contentType: doc.contentType } });
       return res(201, { url: `/api/media/${doc._id}`, size: doc.size });
