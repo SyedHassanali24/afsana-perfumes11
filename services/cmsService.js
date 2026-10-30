@@ -94,8 +94,14 @@ async function publicContent() {
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
-  const homepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
-  const pageSections = homepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
+  const canonicalTemplateId = 'afsana-neon-experience-v1';
+  const rawHomepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0 }));
+  const groupedSections = rawHomepageSections.reduce((groups, section) => { const key = section.pageKey || 'home'; (groups[key] ||= []).push(section); return groups; }, {});
+  const pageSections = Object.fromEntries(Object.entries(groupedSections).map(([key, sections]) => {
+    const canonical = sections.filter((section) => section.config?.templateId === canonicalTemplateId);
+    return [key, canonical.length ? canonical : sections];
+  }));
+  const homepageSections = pageSections.home || [];
   const managedPageKeys = [...new Set(allLayouts.map((d) => d.pageKey || 'home'))];
   return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections: pageSections.home || [], pageSections, managedPageKeys };
 }
