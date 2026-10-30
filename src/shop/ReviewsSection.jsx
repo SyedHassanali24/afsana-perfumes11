@@ -10,7 +10,7 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 
 export function Stars({ value, size = 'text-base' }) {
   const v = Math.round(Number(value) || 0);
-  return <span className={`${size} text-[#748e40]`} role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#5f654f]/40">{'★'.repeat(5 - v)}</span></span>;
+  return <span className={`${size} text-[#d4af37]` role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#5f654f]/40">{'★'.repeat(5 - v)}</span></span>;
 }
 const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
@@ -65,7 +65,7 @@ export default function ReviewsSection({ slug }) {
         <form onSubmit={save} className="rounded-xl border border-[#263e0e]/10 bg-[#faf8f4]-raised p-5 mb-6 space-y-4" noValidate>
           <div role="radiogroup" aria-label="Your rating" className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setForm({ ...form, rating: n })} className={`text-2xl ${n <= form.rating ? 'text-[#748e40]' : 'text-[#5f654f]/40'}`}>★</button>
+              <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setForm({ ...form, rating: n })} className={`text-2xl ${n <= form.rating ? 'text-[#d4af37]' : 'text-[#5f654f]/40'}`}>★</button>
             ))}
           </div>
           <Field label="Title (optional)"><Input maxLength={80} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
