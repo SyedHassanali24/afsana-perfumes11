@@ -221,3 +221,17 @@
 .afsana-ref-inner-hero .container-xl>p:not(.afsana-ref-eyebrow){max-width:580px;margin:22px 0 0;color:#bcb5d0;font-size:13px;line-height:1.9}
 .afsana-ref-inner-hero .afsana-ref-btn{margin-top:24px}
 @media(max-width:700px){.afsana-ref-inner-hero{min-height:490px;padding:70px 0 65px}.afsana-ref-inner-hero h1{font-size:clamp(52px,14vw,76px)}}
+
+.afsana-ref-collection-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 74% 20%,rgba(115,87,255,.34),transparent 28%),linear-gradient(115deg,#100d24,#24104a);color:#fff;padding:95px 0 85px;min-height:440px}
+.afsana-ref-collection-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:.35}
+.afsana-ref-collection-hero:after{content:"✳";position:absolute;right:8%;top:-100px;font-size:430px;color:#ffffff08;z-index:-1;animation:afsana-ref-spin 40s linear infinite}
+.afsana-ref-collection-hero h1{position:relative;z-index:1;margin:20px 0;font:500 clamp(55px,8vw,100px)/.9 'Playfair Display',Georgia,serif;letter-spacing:-.06em}
+.afsana-ref-collection-hero h1 em{color:#d9ff55}
+.afsana-ref-collection-hero p:not(.afsana-ref-eyebrow){position:relative;z-index:1;max-width:500px;color:#bcb5d0;font-size:12px;line-height:1.9}
+.afsana-ref-story{background:#f7f4ed;padding:112px 0}
+.afsana-ref-story-copy h2{margin:20px 0;font:500 clamp(45px,6vw,78px)/.95 'Playfair Display',Georgia,serif;letter-spacing:-.05em;color:#100d24}
+.afsana-ref-story-copy p{max-width:510px;color:#777187;font-size:12px;line-height:2}
+.afsana-ref-story-image{position:relative;min-height:390px;background:linear-gradient(135deg,#e5dcf4,#b7a9db);border-radius:26px;overflow:hidden}
+.afsana-ref-story-image:before{content:"";position:absolute;inset:16px;border:1px solid rgba(115,87,255,.35);z-index:1;pointer-events:none}
+.afsana-ref-story-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media(max-width:700px){.afsana-ref-collection-hero{min-height:390px;padding:70px 0 65px}.afsana-ref-collection-hero h1{font-size:clamp(52px,14vw,76px)}.afsana-ref-story{padding:75px 0}.afsana-ref-story-image{min-height:300px}}
