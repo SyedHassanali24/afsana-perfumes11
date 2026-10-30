@@ -12,6 +12,7 @@ import LuxuryExperienceLayer from './LuxuryExperienceLayer';
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
 export default function ShopLayout(){
+ const [showIntro,setShowIntro]=useState(false);
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
@@ -33,10 +34,12 @@ export default function ShopLayout(){
    ? navigation.map((item) => [item.text || '/', item.title || '']).filter(([to,label]) => to.startsWith('/') && label)
    : (cmsData?.managedPageKeys || []).includes('site_navigation') ? [] : defaultNav;
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
+ useEffect(()=>{let timer;try{if(!sessionStorage.getItem('afsana-reference-intro-v1')){sessionStorage.setItem('afsana-reference-intro-v1','seen');setShowIntro(true);timer=window.setTimeout(()=>setShowIntro(false),1650);}}catch{}return()=>{if(timer)window.clearTimeout(timer)};},[]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
  return <div className="storefront-theme min-h-screen bg-[#faf8f4] text-[#263e0e]">
+  {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
   <LuxuryExperienceLayer/>
   <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]"><div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div></div>
   <header className="sticky top-0 z-40 text-[#100d24]">
