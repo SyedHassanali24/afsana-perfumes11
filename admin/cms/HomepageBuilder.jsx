@@ -96,7 +96,10 @@ export default function HomepageBuilder() {
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
       cfg.items = itemText(cfg.items);
       setForm({ type: item.type, title: item.title || '', pageKey: item.pageKey || 'home', config: cfg, isEnabled: item.isEnabled !== false });
-    } else setForm({ type: 'hero', title: '', pageKey, config: defaults('hero'), isEnabled: true });
+    } else {
+      const initialType = pageKey === 'site_navigation' ? 'nav_menu' : 'hero';
+      setForm({ type: initialType, title: '', pageKey, config: defaults(initialType), isEnabled: true });
+    }
     setDrawer({ open: true, item: item || null });
   };
   const close = () => { setDrawer({ open: false, item: null }); setInsertAfter(null); };
@@ -187,7 +190,7 @@ export default function HomepageBuilder() {
     </div>}
     <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
-        <Field label="Place this section on"><Select value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
+        <Field label="Place this section on"><Select disabled={form.type === 'nav_menu'} value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
         <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{formPageTypes.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
 
