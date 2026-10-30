@@ -375,13 +375,34 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const products = data?.products || [];
   const source = Array.isArray(sections) ? sections : [];
+  // HOME IS REFERENCE-ONLY: never fall back to the old storefront section set.
+  // The Netlify preview is the visual source of truth. Prefer explicitly tagged
+  // neon rows, but also recognise the reference section types when older CMS
+  // records do not carry templateId yet.
   const canonicalTemplateId = 'afsana-neon-experience-v1';
-  const canonicalRows = source.filter((s) => s?.config?.templateId === canonicalTemplateId);
-  const activeSource = canonicalRows.length ? canonicalRows : source;
-  const safe = activeSource.filter((s) => s?.isEnabled !== false && s?.type !== 'reference_assets');
-  const referenceAssets = { ...inheritedAssets, ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {}) };
-  const tail = []; // Render exactly what the owner enabled; deleted or hidden sections are never auto-inserted.
-  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].map((s) => <div key={s.id} className={s.config?.theme === 'neon' ? 'afsana-cms-section afsana-cms-theme-neon' : 'afsana-cms-section'}><CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/></div>)}</div>;
+  const referenceTypes = new Set([
+    'hero','reference_assets','nav_menu','category_tiles','video_grid','post_grid','blog_grid',
+    'featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','scent_finder',
+    'split_story','video_banner','offer_timer','promo_timer','product_3d_showcase','fragrance_dna',
+    'interactive_gallery','community_pulse','footer_showcase','custom_footer','benefits',
+    'trust_grid','values_grid','testimonials','newsletter','whatsapp_float','ai_concierge','marquee'
+  ]);
+  const canonicalRows = source.filter((s) =>
+    s?.config?.templateId === canonicalTemplateId ||
+    s?.config?.theme === 'neon'
+  );
+  const referenceRows = source.filter((s) => referenceTypes.has(s?.type));
+  const activeSource = canonicalRows.length ? canonicalRows : referenceRows;
+  const safe = activeSource.filter((s) => s?.isEnabled !== false);
+  const referenceAssets = {
+    ...inheritedAssets,
+    ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {})
+  };
+  return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
+    <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
+      <CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/>
+    </div>
+  )}</div>;
 }
 
 function CmsDrivenHome({ sections, faq, referenceAssets = {} }) {
@@ -431,6 +452,13 @@ export default function AfsanaSignatureHome(){
   const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
   const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
-  if (sections.length || previewHome) return <CmsDrivenHome sections={sections} faq={data?.faqs || []} referenceAssets={(data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {}}/>;
-  return <DefaultHome/>;
+  if (sections.length || previewHome) {
+    return <CmsDrivenHome
+      sections={sections}
+      faq={data?.faqs || []}
+      referenceAssets={(data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {}}
+    />;
+  }
+  // No CMS layout: render nothing rather than resurrecting the previous home design.
+  return <CmsDrivenHome sections={[]} faq={data?.faqs || []} />;
 }
