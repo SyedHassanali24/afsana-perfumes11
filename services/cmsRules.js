@@ -4,7 +4,7 @@ const HOMEPAGE_SECTION_TYPES = [
   'hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter',
   'video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement',
   'lookbook','values_grid','blog_grid','post_grid','promo_timer','offer_timer','community_pulse','footer_showcase','muse_scene',
-  'product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','rich_text','faq','spacer','whatsapp_float','ai_concierge'
+  'product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','rich_text','faq','spacer','whatsapp_float','ai_concierge','nav_menu','custom_footer'
 ];
 const HOMEPAGE_PAGE_KEYS = [
   'home','site_navigation','site_header_after','collection_before','collection_after','product_before','product_after',
@@ -74,6 +74,8 @@ function crossFieldErrors(r, c) {
     const allowed = HOMEPAGE_SECTION_TYPES;
     if (!allowed.includes(str(c.type))) add('type', 'Choose a valid section type.');
     if (!HOMEPAGE_PAGE_KEYS.includes(str(c.pageKey || 'home'))) add('pageKey', 'Choose a valid page position.');
+    if (str(c.type) === 'nav_menu' && str(c.pageKey || 'home') !== 'site_navigation') add('pageKey', 'Header navigation must use the header navigation position.');
+    if (str(c.type) === 'custom_footer' && str(c.pageKey || 'home') !== 'site_footer') add('pageKey', 'The complete custom footer must use the site footer position.');
     if (str(c.title).length > 120) add('title', 'Title can be at most 120 characters.');
     if (!(Number.isInteger(Number(c.sortOrder || 0)) && Number(c.sortOrder || 0) >= 0 && Number(c.sortOrder || 0) <= 9999)) add('sortOrder', 'Order must be a whole number from 0 to 9999.');
   } else add('resource', 'Unknown section.');
