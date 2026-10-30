@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, MessageCircle, Sparkles, X } from 'lucide-react';
+import { ArrowRight, MessageCircle, Sparkles, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
 import useApi from '../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../services';
+import useShopSettings from './useShopSettings';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
 import { Container } from './ui';
@@ -317,12 +318,15 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   const btn = c.buttonText && c.buttonLink ? <Link to={c.buttonLink} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.18em] text-[#263e0e]">{c.buttonText}<ArrowRight className="w-4 h-4"/></Link> : null;
   if (section.type === 'custom_footer') {
     const links = cmsItems(c.items);
-    const socials = [['Instagram',c.instagramUrl],['Facebook',c.facebookUrl]].filter((x) => x[1]);
-    return <footer className="relative overflow-hidden bg-[#100d24] text-white"><div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(115,87,255,.24),transparent_28%),radial-gradient(circle_at_88%_75%,rgba(217,255,85,.08),transparent_25%)]"/><div className="container-xl relative py-16 sm:py-24"><div className="grid gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]"><div><p className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{c.tagline || 'THE ART OF SCENT'}</p><h2 className="mt-5 font-display text-6xl tracking-[-.04em]">{c.brandName || 'AFSANA'}</h2><p className="mt-6 max-w-sm text-sm leading-7 text-white/55">{c.description}</p>{socials.length > 0 && <div className="mt-6 flex gap-4">{socials.map(([label,url]) => <a key={label} href={url} target="_blank" rel="noreferrer" className="text-[9px] uppercase tracking-[.2em] text-[#d9ff55]">{label}</a>)}</div>}</div><div className="lg:col-span-2"><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">EXPLORE THE HOUSE</p><div className="mt-6 grid grid-cols-2 gap-4">{links.map((item,i) => <div key={i}><p className="text-base font-display">{item.title}</p><p className="mt-1 text-xs text-white/45">{item.text}</p>{item.link && <Link className="mt-3 inline-flex text-[9px] uppercase tracking-[.2em] text-[#d9ff55]" to={item.link}>Discover ↗</Link>}</div>)}</div></div><div><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">CONTACT</p>{c.email && <a href={'mailto:'+c.email} className="mt-6 block text-sm text-white/65">{c.email}</a>}{c.phone && <p className="mt-3 text-sm text-white/65">{c.phone}</p>}</div></div><div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 text-[9px] uppercase tracking-[.22em] text-white/35 sm:flex-row sm:items-center sm:justify-between"><span>{c.footerNote || 'AFSANA — THE ART OF SCENT'}</span><span>Made to leave a memory.</span></div></div></footer>;
+    const socials = [
+      ['Instagram',c.instagramUrl,Instagram],['Facebook',c.facebookUrl,Facebook],['TikTok',c.tiktokUrl,Music2],
+      ['YouTube',c.youtubeUrl,Youtube],['Pinterest',c.pinterestUrl,Pin],['X',c.xUrl,X]
+    ];
+    return <footer className="relative overflow-hidden bg-[#100d24] text-white"><div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(115,87,255,.24),transparent_28%),radial-gradient(circle_at_88%_75%,rgba(217,255,85,.08),transparent_25%)]"/><div className="container-xl relative py-16 sm:py-24"><div className="grid gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]"><div><p className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{c.tagline || 'THE ART OF SCENT'}</p><h2 className="mt-5 font-display text-6xl tracking-[-.04em]">{c.brandName || 'AFSANA'}</h2><p className="mt-6 max-w-sm text-sm leading-7 text-white/55">{c.description}</p><div className="mt-7"><p className="text-[9px] uppercase tracking-[.25em] text-white/40">Follow the house</p><div className="mt-3 flex flex-wrap gap-2">{socials.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] transition hover:border-[#d9ff55] hover:bg-white/10"><Icon className="h-4 w-4"/></a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35"><Icon className="h-4 w-4"/></span>)}</div><p className="mt-2 text-[9px] text-white/35">Connect your official social URLs in Admin → Content → Website page builder → Footer.</p></div></div><div className="lg:col-span-2"><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">EXPLORE THE HOUSE</p><div className="mt-6 grid grid-cols-2 gap-4">{links.map((item,i) => <div key={i}><p className="text-base font-display">{item.title}</p><p className="mt-1 text-xs text-white/45">{item.text}</p>{item.link && <Link className="mt-3 inline-flex text-[9px] uppercase tracking-[.2em] text-[#d9ff55]" to={item.link}>Discover ↗</Link>}</div>)}</div></div><div><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">CONTACT</p>{c.email && <a href={'mailto:'+c.email} className="mt-6 block text-sm text-white/65">{c.email}</a>}{c.phone && <p className="mt-3 text-sm text-white/65">{c.phone}</p>}<Link to="/track" className="mt-6 block text-sm text-white/65 hover:text-[#d9ff55]">Track an order ↗</Link><Link to="/account" className="mt-3 block text-sm text-white/65 hover:text-[#d9ff55]">Customer account ↗</Link></div></div><div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 text-[9px] uppercase tracking-[.22em] text-white/35 sm:flex-row sm:items-center sm:justify-between"><span>{c.footerNote || 'AFSANA — THE ART OF SCENT'}</span><span>Made to leave a memory.</span><span>Privacy · Terms · Customer care</span></div></div></footer>;
   }
   if (section.type === 'reference_assets' || section.type === 'nav_menu') return null;
   if (section.type === 'whatsapp_float') {
-    const phone = String(c.phone || '').replace(/[^0-9]/g, '');
+    const phone = String(c.phone || c.publicWhatsapp || '').replace(/[^0-9]/g, '');
     if (!phone) return null;
     const href = `https://wa.me/${phone}?text=${encodeURIComponent(c.message || 'Assalam-o-alaikum, I need help with AFSANA fragrances.')}`;
     return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-6 left-6 z-[84] inline-flex items-center gap-2 rounded-full bg-[#20c768] px-5 py-3 text-xs font-semibold text-white shadow-2xl hover:scale-105"><MessageCircle className="h-4 w-4"/>{c.label || 'WhatsApp us'}</a>;
@@ -373,6 +377,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
 }
 function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
+  const shopSettings = useShopSettings();
   const products = data?.products || [];
   const source = Array.isArray(sections) ? sections : [];
   // HOME IS REFERENCE-ONLY: never fall back to the old storefront section set.
@@ -391,7 +396,8 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const safe = activeSource.filter((s) => s?.isEnabled !== false);
   const referenceAssets = {
     ...inheritedAssets,
-    ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {})
+    ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {}),
+    publicWhatsapp: shopSettings?.store?.whatsapp || shopSettings?.store?.phone || ''
   };
   return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
     <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
