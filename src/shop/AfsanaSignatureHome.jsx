@@ -403,13 +403,16 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const isPreviewPage = !!preview && (Array.isArray(preview.layouts?.[pageKey]) || (queryPage || preview.pageKey || 'home') === pageKey);
   const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
-  const referenceAssets = (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
+  const previewAssets = preview?.layouts?.home?.find((item) => item.type === 'reference_assets')?.config || {};
+  const referenceAssets = previewAssets.heroBottleImageUrl || Object.keys(previewAssets).length ? previewAssets : (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
   return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
 }
 
 export function ScentFinderPage(){
   const {data}=useApi(()=>cmsPublicApi.content(),[]);
-  const referenceAssets=(data?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
+  const preview=readCmsPreview();
+  const previewAssets=preview?.layouts?.home?.find((item)=>item.type==='reference_assets')?.config||{};
+  const referenceAssets=Object.keys(previewAssets).length?previewAssets:(data?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
   const sections=[
     {id:'discover-fallback-hero',type:'hero',pageKey:'discover',title:'There is a scent for that.',config:{layout:'inner',eyebrow:'AFSANA SCENT INTELLIGENCE / BETA',subtitle:'Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.'}},
     {id:'discover-fallback-worlds',type:'category_tiles',pageKey:'discover',title:'Choose a feeling.',config:{eyebrow:'A MORE PERSONAL DISCOVERY',subtitle:'Fragrance is personal. Let your instinct lead, and explore a scent world that matches your energy.',items:[{title:'Make a statement',text:'Confident, vivid, unforgettable.',link:'/shop'},{title:'Feel luminous',text:'Soft, airy, effortless.',link:'/shop'},{title:'Stay mysterious',text:'Deep, warm, magnetic.',link:'/shop'}]}}
