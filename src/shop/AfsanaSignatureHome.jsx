@@ -391,8 +391,9 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
     s?.config?.templateId === canonicalTemplateId ||
     s?.config?.theme === 'neon'
   );
-  const referenceRows = source.filter((s) => referenceTypes.has(s?.type));
-  const activeSource = canonicalRows.length ? canonicalRows : referenceRows;
+  // Do not fall back to any previous section set, even if it uses a familiar
+  // block type such as hero, product row or video grid.
+  const activeSource = canonicalRows;
   const safe = activeSource.filter((s) => s?.isEnabled !== false);
   const referenceAssets = {
     ...inheritedAssets,
