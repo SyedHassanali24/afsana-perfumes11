@@ -1,12 +1,13 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Menu, Search, ShoppingBag, User, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
 import { Container } from './ui';
 import useApi from '../hooks/useApi';
 import { cmsPublicApi } from '../services';
+import useShopSettings from './useShopSettings';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
@@ -15,6 +16,9 @@ export default function ShopLayout(){
  const [showIntro,setShowIntro]=useState(false);
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
+ const shopSettings=useShopSettings();
+ const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
+ const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
  const isPreviewRequested = new URLSearchParams(location.search).get('afsanaPreview') === '1';
  let previewLayout = null;
@@ -95,7 +99,7 @@ export default function ShopLayout(){
         <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#d9ff55]">Customer care ↗</Link></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link></div></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">Track order</Link><Link className="block hover:text-white transition" to="/account">Account</Link><Link className="block hover:text-white transition" to="/shop">Fragrance care</Link><Link className="block hover:text-white transition" to="/gifting">Gift guide</Link></div></div>
-        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2"><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#d9ff55] hover:text-[#d9ff55] transition" href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#d9ff55] hover:text-[#d9ff55] transition" href="https://www.tiktok.com/" target="_blank" rel="noreferrer">TikTok</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#d9ff55] hover:text-[#d9ff55] transition" href="https://www.pinterest.com/" target="_blank" rel="noreferrer">Pinterest</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#d9ff55] hover:text-[#d9ff55] transition" href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a></div></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2">{socialLinks.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] hover:border-[#d9ff55] hover:bg-white/10 transition">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</span>)}</div><p className="mt-2 text-[9px] text-white/35">Official links can be connected in the Footer settings in CMS.</p></div>
       </div>
       <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
     </Container>
