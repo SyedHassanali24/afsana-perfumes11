@@ -129,6 +129,7 @@ export const cmsApi = (resource) => ({
   update: (id, body) => api(`/cms/${resource}/${id}`, { method: 'PATCH', body }),
   setActive: (id, isActive) => api(`/cms/${resource}/${id}/active`, { method: 'PATCH', body: { isActive } }),
   remove: (id) => api(`/cms/${resource}/${id}`, { method: 'DELETE' }),
+  publishExperience: (body) => api('/cms/homepage/experience/publish', { method: 'POST', body }),
 });
 export const auditApi = { list: (query) => api('/audit', { query }) };
 
