@@ -29,10 +29,14 @@ export default function ShopLayout(){
      else if (query.get('afsanaPageKey') === 'site_navigation' && Array.isArray(preview?.sections)) navigationSections = preview.sections;
    }
  } catch {}
- const navigation = navigationSections.find((s) => s.type === 'nav_menu')?.config?.items;
+ const navConfig = navigationSections.find((s) => s.type === 'nav_menu')?.config || {};
+ const navigation = navConfig.items;
  const nav = Array.isArray(navigation) && navigation.length
    ? navigation.map((item) => [item.text || '/', item.title || '']).filter(([to,label]) => to.startsWith('/') && label)
-   : (cmsData?.managedPageKeys || []).includes('site_navigation') ? [] : defaultNav;
+   : defaultNav;
+ const logoUrl = String(navConfig.logoUrl || '').trim();
+ const brandName = navConfig.brandName || 'AFSANA';
+ const brandTagline = navConfig.tagline || 'THE ART OF SCENT';
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
  useEffect(()=>{let timer;try{if(!sessionStorage.getItem('afsana-reference-intro-v1')){sessionStorage.setItem('afsana-reference-intro-v1','seen');setShowIntro(true);timer=window.setTimeout(()=>setShowIntro(false),1650);}}catch{}return()=>{if(timer)window.clearTimeout(timer)};},[]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
@@ -46,11 +50,11 @@ export default function ShopLayout(){
    <div className="absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/92 backdrop-blur-xl shadow-[0_10px_40px_rgba(16,13,36,.07)]"/>
    <Container className="container-xl relative flex h-[84px] items-center">
     <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
-    <Link to="/" className="logo group flex shrink-0 items-center gap-3"><span className="grid h-[31px] w-[31px] place-items-center rounded-full bg-[#100d24] font-display text-[19px] italic text-[#d9ff55]">A</span><span className="block font-display text-[20px] tracking-[.17em] text-[#100d24]">AFSANA<small className="mt-[1px] block font-mono text-[8px] tracking-[.32em] text-[#80798f]">THE ART OF SCENT</small></span></Link>
+    <Link to="/" className="logo group flex shrink-0 items-center gap-3" aria-label={brandName}><span className="grid h-[31px] w-[31px] place-items-center overflow-hidden rounded-full bg-[#100d24]">{logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[19px] italic text-[#d9ff55]">A</span>}</span><span className="block font-display text-[20px] tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[1px] block font-mono text-[8px] tracking-[.32em] text-[#80798f]">{brandTagline}</small></span></Link>
     <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.13em] transition '+(isActive?'text-[#7357ff]':'text-[#514b62] hover:text-[#100d24]')}>{label}</NavLink>)}</nav>
     <div className="header-actions ml-auto flex items-center">
       <button className={icon} onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="w-[18px]"/></button>
-      <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label="Account"><User className="w-[18px]"/></Link>
+      <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Login / register'} title={status==='authed'?'My account':'Login / register'}><User className="w-[18px]"/></Link>
       <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#b4bf41] text-[#263e0e] text-[9px] leading-4 text-center">{count}</span>}</button>
     </div>
    </Container>
