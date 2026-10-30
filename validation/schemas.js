@@ -305,6 +305,23 @@ const homepageSectionTypes = CMS.HOMEPAGE_SECTION_TYPES;
 const homepageConfig = z.record(z.string(), z.any()).optional();
 const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), pageKey: z.enum(CMS.HOMEPAGE_PAGE_KEYS).optional(), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
 const homepageSectionPatch = homepageSectionShape.partial();
+const homepageExperiencePublishBody = z.object({
+  templateId: z.literal('afsana-neon-experience-v1'),
+  sections: z.array(z.object({
+    slot: z.string().trim().regex(/^[a-z0-9-]{1,80}$/),
+    type: z.enum(homepageSectionTypes),
+    title: cText(120),
+    pageKey: z.enum(CMS.HOMEPAGE_PAGE_KEYS),
+    config: homepageConfig,
+    sortOrder: z.number().int().min(0).max(9999),
+    isEnabled: z.boolean().optional(),
+  })).min(1).max(80),
+}).superRefine((v, ctx) => {
+  const slots = v.sections.map((section) => section.slot);
+  if (new Set(slots).size !== slots.length) {
+    ctx.addIssue({ code: 'custom', path: ['sections'], message: 'Every published section must have a unique template slot.' });
+  }
+});
 
 // Shape here, business rules (required fields, links, dates) in services/cmsRules.crossFieldErrors; a PATCH is re-checked MERGED in cmsService.update.
 const cmsBody = {}; const cmsPatch = {};
@@ -334,7 +351,7 @@ module.exports = {
   settingsStore, settingsBank, settingsShipping, settingsReturns,
   backupOverview, backupData, backupPictures,
   uploadBody,
-  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
+  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch, homepageExperiencePublishBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery,
   customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
