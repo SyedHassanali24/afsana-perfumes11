@@ -292,7 +292,7 @@ function CmsSectionList({ sections, faq, includeHomeFinish = false }) {
 }
 
 function CmsDrivenHome({ sections, faq }) {
-  return <CmsSectionList sections={sections} faq={faq} includeHomeFinish/>;
+  return <CmsSectionList sections={sections} faq={faq}/>;
 }
 
 function readCmsPreview() {
