@@ -188,3 +188,27 @@
 .storefront-theme .afsana-ref-hero a{color:inherit}
 @media(max-width:1000px){.afsana-ref-world-grid{grid-template-columns:1fr 1fr}.afsana-ref-world-card:first-child{grid-row:span 2;height:100%}.afsana-ref-world-card:nth-child(2),.afsana-ref-world-card:nth-child(3){margin:0;height:280px}.afsana-ref-film-grid{grid-template-columns:repeat(2,1fr)}.afsana-ref-film-card{height:260px}.afsana-ref-journal-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.afsana-ref-hero{min-height:unset}.afsana-ref-hero-grid{grid-template-columns:1fr;padding:75px 0 90px;gap:0}.afsana-ref-hero h1{font-size:clamp(60px,17vw,94px)}.afsana-ref-hero-sub{font-size:12px;margin:22px 0}.afsana-ref-meta{margin-top:33px;gap:25px}.afsana-ref-hero-stage{height:410px;margin-top:10px}.afsana-ref-orbit{width:330px}.afsana-ref-worlds,.afsana-ref-films,.afsana-ref-journal{padding:75px 0}.afsana-ref-section-head{display:block;margin-bottom:30px}.afsana-ref-section-head>p{margin-top:16px}.afsana-ref-world-grid{grid-template-columns:1fr 1fr;gap:10px}.afsana-ref-world-card{height:240px!important;margin:0!important;border-radius:17px}.afsana-ref-world-card:first-child{grid-column:span 2;grid-row:auto;height:290px!important}.afsana-ref-world-info{left:16px;bottom:17px}.afsana-ref-world-info h3{font-size:25px}.afsana-ref-world-info p{font-size:9px;max-width:180px}.afsana-ref-world-arrow{width:33px;height:33px;right:15px;bottom:15px}.afsana-ref-film-grid{gap:10px}.afsana-ref-film-card{height:220px;border-radius:15px}.afsana-ref-film-card>div{left:15px;bottom:15px}.afsana-ref-film-card h3{font-size:22px}.afsana-ref-journal-grid{grid-template-columns:1fr;gap:30px}.afsana-ref-journal-img{height:230px}.afsana-ref-sticker{right:1%;width:75px;height:75px;font-size:7px}}
+
+/* Reference intro and cream/lime navigation finish. */
+.afsana-ref-intro{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:#100d24;color:#fff;transition:opacity .7s ease,visibility .7s ease;animation:afsana-intro-out .7s 1.18s forwards}
+.afsana-ref-intro-mark{font:500 clamp(36px,8vw,92px)/1 'Playfair Display',Georgia,serif;letter-spacing:.16em;animation:afsana-intro-reveal 1.3s both}
+.afsana-ref-intro-mark span{color:#d9ff55}
+.afsana-ref-intro-line{height:1px;width:0;background:#d9ff55;margin:22px auto 0;animation:afsana-intro-line 1.1s .3s forwards}
+.afsana-ref-intro-copy{font:10px ui-monospace,monospace;letter-spacing:.35em;text-align:center;color:#aaa5bd;margin-top:18px;opacity:0;animation:afsana-intro-copy .8s .7s forwards}
+@keyframes afsana-intro-reveal{from{opacity:0;filter:blur(12px);letter-spacing:.35em;transform:translateY(18px)}to{opacity:1;filter:blur(0);letter-spacing:.16em;transform:none}}
+@keyframes afsana-intro-line{to{width:min(260px,55vw)}}
+@keyframes afsana-intro-copy{to{opacity:1}}
+@keyframes afsana-intro-out{to{opacity:0;visibility:hidden;pointer-events:none}}
+.storefront-theme header>div:first-child{background:rgba(247,244,237,.92)!important;box-shadow:0 10px 40px rgba(16,13,36,.07)!important;border-bottom-color:rgba(16,13,36,.10)!important}
+.storefront-theme header .logo:hover:after{background:linear-gradient(90deg,transparent,#7357ff,transparent)}
+.storefront-theme .main-nav a:after{background:linear-gradient(90deg,#7357ff,#d9ff55)}
+.storefront-theme .main-nav a[aria-current="page"]{color:#7357ff!important}
+.storefront-theme .header-actions button,.storefront-theme .header-actions a{color:#100d24!important}
+.storefront-theme .header-actions button:hover,.storefront-theme .header-actions a:hover{color:#7357ff!important}
+.storefront-theme header #mobile-navigation{background:#f7f4ed!important}
+.storefront-theme header #mobile-navigation a{color:#514b62!important;border-color:rgba(16,13,36,.1)!important}
+.storefront-theme .afsana-ref-film-card video{z-index:0}
+.storefront-theme .afsana-ref-film-card:after{z-index:1}
+.storefront-theme .afsana-ref-film-card>div,.storefront-theme .afsana-ref-film-card small,.storefront-theme .afsana-ref-film-card h3,.storefront-theme .afsana-ref-film-play{z-index:2}
+.storefront-theme .afsana-ref-film-card>div{z-index:2}
+@media(prefers-reduced-motion:reduce){.afsana-ref-intro,.afsana-ref-intro-mark,.afsana-ref-intro-line,.afsana-ref-intro-copy{animation:none!important;transition:none!important;opacity:1}}
