@@ -1,6 +1,7 @@
 const { Banner, Faq, Announcement, HomepageSection } = require('../database/models');
 const { E, ApiError } = require('../middleware/errors');
 const { audit } = require('./audit');
+const { withTx } = require('./tx');
 const { scopeFilter } = require('../middleware/permissions');
 const SCOPE_MAP = { stores: 'storeId' };
 const storeFilter = (scopes, uid) => scopeFilter(scopes, uid, SCOPE_MAP);
@@ -78,7 +79,62 @@ async function remove(ctx, r, id, scopes) {
   return {};
 }
 
-module.exports = { list, create, update, setActive, remove };
+
+async function publishExperience(ctx, body, scopes) {
+  const templateId = 'afsana-neon-experience-v1';
+  if (body.templateId !== templateId || !Array.isArray(body.sections) || !body.sections.length) {
+    throw E.badRequest('The AFSANA layout payload is incomplete.');
+  }
+  const slots = body.sections.map((item) => item.slot);
+  if (new Set(slots).size !== slots.length) throw E.badRequest('The AFSANA layout contains duplicate section slots.');
+  const storeId = createStoreId(scopes);
+  const pageKeys = [...new Set(body.sections.map((item) => item.pageKey))];
+  return withTx(async (session) => {
+    const existing = await HomepageSection.find({
+      storeId,
+      'config.templateId': templateId,
+      isDeleted: { $ne: true },
+    }).select('_id config.templateSlot').session(session).lean();
+    const bySlot = new Map(existing.map((row) => [String(row.config?.templateSlot || ''), row]));
+    const operations = [];
+    let created = 0;
+    for (const section of body.sections) {
+      const normalized = R.normalize('homepage', {
+        type: section.type,
+        title: section.title || '',
+        pageKey: section.pageKey,
+        config: { ...(section.config || {}), theme: 'neon', templateId, templateSlot: section.slot },
+        sortOrder: section.sortOrder,
+        isEnabled: section.isEnabled !== false,
+      });
+      const errors = R.crossFieldErrors('homepage', normalized);
+      if (errors.length) throw invalid(errors);
+      const current = bySlot.get(section.slot);
+      if (current) {
+        // Retries preserve existing edits and hidden states.
+        operations.push({ updateOne: { filter: { _id: current._id, storeId }, update: { $set: { sortOrder: normalized.sortOrder } } } });
+      } else {
+        operations.push({ insertOne: { document: { ...R.toDoc('homepage', normalized), storeId, isDeleted: false } } });
+        created += 1;
+      }
+    }
+    if (operations.length) await HomepageSection.bulkWrite(operations, { session, ordered: true });
+    // Retire old sections in the same transaction; keep records recoverable.
+    const hiddenResult = await HomepageSection.updateMany(
+      { storeId, pageKey: { $in: pageKeys }, 'config.templateId': { $ne: templateId }, isDeleted: { $ne: true } },
+      { $set: { isEnabled: false } },
+      { session },
+    );
+    await audit(ctx, {
+      action: 'homepage.experience_published',
+      module: 'homepage',
+      newValue: { templateId, sections: body.sections.length, created, hidden: hiddenResult.modifiedCount || 0 },
+    }, session);
+    return { published: true, templateId, created, hidden: hiddenResult.modifiedCount || 0, total: body.sections.length };
+  });
+}
+
+module.exports = { list, create, update, setActive, remove, publishExperience };
 
 // What the shop may show right now: live banners, live FAQs, the newest live announcement. No ids of staff, no drafts.
 async function publicContent() {
