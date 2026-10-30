@@ -116,7 +116,7 @@ export default function HomepageBuilder() {
     const templateId = 'afsana-neon-experience-v1';
     const templateRows = rows.filter((item) => item.config?.templateId === templateId);
     const existingSlots = new Set(templateRows.map((item) => item.config?.templateSlot).filter(Boolean));
-    const expectedSlots = [...AFSANA_EXPERIENCE_SECTIONS.map((_, index) => `home-${index}`), 'site-footer', 'site-footer-before-ai', 'site-footer-before-whatsapp'];
+    const expectedSlots = AFSANA_EXPECTED_SLOTS;
     if (expectedSlots.every((slot) => existingSlots.has(slot))) {
       setNotice('The AFSANA experience layout is already installed. Edit, hide, reorder or remove its sections below.');
       return;
@@ -134,18 +134,31 @@ export default function HomepageBuilder() {
         existingSlots.add(slot);
       }
       await Promise.all(existingHome.map((item, index) => api.update(item.id, { sortOrder: starter.length + index })));
-      const globalSections = [
-        { slot:'site-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:defaults('custom_footer'), sortOrder:0, isEnabled:true },
-        { slot:'site-footer-before-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:defaults('ai_concierge'), sortOrder:0, isEnabled:true },
-        { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:false }
-      ];
+      const innerPageKeys = [...new Set(AFSANA_INNER_SECTIONS.map((item) => item.pageKey))];
+      for (const pageKey of innerPageKeys) {
+        const pageTemplate = AFSANA_INNER_SECTIONS.filter((item) => item.pageKey === pageKey);
+        const legacyRows = rows.filter((item) => (item.pageKey || 'home') === pageKey && item.config?.templateId !== templateId).sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        for (let index = 0; index < pageTemplate.length; index += 1) {
+          const section = pageTemplate[index];
+          if (existingSlots.has(section.slot)) {
+            const current = templateRows.find((item) => item.config?.templateSlot === section.slot);
+            if (current) await api.update(current.id, { sortOrder:index });
+            continue;
+          }
+          const config = { ...section.config, theme:'neon', templateId, templateSlot:section.slot };
+          await api.create({ type:section.type, title:section.title, pageKey, config, sortOrder:index, isEnabled:true });
+          existingSlots.add(section.slot);
+        }
+        await Promise.all(legacyRows.map((item, index) => api.update(item.id, { sortOrder: pageTemplate.length + index })));
+      }
+      const globalSections = AFSANA_GLOBAL_SECTIONS;
       for (const item of globalSections) {
         if (existingSlots.has(item.slot)) continue;
         const config = { ...item.config, theme:'neon', templateId, templateSlot:item.slot };
         await api.create({ type:item.type, title:item.title, pageKey:item.pageKey, config, sortOrder:item.sortOrder, isEnabled:item.isEnabled });
         existingSlots.add(item.slot);
       }
-      setPageKey('home'); setNotice('AFSANA experience layout added before your existing sections. Everything is editable; WhatsApp stays off until you enter its number.'); reload();
+      setPageKey('home'); setNotice('AFSANA reference website layouts added across Home, House, Journal, Gifting and Discover. Your previous sections remain below them; every new section is editable and removable.'); reload();
     } catch (e) { setNotice(e.message || 'Some layout sections may have saved. Run Add AFSANA experience layout again to safely complete any missing items.'); reload(); }
     finally { setBusy(false); }
   };
@@ -201,7 +214,7 @@ export default function HomepageBuilder() {
   const pageRows = rows.filter((item) => (item.pageKey || 'home') === pageKey);
   const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const experienceSlots = new Set(rows.filter((item) => item.config?.templateId === 'afsana-neon-experience-v1').map((item) => item.config?.templateSlot));
-  const hasExperienceTemplate = [...AFSANA_EXPERIENCE_SECTIONS.map((_, index) => `home-${index}`), 'site-footer', 'site-footer-before-ai', 'site-footer-before-whatsapp'].every((slot) => experienceSlots.has(slot));
+  const hasExperienceTemplate = AFSANA_EXPECTED_SLOTS.every((slot) => experienceSlots.has(slot));
   const moveBy = async (id, delta) => {
     const next = [...sorted], from = next.findIndex((x) => x.id === id), to = from + delta;
     if (from < 0 || to < 0 || to >= next.length) return;
