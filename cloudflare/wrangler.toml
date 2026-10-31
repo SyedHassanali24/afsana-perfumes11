@@ -25,3 +25,9 @@ mode = "smart"
 
 [previews.placement]
 mode = "smart"
+
+# Preview API calls use the existing production Worker backend so the
+# branch preview does not need a second copy of MongoDB/JWT secrets.
+[[previews.services]]
+binding = "AFSANA_PROD_API"
+service = "afsana-perfumes11"
