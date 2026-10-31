@@ -2,6 +2,7 @@ import { MongoDBConnection } from "./MongoDBConnection.js";
 import { onRequest as cloudApi } from "../functions/api/[[path]].js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
+const API_ORIGIN = "https://afsanayaar.netlify.app";
 const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https://app.netlify.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
 function cors(origin) {
@@ -30,22 +31,44 @@ async function health(env) {
   return env.MONGODB_CONNECTION.get(id, { locationHint: "me" }).health();
 }
 async function handleApi(request, env) {
-  const u = new URL(request.url);
-  const pathParts = u.pathname.slice("/api/".length).split("/").filter(Boolean);
-  if (!pathParts.length) return json({ success: true, service: "afsana-api" }, 200, cors(request.headers.get("Origin") || SITE_ORIGIN));
+  const incoming = new URL(request.url);
+  const upstreamUrl = new URL(incoming.pathname + incoming.search, API_ORIGIN);
+  const headers = new Headers(request.headers);
 
-  // Branch Previews intentionally use the existing production API service.
-  // This keeps the preview functional without duplicating MongoDB/JWT secrets.
-  if (env.AFSANA_PROD_API) {
-    return env.AFSANA_PROD_API.fetch(request);
+  // Netlify validates the application request through X-Requested-With.
+  // The Preview Worker owns CORS; remove the Preview Origin before forwarding
+  // so the existing backend does not reject an unregistered Preview hostname.
+  headers.delete("host");
+  headers.delete("origin");
+  headers.set("X-Afsana-Edge", "cloudflare-preview");
+
+  let upstream;
+  try {
+    upstream = await fetch(new Request(upstreamUrl.toString(), {
+      method: request.method,
+      headers,
+      body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
+      redirect: "follow"
+    }));
+  } catch (error) {
+    console.error("[afsana-preview-upstream]", error?.message || error);
+    return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE", message: "The AFSANA API is temporarily unavailable." } }, 502);
   }
 
-  return cloudApi({
-    request,
-    params: { path: pathParts },
-    env,
-    waitUntil: () => {},
-    site: { url: u.origin }
+  const responseHeaders = new Headers(upstream.headers);
+  const setCookies = typeof upstream.headers.getSetCookie === "function"
+    ? upstream.headers.getSetCookie()
+    : upstream.headers.get("set-cookie") ? [upstream.headers.get("set-cookie")] : [];
+  if (setCookies.length) {
+    responseHeaders.delete("set-cookie");
+    for (const cookie of setCookies) {
+      responseHeaders.append("set-cookie", cookie.replace(/;\\s*Domain=[^;]+/ig, ""));
+    }
+  }
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers: responseHeaders
   });
 }
 
