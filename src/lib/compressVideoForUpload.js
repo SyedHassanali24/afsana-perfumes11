@@ -65,6 +65,13 @@ function recordOnce(sourceUrl, options, onProgress) {
         video.addEventListener('error', () => rejectMetadata(new Error('This video format could not be opened by the browser. Try MP4 or WebM.')), { once: true });
       });
 
+      if (video.readyState < 2) {
+        await new Promise((resolveFrame, rejectFrame) => {
+          video.addEventListener('loadeddata', resolveFrame, { once: true });
+          video.addEventListener('error', () => rejectFrame(new Error('The first video frame could not be decoded.')), { once: true });
+        });
+      }
+
       const duration = video.duration;
       if (!Number.isFinite(duration) || duration <= 0 || !video.videoWidth || !video.videoHeight) {
         throw new Error('This video has no readable duration or dimensions.');
@@ -110,6 +117,8 @@ function recordOnce(sourceUrl, options, onProgress) {
         recorder = new MediaRecorder(outputStream, { mimeType });
       }
 
+      // Paint the opening frame before recording so even very short clips have a visible first frame.
+      try { context.drawImage(video, 0, 0, width, height); } catch {}
       const chunks = [];
       const recording = new Promise((resolveRecording, rejectRecording) => {
         recorder.addEventListener('dataavailable', (event) => {
