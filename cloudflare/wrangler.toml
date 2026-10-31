@@ -1,12 +1,17 @@
+# AFSANA Cloudflare preview configuration
 name = "afsana-perfumes11"
 main = "worker.js"
-compatibility_date = "2026-10-28"
+compatibility_date = "2026-10-31"
+compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = "../dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
+
+[cache]
+enabled = true
 
 [[durable_objects.bindings]]
 name = "MONGODB_CONNECTION"
@@ -19,5 +24,7 @@ new_sqlite_classes = ["MongoDBConnection"]
 [placement]
 mode = "smart"
 
-[cache]
-enabled = true
+[previews.placement]
+mode = "smart"
+
+

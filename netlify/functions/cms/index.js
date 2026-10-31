@@ -6,7 +6,10 @@ const { RESOURCES, MODULE_OF } = require('../../../services/cmsRules');
 
 // One function, CMS resources including the visual homepage builder; permissions come from MODULE_OF (banners, faq, announcements). Staff-only.
 // Storefront reads: GET /api/cms/public (live banners / faqs / announcement).
-const routes = RESOURCES.flatMap((r) => {
+const routes = [
+  { method: 'POST', path: '/homepage/experience/publish', invalidateTags: ['cms'], permission: ['homepage', 'create'], body: S.homepageExperiencePublishBody,
+    handler: ({ ctx, body, scopes }) => Cms.publishExperience(ctx, body, scopes) },
+  ...RESOURCES.flatMap((r) => {
   const m = MODULE_OF[r];
   return [
     { method: 'GET', path: `/${r}`, permission: [m, 'view'], handler: ({ scopes, ctx }) => Cms.list(r, scopes, ctx.user._id) },
@@ -15,7 +18,8 @@ const routes = RESOURCES.flatMap((r) => {
     { method: 'PATCH', path: `/${r}/:id`, invalidateTags: ['cms'], permission: [m, 'edit'], body: S.cmsPatch[r], handler: ({ ctx, params, body, scopes }) => Cms.update(ctx, r, params.id, body, scopes) },
     { method: 'DELETE', path: `/${r}/:id`, invalidateTags: ['cms'], permission: [m, 'delete'], handler: ({ ctx, params, scopes }) => Cms.remove(ctx, r, params.id, scopes) },
   ];
-});
+  }),
+];
 // Public read for the shop (live banners, FAQs, announcement bar). Static path, listed first.
 routes.unshift({ method: 'GET', path: '/public', public: true, cache: 120, cacheTags: ['cms'], handler: () => Cms.publicContent() });
 exports.handler = createHandler('cms', routes);

@@ -264,7 +264,7 @@ export default function CartDrawer() {
                 onClick={() => { closeDrawer(); navigate('/checkout'); }}
                 className="btn btn-primary w-full"
               >
-                <span>Proceed to Checkout</span>
+                <span>Continue with Delivery Details</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
@@ -277,7 +277,7 @@ export default function CartDrawer() {
             </div>
 
             <p className="text-[11px] text-center text-[#5f654f] pt-1">
-              Cash on Delivery & Direct Bank Transfer available
+              Next: enter your name, phone, email, delivery address and payment method.
             </p>
           </div>
         )}

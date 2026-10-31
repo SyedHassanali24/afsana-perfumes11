@@ -22,7 +22,7 @@ const routes = [
 
   { ...customer, method: 'POST', path: '/logout',
     async handler({ ctx }) { await Session.updateOne({ _id: ctx.session._id }, { revokedAt: new Date(), revokedReason: 'logout' }); return res(200, {}, { 'Set-Cookie': clearCustomerCookie() }); } },
-  { ...customer, method: 'GET', path: '/me', handler: ({ ctx }) => ({ customer: A.shape(ctx.customer) }) },
+  { method: 'GET', path: '/me', public: true, optionalCustomer: true, handler: ({ ctx }) => ({ customer: ctx?.customer ? A.shape(ctx.customer) : null }) },
   { ...customer, method: 'PATCH', path: '/me', body: S.profilePatch, handler: ({ ctx, body }) => A.updateProfile(ctx, body) },
   { ...customer, method: 'GET', path: '/orders', query: S.myOrdersQuery, handler: ({ ctx, query }) => O.listMine(ctx.customer._id, query) },
   { ...customer, method: 'GET', path: '/orders/:orderNumber', handler: ({ ctx, params }) => O.getMine(ctx.customer._id, params.orderNumber) },

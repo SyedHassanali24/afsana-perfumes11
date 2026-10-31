@@ -7,19 +7,6 @@ const S = require('../../../validation/schemas');
 const { changeOwnPassword, updateOwnProfile } = require('../../../services/staffService');
 
 const routes = [
-  { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) {
-      const { requestPasswordReset } = require('../../../services/passwordReset');
-      return requestPasswordReset(body.email);
-    } },
-  { method: 'POST', path: '/forgot-password/verify', public: true, body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) {
-      const { verifyPasswordReset } = require('../../../services/passwordReset');
-      return verifyPasswordReset(body.email, body.otp);
-    } },
-  { method: 'POST', path: '/forgot-password/reset', public: true, body: S.forgotPasswordResetBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) {
-      const { resetPassword } = require('../../../services/passwordReset');
-      return resetPassword(body.email, body.otp, body.password);
-    } },
-
   { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 3, windowMs: 15 * 60000 }, async handler({ body }) { await requestPasswordReset(body.email); return { sent: true }; } },
   { method: 'POST', path: '/forgot-password/verify', public: true, body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) { return verifyPasswordResetOtp(body.email, body.otp); } },
   { method: 'POST', path: '/forgot-password/reset', public: true, body: S.forgotPasswordResetBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) { return resetPasswordWithToken(body.email, body.resetToken, body.password); } },

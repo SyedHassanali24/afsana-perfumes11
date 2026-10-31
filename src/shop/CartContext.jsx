@@ -14,6 +14,7 @@ const Ctx = createContext(null);
 export function CartProvider({ children }) {
   const { status } = useCustomer();
   const [state, setState] = useState(readLocal);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [serverReady, setServerReady] = useState(false);
   const wasAuthed = useRef(false);
   const lastSaved = useRef('');
@@ -44,13 +45,18 @@ export function CartProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sig, status, serverReady]);
 
-  const add = useCallback((variantId, qty = 1) => setState((s) => ({ ...s, items: addItem(s.items, variantId, qty) })), []);
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const add = useCallback((variantId, qty = 1) => {
+    setState((s) => ({ ...s, items: addItem(s.items, variantId, qty) }));
+    setDrawerOpen(true);
+  }, []);
   const setQty = useCallback((variantId, qty) => setState((s) => ({ ...s, items: setQuantity(s.items, variantId, qty) })), []);
   const remove = useCallback((variantId) => setState((s) => ({ ...s, items: removeItem(s.items, variantId) })), []);
   const setCoupon = useCallback((code) => setState((s) => ({ ...s, couponCode: (code || '').trim().toUpperCase() })), []);
   const clear = useCallback(() => setState(EMPTY), []);
 
-  const value = useMemo(() => ({ items: state.items, couponCode: state.couponCode, count: countItems(state.items), add, setQty, remove, setCoupon, clear }), [state, add, setQty, remove, setCoupon, clear]);
+  const value = useMemo(() => ({ items: state.items, couponCode: state.couponCode, count: countItems(state.items), drawerOpen, openDrawer, closeDrawer, add, setQty, remove, setCoupon, clear }), [state, drawerOpen, openDrawer, closeDrawer, add, setQty, remove, setCoupon, clear]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 export function useCart() {

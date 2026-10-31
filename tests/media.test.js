@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { sniff, checkUpload, isAllowedImageUrl, MAX_BYTES } = require('../services/mediaRules');
+const { sniff, checkUpload, isAllowedImageUrl, MAX_BYTES, MAX_ASSET_BYTES } = require('../services/mediaRules');
+const { parseBody } = require('../middleware/http');
 
 const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(40, 1)]);
 const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(40, 1)]);
@@ -29,4 +30,29 @@ test('media: picture addresses = https/http links or our own uploads only', () =
   assert.equal(isAllowedImageUrl('https://cdn.example.com/a.jpg'), true);
   assert.equal(isAllowedImageUrl('/api/media/0123456789abcdef01234567'), true);
   for (const bad of ['javascript:alert(1)', 'data:image/png;base64,AAAA', '/api/media/xyz', '/api/media/0123456789abcdef01234567/../x', 'ftp://x/y.jpg', '//evil.com/a.jpg', '']) assert.equal(isAllowedImageUrl(bad), false, bad);
+});
+
+
+test('media: MP4, WebM and GLB assets are recognised and size-limited', () => {
+  const mp4 = Buffer.concat([Buffer.alloc(4), Buffer.from('ftyp'), Buffer.alloc(32)]);
+  const webm = Buffer.concat([Buffer.from([0x1a,0x45,0xdf,0xa3]), Buffer.alloc(32)]);
+  const glb = Buffer.concat([Buffer.from('glTF'), Buffer.from([2,0,0,0]), Buffer.alloc(32)]);
+  assert.equal(sniff(mp4), 'video/mp4');
+  assert.equal(sniff(webm), 'video/webm');
+  assert.equal(sniff(glb), 'model/gltf-binary');
+  assert.equal(checkUpload({contentType:'video/mp4',data:b64(mp4)}).ok,true);
+  assert.equal(checkUpload({contentType:'video/webm',data:b64(webm)}).ok,true);
+  assert.equal(checkUpload({contentType:'model/gltf-binary',data:b64(glb)}).ok,true);
+  const tooBig = Buffer.concat([glb, Buffer.alloc(MAX_ASSET_BYTES)]);
+  assert.match(checkUpload({contentType:'model/gltf-binary',data:b64(tooBig)}).message,/too big/);
+});
+
+
+test('media: JSON body parser accepts optimized upload payloads and blocks oversized requests', () => {
+  // A compressed ~3.4 MB video becomes roughly 4.6 MB of Base64 JSON.
+  const uploadSized = JSON.stringify({ data: 'A'.repeat(4_600_000) });
+  assert.equal(parseBody({ body: uploadSized }).data.length, 4_600_000);
+
+  const overLimit = JSON.stringify({ data: 'A'.repeat(5_700_000) });
+  assert.throws(() => parseBody({ body: overLimit }), /Request too large/);
 });

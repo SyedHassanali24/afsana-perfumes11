@@ -3,7 +3,7 @@ const C = require('../database/constants');
 const { isAllowedImageUrl } = require('../services/mediaRules');
 // picture address: normal https link OR one of our own uploads (/api/media/<id>)
 const imageAddress = z.string().trim().max(500).refine(isAllowedImageUrl, 'Enter a valid picture address');
-const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(980000) });
+const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(5600000) });
 const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
@@ -301,10 +301,27 @@ const cmsShape = {
   announcements: z.object({ text: z.string().trim().max(160), link: cUrl, startsAt: optDate, endsAt: optDate, isActive: z.boolean().optional() }),
 };
 // ---------- visual homepage builder ----------
-const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement','lookbook','values_grid','blog_grid','post_grid','promo_timer','scent_finder','rich_text','faq','spacer'];
+const homepageSectionTypes = CMS.HOMEPAGE_SECTION_TYPES;
 const homepageConfig = z.record(z.string(), z.any()).optional();
-const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
+const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), pageKey: z.enum(CMS.HOMEPAGE_PAGE_KEYS).optional(), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
 const homepageSectionPatch = homepageSectionShape.partial();
+const homepageExperiencePublishBody = z.object({
+  templateId: z.literal('afsana-neon-experience-v1'),
+  sections: z.array(z.object({
+    slot: z.string().trim().regex(/^[a-z0-9-]{1,80}$/),
+    type: z.enum(homepageSectionTypes),
+    title: cText(120),
+    pageKey: z.enum(CMS.HOMEPAGE_PAGE_KEYS),
+    config: homepageConfig,
+    sortOrder: z.number().int().min(0).max(9999),
+    isEnabled: z.boolean().optional(),
+  })).min(1).max(80),
+}).superRefine((v, ctx) => {
+  const slots = v.sections.map((section) => section.slot);
+  if (new Set(slots).size !== slots.length) {
+    ctx.addIssue({ code: 'custom', path: ['sections'], message: 'Every published section must have a unique template slot.' });
+  }
+});
 
 // Shape here, business rules (required fields, links, dates) in services/cmsRules.crossFieldErrors; a PATCH is re-checked MERGED in cmsService.update.
 const cmsBody = {}; const cmsPatch = {};
@@ -334,7 +351,7 @@ module.exports = {
   settingsStore, settingsBank, settingsShipping, settingsReturns,
   backupOverview, backupData, backupPictures,
   uploadBody,
-  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
+  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch, homepageExperiencePublishBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery,
   customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,

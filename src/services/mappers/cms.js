@@ -109,4 +109,9 @@ export const HOMEPAGE_SECTION_TYPES = [
   { key: 'instagram', label: 'Social / Instagram' },
   { key: 'rich_text', label: 'Rich text' },
   { key: 'spacer', label: 'Spacer' },
+  { key: 'reference_assets', label: 'AFSANA reference media / 3D assets' },
+  { key: 'custom_footer', label: 'Complete custom site footer' },
+  { key: 'nav_menu', label: 'Header navigation links' },
+  { key: 'whatsapp_float', label: 'Floating WhatsApp contact' },
+  { key: 'ai_concierge', label: 'Guided scent concierge toggle' },
 ];

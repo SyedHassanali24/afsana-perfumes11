@@ -1,6 +1,6 @@
-// Picture upload + serving.
-//   POST /api/media/admin  (staff who can edit pictures: products.manageImages, categories/banners edit...) body { filename?, contentType, data: base64 }  -> { url: "/api/media/<id>" }
-//   GET  /api/media/<id>   (public)  -> the picture itself, cached by the browser for a year (a picture never changes once uploaded)
+// Image, video and GLB upload + serving.
+//   POST /api/media/admin  (staff with content media permissions) body { filename?, contentType, data: base64 } -> { url }
+//   GET  /api/media/<id>   (public) -> original immutable asset, served with its verified MIME type and cached for one year
 const { createHandler } = require('../../../middleware/withApi');
 const { res, json } = require('../../../middleware/http');
 const { stripPrefix } = require('../../../middleware/router');
@@ -11,12 +11,13 @@ const { audit } = require('../../../services/audit');
 const { checkUpload } = require('../../../services/mediaRules');
 const S = require('../../../validation/schemas');
 
-// Anyone who can edit a picture somewhere (product pictures, categories, banners...) may upload one.
-const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit']];
+// Upload is available only to staff who can edit media for at least one content area.
+const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit'], ['homepage', 'edit'], ['homepage', 'create'], ['pages', 'edit']];
 
 const api = createHandler('media', [
   { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
       const c = checkUpload(body); if (!c.ok) throw E.badRequest(c.message);
+      if (!c.contentType.startsWith('image/')) throw E.badRequest('Profile photos must be JPEG, PNG or WebP images.');
       const doc = await Media.create({ contentType: c.contentType, size: c.buffer.length, data: c.buffer, filename: body.filename || 'profile-avatar', uploadedBy: ctx.user._id });
       await audit(ctx, { action: 'media.profile_uploaded', module: 'staff', recordId: doc._id, newValue: { size: doc.size, contentType: doc.contentType } });
       return res(201, { url: `/api/media/${doc._id}`, size: doc.size });

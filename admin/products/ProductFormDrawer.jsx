@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { X, Plus, Upload } from "lucide-react";
+import { X, Plus, Upload, Box, Video } from "lucide-react";
 import Button from "../components/Button";
 import Drawer from "../components/Drawer";
 import ConfirmPasswordModal from "../components/ConfirmPasswordModal";
 import { Check, Field, Input, Select, Textarea } from "../components/FormFields";
 import { productsApi, mediaApi } from "../../src/services";
 import shrinkImage from "../../src/lib/shrinkImage";
+import MediaUploadButton from "../components/MediaUploadButton";
 import { useAuth } from "../../src/auth/AuthContext";
 import { EMPTY_FORM, toForm, variantsToForm, toCreatePayload, toPatchPayload, toVariantPayload, changedVariants, badImage, fieldErrors } from "../../src/services/mappers/products";
 
@@ -182,7 +183,7 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
                 {errors.media && <p role="alert" className="text-xs text-[#9b3f3f]">{errors.media}</p>}
                 {values.images.map((im, i) => (
                   <div key={i} className="grid grid-cols-[2.5rem_1fr_2rem] sm:grid-cols-[2.5rem_1fr_9rem_2rem] gap-2 items-center">
-                    {im.url.trim() ? <img src={im.url} alt="" className="w-10 h-10 rounded-sm object-cover border border-[#263e0e]/10 bg-[#f3f1e9]" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} /> : <span className="w-10 h-10 rounded-sm border border-dashed border-[#263e0e]/10" />}
+                    {im.url.trim() ? (im.kind==='model3d'?<span className="w-10 h-10 grid place-items-center rounded-sm border border-[#263e0e]/10 bg-[#f3f1e9]" title="3D GLB model"><Box className="w-5 h-5"/></span>:im.kind==='video'?<span className="w-10 h-10 grid place-items-center rounded-sm border border-[#263e0e]/10 bg-[#f3f1e9]" title="Product video"><Video className="w-5 h-5"/></span>:<img src={im.url} alt="" className="w-10 h-10 rounded-sm object-cover border border-[#263e0e]/10 bg-[#f3f1e9]" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />) : <span className="w-10 h-10 rounded-sm border border-dashed border-[#263e0e]/10" />}
                     <Input value={im.url} placeholder="https://…" aria-label={`Picture ${i + 1} address`} onChange={(e) => setImage(i, "url", e.target.value)} />
                     <Input value={im.alt} placeholder="Describe it" aria-label={`Picture ${i + 1} description`} onChange={(e) => setImage(i, "alt", e.target.value)} />
                     <button type="button" onClick={() => setValues((v) => ({ ...v, images: v.images.filter((_, n) => n !== i) }))} className="p-2 text-[#182308]-muted hover:text-[#9b3f3f]" aria-label={`Remove picture ${i + 1}`}><X className="w-4 h-4" /></button>
@@ -192,6 +193,10 @@ export default function ProductFormDrawer({ open, onClose, productId, options = 
                   <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={onPickFiles} />
                   <Button type="button" size="sm" icon={Upload} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? "Uploading…" : "Upload picture"}</Button>
                   <Button type="button" variant="secondary" size="sm" icon={Plus} onClick={() => setValues((v) => ({ ...v, images: [...v.images, { url: "", alt: "", kind: "gallery" }] }))}>Add web address</Button>
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-[#263e0e]/10 bg-white p-3"><p className="text-xs font-semibold text-[#263e0e]">Product video</p><p className="mt-1 mb-2 text-[10px] text-[#5f654f]">Upload MP4/WebM product film (max 4 MB).</p><MediaUploadButton accept="video/mp4,video/webm" label="Upload product video" onUploaded={(url)=>setValues((v)=>({...v,images:[...v.images.filter((item)=>item.kind!=='video'),{url,alt:'Product video',kind:'video'}]}))}/></div>
+                  <div className="rounded-xl border border-[#263e0e]/10 bg-white p-3"><p className="text-xs font-semibold text-[#263e0e]">Interactive 3D bottle (.glb)</p><p className="mt-1 mb-2 text-[10px] text-[#5f654f]">Upload a real GLB model (max 4 MB) for drag-to-rotate 3D viewing.</p><MediaUploadButton accept=".glb,model/gltf-binary" label="Upload 3D model" onUploaded={(url)=>setValues((v)=>({...v,images:[...v.images.filter((item)=>item.kind!=='model3d'),{url,alt:'Interactive product model',kind:'model3d'}]}))}/></div>
                 </div>
               </Section>
             )}
