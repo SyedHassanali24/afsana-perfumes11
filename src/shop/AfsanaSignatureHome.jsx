@@ -353,7 +353,45 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({...x, image:x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''}));
     return <section className="afsana-ref-journal"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'NOTES FROM THE HOUSE'}</p><h2>The scent <em>journal.</em></h2></div><Link to="/journal" className="afsana-ref-btn afsana-ref-btn-ghost">Explore all stories ↗</Link></div><div className="afsana-ref-journal-grid">{posts.map((x,i)=><Link to={x.link || '/journal'} key={i} className="afsana-ref-journal-card"><div className="afsana-ref-journal-img">{x.image && <img src={x.image} alt={x.title} onError={(e)=>{e.currentTarget.style.display='none';}}/>}</div><small>{x.text?.split('.')[0] || 'THE SCENT JOURNAL'}</small><h3>{x.title}</h3><p>{x.text}</p><span>Read the story ↗</span></Link>)}</div></div></section>;
   }
-  if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) return <section className="bg-[#f3f1e9]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{(products||[]).slice(0, Number(c.limit)||4).map(p=><ProductCard key={p.id} product={p}/>)}</div>{btn}</div></section>;
+  if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) {
+    const picks=(products||[]).slice(0, Number(c.limit)||4);
+    const isObjects=section.type==='best_sellers';
+    if(isObjects) return <section className="relative overflow-hidden bg-[#100d24] py-20 sm:py-28 text-white">
+      <div className="absolute -left-32 top-10 h-72 w-72 rounded-full bg-[#7357ff]/20 blur-3xl"/>
+      <div className="absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#d9ff55]/10 blur-3xl"/>
+      <div className="container-xl relative">
+        <div className="mb-12 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.35em] text-[#d9ff55]"><span className="h-px w-10 bg-[#d9ff55]"/> THE AFSANA SELECTION</p>
+            <h2 className="mt-5 max-w-3xl font-display text-5xl leading-[.9] sm:text-7xl">Objects of <em className="text-[#d9ff55]">desire.</em></h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/55">{c.subtitle || 'Signature fragrances chosen for presence, character and the memories they leave behind.'}</p>
+          </div>
+          <Link to="/shop" className="inline-flex w-fit items-center gap-3 border border-white/20 px-6 py-3 text-[9px] font-semibold uppercase tracking-[.2em] transition hover:border-[#d9ff55] hover:text-[#d9ff55]">View full collection <ArrowRight className="h-3.5 w-3.5"/></Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {picks.map((p,i)=>{
+            const price=p.priceFrom ? `PKR ${Number(p.priceFrom).toLocaleString('en-PK')}` : 'Price on request';
+            const media=(p.media||[]).filter(m=>m?.url&&m?.kind!=='video');
+            const image=media[0]?.url || p.image?.url || '';
+            const second=media[1]?.url || '';
+            return <Link key={p.id||i} to={`/product/${p.slug}`} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[.045] p-2 transition duration-500 hover:-translate-y-2 hover:border-[#d9ff55]/40 hover:bg-white/[.07]">
+              <div className="relative aspect-[.82] overflow-hidden rounded-xl bg-[#f4f0e8]">
+                {image ? <><img src={image} alt={p.name||'AFSANA fragrance'} className={`absolute inset-0 h-full w-full object-cover transition duration-700 ${second?'group-hover:opacity-0 group-hover:scale-105':'group-hover:scale-105'}`}/>{second&&<img src={second} alt="" className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-700 group-hover:opacity-100 group-hover:scale-105"/>}</> : <div className="grid h-full place-items-center text-[#100d24] text-xs uppercase tracking-[.2em]">AFSANA</div>}
+                <span className="absolute left-3 top-3 rounded-full border border-[#100d24]/10 bg-white/90 px-3 py-1 text-[8px] font-semibold uppercase tracking-[.16em] text-[#100d24]">01 · Signature</span>
+                <span className="absolute bottom-3 right-3 rounded-full bg-[#d9ff55] px-3 py-1.5 text-[9px] font-bold tracking-[.08em] text-[#100d24]">View fragrance ↗</span>
+              </div>
+              <div className="px-3 pb-4 pt-4">
+                <p className="text-[8px] uppercase tracking-[.22em] text-[#d9ff55]/70">{p.fragrance?.family || p.fragrance?.gender || 'Extrait de Parfum'}</p>
+                <div className="mt-1 flex items-start justify-between gap-3"><h3 className="font-display text-xl leading-tight">{p.name}</h3><span className="shrink-0 pt-1 text-[10px] font-semibold text-[#d9ff55]">{price}</span></div>
+                <p className="mt-2 line-clamp-2 text-[10px] leading-5 text-white/45">{p.content?.shortDescription || p.description || 'A signature AFSANA composition made to leave a lasting impression.'}</p>
+              </div>
+            </Link>
+          })}
+        </div>
+      </div>
+    </section>;
+    return <section className="bg-[#f3f1e9]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{picks.map(p=><ProductCard key={p.id} product={p}/>)}</div>{btn}</div></section>;
+  }
   if (section.type === 'scent_finder') return <Finder/>;
   if (section.type === 'newsletter') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.eyebrow || 'THE PRIVATE LIST'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl">{section.title || 'Be the first to know.'}</h2><p className="mt-4 max-w-xl text-sm text-white/60">{c.body || 'Early access to new compositions, private drops and exclusive stories.'}</p><NewsletterSubscription/></div></div></section>;
   if (section.type === 'faq') return <section className="bg-[#faf8f4]"><div className="container-xl" style={style}>{heading}<div className="max-w-3xl space-y-3">{(faq||[]).map((x,i)=><details key={i} className="border-b border-[#263e0e]/10 py-4"><summary className="cursor-pointer font-display text-xl">{x.question}</summary><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.answer}</p></details>)}</div></div></section>;
