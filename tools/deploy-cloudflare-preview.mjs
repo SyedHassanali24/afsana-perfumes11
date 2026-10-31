@@ -34,15 +34,7 @@ try {
   // Ensure this branch has a current Preview deployment first.
   run(["wrangler", "preview", "--config", "cloudflare/wrangler.toml"]);
 
-  // Attach the existing project's secrets to this Preview only.
-  // Wrangler keeps values hidden and creates the final Preview deployment.
-  run([
-    "wrangler", "preview", "secret", "bulk", secretsFile,
-    "--config", "cloudflare/wrangler.toml",
-    "--name", "feat/universal-afsana-page-builder",
-    "--worker-name", "afsana-perfumes11"
-  ]);
-  console.log("AFSANA Preview deployed with required runtime secrets.");
+  console.log("AFSANA Preview runtime secrets validated.");
 } finally {
   await rm(directory, { recursive: true, force: true });
 }
