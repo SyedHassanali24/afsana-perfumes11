@@ -2,7 +2,8 @@ import { MongoDBConnection } from "./MongoDBConnection.js";
 
 // deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
-const API_ORIGIN = "https://afsanayaar.netlify.app";
+// PR #7 backend preview is the current working API while main production remains on the older release.
+const API_ORIGIN = "https://deploy-preview-7--afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https://app.netlify.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
@@ -49,8 +50,6 @@ export default {
     if (!u.pathname.startsWith("/api/")) {
       const asset = await env.ASSETS.fetch(request);
       const headers = new Headers(asset.headers);
-      // Vite asset filenames are content-hashed: keep them in browser + edge cache for a year.
-      // The SPA shell is refreshed frequently so new releases become visible quickly.
       if (u.pathname.startsWith("/assets/")) {
         headers.set("Cache-Control", "public, max-age=31536000, immutable");
       } else if (u.pathname === "/" || u.pathname.endsWith(".html")) {
@@ -62,9 +61,6 @@ export default {
       return new Response(asset.body, { status: asset.status, headers });
     }
 
-    // Use the tested public Netlify /api rewrite instead of calling the
-    // internal /.netlify/functions path directly. This keeps Netlify's
-    // production function routing and auth cookie handling intact.
     const upstream = new URL(API_ORIGIN);
     upstream.pathname = `${API_PREFIX}${u.pathname.slice(4)}`;
     upstream.search = u.search;
