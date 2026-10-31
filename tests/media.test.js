@@ -49,8 +49,9 @@ test('media: MP4, WebM and GLB assets are recognised and size-limited', () => {
 
 
 test('media: JSON body parser accepts optimized upload payloads and blocks oversized requests', () => {
-  const uploadSized = JSON.stringify({ data: 'A'.repeat(1_100_000) });
-  assert.equal(parseBody({ body: uploadSized }).data.length, 1_100_000);
+  // A compressed ~3.4 MB video becomes roughly 4.6 MB of Base64 JSON.
+  const uploadSized = JSON.stringify({ data: 'A'.repeat(4_600_000) });
+  assert.equal(parseBody({ body: uploadSized }).data.length, 4_600_000);
 
   const overLimit = JSON.stringify({ data: 'A'.repeat(5_700_000) });
   assert.throws(() => parseBody({ body: overLimit }), /Request too large/);
