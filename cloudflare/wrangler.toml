@@ -1,4 +1,4 @@
-# AFSANA Cloudflare preview configuration
+# AFSANA Cloudflare recovery configuration
 name = "afsana-perfumes11"
 main = "worker.js"
 compatibility_date = "2026-10-31"
@@ -13,18 +13,8 @@ run_worker_first = ["/api/*"]
 [cache]
 enabled = true
 
-[[durable_objects.bindings]]
-name = "MONGODB_CONNECTION"
-class_name = "MongoDBConnection"
-
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["MongoDBConnection"]
-
 [placement]
 mode = "smart"
 
 [previews.placement]
 mode = "smart"
-
-
