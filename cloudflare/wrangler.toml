@@ -26,3 +26,7 @@ mode = "smart"
 [previews.placement]
 mode = "smart"
 
+[[previews.services]]
+binding = "AFSANA_PROD_API"
+service = "afsana-perfumes11"
+
