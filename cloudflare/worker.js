@@ -33,6 +33,13 @@ async function handleApi(request, env) {
   const u = new URL(request.url);
   const pathParts = u.pathname.slice("/api/".length).split("/").filter(Boolean);
   if (!pathParts.length) return json({ success: true, service: "afsana-api" }, 200, cors(request.headers.get("Origin") || SITE_ORIGIN));
+
+  // Branch Previews intentionally use the existing production API service.
+  // This keeps the preview functional without duplicating MongoDB/JWT secrets.
+  if (env.AFSANA_PROD_API) {
+    return env.AFSANA_PROD_API.fetch(request);
+  }
+
   return cloudApi({
     request,
     params: { path: pathParts },
