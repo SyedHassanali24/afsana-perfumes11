@@ -57,7 +57,7 @@ async function handleApi(request, env) {
   if (setCookies.length) {
     responseHeaders.delete("set-cookie");
     for (const cookie of setCookies) {
-      responseHeaders.append("set-cookie", cookie.replace(/;\\s*Domain=[^;]+/ig, ""));
+      responseHeaders.append("set-cookie", cookie.replace(/;\s*Domain=[^;]+/ig, ""));
     }
   }
   return new Response(upstream.body, {
