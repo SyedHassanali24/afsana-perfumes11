@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, MessageCircle, Sparkles, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
 import useApi from '../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../services';
+import useShopSettings from './useShopSettings';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
 import { Container } from './ui';
@@ -49,7 +50,31 @@ function Hero(){
 function Philosophy(){return <section className="bg-[#faf8f4] py-20 sm:py-28"><div className="container-xl"><div className="intro-grid"><Eyebrow>The Philosophy</Eyebrow><div><p className="font-display text-4xl sm:text-6xl leading-tight">We create fragrances for people who <em className="text-[#263e0e]">leave a trace.</em></p><p className="mt-7 max-w-xl text-sm leading-7 text-[#5f654f]">Every Afsana composition is designed as a story: an opening chapter, a mysterious heart and a final impression that refuses to disappear.</p></div></div><div className="intro-line"/></div></section>;}
 function Worlds(){const cards=[['01 — Signature','House Icons',img.signature,'/shop?category=signature'],['02 — Oud','Dark Woods',img.woods,'/shop?category=oud'],['03 — Floral','Soft Light',img.floral,'/shop?category=floral'],['04 — Gifting','Made to Give',img.gifting,'/gifting']];return <section className="bg-white py-20 sm:py-28"><div className="container-xl"><div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8 mb-12"><div><Eyebrow>Explore the house</Eyebrow><h2 className="mt-5 font-display text-5xl sm:text-7xl leading-[.9]">Find your<br/><em className="text-[#263e0e]">world.</em></h2></div><Link to="/shop" className="inline-flex w-fit items-center gap-2 border border-[#263e0e] px-6 py-3 text-[10px] uppercase tracking-[.2em] hover:bg-[#263e0e] hover:text-white transition">View all fragrances ↗</Link></div><div className="collection-grid cinematic-grid">{cards.map(([ey,t,src,to])=><Link key={t} to={to} className="group relative aspect-[.78] overflow-hidden bg-[#263e0e]"><img src={src} alt="" className="absolute inset-0 h-full w-full object-cover opacity-75 transition duration-1000 group-hover:scale-110 group-hover:opacity-95"/><div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 text-white"><p className="text-[8px] uppercase tracking-[.3em] text-[#b4bf41]">{ey}</p><h3 className="mt-2 font-display text-2xl sm:text-3xl">{t}</h3><span className="mt-4 inline-flex text-[9px] uppercase tracking-[.2em] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition">Discover ↗</span></div></Link>)}</div></div></section>;}
 function BestSellers(){const {data,loading}=useApi(()=>productsApi.list({sort:'popular',limit:4}),[]);return <section className="bg-[#f3f1e9] py-20 sm:py-28"><div className="container-xl"><div className="flex items-end justify-between mb-12"><div><Eyebrow>The edit</Eyebrow><h2 className="mt-5 font-display text-5xl sm:text-7xl leading-[.9]">Most<br/><em className="text-[#263e0e]">wanted.</em></h2></div><Link to="/shop" className="hidden sm:flex text-[10px] uppercase tracking-[.2em]">Shop all</Link></div>{loading?<div className="grid grid-cols-2 md:grid-cols-4 gap-5">{[1,2,3,4].map(i=><div key={i} className="aspect-[4/5] bg-white animate-pulse"/>)}</div>:<div className="product-grid purchase-grid">{(data?.products||[]).map(p=><ProductCard key={p.id} product={p}/>)}</div>}</div></section>;}
-function Finder(){const navigate=useNavigate();const qs=[['When do you want to wear it?',['Every day','Evening','Special occasions']],['What should it feel like?',['Fresh & luminous','Warm & sensual','Dark & mysterious']],['Choose your presence.',['Quiet confidence','Magnetic energy','Unforgettable trail']]];const [step,setStep]=useState(0),[answer,setAnswer]=useState('');return <section className="bg-[#263e0e] py-20 sm:py-28 text-white" id="finderSection"><div className="container-xl"><div className="finder-grid"><div><Eyebrow light>Afsana Scent Intelligence</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">Your scent<br/><em className="text-[#b4bf41]">has a personality.</em></h2><p className="mt-7 max-w-lg text-sm leading-7 text-white/60">Answer three intuitive questions and discover the fragrance that feels most like you.</p></div><div className="finder-box border border-[#b4bf41]/25 bg-white/[.035] p-6 sm:p-10"><div className="h-px bg-white/10"><span className="block h-full bg-[#b4bf41] transition-all" style={{width:`${((step+1)/qs.length)*100}%`}}/></div><div className="mt-7" id="finderQuestion"><p className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">Question {step+1} / 3</p><h3 className="mt-4 font-display text-3xl sm:text-4xl">{qs[step][0]}</h3><div className="mt-7 grid gap-3">{qs[step][1].map(x=><button key={x} onClick={()=>setAnswer(x)} className={`text-left border px-5 py-4 text-sm transition ${answer===x?'border-[#b4bf41] bg-[#b4bf41]/10':'border-white/10 hover:border-white/30'}`}>{x}</button>)}</div><button disabled={!answer} onClick={()=>step<2?(setStep(step+1),setAnswer('')):navigate('/shop')} className="mt-7 w-full bg-[#b4bf41] px-6 py-4 text-xs font-semibold uppercase tracking-[.2em] text-[#263e0e] disabled:opacity-30">{step<2?'Continue':'Reveal my collection'} ↗</button></div></div></div></div></section>;}
+function Finder(){
+  const navigate=useNavigate();
+  const {data}=useApi(()=>productsApi.list({sort:'popular',limit:24}),[]);
+  const products=data?.products||[];
+  const qs=[
+    {q:'How do you want your fragrance to feel?',sub:'Start with the energy you want to carry.',opts:[['Magnetic','Deep, confident and a little mysterious.'],['Luminous','Fresh, airy and effortlessly radiant.'],['Electric','Bright, bold and full of energy.'],['Comforting','Warm, soft and quietly addictive.']]},
+    {q:'Which world pulls you in?',sub:'Think about the atmosphere you love.',opts:[['After dark','Warm lights, velvet textures and late nights.'],['Open air','Sunlight, fresh air and wide-open spaces.'],['City pulse','Art, movement, music and new ideas.'],['Slow mornings','Soft light, calm rituals and comfort.']]},
+    {q:'Which notes sound most like you?',sub:'Choose what you naturally gravitate towards.',opts:[['Amber & woods','Warm resin, sandalwood and smoky depth.'],['Florals & musk','Petals, clean skin and soft elegance.'],['Citrus & spice','Fresh zest, pepper and aromatic lift.'],['Vanilla & tonka','Creamy warmth and gentle sweetness.']]},
+    {q:'When will you wear it most?',sub:'A scent can change with the moment.',opts:[['Everyday signature','Something that feels like you, daily.'],['Evening presence','A memorable trail after sunset.'],['Special occasions','Something expressive and distinctive.'],['A little of everything','Versatile, balanced and easy to love.']]},
+    {q:'How should it announce you?',sub:'The final detail makes the match personal.',opts:[['Close & intimate','A personal discovery, just for those close.'],['Noticeable & elegant','A beautiful trail that turns heads.'],['Bold & unforgettable','A confident entrance with presence.'],['Fresh & effortless','A clean impression that feels natural.']]}
+  ];
+  const [step,setStep]=useState(0),[answers,setAnswers]=useState([]);
+  const tags=[['oud','amber','wood'],['fresh','citrus','floral'],['citrus','spice','aromatic'],['amber','vanilla','musk']];
+  const selectedNotes=tags[answers[2] ?? 0] || tags[0];
+  const ranked=[...products].sort((a,b)=>{
+    const text=(p)=>[p.name,p.fragrance?.family,p.fragrance?.gender,p.notes?.top,p.notes?.heart,p.notes?.base].flat().filter(Boolean).join(' ').toLowerCase();
+    const score=(p)=>selectedNotes.reduce((n,k)=>n+(text(p).includes(k)?1:0),0)+(answers[0]===0&&/evening|unisex/i.test(text(p))?1:0)+(answers[0]===1&&/fresh|floral/i.test(text(p))?1:0);
+    return score(b)-score(a);
+  });
+  const match=ranked[0];
+  const choose=(index)=>setAnswers((prev)=>{const next=[...prev];next[step]=index;return next;});
+  const next=()=>{if(answers[step]===undefined)return;setStep((v)=>Math.min(qs.length,v+1));};
+  const reset=()=>{setStep(0);setAnswers([]);};
+  return <section className="afsana-ref-finder" id="finderSection"><div className="container-xl"><div className="afsana-ref-finder-grid"><div><p className="afsana-ref-eyebrow">AFSANA SCENT INTELLIGENCE</p><h2>Your scent<br/><em>has a personality.</em></h2><p>Answer five thoughtful questions and discover a fragrance from the live AFSANA collection that matches your mood, notes and moment.</p></div><div className="afsana-ref-finder-box"><div className="afsana-ref-finder-progress"><span style={{width:`${(step/qs.length)*100}%`}}/></div>{step<qs.length ? <><p className="afsana-ref-finder-step">STEP {String(step+1).padStart(2,'0')} / 05</p><h3>{qs[step].q}</h3><p className="afsana-ref-finder-sub">{qs[step].sub}</p><div className="afsana-ref-finder-options">{qs[step].opts.map(([title,description],i)=><button type="button" key={title} onClick={()=>choose(i)} className={answers[step]===i?'selected':''}><b>{title}</b><small>{description}</small></button>)}</div><div className="afsana-ref-finder-footer"><button type="button" disabled={step===0} onClick={()=>setStep((v)=>Math.max(0,v-1))}>← Back</button><button type="button" disabled={answers[step]===undefined} onClick={next}>{step===4?'Reveal my scent':'Next step'} ↗</button></div></> : <><p className="afsana-ref-finder-step">YOUR SCENT MATCH IS READY</p><h3>Your next chapter<br/>smells like this.</h3>{match ? <div className="afsana-ref-match"><p>YOUR MATCH · CURATED FROM THE LIVE COLLECTION</p><h4>{match.name}</h4><span>{match.fragrance?.family || match.fragrance?.concentration || 'AFSANA SIGNATURE'}</span><p>{match.content?.shortDescription || 'A fragrance selected from the AFSANA collection based on your answers.'}</p><strong>{match.priceFrom ? `From PKR ${Number(match.priceFrom).toLocaleString('en-PK')}` : 'Explore fragrance'}</strong></div> : <p className="afsana-ref-finder-sub">Your matching collection is loading. Browse the complete collection to find your scent.</p>}<div className="afsana-ref-finder-footer"><button type="button" onClick={reset}>Start again</button><button type="button" onClick={()=>navigate(match?.slug?'/product/'+match.slug:'/shop')}>{match?'Explore my match':'Explore collection'} ↗</button></div></>}</div></div></div></section>;
+}
 function Story(){return <section className="bg-[#faf8f4] py-20 sm:py-32"><div className="container-xl"><div className="story-grid"><div className="story-image"><div className="absolute -inset-4 border border-[#748e40]/35 translate-x-4 translate-y-4"/><img src={img.story} alt="The House of Afsana" className="relative aspect-[.88] w-full object-cover"/></div><div><Eyebrow>The House of Afsana</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">A fragrance<br/>is a <em className="text-[#263e0e]">memory.</em></h2><p className="mt-7 text-sm leading-7 text-[#5f654f]">We believe the most powerful fragrances are not simply smelled — they are remembered.</p><p className="mt-4 text-sm leading-7 text-[#5f654f]">Our perfumers combine traditional craftsmanship with contemporary composition, creating scents that feel timeless yet distinctly personal.</p><div className="mt-9 font-display italic text-2xl text-[#263e0e]">Crafted for the unforgettable.</div></div></div></div></section>;}
 function Film(){const cards=[['01 / Atmosphere','The First Impression',img.signature],['02 / Ingredient','Dark Woods',img.woods],['03 / Craft','Made by Hand',img.floral],['04 / Emotion','Leave a Trace',img.gifting]];return <section className="bg-[#182308] py-20 sm:py-28 text-white"><div className="container-xl"><div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-7 mb-12"><div><Eyebrow light>A moving story</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">Watch the<br/><em className="text-[#b4bf41]">world of Afsana.</em></h2></div><p className="max-w-md text-sm leading-7 text-white/55">Four glimpses into the atmosphere, ingredients, craftsmanship and emotion behind the house.</p></div><div className="video-wall cinematic-video-wall">{cards.map(([n,t,src])=><article key={t} className="video-card group cinematic-video-card"><video className="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-1000 group-hover:scale-110 group-hover:opacity-95" autoPlay muted loop playsInline preload="metadata" poster={src} aria-label={t}><source src={video} type="video/mp4"/></video><div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-[#182308]/10 to-transparent"/><div className="video-label"><span>{n}</span><h3>{t}</h3><p className="mt-2 max-w-[18rem] text-[10px] leading-5 text-white/55">A moving glimpse into the world, material and emotion of Afsana.</p></div></article>)}</div></div></section>;}
 function Ritual(){const items=[['01','Prepare','Apply to clean, moisturised skin to give the fragrance a soft foundation.'],['02','Pulse','Focus on pulse points where warmth allows the fragrance to evolve naturally.'],['03','Layer','Combine complementary notes to create a scent that feels entirely yours.'],['04','Leave','The final note should arrive softly — and stay in someone’s memory.']];return <section className="bg-white py-20 sm:py-28"><div className="container-xl"><Eyebrow>The fragrance ritual</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">Make it<br/><em className="text-[#263e0e]">yours.</em></h2><div className="ritual-grid">{items.map(([n,t,d])=><article key={n} className="bg-white p-7 sm:p-9"><span className="font-display text-4xl text-[#748e40]">{n}</span><h3 className="mt-7 font-display text-2xl">{t}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{d}</p></article>)}</div></div></section>;}
@@ -114,11 +139,16 @@ function MuseScene({ section }) {
 }
 function Product3DShowcase({ section, products=[] }) {
   const c=section.config||{};
+  useEffect(()=>{if(!c.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[c.product3dModelUrl]);
   const chosen=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug)) || products[0];
   const media=[...(chosen?.media||[])].filter(x=>x?.url).slice(0,8);
   const frames=media.length?media:[{url:c.imageUrl||img.signature}];
   const [frame,setFrame]=useState(0),[auto,setAuto]=useState(true);
+  const drag=useRef({active:false,x:0});
   useEffect(()=>{if(!auto||frames.length<2)return;const id=window.setInterval(()=>setFrame(v=>(v+1)%frames.length),900);return()=>window.clearInterval(id)},[auto,frames.length]);
+  const startTurn=(event)=>{if(frames.length<2)return;setAuto(false);drag.current={active:true,x:event.clientX};event.currentTarget.setPointerCapture?.(event.pointerId);};
+  const moveTurn=(event)=>{if(!drag.current.active||frames.length<2)return;const delta=event.clientX-drag.current.x;const steps=Math.trunc(delta/22);if(!steps)return;drag.current.x+=steps*22;setFrame((current)=>(current-steps+frames.length)%frames.length);};
+  const endTurn=()=>{drag.current.active=false;};
   return <section className="relative overflow-hidden bg-[#080a07] text-white py-20 sm:py-28">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(163,197,233,.18),transparent_22%),radial-gradient(circle_at_25%_70%,rgba(123,0,58,.20),transparent_28%)]"/>
     <div className="container-xl relative grid items-center gap-12 lg:grid-cols-[.85fr_1.15fr]">
@@ -126,12 +156,12 @@ function Product3DShowcase({ section, products=[] }) {
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
-        <div className="relative h-[440px] w-[330px] flex items-center justify-center" style={{perspective:'1200px'}}>
+        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={c.product3dPosterUrl || c.imageUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
-            <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
+            <img src={frames[frame]?.url || img.signature} alt={chosen?.name||'AFSANA fragrance'} onError={(e)=>{if(e.currentTarget.src!==img.signature)e.currentTarget.src=img.signature;}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
           </div>
-        </div>
-        <button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
+        </div>}
+        <div className="absolute bottom-4 left-0 text-[8px] uppercase tracking-[.18em] text-white/45">Drag to rotate · {frames.length} gallery angles</div><button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
       </div>
     </div>
   </section>;
@@ -222,8 +252,55 @@ function PremiumFooterShowcase({ section }) {
     </div>
   </section>;
 }
-function CmsSection({ section, products, faq }) {
-  const c = section.config || {};
+function ConciergeFloat({ section }) {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const choices = [['Fresh & clean', 'fresh'], ['Warm & sensual', 'amber'], ['Dark & woody', 'oud'], ['Soft & floral', 'floral']];
+  return <div className="fixed bottom-6 right-6 z-[85]">
+    {open && <div className="mb-3 w-[min(330px,calc(100vw-32px))] rounded-3xl border border-white/15 bg-[#100d24] p-5 text-white shadow-2xl">
+      <div className="flex items-start justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.24em] text-[#d9ff55]">AFSANA PRIVATE CONCIERGE</p><h3 className="mt-2 font-display text-2xl">Find your scent mood.</h3><p className="mt-2 text-xs text-white/60">Choose the feeling you want your fragrance to leave.</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Close concierge"><X className="h-4 w-4"/></button></div>
+      <div className="mt-4 grid grid-cols-2 gap-2">{choices.map(([label,value]) => <button key={value} type="button" onClick={() => navigate('/shop?q='+encodeURIComponent(value))} className="rounded-xl border border-white/15 px-3 py-3 text-left text-xs hover:border-[#d9ff55] hover:bg-white/5">{label}</button>)}</div>
+    </div>}
+    <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 rounded-full bg-[#d9ff55] px-5 py-3 text-xs font-semibold text-[#100d24] shadow-xl hover:scale-105"><Sparkles className="h-4 w-4"/>{section.config?.label || 'Scent Concierge'}</button>
+  </div>;
+}
+
+function ReferenceHero({ section, config, products }) {
+  if (config.layout === 'inner') {
+    const pageImage = section.pageKey === 'house' ? config.aboutHeroImageUrl
+      : section.pageKey === 'journal' ? config.journalHeroImageUrl
+      : section.pageKey === 'gifting' ? config.giftingHeroImageUrl
+      : section.pageKey === 'discover' ? config.discoverHeroImageUrl
+      : config.collectionHeroImageUrl;
+    return <section className="afsana-ref-inner-hero">{pageImage && <img src={pageImage} alt="" className="afsana-ref-inner-image"/>}<div className="afsana-ref-inner-overlay"/><div className="container-xl relative z-10"><p className="afsana-ref-eyebrow">{config.eyebrow || 'THE ART OF SCENT'}</p><h1>{section.title || 'A world in every note.'}</h1>{config.subtitle && <p>{config.subtitle}</p>}{config.buttonText && <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText} <span>↗</span></Link>}</div></section>;
+  }
+  const product = products?.[0];
+  const bottle = config.heroBottleImageUrl || product?.image?.url || product?.media?.find((m) => m.kind === 'main')?.url || product?.media?.[0]?.url;
+  return <section className="afsana-ref-hero">
+    <div className="container-xl afsana-ref-hero-grid">
+      <div className="afsana-ref-hero-copy">
+        <p className="afsana-ref-eyebrow">{config.heroKicker || config.eyebrow || 'A NEW DIMENSION OF FRAGRANCE'}</p>
+        <h1>SCENT IS<br/><em>YOUR</em><br/>ENERGY.</h1>
+        <p className="afsana-ref-hero-sub">{config.subtitle || 'Not just a fragrance. A feeling that enters the room before you do. Explore a world of unexpected notes, bold presence and unforgettable rituals.'}</p>
+        <div className="afsana-ref-actions">
+          <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText || 'Explore the collection'} <span>↗</span></Link>
+          <Link className="afsana-ref-btn afsana-ref-btn-ghost" to="/discover">{config.secondaryButtonText || 'Find your scent'} <span>✳</span></Link>
+        </div>
+        <div className="afsana-ref-meta"><div><strong>01—08</strong><span>Signature scents</span></div><div><strong>12h+</strong><span>Long-wear ritual*</span></div><div><strong>∞</strong><span>Ways to be you</span></div></div>
+      </div>
+      <div className="afsana-ref-hero-stage">
+        <div className="afsana-ref-glow"/><div className="afsana-ref-orbit"><i/></div>
+        {bottle ? <img className="afsana-ref-bottle-img" src={bottle} alt={product?.name || 'AFSANA perfume bottle'} onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-ref-bottle-css"><b>AFSANA</b><small>EAU DE PARFUM</small></div>}
+        <div className="afsana-ref-sticker">SCENT<br/>OBJECT<br/>NO. 001</div>
+        <div className="afsana-ref-index">OBJECT 001 / {product?.name || 'AFSANA SIGNATURE'}</div>
+      </div>
+    </div>
+    <div className="afsana-ref-scroll">Scroll to experience</div>
+  </section>;
+}
+
+function CmsSection({ section, products, faq, referenceAssets = {} }) {
+  const c = { ...referenceAssets, ...(section.config || {}) };
   const align = c.align === 'center' ? 'text-center items-center' : c.align === 'right' ? 'text-right items-end' : 'text-left items-start';
   const style = {
     width: `${Math.min(100, Math.max(20, Number(c.width) || 100))}%`,
@@ -239,49 +316,229 @@ function CmsSection({ section, products, faq }) {
   const gridStyle = { '--cms-cols': cols, gap: `${gap}px` };
   const heading = section.title ? <div className={`mb-8 flex flex-col ${align}`}><Eyebrow light={['hero','video_grid','promo_timer','testimonials','cinematic_statement','lookbook'].includes(section.type)}>{c.eyebrow || 'AFSANA'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl leading-[.95]">{section.title}</h2>{c.subtitle && <p className="mt-4 max-w-2xl text-sm leading-7 text-[#5f654f]">{c.subtitle}</p>}</div> : null;
   const btn = c.buttonText && c.buttonLink ? <Link to={c.buttonLink} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.18em] text-[#263e0e]">{c.buttonText}<ArrowRight className="w-4 h-4"/></Link> : null;
+  if (section.type === 'custom_footer') {
+    const links = cmsItems(c.items);
+    const socials = [
+      ['Instagram',c.instagramUrl,Instagram],['Facebook',c.facebookUrl,Facebook],['TikTok',c.tiktokUrl,Music2],
+      ['YouTube',c.youtubeUrl,Youtube],['Pinterest',c.pinterestUrl,Pin],['X',c.xUrl,X]
+    ];
+    return <footer className="relative overflow-hidden bg-[#100d24] text-white"><div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(115,87,255,.24),transparent_28%),radial-gradient(circle_at_88%_75%,rgba(217,255,85,.08),transparent_25%)]"/><div className="container-xl relative py-16 sm:py-24"><div className="grid gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]"><div><p className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{c.tagline || 'THE ART OF SCENT'}</p><h2 className="mt-5 font-display text-6xl tracking-[-.04em]">{c.brandName || 'AFSANA'}</h2><p className="mt-6 max-w-sm text-sm leading-7 text-white/55">{c.description}</p><div className="mt-7"><p className="text-[9px] uppercase tracking-[.25em] text-white/40">Follow the house</p><div className="mt-3 flex flex-wrap gap-2">{socials.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] transition hover:border-[#d9ff55] hover:bg-white/10"><Icon className="h-4 w-4"/></a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35"><Icon className="h-4 w-4"/></span>)}</div><p className="mt-2 text-[9px] text-white/35">Connect your official social URLs in Admin → Content → Website page builder → Footer.</p></div></div><div className="lg:col-span-2"><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">EXPLORE THE HOUSE</p><div className="mt-6 grid grid-cols-2 gap-4">{links.map((item,i) => <div key={i}><p className="text-base font-display">{item.title}</p><p className="mt-1 text-xs text-white/45">{item.text}</p>{item.link && <Link className="mt-3 inline-flex text-[9px] uppercase tracking-[.2em] text-[#d9ff55]" to={item.link}>Discover ↗</Link>}</div>)}</div></div><div><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">CONTACT</p>{c.email && <a href={'mailto:'+c.email} className="mt-6 block text-sm text-white/65">{c.email}</a>}{c.phone && <p className="mt-3 text-sm text-white/65">{c.phone}</p>}<Link to="/track" className="mt-6 block text-sm text-white/65 hover:text-[#d9ff55]">Track an order ↗</Link><Link to="/account" className="mt-3 block text-sm text-white/65 hover:text-[#d9ff55]">Customer account ↗</Link></div></div><div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 text-[9px] uppercase tracking-[.22em] text-white/35 sm:flex-row sm:items-center sm:justify-between"><span>{c.footerNote || 'AFSANA — THE ART OF SCENT'}</span><span>Made to leave a memory.</span><span>Privacy · Terms · Customer care</span></div></div></footer>;
+  }
+  if (section.type === 'reference_assets' || section.type === 'nav_menu') return null;
+  if (section.type === 'whatsapp_float') {
+    const phone = String(c.phone || c.publicWhatsapp || '').replace(/[^0-9]/g, '');
+    if (!phone) return null;
+    const href = `https://wa.me/${phone}?text=${encodeURIComponent(c.message || 'Assalam-o-alaikum, I need help with AFSANA fragrances.')}`;
+    return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-6 left-6 z-[84] inline-flex items-center gap-2 rounded-full bg-[#20c768] px-5 py-3 text-xs font-semibold text-white shadow-2xl hover:scale-105"><MessageCircle className="h-4 w-4"/>{c.label || 'WhatsApp us'}</a>;
+  }
+  if (section.type === 'ai_concierge') return <ConciergeFloat section={section}/>;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
-  if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p><CmsTimer endAt={c.endAt}/>{btn}</div></div></section>;
+  if (section.type === 'offer_timer') return <section className="afsana-ref-offer-banner"><div className="container-xl afsana-ref-offer-inner"><div><p className="afsana-ref-eyebrow">{c.label || 'A LITTLE EXTRA FROM THE HOUSE'}</p><h2>{section.title || 'Good taste. Even better delivery.'}</h2><p>{c.offerText || 'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.'}</p>{c.endAt && <CmsTimer endAt={c.endAt || '2026-11-30T23:59'}/>} {btn}</div><div className="afsana-ref-offer-stamp"><div><b>✳</b>LIMITED<br/>TIME<br/><strong>AFSANA OFFER</strong></div></div></div></section>;
+  if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p>{!c.hideTimer && c.endAt ? <CmsTimer endAt={c.endAt}/> : null}{btn}</div></div></section>;
   if (section.type === 'muse_scene') return <MuseScene section={section}/>;
-    if (section.type === 'product_3d_showcase') return <Product3DShowcase section={section} products={products}/>;
+    if (section.type === 'product_3d_showcase') return <Product3DShowcase section={{...section,config:c}} products={products}/>;
     if (section.type === 'fragrance_dna') return <FragranceDNA section={section}/>;
     if (section.type === 'interactive_gallery') return <InteractiveGallery section={section}/>;
     if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;
     if (section.type === 'footer_showcase') return <PremiumFooterShowcase section={section}/>;
-    if (section.type === 'video_grid') return <section className="bg-[#182308] text-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><article key={i} className="relative min-h-[280px] overflow-hidden bg-[#263e0e]">{x.image && <video className="absolute inset-0 h-full w-full object-cover" src={x.image} poster={x.link} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/>}<div className="absolute inset-0 bg-gradient-to-t from-[#182308] via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-5"><p className="text-[9px] uppercase tracking-[.22em] text-[#b4bf41]">{String(i+1).padStart(2,'0')}</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-xs text-white/60">{x.text}</p></div></article>)}</div></div></section>;
-  if (section.type === 'post_grid' || section.type === 'blog_grid') return <section className="bg-white"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i)=><Link to={x.link || '/journal'} key={i} className="group block"><div className="aspect-[1.05] overflow-hidden bg-[#f3f1e9]">{x.image && <img src={x.image} alt="" loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />}</div><p className="mt-4 text-[8px] uppercase tracking-[.25em] text-[#263e0e]">AFSANA JOURNAL</p><h3 className="mt-2 font-display text-2xl">{x.title}</h3><p className="mt-2 text-sm leading-6 text-[#5f654f]">{x.text}</p></Link>)}</div></div></section>;
-  if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) return <section className="bg-[#f3f1e9]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{(products||[]).slice(0, Number(c.limit)||4).map(p=><ProductCard key={p.id} product={p}/>)}</div>{btn}</div></section>;
+    if (section.type === 'video_grid') {
+    const videos = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({
+      ...x,
+      image: [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || x.image,
+      link: [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || x.link
+    }));
+    return <section className="afsana-ref-films"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p><h2>Feel the <em>fragrance.</em></h2></div><p>{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p></div><div className="afsana-ref-film-grid">{videos.map((x,i)=><article key={i} className="afsana-ref-film-card">{x.image && <video src={x.image} poster={x.link || undefined} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls} onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span className="afsana-ref-film-play">▶</span><div><small>{['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'][i]}</small><h3>{x.title}</h3></div></article>)}</div></div></section>;
+  }
+  if (section.type === 'post_grid' || section.type === 'blog_grid') {
+    const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||3)).map((x,i) => ({
+      ...x,
+      image:x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''
+    }));
+    const featured = posts[0];
+    const supporting = posts.slice(1,3);
+    return <section className="afsana-journal-pro">
+      <div className="container-xl">
+        <div className="afsana-journal-heading">
+          <div>
+            <p className="afsana-journal-kicker"><span/> {c.eyebrow || 'NOTES FROM THE HOUSE'}</p>
+            <h2>The scent <em>journal.</em></h2>
+            <p className="afsana-journal-intro">{c.subtitle || 'Ideas, ingredients and rituals behind the fragrances we remember.'}</p>
+          </div>
+          <Link to="/journal" className="afsana-journal-all">Explore the journal <ArrowRight className="h-4 w-4"/></Link>
+        </div>
+        {featured ? <div className="afsana-journal-layout">
+          <Link to={featured.link || '/journal'} className="afsana-journal-feature">
+            {featured.image && <img src={featured.image} alt={featured.title || 'AFSANA journal feature'} loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}
+            <div className="afsana-journal-feature-shade"/>
+            <div className="afsana-journal-feature-meta"><span>THE FEATURED STORY</span><span>01 / {String(posts.length).padStart(2,'0')}</span></div>
+            <div className="afsana-journal-feature-copy">
+              <p>THE AFSANA EDIT</p>
+              <h3>{featured.title}</h3>
+              {featured.text && <span>{featured.text}</span>}
+              <b>Read the story <ArrowRight className="h-4 w-4"/></b>
+            </div>
+          </Link>
+          <div className="afsana-journal-side">
+            {supporting.map((post,index)=><Link to={post.link || '/journal'} key={post.title || index} className="afsana-journal-side-card">
+              <div className="afsana-journal-side-image">{post.image && <img src={post.image} alt={post.title || 'AFSANA journal story'} loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span>0{index+2}</span></div>
+              <div className="afsana-journal-side-copy">
+                <small>{index===0?'INGREDIENT NOTES':'SCENT & RITUAL'}</small>
+                <h3>{post.title}</h3>
+                {post.text && <p>{post.text}</p>}
+                <b>Discover story <ArrowRight className="h-3.5 w-3.5"/></b>
+              </div>
+            </Link>)}
+            <div className="afsana-journal-note"><span>AFSANA / JOURNAL</span><p>Every fragrance holds a story. Here are a few worth discovering.</p><Link to="/journal">Enter the journal ↗</Link></div>
+          </div>
+        </div> : <div className="afsana-journal-empty"><p>Stories from the House of AFSANA.</p><Link to="/journal">Explore the journal ↗</Link></div>}
+      </div>
+    </section>;
+  }
+  if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) {
+    const picks=(products||[]).slice(0, Number(c.limit)||4);
+    const isObjects=section.type==='best_sellers';
+    if(isObjects) return <section className="relative overflow-hidden bg-[#100d24] py-20 sm:py-28 text-white">
+      <div className="absolute -left-32 top-10 h-72 w-72 rounded-full bg-[#7357ff]/20 blur-3xl"/>
+      <div className="absolute -right-32 bottom-0 h-80 w-80 rounded-full bg-[#d9ff55]/10 blur-3xl"/>
+      <div className="container-xl relative">
+        <div className="mb-12 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.35em] text-[#d9ff55]"><span className="h-px w-10 bg-[#d9ff55]"/> THE AFSANA SELECTION</p>
+            <h2 className="mt-5 max-w-3xl font-display text-5xl leading-[.9] sm:text-7xl">Objects of <em className="text-[#d9ff55]">desire.</em></h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/55">{c.subtitle || 'Signature fragrances chosen for presence, character and the memories they leave behind.'}</p>
+          </div>
+          <Link to="/shop" className="inline-flex w-fit items-center gap-3 border border-white/20 px-6 py-3 text-[9px] font-semibold uppercase tracking-[.2em] transition hover:border-[#d9ff55] hover:text-[#d9ff55]">View full collection <ArrowRight className="h-3.5 w-3.5"/></Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {picks.map((p,i)=>{
+            const price=p.priceFrom ? `PKR ${Number(p.priceFrom).toLocaleString('en-PK')}` : 'Price on request';
+            const media=(p.media||[]).filter(m=>m?.url&&m?.kind!=='video');
+            const image=media[0]?.url || p.image?.url || '';
+            const second=media[1]?.url || '';
+            return <Link key={p.id||i} to={`/product/${p.slug}`} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[.045] p-2 transition duration-500 hover:-translate-y-2 hover:border-[#d9ff55]/40 hover:bg-white/[.07]">
+              <div className="relative aspect-[.82] overflow-hidden rounded-xl bg-[#f4f0e8]">
+                {image ? <><img src={image} alt={p.name||'AFSANA fragrance'} className={`absolute inset-0 h-full w-full object-cover transition duration-700 ${second?'group-hover:opacity-0 group-hover:scale-105':'group-hover:scale-105'}`}/>{second&&<img src={second} alt="" className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-700 group-hover:opacity-100 group-hover:scale-105"/>}</> : <div className="grid h-full place-items-center text-[#100d24] text-xs uppercase tracking-[.2em]">AFSANA</div>}
+                <span className="absolute left-3 top-3 rounded-full border border-[#100d24]/10 bg-white/90 px-3 py-1 text-[8px] font-semibold uppercase tracking-[.16em] text-[#100d24]">01 · Signature</span>
+                <span className="absolute bottom-3 right-3 rounded-full bg-[#d9ff55] px-3 py-1.5 text-[9px] font-bold tracking-[.08em] text-[#100d24]">View fragrance ↗</span>
+              </div>
+              <div className="px-3 pb-4 pt-4">
+                <p className="text-[8px] uppercase tracking-[.22em] text-[#d9ff55]/70">{p.fragrance?.family || p.fragrance?.gender || 'Extrait de Parfum'}</p>
+                <div className="mt-1 flex items-start justify-between gap-3"><h3 className="font-display text-xl leading-tight">{p.name}</h3><span className="shrink-0 pt-1 text-[10px] font-semibold text-[#d9ff55]">{price}</span></div>
+                <p className="mt-2 line-clamp-2 text-[10px] leading-5 text-white/45">{p.content?.shortDescription || p.description || 'A signature AFSANA composition made to leave a lasting impression.'}</p>
+              </div>
+            </Link>
+          })}
+        </div>
+      </div>
+    </section>;
+    return <section className="bg-[#f3f1e9]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{picks.map(p=><ProductCard key={p.id} product={p}/>)}</div>{btn}</div></section>;
+  }
   if (section.type === 'scent_finder') return <Finder/>;
   if (section.type === 'newsletter') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.eyebrow || 'THE PRIVATE LIST'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl">{section.title || 'Be the first to know.'}</h2><p className="mt-4 max-w-xl text-sm text-white/60">{c.body || 'Early access to new compositions, private drops and exclusive stories.'}</p><NewsletterSubscription/></div></div></section>;
   if (section.type === 'faq') return <section className="bg-[#faf8f4]"><div className="container-xl" style={style}>{heading}<div className="max-w-3xl space-y-3">{(faq||[]).map((x,i)=><details key={i} className="border-b border-[#263e0e]/10 py-4"><summary className="cursor-pointer font-display text-xl">{x.question}</summary><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.answer}</p></details>)}</div></div></section>;
-  if (['benefits','trust_grid','values_grid','testimonials','category_tiles'].includes(section.type)) return <section className={section.type === 'testimonials' ? 'bg-[#263e0e] text-white' : 'bg-[#faf8f4]'}><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).map((x,i)=><article key={i} className="rounded-2xl border border-[#263e0e]/10 bg-white p-6"><span className="text-2xl text-[#748e40]">✦</span><h3 className="mt-5 font-display text-2xl">{x.title}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.text}</p>{x.link && <Link to={x.link} className="mt-5 inline-block text-[9px] uppercase tracking-[.2em] text-[#263e0e]">Discover ↗</Link>}</article>)}</div></div></section>;
+  if (section.type === 'category_tiles') {
+    const assetImages = section.pageKey === 'gifting'
+      ? [c.giftImage1Url,c.giftImage2Url,c.giftImage3Url]
+      : section.pageKey === 'discover'
+        ? [c.discoverEnergyImageUrl,c.discoverSoftImageUrl,c.discoverNightImageUrl]
+        : [c.worldDarkImageUrl,c.worldSoftImageUrl,c.worldBoldImageUrl];
+    const worlds = cmsItems(c.items).map((item, i) => ({ ...item, image: item.image || assetImages[i] || '' }));
+    return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>{section.pageKey === 'gifting' ? 'Give them a feeling.' : section.pageKey === 'discover' ? 'Choose a feeling.' : <>Enter a scent <em>world.</em></>}</h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image && <img src={x.image} alt={x.title} onError={(e)=>{e.currentTarget.style.display='none';}}/>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {section.pageKey === 'gifting' ? ['THE PERSONAL TOUCH','THE FIRST CHAPTER','THE LITTLE EXTRA'][i] : section.pageKey === 'discover' ? ['THE ENERGY SEEKER','THE SOFT ROMANTIC','THE NIGHT THINKER'][i] : ['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
+  }
+  if (['benefits','trust_grid','values_grid','testimonials'].includes(section.type)) return <section className={section.type === 'testimonials' ? 'bg-[#263e0e] text-white' : 'bg-[#faf8f4]'}><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).map((x,i)=><article key={i} className="rounded-2xl border border-[#263e0e]/10 bg-white p-6"><span className="text-2xl text-[#748e40]">✦</span><h3 className="mt-5 font-display text-2xl">{x.title}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.text}</p>{x.link && <Link to={x.link} className="mt-5 inline-block text-[9px] uppercase tracking-[.2em] text-[#263e0e]">Discover ↗</Link>}</article>)}</div></div></section>;
   if (section.type === 'marquee') return <section className="overflow-hidden bg-[#b4bf41] text-[#263e0e]"><div className="marquee-track flex gap-12 py-4 text-[10px] font-bold uppercase tracking-[.25em]">{cmsItems(c.items).concat(cmsItems(c.items)).map((x,i)=><span key={i}>{x.title || x.text || 'THE ART OF SCENT'} ✦</span>)}</div></section>;
   if (section.type === 'rich_text' || section.type === 'cinematic_statement') return <section className={section.type === 'cinematic_statement' ? 'bg-[#182308] text-white' : 'bg-[#faf8f4]'}><div className={`container-xl flex flex-col ${align}`} style={style}><Eyebrow light={section.type === 'cinematic_statement'}>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2><p className="mt-6 max-w-3xl text-sm leading-7 opacity-70">{c.body}</p>{btn}</div></section>;
-  if (section.type === 'video_banner') return <section className="relative overflow-hidden bg-[#182308] text-white"><video className="absolute inset-0 h-full w-full object-cover" src={c.videoUrl} poster={c.posterUrl || undefined} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/><div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,35,8,.96),rgba(38,62,14,.62),rgba(24,35,8,.28))]"/><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light>{c.eyebrow || 'A MOVING STORY'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'The world of Afsana.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 text-white/70">{c.subtitle}</p>}{btn}</div></div></section>;
+  if (section.type === 'split_story') return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2"><div className="afsana-ref-story-copy"><Eyebrow>{c.eyebrow || 'OUR PHILOSOPHY'}</Eyebrow><h2>{section.title}</h2><p>{c.body}</p>{btn}</div><div className="afsana-ref-story-image">{(c.aboutStoryImageUrl || c.imageUrl) && <img src={c.aboutStoryImageUrl || c.imageUrl} alt={section.title || 'AFSANA story'}/>}</div></div></section>;
+  if (section.type === 'video_banner') return <section className="relative overflow-hidden bg-[#182308] text-white"><video className="absolute inset-0 h-full w-full object-cover" src={c.videoUrl} poster={c.posterUrl || undefined} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls}/><div className="absolute inset-0 afsana-video-overlay"/><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light>{c.eyebrow || 'A MOVING STORY'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'The world of Afsana.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 text-white/70">{c.subtitle}</p>}{btn}</div></div></section>;
+  if (section.type === 'hero' && ['reference','inner'].includes(c.layout)) return <ReferenceHero section={section} config={c} products={products}/>;
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
   return null;
 }
-function CmsDrivenHome({ sections, faq }) {
+function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
+  const shopSettings = useShopSettings();
   const products = data?.products || [];
-  const safe = Array.isArray(sections) ? sections : [];
-  const hasOffer = safe.some((s) => s?.type === 'offer_timer' || s?.type === 'promo_timer');
-  const hasPulse = safe.some((s) => s?.type === 'community_pulse');
-  const hasFooterShowcase = safe.some((s) => s?.type === 'footer_showcase');
-  const tail = [
-    ...(!hasOffer ? [{ id: '__default-offer-timer', type: 'offer_timer', title: 'A moment worth discovering.', config: { label:'PRIVATE COLLECTION OFFER', endAt:'2026-11-05T23:59:00+05:00', offerText:'Discover the AFSANA private collection before this chapter closes.', buttonText:'Shop the offer', buttonLink:'/shop' }, isEnabled:true }] : []),
-    ...(!hasPulse ? [{ id: '__default-community-pulse', type: 'community_pulse', title: 'A house people come back to.', config: {}, isEnabled: true }] : []),
-    ...(!hasFooterShowcase ? [{ id: '__default-footer-showcase', type: 'footer_showcase', title: 'Leave the final impression.', config: {}, isEnabled: true }] : []),
+  const source = Array.isArray(sections) ? sections : [];
+  // HOME IS REFERENCE-ONLY: never fall back to the old storefront section set.
+  // The Netlify preview is the visual source of truth. Prefer explicitly tagged
+  // neon rows, but also recognise the reference section types when older CMS
+  // records do not carry templateId yet.
+  const canonicalTemplateId = 'afsana-neon-experience-v1';
+
+  const canonicalRows = source.filter((s) =>
+    s?.config?.templateId === canonicalTemplateId ||
+    s?.config?.theme === 'neon'
+  );
+  // Do not fall back to any previous section set, even if it uses a familiar
+  // block type such as hero, product row or video grid.
+  const activeSource = canonicalRows;
+  const safe = activeSource.filter((s) => s?.isEnabled !== false);
+  const referenceAssets = {
+    ...inheritedAssets,
+    ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {}),
+    publicWhatsapp: shopSettings?.store?.whatsapp || shopSettings?.store?.phone || ''
+  };
+  return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
+    <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
+      <CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/>
+    </div>
+  )}</div>;
+}
+
+function CmsDrivenHome({ sections, faq, referenceAssets = {} }) {
+  return <CmsSectionList sections={sections} faq={faq} inheritedAssets={referenceAssets}/>;
+}
+
+function readCmsPreview() {
+  try {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('afsanaPreview') !== '1') return null;
+    const current = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null');
+    if (current && Array.isArray(current.sections)) return current;
+    const legacy = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null');
+    return legacy && Array.isArray(legacy.sections) ? { pageKey: 'home', sections: legacy.sections } : null;
+  } catch { return null; }
+}
+
+export function ManagedCmsPage({ pageKey, fallback = null }) {
+  const { data } = useApi(() => cmsPublicApi.content(), [pageKey]);
+  const preview = readCmsPreview();
+  const queryPage = new URLSearchParams(window.location.search).get('afsanaPageKey');
+  const previewSections = Array.isArray(preview?.layouts?.[pageKey]) ? preview.layouts[pageKey] : preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
+  const sections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
+  const isPreviewPage = !!preview && (Array.isArray(preview.layouts?.[pageKey]) || (queryPage || preview.pageKey || 'home') === pageKey);
+  const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
+  if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
+  const previewAssets = preview?.layouts?.home?.find((item) => item.type === 'reference_assets')?.config || {};
+  const referenceAssets = Object.keys(previewAssets).length ? previewAssets : (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
+}
+
+export function ScentFinderPage(){
+  const {data}=useApi(()=>cmsPublicApi.content(),[]);
+  const preview=readCmsPreview();
+  const previewAssets=preview?.layouts?.home?.find((item)=>item.type==='reference_assets')?.config||{};
+  const referenceAssets=Object.keys(previewAssets).length?previewAssets:(data?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
+  const sections=[
+    {id:'discover-fallback-hero',type:'hero',pageKey:'discover',title:'There is a scent for that.',config:{layout:'inner',eyebrow:'AFSANA SCENT INTELLIGENCE / BETA',subtitle:'Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.'}},
+    {id:'discover-fallback-worlds',type:'category_tiles',pageKey:'discover',title:'Choose a feeling.',config:{eyebrow:'A MORE PERSONAL DISCOVERY',subtitle:'Fragrance is personal. Let your instinct lead, and explore a scent world that matches your energy.',items:[{title:'Make a statement',text:'Confident, vivid, unforgettable.',link:'/shop'},{title:'Feel luminous',text:'Soft, airy, effortless.',link:'/shop'},{title:'Stay mysterious',text:'Deep, warm, magnetic.',link:'/shop'}]}}
   ];
-  return <div className="bg-[#faf8f4] text-[#263e0e]">{[...safe, ...tail].filter((s) => s?.isEnabled !== false).map((s) => <CmsSection key={s.id} section={s} products={products} faq={faq}/>)}</div>;
+  return <><CmsSectionList sections={sections} faq={data?.faqs||[]} inheritedAssets={referenceAssets}/><Finder/></>;
 }
 
 export default function AfsanaSignatureHome(){
   const { data } = useApi(() => cmsPublicApi.content(), []);
-  let previewSections = null;
-  if (new URLSearchParams(window.location.search).get('afsanaPreview') === '1') {
-    try { previewSections = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null')?.sections || null; } catch { previewSections = null; }
+  const preview = readCmsPreview();
+  const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
+  const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
+  const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
+  if (sections.length || previewHome) {
+    return <CmsDrivenHome
+      sections={sections}
+      faq={data?.faqs || []}
+      referenceAssets={(data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {}}
+    />;
   }
-  const sections = previewSections || data?.homepageSections || [];
-  if (sections.length) return <CmsDrivenHome sections={sections} faq={data?.faqs || []}/>;
-  return <DefaultHome/>;
+  // No CMS layout: render nothing rather than resurrecting the previous home design.
+  return <CmsDrivenHome sections={[]} faq={data?.faqs || []} />;
 }

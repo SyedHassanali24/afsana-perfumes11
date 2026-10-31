@@ -44,7 +44,7 @@ export const toForm = ({ product, variants }) => ({
 const optNum = (v) => (v === '' || v === undefined ? undefined : Number(v));
 const list = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
 const media = (images) => images.filter((i) => i.url.trim()).map((i, idx) => ({
-  kind: idx === 0 ? 'main' : (i.kind && i.kind !== 'main' ? i.kind : 'gallery'), url: i.url.trim(), alt: i.alt.trim() || undefined, sortOrder: idx,
+  kind: ['model3d','video'].includes(i.kind) ? i.kind : idx === 0 ? 'main' : (i.kind && i.kind !== 'main' ? i.kind : 'gallery'), url: i.url.trim(), alt: i.alt.trim() || undefined, sortOrder: idx,
 }));
 const fragrance = (f, base = {}) => {
   const o = { ...base };

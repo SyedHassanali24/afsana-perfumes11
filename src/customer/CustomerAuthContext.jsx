@@ -9,7 +9,7 @@ export function CustomerAuthProvider({ children }) {
   const [state, setState] = useState({ status: "loading", customer: null });
 
   const refresh = useCallback(async () => {
-    try { const { customer } = await accountApi.me(); setState({ status: "authed", customer }); }
+    try { const { customer } = await accountApi.me(); setState(customer ? { status: "authed", customer } : { status: "guest", customer: null }); }
     catch { setState({ status: "guest", customer: null }); }
   }, []);
   useEffect(() => { refresh(); }, [refresh]);

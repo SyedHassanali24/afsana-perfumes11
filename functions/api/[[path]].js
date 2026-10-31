@@ -44,19 +44,19 @@ function headersObject(headers) {
   for (const [key, value] of headers.entries()) out[key.toLowerCase()] = value;
   return out;
 }
-
 function queryObject(url) {
   const out = {};
   for (const [key, value] of new URL(url).searchParams.entries()) out[key] = value;
   return out;
 }
-
+function bytesToBase64(bytes) {
+  return Buffer.from(bytes).toString("base64");
+}
 async function netlifyEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    const bytes = new Uint8Array(await request.arrayBuffer());
-    body = btoa(String.fromCharCode(...bytes));
+    body = bytesToBase64(new Uint8Array(await request.arrayBuffer()));
   }
   return {
     httpMethod: request.method,
@@ -67,7 +67,6 @@ async function netlifyEvent(request, path) {
     isBase64Encoded: Boolean(body),
   };
 }
-
 function responseFromNetlify(result) {
   const responseHeaders = new Headers(result?.headers || {});
   const multi = result?.multiValueHeaders || {};
@@ -87,7 +86,7 @@ export async function onRequest(context) {
   const { request, params, env } = context;
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
   const group = pathParts[0];
-  const functionPath = "/" + pathParts.join("/");
+  const functionPath = "/api/" + pathParts.join("/");
   const handler = await getHandler(group);
 
   if (!handler) {
@@ -99,12 +98,21 @@ export async function onRequest(context) {
   process.env.JWT_SECRET = env.JWT_SECRET || "";
   process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
+  process.env.ALLOWED_ORIGIN = env.ALLOWED_ORIGIN || new URL(request.url).origin;
+  process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
+  if (env.RESEND_API_KEY) process.env.RESEND_API_KEY = env.RESEND_API_KEY;
+  if (env.EMAIL_FROM) process.env.EMAIL_FROM = env.EMAIL_FROM;
+  if (env.UPSTASH_REDIS_REST_URL) process.env.UPSTASH_REDIS_REST_URL = env.UPSTASH_REDIS_REST_URL;
+  if (env.UPSTASH_REDIS_REST_TOKEN) process.env.UPSTASH_REDIS_REST_TOKEN = env.UPSTASH_REDIS_REST_TOKEN;
+  if (env.ADMIN_EMAIL) process.env.ADMIN_EMAIL = env.ADMIN_EMAIL;
+  if (env.EASTWALA_EMAIL) process.env.EASTWALA_EMAIL = env.EASTWALA_EMAIL;
 
   const event = await netlifyEvent(request, functionPath);
   try {
     return responseFromNetlify(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
-  } catch {
+  } catch (error) {
+    console.error("[api-adapter]", error?.message || error);
     return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
   }
 }
