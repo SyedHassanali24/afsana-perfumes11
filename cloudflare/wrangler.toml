@@ -1,3 +1,4 @@
+# AFSANA Cloudflare preview configuration
 name = "afsana-perfumes11"
 main = "worker.js"
 compatibility_date = "2026-10-31"
