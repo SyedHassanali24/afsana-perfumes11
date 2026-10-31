@@ -350,8 +350,49 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     return <section className="afsana-ref-films"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p><h2>Feel the <em>fragrance.</em></h2></div><p>{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p></div><div className="afsana-ref-film-grid">{videos.map((x,i)=><article key={i} className="afsana-ref-film-card">{x.image && <video src={x.image} poster={x.link || undefined} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls} onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span className="afsana-ref-film-play">▶</span><div><small>{['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'][i]}</small><h3>{x.title}</h3></div></article>)}</div></div></section>;
   }
   if (section.type === 'post_grid' || section.type === 'blog_grid') {
-    const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({...x, image:x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''}));
-    return <section className="afsana-ref-journal"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'NOTES FROM THE HOUSE'}</p><h2>The scent <em>journal.</em></h2></div><Link to="/journal" className="afsana-ref-btn afsana-ref-btn-ghost">Explore all stories ↗</Link></div><div className="afsana-ref-journal-grid">{posts.map((x,i)=><Link to={x.link || '/journal'} key={i} className="afsana-ref-journal-card"><div className="afsana-ref-journal-img">{x.image && <img src={x.image} alt={x.title} onError={(e)=>{e.currentTarget.style.display='none';}}/>}</div><small>{x.text?.split('.')[0] || 'THE SCENT JOURNAL'}</small><h3>{x.title}</h3><p>{x.text}</p><span>Read the story ↗</span></Link>)}</div></div></section>;
+    const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||3)).map((x,i) => ({
+      ...x,
+      image:x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''
+    }));
+    const featured = posts[0];
+    const supporting = posts.slice(1,3);
+    return <section className="afsana-journal-pro">
+      <div className="container-xl">
+        <div className="afsana-journal-heading">
+          <div>
+            <p className="afsana-journal-kicker"><span/> {c.eyebrow || 'NOTES FROM THE HOUSE'}</p>
+            <h2>The scent <em>journal.</em></h2>
+            <p className="afsana-journal-intro">{c.subtitle || 'Ideas, ingredients and rituals behind the fragrances we remember.'}</p>
+          </div>
+          <Link to="/journal" className="afsana-journal-all">Explore the journal <ArrowRight className="h-4 w-4"/></Link>
+        </div>
+        {featured ? <div className="afsana-journal-layout">
+          <Link to={featured.link || '/journal'} className="afsana-journal-feature">
+            {featured.image && <img src={featured.image} alt={featured.title || 'AFSANA journal feature'} loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}
+            <div className="afsana-journal-feature-shade"/>
+            <div className="afsana-journal-feature-meta"><span>THE FEATURED STORY</span><span>01 / {String(posts.length).padStart(2,'0')}</span></div>
+            <div className="afsana-journal-feature-copy">
+              <p>THE AFSANA EDIT</p>
+              <h3>{featured.title}</h3>
+              {featured.text && <span>{featured.text}</span>}
+              <b>Read the story <ArrowRight className="h-4 w-4"/></b>
+            </div>
+          </Link>
+          <div className="afsana-journal-side">
+            {supporting.map((post,index)=><Link to={post.link || '/journal'} key={post.title || index} className="afsana-journal-side-card">
+              <div className="afsana-journal-side-image">{post.image && <img src={post.image} alt={post.title || 'AFSANA journal story'} loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span>0{index+2}</span></div>
+              <div className="afsana-journal-side-copy">
+                <small>{index===0?'INGREDIENT NOTES':'SCENT & RITUAL'}</small>
+                <h3>{post.title}</h3>
+                {post.text && <p>{post.text}</p>}
+                <b>Discover story <ArrowRight className="h-3.5 w-3.5"/></b>
+              </div>
+            </Link>)}
+            <div className="afsana-journal-note"><span>AFSANA / JOURNAL</span><p>Every fragrance holds a story. Here are a few worth discovering.</p><Link to="/journal">Enter the journal ↗</Link></div>
+          </div>
+        </div> : <div className="afsana-journal-empty"><p>Stories from the House of AFSANA.</p><Link to="/journal">Explore the journal ↗</Link></div>}
+      </div>
+    </section>;
   }
   if (['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section.type)) {
     const picks=(products||[]).slice(0, Number(c.limit)||4);
