@@ -3,7 +3,7 @@ import { MongoDBConnection } from "./MongoDBConnection.js";
 // deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 // PR #7 backend preview is the current working API while main production remains on the older release.
-const API_ORIGIN = "https://deploy-preview-7--afsanayaar.netlify.app";
+const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https://app.netlify.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
