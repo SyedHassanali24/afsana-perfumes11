@@ -1,12 +1,15 @@
 name = "afsana-perfumes11"
 main = "worker.js"
-compatibility_date = "2026-10-28"
+compatibility_date = "2026-10-31"
 
 [assets]
 directory = "../dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
+
+[cache]
+enabled = true
 
 [[durable_objects.bindings]]
 name = "MONGODB_CONNECTION"
@@ -21,4 +24,3 @@ mode = "smart"
 
 [previews.placement]
 mode = "smart"
-
