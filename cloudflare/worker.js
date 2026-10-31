@@ -1,5 +1,4 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
-import { onRequest as cloudApi } from "../functions/api/[[path]].js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
@@ -25,10 +24,6 @@ function cacheable(pathname, method) {
     /^\/api\/settings\/public\/?$/i.test(pathname) ||
     /^\/api\/cms\/public\/?$/i.test(pathname) ||
     /^\/api\/reviews\/product\//i.test(pathname);
-}
-async function health(env) {
-  const id = env.MONGODB_CONNECTION.idFromName("afsana-mongodb");
-  return env.MONGODB_CONNECTION.get(id, { locationHint: "me" }).health();
 }
 async function handleApi(request, env) {
   const incoming = new URL(request.url);
@@ -77,17 +72,6 @@ export default {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
-
-    if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
-      try {
-        return json({ success: true, service: "mongodb", ...(await health(env)) }, 200,
-          { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
-      } catch (error) {
-        console.error("[mongodb-health]", error?.message || error);
-        return json({ success: false, service: "mongodb", connected: false }, 503,
-          { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
-      }
-    }
 
     if (u.pathname.startsWith("/api/")) {
       try {
