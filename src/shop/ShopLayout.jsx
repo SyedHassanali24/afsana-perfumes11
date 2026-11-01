@@ -12,6 +12,46 @@ import useShopSettings from './useShopSettings';
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
 
+function CmsBannerCarousel({ banners = [] }) {
+ const items = Array.isArray(banners) ? banners.filter((banner) =>
+   banner && (banner.heading || banner.subtitle || banner.desktopImage?.url || banner.mobileImage?.url)
+ ) : [];
+ if (!items.length) return null;
+ return (
+  <section aria-label="AFSANA featured banners" className="relative overflow-hidden bg-[#100d24]">
+   <div className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    {items.map((banner,index) => {
+     const desktopUrl = banner.desktopImage?.url || banner.mobileImage?.url || '';
+     const mobileUrl = banner.mobileImage?.url || desktopUrl;
+     const link = banner.buttonLink || '/shop';
+     const external = /^https?:\/\//i.test(link);
+     const action = banner.buttonText ? (external
+       ? <a href={link} target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center gap-3 bg-[#d9ff55] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#100d24] transition hover:bg-white">{banner.buttonText}<span>↗</span></a>
+       : <Link to={link} className="mt-7 inline-flex items-center gap-3 bg-[#d9ff55] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#100d24] transition hover:bg-white">{banner.buttonText}<span>↗</span></Link>
+     ) : null;
+     return (
+      <article key={banner.id || index} className="relative isolate flex min-h-[360px] min-w-full snap-center items-center overflow-hidden sm:min-h-[500px]">
+       {desktopUrl ? <picture className="absolute inset-0 -z-20">
+        {mobileUrl && <source media="(max-width: 700px)" srcSet={mobileUrl}/>}
+        <img src={desktopUrl} alt={banner.desktopImage?.alt || banner.heading || 'AFSANA fragrance campaign'} loading={index === 0 ? 'eager' : 'lazy'} className="h-full w-full object-cover"/>
+       </picture> : <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_70%_35%,rgba(115,87,255,.45),transparent_35%),linear-gradient(120deg,#100d24,#263e0e)]"/>}
+       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#100d24]/90 via-[#100d24]/55 to-[#100d24]/10"/>
+       <div className="container-xl w-full py-16 sm:py-24">
+        <div className="max-w-2xl text-white">
+         {banner.heading && <h2 className="font-display text-4xl leading-[.95] tracking-tight sm:text-7xl">{banner.heading}</h2>}
+         {banner.subtitle && <p className="mt-5 max-w-xl text-sm leading-7 text-white/75 sm:text-base">{banner.subtitle}</p>}
+         {action}
+        </div>
+       </div>
+      </article>
+     );
+    })}
+   </div>
+   {items.length > 1 && <p className="pointer-events-none absolute bottom-4 right-6 text-[9px] uppercase tracking-[.25em] text-white/65">Swipe to explore · {items.length} stories</p>}
+  </section>
+ );
+}
+
 export default function ShopLayout(){
  const [showIntro,setShowIntro]=useState(false);
  const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
@@ -74,6 +114,7 @@ export default function ShopLayout(){
   </header>
 
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_header_after" /></Suspense>
+  {isHome && <CmsBannerCarousel banners={cmsData?.banners || []}/>}
   <main className={isHome?'':'py-0'}><Outlet/></main>
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer_before" /></Suspense>
 

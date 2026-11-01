@@ -459,23 +459,13 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const shopSettings = useShopSettings();
   const products = data?.products || [];
   const source = Array.isArray(sections) ? sections : [];
-  // HOME IS REFERENCE-ONLY: never fall back to the old storefront section set.
-  // The Netlify preview is the visual source of truth. Prefer explicitly tagged
-  // neon rows, but also recognise the reference section types when older CMS
-  // records do not carry templateId yet.
-  const canonicalTemplateId = 'afsana-neon-experience-v1';
-
-  const canonicalRows = source.filter((s) =>
-    s?.config?.templateId === canonicalTemplateId ||
-    s?.config?.theme === 'neon'
-  );
-  // Do not fall back to any previous section set, even if it uses a familiar
-  // block type such as hero, product row or video grid.
-  const activeSource = canonicalRows;
-  const safe = activeSource.filter((s) => s?.isEnabled !== false);
+  // The public API sends only enabled and non-deleted CMS rows.
+  // Do not require internal template/theme tags here: custom and older saved
+  // sections are valid storefront content too.
+  const safe = source.filter((s) => s?.isEnabled !== false);
   const referenceAssets = {
     ...inheritedAssets,
-    ...(activeSource.find((s) => s?.type === 'reference_assets')?.config || {}),
+    ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
     publicWhatsapp: shopSettings?.store?.whatsapp || shopSettings?.store?.phone || ''
   };
   return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>

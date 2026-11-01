@@ -93,6 +93,23 @@ function cmsStatus(r, c, now = new Date()) {
 }
 
 // Mongoose document <-> flat admin record (banner images are nested in the document, flat in the API)
+function groupHomepageSections(rows) {
+  const pageSections = {};
+  for (const d of Array.isArray(rows) ? rows : []) {
+    const pageKey = d.pageKey || 'home';
+    const section = {
+      id: d._id,
+      type: d.type,
+      title: d.title || '',
+      pageKey,
+      config: d.config || {},
+      sortOrder: d.sortOrder || 0,
+    };
+    (pageSections[pageKey] ||= []).push(section);
+  }
+  return { homepageSections: pageSections.home || [], pageSections };
+}
+
 function fromDoc(r, d) {
   if (r === 'homepage') return { type: d.type || 'rich_text', title: d.title || '', pageKey: d.pageKey || 'home', config: d.config || {}, sortOrder: d.sortOrder || 0, isEnabled: !!d.isEnabled };
   if (r === 'banners') return { heading: d.heading || '', subtitle: d.subtitle || '', buttonText: d.buttonText || '', buttonLink: d.buttonLink || '',
@@ -112,4 +129,4 @@ function toDoc(r, n) { // n = normalize() output
   return out;
 }
 
-module.exports = { RESOURCES, MODULE_OF, DOC_KEYS, HOMEPAGE_SECTION_TYPES, HOMEPAGE_PAGE_KEYS, validUrl, normalize, crossFieldErrors, cmsStatus, fromDoc, toDoc };
+module.exports = { RESOURCES, MODULE_OF, DOC_KEYS, HOMEPAGE_SECTION_TYPES, HOMEPAGE_PAGE_KEYS, validUrl, normalize, crossFieldErrors, cmsStatus, groupHomepageSections, fromDoc, toDoc };
