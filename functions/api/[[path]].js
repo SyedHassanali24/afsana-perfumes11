@@ -1,3 +1,5 @@
+import { base64ToBytes, responseFromNetlify } from "./response.js";
+
 const handlerLoaders = {
   account: () => import("../../netlify/functions/account/index.js"),
   analytics: () => import("../../netlify/functions/analytics/index.js"),
@@ -66,20 +68,6 @@ async function netlifyEvent(request, path) {
     body,
     isBase64Encoded: Boolean(body),
   };
-}
-function responseFromNetlify(result) {
-  const responseHeaders = new Headers(result?.headers || {});
-  const multi = result?.multiValueHeaders || {};
-  for (const [key, values] of Object.entries(multi)) {
-    if (Array.isArray(values)) {
-      responseHeaders.delete(key);
-      for (const value of values) responseHeaders.append(key, String(value));
-    }
-  }
-  return new Response(result?.body ?? "", {
-    status: result?.statusCode || 200,
-    headers: responseHeaders,
-  });
 }
 
 export async function onRequest(context) {
