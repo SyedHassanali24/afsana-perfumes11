@@ -13,7 +13,8 @@ function isAdmin(ctx) {
   return Boolean(role && (role.isUnrestricted || role.key === 'owner' || role.key === 'admin' || Number(role.level || 0) >= 90));
 }
 function isVisibleTo(n, can, ctx) {
-  if (!isAdmin(ctx)) return false;
+  // Authentication is enforced by the API middleware; ordinary staff can see
+  // general notifications, while permission-scoped items are filtered below.
   if (!n.forPermission) return true;
   const p = parsePermission(n.forPermission);
   return p ? Boolean(can(p[0], p[1])) : false;
