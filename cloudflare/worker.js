@@ -1,3 +1,5 @@
+import { MongoDBConnection } from "./MongoDBConnection.js";
+
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_OBJECT_NAME = "afsana-api-v1";
 const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
@@ -120,3 +122,5 @@ export default {
     return new Response(asset.body, { status: asset.status, headers });
   }
 };
+
+export { MongoDBConnection };
