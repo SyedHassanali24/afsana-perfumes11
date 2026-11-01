@@ -12,7 +12,8 @@ const sortNum = (v) => (String(v).trim() === '' ? 0 : Number(v));
 const datesIn = (i) => ({ startsAt: toDateInput(i.startsAt), endsAt: toDateInput(i.endsAt) });
 const datesOut = (f) => ({ startsAt: startOfDayIso(f.startsAt), endsAt: endOfDayIso(f.endsAt) });
 const cleanLink = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^(https?:\/\/|\/|#)/i.test(t) ? t : null); };
-const cleanImage = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^https?:\/\//i.test(t) ? t : null); };
+const isOwnMediaPath = (value) => /^\/api\/media\/[0-9a-f]{24}$/i.test(value);
+const cleanImage = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^https?:\/\//i.test(t) || isOwnMediaPath(t) ? t : null); };
 
 export const RESOURCE_KEYS = ['banners', 'faqs', 'announcements'];
 
