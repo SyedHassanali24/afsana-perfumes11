@@ -3,7 +3,7 @@ name: Deploy AFSANA Cloudflare Worker
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "deploy-b11800a"]
     paths:
       - "cloudflare/**"
       - "src/**"
@@ -26,7 +26,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: npm
       - name: Install dependencies
         run: npm install --ignore-scripts
       - name: Build React frontend for Cloudflare Static Assets
@@ -37,4 +36,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: eb104cb2498331e8ace489bbf746dc15
         run: npx --yes wrangler deploy --config cloudflare/wrangler.toml
 
-# Production redeploy trigger: latest frontend bundle.
+# Temporary deployment branch trigger for the approved b11800a snapshot.
