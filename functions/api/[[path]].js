@@ -51,12 +51,21 @@ function queryObject(url) {
   return out;
 }
 
+function bytesToBase64(bytes) {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+  }
+  return btoa(binary);
+}
+
 async function netlifyEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
     const bytes = new Uint8Array(await request.arrayBuffer());
-    body = btoa(String.fromCharCode(...bytes));
+    body = bytesToBase64(bytes);
   }
   return {
     httpMethod: request.method,
@@ -88,18 +97,21 @@ export async function onRequest(context) {
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
   const group = pathParts[0];
   const functionPath = "/" + pathParts.join("/");
-  const handler = await getHandler(group);
-
-  if (!handler) {
-    return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
-  }
-
+  // Populate Node compatibility globals before loading the CommonJS API modules.
+  process.env.CF_WORKER_RUNTIME = "true";
+  process.env.NODE_ENV = "production";
+  process.env.CONTEXT = "production";
   process.env.MONGODB_URI = env.MONGODB_URI || "";
   process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
   process.env.JWT_SECRET = env.JWT_SECRET || "";
   process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
+
+  const handler = await getHandler(group);
+  if (!handler) {
+    return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
+  }
 
   const event = await netlifyEvent(request, functionPath);
   try {

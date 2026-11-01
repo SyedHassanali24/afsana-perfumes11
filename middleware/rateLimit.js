@@ -21,7 +21,18 @@ async function redisCommand(command, args = []) {
   return data.result;
 }
 
-async function hit(key, limit, windowMs, now = Date.now()) {
+async function hit(key, limit, windowMs, now = Date.now(), env) {
+  // Cloudflare Worker: use a Durable Object for globally consistent production rate limits.
+  if (env?.MONGODB_CONNECTION) {
+    try {
+      const id = env.MONGODB_CONNECTION.idFromName("afsana-rate-limit-global");
+      const stub = env.MONGODB_CONNECTION.get(id);
+      return await stub.hitRateLimit(key, limit, windowMs, now);
+    } catch (err) {
+      console.error("Cloudflare rate-limit Durable Object unavailable:", err?.message || err);
+      return false;
+    }
+  }
   const production = process.env.NODE_ENV === 'production' || process.env.CONTEXT === 'production';
   if (!REDIS_URL || !REDIS_TOKEN) {
     // Production must use a shared limiter. A per-instance map is not a real global

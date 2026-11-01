@@ -1,4 +1,4 @@
-require('dotenv').config({ quiet: true });
+if (process.env.CF_WORKER_RUNTIME !== 'true') require('dotenv').config({ quiet: true });
 // Cached connection: Netlify Functions reuse warm containers, so we must not reconnect per invocation.
 // The cache lives on the mongoose instance itself (not on global): some runtimes (e.g. netlify dev) reload
 // modules on every request, which creates a NEW mongoose instance whose models would otherwise wait forever

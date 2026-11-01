@@ -1,9 +1,8 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
+import { onRequest as handleApiRequest } from "../functions/api/[[path]].js";
 
 // deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
-const API_ORIGIN = "https://afsanayaar.netlify.app";
-const API_PREFIX = "/api";
 const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https://app.netlify.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
 function cors(origin) {
@@ -62,13 +61,9 @@ export default {
       return new Response(asset.body, { status: asset.status, headers });
     }
 
-    // Use the tested public Netlify /api rewrite instead of calling the
-    // internal /.netlify/functions path directly. This keeps Netlify's
-    // production function routing and auth cookie handling intact.
-    const upstream = new URL(API_ORIGIN);
-    upstream.pathname = `${API_PREFIX}${u.pathname.slice(4)}`;
-    upstream.search = u.search;
-
+    // Run the API handlers inside this Worker. Storefront, API and staff sessions share one origin.
+    const pathParts = u.pathname.slice("/api/".length).split("/").filter(Boolean);
+    const params = { path: pathParts };
     const can = cacheable(u.pathname, request.method);
     const key = new Request(u.toString(), { method: "GET" });
 
@@ -78,48 +73,36 @@ export default {
         const headers = new Headers(hit.headers);
         Object.entries(cors(origin)).forEach(([k, v]) => headers.set(k, v));
         headers.set("X-Afsana-Cache", "HIT");
+        headers.set("X-Afsana-Backend", "cloudflare-api");
         return new Response(hit.body, { status: hit.status, headers });
       }
     }
 
-    const headers = new Headers(request.headers);
-    headers.delete("host");
-    headers.delete("origin");
-    headers.set("X-Afsana-Edge", "cloudflare");
-
     let response;
     try {
-      response = await fetch(new Request(upstream.toString(), {
-        method: request.method,
-        headers,
-        body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
-        redirect: "follow"
-      }));
-    } catch {
-      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin));
+      response = await handleApiRequest({
+        request,
+        params,
+        env,
+        site: { url: SITE_ORIGIN },
+        waitUntil: (promise) => ctx.waitUntil(promise),
+        passThroughOnException: () => ctx.passThroughOnException?.()
+      });
+    } catch (error) {
+      console.error("AFSANA API execution failed:", error?.message || error);
+      return json({ success: false, error: { code: "INTERNAL", message: "API request failed." } }, 500, cors(origin));
     }
 
     const outHeaders = new Headers(response.headers);
-    const setCookies = typeof response.headers.getSetCookie === "function"
-      ? response.headers.getSetCookie()
-      : (response.headers.get("set-cookie") ? [response.headers.get("set-cookie")] : []);
-    if (setCookies.length) {
-      outHeaders.delete("set-cookie");
-      for (const cookie of setCookies) {
-        outHeaders.append("set-cookie", cookie.replace(/;\s*Domain=[^;]+/ig, ""));
-      }
-    }
-
+    Object.entries(cors(origin)).forEach(([k, v]) => outHeaders.set(k, v));
+    outHeaders.set("X-Afsana-Backend", "cloudflare-api");
+    outHeaders.set("X-Afsana-Cache", can ? "MISS" : "BYPASS");
     if (!can) {
       outHeaders.set("Cache-Control", "no-store, private");
       outHeaders.delete("CDN-Cache-Control");
       outHeaders.delete("Cloudflare-CDN-Cache-Control");
     }
-
     const out = new Response(response.body, { status: response.status, headers: outHeaders });
-    Object.entries(cors(origin)).forEach(([k, v]) => out.headers.set(k, v));
-    out.headers.set("X-Afsana-Backend", "cloudflare-api");
-    out.headers.set("X-Afsana-Cache", can ? "MISS" : "BYPASS");
     if (can && response.ok) ctx.waitUntil(caches.default.put(key, out.clone()));
     return out;
   }
