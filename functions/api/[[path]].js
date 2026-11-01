@@ -1,4 +1,4 @@
-import { base64ToBytes, responseFromNetlify } from "./response.js";
+import { responseFromNetlify } from "./response.js";
 
 const handlerLoaders = {
   account: () => import("../../netlify/functions/account/index.js"),
