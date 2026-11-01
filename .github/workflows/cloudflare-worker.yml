@@ -6,6 +6,11 @@ on:
     branches: ["main", "deploy-b11800a"]
     paths:
       - "cloudflare/**"
+      - "functions/**"
+      - "middleware/**"
+      - "database/**"
+      - "services/**"
+      - "validation/**"
       - "src/**"
       - "public/**"
       - "index.html"
