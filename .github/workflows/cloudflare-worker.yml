@@ -1,11 +1,16 @@
 name: Deploy AFSANA Cloudflare Worker
-# Production edge deploy: Cloudflare is the direct storefront origin.
+# Cloudflare is the only production storefront and API runtime.
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feat/universal-afsana-page-builder"]
     paths:
       - "cloudflare/**"
+      - "functions/**"
+      - "netlify/functions/**"
+      - "middleware/**"
+      - "database/**"
+      - "validation/**"
       - "src/**"
       - "public/**"
       - "index.html"
@@ -29,12 +34,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm install --ignore-scripts
-      - name: Build React frontend for Cloudflare Static Assets
+      - name: Build React frontend and Cloudflare API Worker
         run: npm run build
-      - name: Deploy Worker
+      - name: Deploy Cloudflare Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: eb104cb2498331e8ace489bbf746dc15
         run: npx --yes wrangler deploy --config cloudflare/wrangler.toml
-
-# Production redeploy trigger: latest frontend bundle.
