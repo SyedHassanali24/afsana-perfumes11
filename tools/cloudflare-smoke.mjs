@@ -21,14 +21,25 @@ console.log("MongoDB Durable Object: connected");
 
 const health = await getJson("/api/health");
 if (health.data.database?.connected !== true) {
-  throw new Error(`Application health could not connect to MongoDB (HTTP ${health.response.status})`);
+  throw new Error(`Application API could not connect to MongoDB (HTTP ${health.response.status})`);
 }
 console.log(`Application API: connected; database setup=${health.data.database.setupDone ? "ready" : "needs initialization"}`);
 
-for (const path of ["/api/products?limit=1", "/api/cms/public"]) {
-  const result = await getJson(path);
-  if (!result.response.ok || result.data.success !== true) {
-    throw new Error(`${path} failed (HTTP ${result.response.status})`);
-  }
-  console.log(`${path}: HTTP ${result.response.status}, API success`);
+const products = await getJson("/api/products?sort=popular&limit=12");
+if (!products.response.ok || products.data.success !== true) {
+  throw new Error(`Products API failed (HTTP ${products.response.status})`);
 }
+const productCount = Number(products.data.pagination?.total ?? products.data.products?.length ?? 0);
+console.log(`Products API: HTTP ${products.response.status}; catalog products=${productCount}`);
+
+const cms = await getJson("/api/cms/public");
+if (!cms.response.ok || cms.data.success !== true) {
+  throw new Error(`CMS API failed (HTTP ${cms.response.status})`);
+}
+console.log(`CMS API: HTTP ${cms.response.status}; public content endpoint is responding`);
+
+const auth = await getJson("/api/auth/me");
+if (auth.response.status !== 401) {
+  throw new Error(`Staff auth session check returned unexpected HTTP ${auth.response.status}`);
+}
+console.log("Staff authentication route: responding (401 is expected without a login cookie)");
