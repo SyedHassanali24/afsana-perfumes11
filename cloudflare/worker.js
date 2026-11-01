@@ -20,8 +20,9 @@ function json(data, status, headers = {}) {
 }
 
 function cacheable(pathname, method) {
-  if (method !== "GET" && method !== "HEAD") return false;
-  return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
+  if (method !== "GET") return false;
+  return /^\/api\/media\/[0-9a-f]{24}$/i.test(pathname) ||
+    /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
     /^\/api\/taxonomy\/public(?:\/|$)/i.test(pathname) ||
     /^\/api\/settings\/public\/?$/i.test(pathname) ||
     /^\/api\/cms\/public\/?$/i.test(pathname) ||
@@ -31,6 +32,7 @@ function cacheable(pathname, method) {
 async function handleApi(request, env, ctx) {
   const incoming = new URL(request.url);
   const canCache = cacheable(incoming.pathname, request.method);
+  const immutableMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.method === "GET";
   const cacheKey = new Request(
     new URL(incoming.pathname + incoming.search, SITE_ORIGIN).toString(),
     { method: "GET" }
@@ -60,7 +62,12 @@ async function handleApi(request, env, ctx) {
   const hasCookie = responseHeaders.has("set-cookie");
   if (canCache && apiResponse.ok && !hasCookie) {
     const cacheHeaders = new Headers(responseHeaders);
-    cacheHeaders.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=300");
+    cacheHeaders.set(
+      "Cache-Control",
+      immutableMedia
+        ? (responseHeaders.get("Cache-Control") || "public, max-age=31536000, immutable")
+        : "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
+    );
     const cacheResponse = new Response(apiResponse.clone().body, {
       status: apiResponse.status,
       statusText: apiResponse.statusText,
