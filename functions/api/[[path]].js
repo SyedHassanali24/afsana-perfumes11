@@ -96,7 +96,7 @@ export async function onRequest(context) {
   const { request, params, env } = context;
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
   const group = pathParts[0];
-  const functionPath = "/" + pathParts.join("/");
+  const functionPath = "/api/" + pathParts.join("/");
   // Populate Node compatibility globals before loading the CommonJS API modules.
   process.env.CF_WORKER_RUNTIME = "true";
   process.env.NODE_ENV = "production";
