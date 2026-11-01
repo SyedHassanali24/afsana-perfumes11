@@ -13,6 +13,18 @@ async function getJson(path) {
   return { response, data };
 }
 
+function findMediaPaths(value, found = new Set()) {
+  if (typeof value === "string") {
+    const match = value.match(/\/api\/media\/[0-9a-f]{24}/i);
+    if (match) found.add(match[0]);
+  } else if (Array.isArray(value)) {
+    for (const item of value) findMediaPaths(item, found);
+  } else if (value && typeof value === "object") {
+    for (const item of Object.values(value)) findMediaPaths(item, found);
+  }
+  return found;
+}
+
 const mongo = await getJson("/api/health/mongodb");
 if (!mongo.response.ok || mongo.data.connected !== true) {
   throw new Error(`Cloudflare MongoDB health failed (HTTP ${mongo.response.status}, connected=${mongo.data.connected})`);
@@ -37,6 +49,20 @@ if (!cms.response.ok || cms.data.success !== true) {
   throw new Error(`CMS API failed (HTTP ${cms.response.status})`);
 }
 console.log(`CMS API: HTTP ${cms.response.status}; public content endpoint is responding`);
+
+const mediaPaths = findMediaPaths([products.data, cms.data]);
+for (const path of mediaPaths) {
+  const response = await fetch(new URL(path, base), { signal: AbortSignal.timeout(20000) });
+  if (!response.ok) throw new Error(`Uploaded media ${path} returned HTTP ${response.status}`);
+  const contentType = response.headers.get("content-type") || "";
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (!bytes.length) throw new Error(`Uploaded media ${path} returned an empty file`);
+  if (!/^(image\/(jpeg|png|webp)|video\/(mp4|webm)|model\/gltf-binary)(;|$)/i.test(contentType)) {
+    throw new Error(`Uploaded media ${path} returned unexpected content type: ${contentType}`);
+  }
+  console.log(`Uploaded media: HTTP ${response.status}, ${contentType}, ${bytes.length} bytes`);
+}
+if (!mediaPaths.size) console.log("No existing public records reference an uploaded /api/media asset yet.");
 
 const auth = await getJson("/api/auth/me");
 if (auth.response.status !== 401) {
