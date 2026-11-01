@@ -12,7 +12,7 @@ const { checkUpload } = require('../../../services/mediaRules');
 const S = require('../../../validation/schemas');
 
 // Anyone who can edit a picture somewhere (product pictures, categories, banners...) may upload one.
-const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit']];
+const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit'], ['homepage', 'create'], ['homepage', 'edit']];
 
 const api = createHandler('media', [
   { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
