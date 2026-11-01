@@ -1,0 +1,57 @@
+/* AFSANA Purple & Champagne restoration — visual-only override.
+   Preserves the current CMS, storefront structure, routes and backend. */
+:root{
+  --bg:#F5F7FF;--surface:#FFFFFF;--surface-raised:#FAFBFF;--border:#E7EAF4;
+  --ink:#17204A;--ink-muted:#7280A2;--gold:#B4874B;--gold-soft:#F5EBDD;
+  --primary:#4F46E5;--primary-hover:#4338CA;--primary-soft:#EEF0FF;--primary-soft-border:#C9CDFF;
+  --table-head:#F8F9FF;--table-row-hover:#FAFBFF;--success:#18A875;--success-soft:#E4F8F0;
+  --danger:#E65364;--danger-soft:#FDEBED;--warning:#C98219;--warning-soft:#FFF3D9;
+  --nav:#3035AD;--nav-muted:#D8DCFF;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.15);
+}
+:root[data-theme="dark"]{
+  --bg:#0F1330;--surface:#171B3A;--surface-raised:#1D2245;--border:#2B3158;
+  --ink:#F5F7FF;--ink-muted:#A9B2D4;--gold:#D6AE73;--gold-soft:#2B2419;
+  --primary:#818CF8;--primary-hover:#A5B4FC;--primary-soft:#23284F;--primary-soft-border:#4B5390;
+  --table-head:#1D2245;--table-row-hover:#1A1F40;--success:#55D2A2;--success-soft:#17352B;
+  --danger:#FF8A98;--danger-soft:#3A2027;--warning:#F0C26B;--warning-soft:#3B2D17;
+  --nav:#20256F;--nav-muted:#C6CCF4;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.14);
+}
+.storefront-theme{
+  --bg:#fbf8fc;--surface:#fffdfd;--surface-raised:#fffafd;--border:#eaddea;
+  --ink:#24152b;--ink-muted:#76677b;--gold:#c8a15f;--gold-soft:#f7ecd9;
+  --primary:#743d78;--primary-hover:#5d2e62;--primary-soft:#f1e5f3;--primary-soft-border:#d9c0dc;
+  --table-head:#fbf3fc;--table-row-hover:#fdf8fe;--nav:#24152b;--nav-muted:#e9ddec;
+  --lux-forest:#24152b;--lux-forest-2:#160c19;--lux-olive:#8c5c8f;--lux-lime:#d9b477;
+  --lux-amber:#d9b477;--lux-yellow:#d9b477;--lux-sky:#c7a9d2;--lux-blue:#bda0c8;
+  --lux-plum:#743d78;--lux-wine:#4f2854;--lux-ivory:#fbf8fc;--lux-milk:#f7f0f7;--lux-ink:#24152b;
+  background:radial-gradient(900px 500px at 10% 8%,rgba(140,92,143,.10),transparent 55%),
+    radial-gradient(800px 540px at 95% 30%,rgba(200,161,95,.09),transparent 58%),#fbf8fc!important;
+}
+/* Re-map the newer green/yellow Tailwind palette without changing component logic. */
+.storefront-theme [class*="bg-[#263e0e]"],.storefront-theme [class*="bg-[#182308]"]{background-color:#24152b!important}
+.storefront-theme [class*="bg-[#748e40]"],.storefront-theme [class*="bg-[#b4bf41]"]{background-color:#c8a15f!important}
+.storefront-theme [class*="bg-[#faf8f4]"],.storefront-theme [class*="bg-[#f3f1e9]"]{background-color:#fbf8fc!important}
+.storefront-theme [class*="bg-[#080a07]"],.storefront-theme [class*="bg-[#0a0d08]"],.storefront-theme [class*="bg-[#070906]"]{background-color:#120813!important}
+.storefront-theme [class*="text-[#263e0e]"],.storefront-theme [class*="text-[#182308]"]{color:#24152b!important}
+.storefront-theme [class*="text-[#748e40]"],.storefront-theme [class*="text-[#b4bf41]"]{color:#c8a15f!important}
+.storefront-theme [class*="text-[#5f654f]"]{color:#76677b!important}
+.storefront-theme [class*="border-[#263e0e]"]{border-color:rgba(116,61,120,.20)!important}
+.storefront-theme [class*="border-[#748e40]"],.storefront-theme [class*="border-[#b4bf41]"]{border-color:rgba(200,161,95,.35)!important}
+.storefront-theme [class*="from-[#263e0e]"],.storefront-theme [class*="from-[#182308]"]{--tw-gradient-from:#24152b var(--tw-gradient-from-position)!important;--tw-gradient-to:rgb(36 21 43 / 0) var(--tw-gradient-to-position)!important}
+.storefront-theme [class*="via-[#263e0e]"],.storefront-theme [class*="via-[#182308]"]{--tw-gradient-via:#38203d var(--tw-gradient-via-position)!important}
+.storefront-theme [class*="to-[#263e0e]"],.storefront-theme [class*="to-[#182308]"]{--tw-gradient-to:#160c19 var(--tw-gradient-to-position)!important}
+.storefront-theme .luxury-hero{background:#160c19!important}
+.storefront-theme .luxury-hero-overlay{background:radial-gradient(circle at 74% 42%,rgba(200,161,95,.28),transparent 26%),linear-gradient(90deg,rgba(18,8,19,.98),rgba(36,18,42,.86),rgba(18,8,19,.38))!important}
+.storefront-theme .luxury-dark{background:#160c19!important}
+.storefront-theme .luxury-dark-soft,.storefront-theme .luxury-deep,.storefront-theme .luxury-black{background:#120813!important}
+.storefront-theme .luxury-plum{background:#743d78!important}
+.storefront-theme .luxury-plum-deep{background:#4f2854!important}
+.storefront-theme .luxury-ink{color:#24152b!important}
+.storefront-theme .luxury-orb{background:rgba(200,161,95,.18)!important}
+.storefront-theme .luxury-image-placeholder{background:radial-gradient(circle at 50% 35%,#8c5c8f,#160c19 65%)!important}
+.storefront-theme .luxury-lookbook-visual{background:radial-gradient(circle at 50% 20%,rgba(200,161,95,.38),transparent 25%),linear-gradient(145deg,#743d78,#160c19)!important}
+.storefront-theme .luxury-header-surface{background:rgba(22,12,25,.90)!important}
+.storefront-theme header>div:first-child{background:linear-gradient(110deg,rgba(18,8,19,.94),rgba(79,40,84,.86),rgba(36,21,43,.82))!important}
+.storefront-theme .hero:after{background:radial-gradient(circle at 82% 28%,rgba(199,169,210,.18),transparent 23%),radial-gradient(circle at 22% 74%,rgba(123,0,58,.18),transparent 24%),linear-gradient(135deg,transparent 35%,rgba(200,161,95,.06),transparent 65%)!important}
+.storefront-theme footer{background:radial-gradient(circle at 86% 18%,rgba(116,61,120,.24),transparent 25%),radial-gradient(circle at 15% 82%,rgba(200,161,95,.10),transparent 24%),#0d090f!important}
+.storefront-theme .product-card-stage,.storefront-theme .main-product-stage{background:radial-gradient(circle at 50% 22%,rgba(199,169,210,.18),transparent 30%),linear-gradient(145deg,#fbf8fc,#eee5f0)!important}
