@@ -2,10 +2,27 @@ import { DurableObject } from "cloudflare:workers";
 import { dbHealth } from "./mongodb.js";
 import { onRequest as dispatchApi } from "../functions/api/[[path]].js";
 
+const JWT_SECRET_KEY = "afsana:jwt-secret:v1";
+
 export class MongoDBConnection extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.env = env;
+    this.jwtSecretReady = ctx.blockConcurrencyWhile(async () => {
+      const configured = typeof env.JWT_SECRET === "string" ? env.JWT_SECRET.trim() : "";
+      if (configured.length >= 32) {
+        this.jwtSecret = configured;
+        return;
+      }
+
+      let stored = await ctx.storage.get(JWT_SECRET_KEY);
+      if (typeof stored !== "string" || stored.length < 32) {
+        const bytes = crypto.getRandomValues(new Uint8Array(48));
+        stored = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+        await ctx.storage.put(JWT_SECRET_KEY, stored);
+      }
+      this.jwtSecret = stored;
+    });
   }
 
   async health() {
@@ -38,10 +55,15 @@ export class MongoDBConnection extends DurableObject {
 
     const path = url.pathname.slice("/api/".length).split("/").filter(Boolean);
     try {
+      await this.jwtSecretReady;
+      const runtimeEnv = {
+        ...this.env,
+        JWT_SECRET: this.jwtSecret
+      };
       return await dispatchApi({
         request,
         params: { path },
-        env: this.env,
+        env: runtimeEnv,
         ctx: this.ctx,
         waitUntil: (promise) => this.ctx.waitUntil(promise)
       });
