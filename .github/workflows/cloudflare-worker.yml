@@ -11,6 +11,7 @@ on:
       - "middleware/**"
       - "database/**"
       - "validation/**"
+      - "tools/cloudflare-smoke.mjs"
       - "src/**"
       - "public/**"
       - "index.html"
@@ -40,3 +41,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: eb104cb2498331e8ace489bbf746dc15
         run: npx --yes wrangler deploy --config cloudflare/wrangler.toml
+      - name: Verify live Cloudflare API and MongoDB
+        env:
+          AFSANA_BASE_URL: https://afsana-perfumes11.eastwala12.workers.dev
+        run: node tools/cloudflare-smoke.mjs
