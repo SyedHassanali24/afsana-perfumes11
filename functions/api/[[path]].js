@@ -108,15 +108,15 @@ export async function onRequest(context) {
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
 
-  const handler = await getHandler(group);
-  if (!handler) {
-    return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
-  }
-
-  const event = await netlifyEvent(request, functionPath);
   try {
+    const handler = await getHandler(group);
+    if (!handler) {
+      return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
+    }
+    const event = await netlifyEvent(request, functionPath);
     return responseFromNetlify(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
-  } catch {
-    return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
+  } catch (error) {
+    console.error("[afsana-api-adapter]", group || "unknown", error?.name || "Error", error?.message || "Unhandled adapter exception");
+    return Response.json({ success: false, error: { code: "API_ADAPTER_ERROR", message: "API handler failed to load or execute." } }, { status: 500 });
   }
 }
