@@ -33,9 +33,11 @@ const RETURN_STATUSES = ['Pending','Approved','Rejected','Received','Refunded','
 const RETURN_REASONS = ['Wrong Product','Damaged','Not Satisfied','Other'];
 const RETURN_CONDITIONS = ['Resellable','Damaged'];
 const REFUND_METHODS = ['Bank Transfer','Cash','Other'];
+// MIME types accepted by the media validator and persisted by the MongoDB Media model.
+const MEDIA_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'model/gltf-binary'];
 
 module.exports = {
   MODULES, ACTIONS, SCOPES, HIGH_RISK, RESTRICTABLE_FIELDS, ROLE_LEVEL,
   ORDER_STATUSES, PAYMENT_STATUSES, PAYMENT_METHODS, PRODUCT_STATUSES, STOCK_TX_TYPES,
-  RETURN_STATUSES, RETURN_REASONS, RETURN_CONDITIONS, REFUND_METHODS,
+  RETURN_STATUSES, RETURN_REASONS, RETURN_CONDITIONS, REFUND_METHODS, MEDIA_CONTENT_TYPES,
 };
