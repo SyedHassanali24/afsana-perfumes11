@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feat/universal-afsana-page-builder"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "feat/universal-afsana-page-builder"]
 
 permissions:
   contents: read
