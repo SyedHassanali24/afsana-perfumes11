@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, User, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
+import { Menu, Search, ShoppingBag, User, X, Instagram, Facebook, Youtube, Music2, Pin, MessageCircle } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
@@ -60,6 +60,8 @@ export default function ShopLayout(){
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
+ const cmsWhatsapp = (cmsData?.pageSections?.site_footer_before || []).some((section) => section?.type === 'whatsapp_float' && section?.isEnabled !== false);
+ const directWhatsappHref = 'https://wa.me/923132956206?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like to know more about AFSANA perfumes.');
  const isPreviewRequested = new URLSearchParams(location.search).get('afsanaPreview') === '1';
  let previewLayout = null;
  try { if (isPreviewRequested) previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null'); } catch {}
@@ -117,6 +119,10 @@ export default function ShopLayout(){
   {isHome && <CmsBannerCarousel banners={cmsData?.banners || []}/>}
   <main className={isHome?'':'py-0'}><Outlet/></main>
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer_before" /></Suspense>
+  {!cmsWhatsapp && <a href={directWhatsappHref} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" title="Chat with AFSANA on WhatsApp" className="fixed bottom-6 right-6 z-[84] inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#20c768] px-4 py-3.5 text-xs font-semibold text-white shadow-2xl shadow-black/25 transition hover:-translate-y-1 hover:bg-[#16b85b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9ff55]">
+    <MessageCircle className="h-5 w-5" />
+    <span className="hidden sm:inline">Chat on WhatsApp</span>
+  </a>}
 
   {hasManagedFooter ? <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer" /></Suspense> :
   <footer className="relative overflow-hidden bg-[#100d24] text-white border-t border-[#d9ff55]/20">
