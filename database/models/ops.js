@@ -5,7 +5,7 @@ const { storeScoped, model: m } = require('./_plugins');
 const C = require('../constants');
 const model = (n, s) => m(mongoose, n, s);
 
-// Uploaded pictures (stored in the database so nothing depends on another service; served by netlify/functions/media).
+// Uploaded images, videos and GLB assets (stored in the database; served by netlify/functions/media).
 const mediaSchema = new Schema({
   contentType: { type: String, enum: C.MEDIA_CONTENT_TYPES, required: true },
   size: { type: Number, required: true }, data: { type: Buffer, required: true },
