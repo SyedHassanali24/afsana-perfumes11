@@ -1,7 +1,8 @@
 // Secure image/video/3D upload rules. Types are verified from file signatures; filename and browser MIME alone are not trusted.
+const { MEDIA_CONTENT_TYPES } = require('../database/constants');
 const MAX_BYTES = 700 * 1024; // compressed image limit
 const MAX_ASSET_BYTES = 4 * 1024 * 1024; // safe ceiling for short MP4/WebM clips and optimized GLB models
-const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'model/gltf-binary'];
+const TYPES = MEDIA_CONTENT_TYPES;
 const MEDIA_URL = /^\/api\/media\/[0-9a-f]{24}$/;
 
 function sniff(buf) {
