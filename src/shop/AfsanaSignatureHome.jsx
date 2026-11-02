@@ -329,7 +329,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     const phone = String(c.phone || c.publicWhatsapp || '').replace(/[^0-9]/g, '');
     if (!phone) return null;
     const href = `https://wa.me/${phone}?text=${encodeURIComponent(c.message || 'Assalam-o-alaikum, I need help with AFSANA fragrances.')}`;
-    return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-6 left-6 z-[84] inline-flex items-center gap-2 rounded-full bg-[#20c768] px-5 py-3 text-xs font-semibold text-white shadow-2xl hover:scale-105"><MessageCircle className="h-4 w-4"/>{c.label || 'WhatsApp us'}</a>;
+    return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-6 right-6 z-[84] inline-flex items-center gap-2 rounded-full bg-[#20c768] px-5 py-3 text-xs font-semibold text-white shadow-2xl hover:scale-105"><MessageCircle className="h-4 w-4"/>{c.label || 'WhatsApp us'}</a>;
   }
   if (section.type === 'ai_concierge') return <ConciergeFloat section={section}/>;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
@@ -466,7 +466,7 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
-    publicWhatsapp: shopSettings?.store?.whatsapp || shopSettings?.store?.phone || ''
+    publicWhatsapp: shopSettings?.store?.whatsapp || shopSettings?.store?.phone || '923132956206'
   };
   return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
     <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
