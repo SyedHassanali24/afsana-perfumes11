@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, User, X, Instagram, Facebook, Youtube, Music2, Pin, MessageCircle } from 'lucide-react';
+import { Menu, Search, ShoppingBag, User, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
@@ -119,8 +119,11 @@ export default function ShopLayout(){
   {isHome && <CmsBannerCarousel banners={cmsData?.banners || []}/>}
   <main className={isHome?'':'py-0'}><Outlet/></main>
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer_before" /></Suspense>
-  {!cmsWhatsapp && <a href={directWhatsappHref} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" title="Chat with AFSANA on WhatsApp" className="fixed bottom-6 right-6 z-[84] inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#20c768] px-4 py-3.5 text-xs font-semibold text-white shadow-2xl shadow-black/25 transition hover:-translate-y-1 hover:bg-[#16b85b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9ff55]">
-    <MessageCircle className="h-5 w-5" />
+  {!cmsWhatsapp && <a href={directWhatsappHref} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" title="Chat with AFSANA on WhatsApp" className="fixed bottom-24 right-6 z-[86] isolate inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#20c768] px-4 py-3.5 text-xs font-semibold text-white shadow-2xl shadow-black/25 transition hover:-translate-y-1 hover:bg-[#16b85b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9ff55]">
+    <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[#20c768]/70 animate-ping" />
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6 shrink-0">
+      <path fill="currentColor" d="M20.52 3.48A11.77 11.77 0 0 0 12.15 0C5.64 0 .34 5.3.34 11.81c0 2.08.54 4.12 1.57 5.91L.25 24l6.45-1.69a11.8 11.8 0 0 0 5.45 1.31h.01c6.51 0 11.81-5.3 11.81-11.81 0-3.15-1.23-6.11-3.45-8.33ZM12.16 21.6h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.83 1 1.02-3.73-.23-.38a9.77 9.77 0 0 1-1.5-5.1c0-5.42 4.41-9.83 9.84-9.83 2.63 0 5.1 1.03 6.96 2.89a9.78 9.78 0 0 1 2.88 6.97c0 5.42-4.41 9.83-9.78 9.83Zm5.39-7.36c-.29-.15-1.7-.84-1.97-.94-.26-.1-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.2-.34.22-.63.08-.29-.15-1.22-.45-2.32-1.43-.86-.76-1.44-1.7-1.61-1.99-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.3-.49.1-.19.05-.36-.02-.51-.08-.15-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49l-.55-.01c-.2 0-.51.08-.78.37-.27.29-1.03 1.01-1.03 2.47 0 1.46 1.05 2.87 1.2 3.07.15.2 2.07 3.16 5.01 4.43.7.3 1.25.49 1.68.63.71.23 1.36.2 1.87.12.57-.09 1.7-.7 1.94-1.38.24-.68.24-1.26.17-1.38-.08-.12-.27-.2-.56-.34Z"/>
+    </svg>
     <span className="hidden sm:inline">Chat on WhatsApp</span>
   </a>}
 
