@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { sniff, checkUpload, isAllowedImageUrl, MAX_BYTES, MAX_ASSET_BYTES } = require('../services/mediaRules');
+const { sniff, checkUpload, isAllowedImageUrl, MAX_BYTES, MAX_ASSET_BYTES, TYPES } = require('../services/mediaRules');
+const { Media } = require('../database/models/ops');
 const { parseBody } = require('../middleware/http');
 
 const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(40, 1)]);
@@ -45,6 +46,20 @@ test('media: MP4, WebM and GLB assets are recognised and size-limited', () => {
   assert.equal(checkUpload({contentType:'model/gltf-binary',data:b64(glb)}).ok,true);
   const tooBig = Buffer.concat([glb, Buffer.alloc(MAX_ASSET_BYTES)]);
   assert.match(checkUpload({contentType:'model/gltf-binary',data:b64(tooBig)}).message,/too big/);
+});
+
+
+
+test('media: MongoDB Media schema persists every MIME type accepted by the upload validator', () => {
+  assert.deepEqual(Media.schema.path('contentType').enumValues, TYPES);
+
+  for (const contentType of TYPES) {
+    const document = new Media({ contentType, size: 1, data: Buffer.from('test') });
+    assert.equal(document.validateSync(), undefined, `${contentType} should pass Media schema validation`);
+  }
+
+  const unsupported = new Media({ contentType: 'video/quicktime', size: 1, data: Buffer.from('test') });
+  assert.ok(unsupported.validateSync()?.errors?.contentType, 'unsupported media types must remain rejected');
 });
 
 
