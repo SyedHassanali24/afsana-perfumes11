@@ -556,3 +556,5 @@ export default function AfsanaSignatureHome(){
   // No CMS layout: render nothing rather than resurrecting the previous home design.
   return <CmsDrivenHome sections={[]} faq={data?.faqs || []} />;
 }
+
+// Cloudflare deploy trigger: video-grid upload playback and per-card mute controls.
