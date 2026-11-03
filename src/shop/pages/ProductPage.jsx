@@ -203,6 +203,9 @@ export default function ProductPage(){
    .afsana-note-kicker:before,.afsana-complete-kicker:before{content:"";width:34px;height:1px;background:#d9bc96}
    .afsana-note-story-head h2,.afsana-complete-story-head h2{margin:22px 0 0;font-family:var(--font-display,Georgia,serif);font-size:clamp(54px,7.2vw,108px);font-weight:400;line-height:.86;letter-spacing:-.06em;color:#fff}
    .afsana-note-story-head,.afsana-note-story-head>div,.afsana-note-story-head h2,.afsana-note-story-head p{background:transparent!important;box-shadow:none!important;border:0!important}
+   .storefront-theme .afsana-note-story{background:radial-gradient(ellipse at 8% 10%,rgba(133,89,196,.3),transparent 32%),radial-gradient(ellipse at 92% 82%,rgba(188,145,91,.16),transparent 32%),linear-gradient(130deg,#100b1b 0%,#1b1230 50%,#0b0912 100%)!important}
+   .storefront-theme .afsana-note-story-head,.storefront-theme .afsana-note-story-head>div,.storefront-theme .afsana-note-story-head h2,.storefront-theme .afsana-note-story-head p{background-color:transparent!important;background-image:none!important;box-shadow:none!important}
+
    .afsana-note-story-head{padding:0!important}
    .afsana-note-story-head h2{display:block!important;max-width:920px;margin:21px 0 0!important;padding:0!important;color:#fff!important;font-size:clamp(64px,8.4vw,126px)!important;line-height:.83!important;letter-spacing:-.075em!important;text-shadow:0 12px 40px rgba(0,0,0,.28)}
    .afsana-note-story-head h2 em{display:inline-block;margin-top:8px;background:linear-gradient(100deg,#efd7ad 0%,#fff0d5 38%,#c2a4e9 78%,#e1c5a1 100%);-webkit-background-clip:text;background-clip:text;color:transparent!important;font-size:1.06em!important;text-shadow:none}
