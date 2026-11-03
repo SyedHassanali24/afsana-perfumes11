@@ -42,10 +42,10 @@ const defaults = (type) => ({
   ...(type === 'product_3d_showcase' ? { eyebrow: 'THE AFSANA OBJECT', body: 'Explore the signature bottle in motion.', productSlug: '', imageUrl: '', buttonText: 'Explore fragrance', buttonLink: '/shop' } : {}),
   ...(type === 'interactive_gallery' ? { eyebrow: 'THE VISUAL JOURNEY', items: 'The Signature|Luminous opening|https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85|/shop\nDark Woods|Deep oud atmosphere|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1000&q=85|/shop\nSoft Light|Floral world|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1000&q=85|/shop' } : {}),
 });
-const parseItems = (text) => String(text || '').split('\n').map((x) => x.trim()).filter(Boolean).map((x) => {
+const parseItems = (text) => (Array.isArray(text) ? text : String(text || '').split('\n').map((x) => x.trim()).filter(Boolean).map((x) => {
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
   return { title: title.trim(), text: textValue.trim(), image: image.trim(), link: link.trim() };
-});
+})).map((x) => ({ title: String(x?.title || '').trim(), text: String(x?.text || '').trim(), image: String(x?.image || '').trim(), link: String(x?.link || '').trim() }));
 const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
 
 const AFSANA_EXPERIENCE_SECTIONS = [
