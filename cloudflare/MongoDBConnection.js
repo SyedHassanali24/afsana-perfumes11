@@ -188,7 +188,6 @@ export class MongoDBConnection extends DurableObject {
         const bytes = await bucket.get(key, { type: "arrayBuffer" });
         const expected = Math.min(meta.chunkSize, meta.size - index * meta.chunkSize);
         if (!bytes || bytes.byteLength !== expected) return mediaJson({ success: false, error: { message: "Video upload is incomplete (part " + (index + 1) + " of " + meta.chunkCount + ")." } }, 409);
-        await bucket.put(key, bytes);
       }
       meta.status = "complete";
       meta.completedAt = new Date().toISOString();
