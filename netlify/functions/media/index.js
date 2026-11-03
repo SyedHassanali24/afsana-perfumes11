@@ -22,6 +22,11 @@ const api = createHandler('media', [
       await audit(ctx, { action: 'media.profile_uploaded', module: 'staff', recordId: doc._id, newValue: { size: doc.size, contentType: doc.contentType } });
       return res(201, { url: `/api/media/${doc._id}`, size: doc.size });
     } },
+  { method: 'POST', path: '/chunked/authorize', body: S.chunkedUploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
+    handler: async ({ ctx }) => {
+      if (!UPLOADERS.some(([m, a]) => ctx.perms.can(m, a))) throw E.forbidden();
+      return res(200, { authorized: true });
+    } },
   { method: 'POST', path: '/admin', body: S.uploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
     handler: async ({ ctx, body }) => {
       if (!UPLOADERS.some(([m, a]) => ctx.perms.can(m, a))) throw E.forbidden();

@@ -108,3 +108,76 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
   if (memoryGets.size) clearApiCache();
   return result;
 }
+
+export async function uploadChunkedMedia(file, onProgress) {
+  const CHUNK_BYTES = 4 * 1024 * 1024;
+  const MAX_BYTES = 250 * 1024 * 1024;
+  if (!file || !Number.isSafeInteger(file.size) || file.size < 1 || file.size > MAX_BYTES) {
+    throw new ApiError(400, 'MEDIA_TOO_LARGE', 'Choose a video smaller than 250 MB.');
+  }
+  const extension = String(file.name || '').split('.').pop().toLowerCase();
+  const contentType = file.type || (['mp4', 'm4v'].includes(extension) ? 'video/mp4' : extension === 'webm' ? 'video/webm' : '');
+  if (!['video/mp4', 'video/webm'].includes(contentType)) {
+    throw new ApiError(400, 'MEDIA_TYPE', 'Please select an MP4 or WebM video.');
+  }
+  const requestJson = async (path, { method = 'POST', body, token } = {}) => {
+    let response;
+    try {
+      response = await fetch(new URL('/api' + path, API_ORIGIN), {
+        method,
+        credentials: 'include',
+        headers: {
+          'X-Requested-With': 'afsana',
+          ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...(token ? { Authorization: 'Bearer ' + token } : {})
+        },
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+    } catch {
+      throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.');
+    }
+    let data;
+    try { data = await response.json(); } catch { data = null; }
+    if (!response.ok || !data?.success) {
+      const error = data?.error || {};
+      throw new ApiError(response.status, error.code || 'UPLOAD_FAILED', error.message || 'Video upload failed.');
+    }
+    return data;
+  };
+
+  const session = await requestJson('/media/chunked/init', {
+    body: { filename: file.name, contentType, size: file.size }
+  });
+  const chunkSize = Number(session.chunkSize) || CHUNK_BYTES;
+  const totalChunks = Math.ceil(file.size / chunkSize);
+  for (let index = 0; index < totalChunks; index += 1) {
+    const start = index * chunkSize;
+    const end = Math.min(file.size, start + chunkSize);
+    const chunk = file.slice(start, end);
+    let response;
+    try {
+      response = await fetch(new URL('/api/media/chunked/' + session.uploadId + '/' + index, API_ORIGIN), {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'X-Requested-With': 'afsana',
+          'Content-Type': 'application/octet-stream',
+          Authorization: 'Bearer ' + session.token
+        },
+        body: chunk
+      });
+    } catch {
+      throw new ApiError(0, 'NETWORK', 'Connection interrupted while uploading the video. Please try again.');
+    }
+    let data;
+    try { data = await response.json(); } catch { data = null; }
+    if (!response.ok || !data?.success) {
+      const error = data?.error || {};
+      throw new ApiError(response.status, error.code || 'UPLOAD_FAILED', error.message || ('Could not upload video part ' + (index + 1) + '.'));
+    }
+    onProgress?.(Math.round(((index + 1) / totalChunks) * 98));
+  }
+  const complete = await requestJson('/media/chunked/' + session.uploadId + '/complete', { token: session.token });
+  onProgress?.(100);
+  return { url: complete.url, size: complete.size };
+}

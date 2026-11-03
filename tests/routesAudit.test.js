@@ -40,6 +40,7 @@ const STAFF_NO_PERMISSION = new Set([
   'permissions GET /catalog',   // static labels only
   'media POST /profile',        // signed-in staff may upload their own profile avatar
   'media POST /admin',          // checks "can upload for any content module" inside the handler
+  'media POST /chunked/authorize', // validates the upload session and checks content permissions inside the handler
 ]);
 // Routes that are intentionally public (login, health, storefront reads).
 const label = (g, r) => `${g} ${r.method} ${r.path}`;

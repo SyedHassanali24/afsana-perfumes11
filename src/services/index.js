@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, uploadChunkedMedia } from './api';
 export { api, ApiError } from './api';
 
 export const authApi = {
@@ -213,6 +213,7 @@ export const myReturnsApi = {
 // ---- picture upload (staff with products.manageImages) ----
 export const mediaApi = {
   upload: (body) => api('/media/admin', { method: 'POST', body }),
+  uploadVideo: (file, onProgress) => uploadChunkedMedia(file, onProgress),
   uploadProfile: (body) => api('/media/profile', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
 };
 
