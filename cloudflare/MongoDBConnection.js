@@ -128,6 +128,10 @@ export class MongoDBConnection extends DurableObject {
         createdAt: new Date().toISOString()
       };
       await bucket.put("media:" + uploadId + ":meta", JSON.stringify(meta), { expirationTtl: MEDIA_UPLOAD_TTL });
+      const cleanupKey = "afsana:media-upload:" + uploadId;
+      await this.ctx.storage.put(cleanupKey, { chunkCount, expiresAt });
+      const currentAlarm = await this.ctx.storage.getAlarm();
+      if (!currentAlarm || currentAlarm > expiresAt) await this.ctx.storage.setAlarm(expiresAt);
       return mediaJson({
         success: true,
         uploadId,
@@ -183,6 +187,7 @@ export class MongoDBConnection extends DurableObject {
       meta.status = "complete";
       meta.completedAt = new Date().toISOString();
       await bucket.put("media:" + uploadId + ":meta", JSON.stringify(meta));
+      await this.ctx.storage.delete("afsana:media-upload:" + uploadId);
       return mediaJson({ success: true, url: "/api/media/" + uploadId, size: meta.size });
     }
     return mediaJson({ success: false, error: { message: "Chunked media route not found." } }, 404);
@@ -248,6 +253,29 @@ export class MongoDBConnection extends DurableObject {
       }
     });
     return new Response(body, { status, headers });
+  }
+
+
+  async alarm() {
+    const bucket = this.env.AFSANA_MEDIA_FREE;
+    const prefix = "afsana:media-upload:";
+    const pending = await this.ctx.storage.list({ prefix });
+    let nextAlarm = null;
+    for (const [key, meta] of pending) {
+      if (!meta || meta.expiresAt <= Date.now()) {
+        const uploadId = key.slice(prefix.length);
+        if (bucket && meta) {
+          for (let index = 0; index < meta.chunkCount; index += 1) {
+            await bucket.delete("media:" + uploadId + ":chunk:" + index);
+          }
+          await bucket.delete("media:" + uploadId + ":meta");
+        }
+        await this.ctx.storage.delete(key);
+      } else if (nextAlarm === null || meta.expiresAt < nextAlarm) {
+        nextAlarm = meta.expiresAt;
+      }
+    }
+    if (nextAlarm !== null) await this.ctx.storage.setAlarm(nextAlarm);
   }
 
   async fetch(request) {
