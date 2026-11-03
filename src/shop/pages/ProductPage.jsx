@@ -114,28 +114,59 @@ export default function ProductPage(){
  const moveDrag=(e)=>{if(dragX==null)return;const x=e.clientX ?? e.touches?.[0]?.clientX ?? dragX;if(Math.abs(x-dragX)>28){selectMedia(img+(x<dragX?1:-1));setDragX(x)}};
  const endDrag=()=>setDragX(null);
  return <Container className="pt-10 sm:pt-16 pb-24">
+  <style>{`
+   .product-detail-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(360px,.88fr);gap:clamp(28px,4.8vw,76px);align-items:start}
+   .product-gallery{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:start;min-width:0}
+   .gallery-thumbs{display:flex;flex-direction:column;gap:10px;max-height:720px;overflow:auto;scrollbar-width:thin}
+   .gallery-thumbs button{flex:none;border-radius:7px;background:#f7f4fb}
+   .main-product-stage{height:clamp(590px,62vw,790px);min-height:590px;border-radius:24px;background:radial-gradient(ellipse at 50% 32%,rgba(157,119,218,.2),transparent 33%),radial-gradient(ellipse at 50% 92%,rgba(211,177,133,.18),transparent 35%),linear-gradient(145deg,#faf8fd,#ede7f5);border:1px solid rgba(115,87,255,.13);box-shadow:0 25px 80px rgba(32,17,54,.09)}
+   .afsana-product-stage-glow{position:absolute;inset:8%;border:1px solid rgba(115,87,255,.09);border-radius:20px;pointer-events:none}
+   .afsana-product-stage-glow:before{content:"";position:absolute;inset:10%;border-radius:50%;background:radial-gradient(ellipse,rgba(179,153,218,.16),transparent 65%);filter:blur(20px)}
+   .afsana-product-shadow{position:absolute;bottom:13%;width:48%;height:34px;border-radius:50%;background:rgba(35,19,55,.19);filter:blur(22px);transition:transform .4s}
+   .afsana-bottle-preview{position:relative;z-index:1;width:min(68%,350px);height:78%;min-height:390px;transform-style:preserve-3d;filter:drop-shadow(0 38px 34px rgba(32,17,54,.22));animation:afsanaBottleIn .8s cubic-bezier(.2,.8,.2,1) both}
+   .afsana-bottle-shadow{position:absolute;left:17%;right:17%;bottom:1%;height:5%;border-radius:50%;background:rgba(29,14,47,.24);filter:blur(15px);transform:translateZ(-35px)}
+   .afsana-bottle-cap{position:absolute;z-index:3;top:3%;left:35%;width:30%;height:15%;border:1px solid rgba(255,255,255,.5);border-radius:8px 8px 4px 4px;background:linear-gradient(90deg,#241637 0%,#745c91 18%,#d0b6df 34%,#4a345f 63%,#241637 100%);box-shadow:inset 5px 0 8px rgba(255,255,255,.22),inset -7px 0 10px rgba(0,0,0,.28),0 9px 15px rgba(27,15,41,.2);transform:translateZ(24px)}
+   .afsana-bottle-cap span{position:absolute;left:15%;right:15%;top:12%;height:1px;background:rgba(255,255,255,.48);box-shadow:0 5px rgba(255,255,255,.15),0 10px rgba(0,0,0,.12)}
+   .afsana-bottle-neck{position:absolute;z-index:2;top:17%;left:40%;width:20%;height:9%;border:1px solid rgba(255,255,255,.75);background:linear-gradient(90deg,#4c3b60,#e5d5ef 30%,#827095 65%,#2d1e42);box-shadow:0 5px 9px rgba(27,15,41,.18);transform:translateZ(15px)}
+   .afsana-bottle-body{position:absolute;left:12%;right:12%;top:23%;bottom:4%;overflow:hidden;border:2px solid rgba(255,255,255,.78);border-radius:22px 22px 30px 30px;background:linear-gradient(90deg,rgba(55,34,79,.96),rgba(161,130,185,.8) 15%,rgba(236,221,245,.8) 31%,rgba(97,66,126,.94) 57%,rgba(37,22,55,.98) 100%);box-shadow:inset 9px 0 14px rgba(255,255,255,.24),inset -12px 0 17px rgba(0,0,0,.35),inset 0 9px 12px rgba(255,255,255,.28),0 18px 25px rgba(23,12,36,.17);transform:translateZ(22px);transform-style:preserve-3d}
+   .afsana-bottle-liquid{position:absolute;left:2%;right:2%;bottom:2%;height:62%;border-radius:8px 8px 23px 23px;background:linear-gradient(90deg,rgba(66,33,86,.9),rgba(196,154,97,.82) 22%,rgba(246,215,158,.75) 43%,rgba(102,59,113,.86) 76%,rgba(38,21,54,.96));box-shadow:inset 0 5px 10px rgba(255,255,255,.25)}
+   .afsana-bottle-glass{position:absolute;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.52),transparent 11%,transparent 72%,rgba(255,255,255,.18) 82%,transparent 95%);pointer-events:none}
+   .afsana-bottle-highlight{position:absolute;z-index:2;top:7%;left:10%;width:9%;height:73%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.68),rgba(255,255,255,.04));filter:blur(3px)}
+   .afsana-bottle-label{position:absolute;z-index:3;top:37%;left:11%;right:11%;min-height:30%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:12px 5px;border:1px solid rgba(237,215,177,.62);background:linear-gradient(145deg,rgba(18,10,29,.88),rgba(44,27,62,.82));color:#f6e8cf;text-align:center;box-shadow:0 8px 18px rgba(14,8,24,.3);transform:translateZ(12px)}
+   .afsana-bottle-label small{font-size:7px;letter-spacing:.27em;opacity:.76}
+   .afsana-bottle-label strong{font-family:Georgia,serif;font-size:clamp(18px,2vw,27px);font-weight:400;letter-spacing:.14em}
+   .afsana-bottle-label span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Georgia,serif;font-size:clamp(9px,1vw,13px);letter-spacing:.08em}
+   .afsana-bottle-label i{font-size:6px;font-style:normal;letter-spacing:.22em;opacity:.8}
+   @keyframes afsanaBottleIn{from{opacity:0;transform:translateY(28px) rotateY(-13deg) scale(.94)}to{opacity:1;transform:translateY(0) rotateY(0) scale(1)}}
+   model-viewer{--poster-color:transparent;--progress-bar-color:#7357ff;--progress-mask:#f2eef8}
+   @media(max-width:980px){.product-detail-grid{grid-template-columns:minmax(0,1fr);gap:42px}.product-gallery{grid-template-columns:64px minmax(0,1fr)}.main-product-stage{height:clamp(560px,78vw,720px)}}
+   @media(max-width:600px){.product-detail-grid{margin-top:22px}.product-gallery{display:flex;flex-direction:column;gap:12px}.main-product-stage{order:1;width:100%;height:clamp(480px,130vw,620px);min-height:480px;border-radius:16px}.gallery-thumbs{order:2;flex-direction:row;width:100%;max-height:none;overflow-x:auto;overflow-y:hidden;padding:2px 0 7px}.gallery-thumbs button{width:60px;min-width:60px}.afsana-bottle-preview{min-height:350px;height:76%;width:74%}.afsana-bottle-label{gap:5px}.afsana-bottle-label strong{font-size:18px}}
+   @media(prefers-reduced-motion:reduce){.afsana-bottle-preview{animation:none}}
+  `}</style>
   <StateBox loading={loading} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
    <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">Home</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">Collection</Link> <span>/</span> {p.name}</div>
    <div className="product-detail-grid mt-8">
     <div className="product-gallery">
-      <div className="gallery-thumbs space-y-3">{(media.length?media:[{url:''}]).map((m,i)=><button key={i} onClick={()=>selectMedia(i)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#b4bf41] shadow-[0_8px_25px_rgba(38,62,14,.12)]':'border-[#263e0e]/10')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#b4bf41]"/>}</button>)}</div>
-      <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={(e)=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative min-h-[560px] sm:min-h-[650px] bg-[#f3f1e9] overflow-hidden flex items-center justify-center">
-       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(180,191,65,.22),transparent_26%),radial-gradient(circle_at_50%_85%,rgba(116,142,64,.12),transparent_34%)]"/>
-       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#5f654f]">AFSANA / {String(img+1).padStart(2,"0")}</div><div className="absolute top-6 right-6 z-10 flex items-center gap-2 border border-[#263e0e]/10 bg-white/55 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.2em] text-[#5f654f]"><Rotate3D className="w-3.5 h-3.5"/> {product3dUrl?'Interactive 3D model':'360° image gallery'}</div>
-       {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-6 z-10 border border-[#263e0e]/10 bg-white/65 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.2em] text-[#263e0e]">{autoRotate?'Stop 360°':'Auto 360°'}</button>}
-       <div className="absolute bottom-10 w-[52%] h-10 rounded-[50%] bg-black/18 blur-2xl transition-transform duration-500" style={{transform:`translateX(${tilt.y*1.4}px) scaleX(${1+Math.abs(tilt.y)/180})`}}/>
-       {product3dUrl
-         ? <model-viewer src={product3dUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'82%',height:'84%',background:'transparent','--poster-color':'transparent'}}/>
-         : <div className={"product-3d relative w-[70%] h-[84%] "+(stagePulse?"stage-pulse":"")} style={{transform:`perspective(1100px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out',transformStyle:'preserve-3d'}}>
-         <div className="absolute inset-[5%] rounded-[38%] bg-[#748e40]/12 blur-3xl" style={{transform:'translateZ(-70px) scale(.92)'}}/>
-         <div className="absolute inset-[4%] rounded-[32%] border border-[#748e40]/20 opacity-60" style={{transform:'translateZ(-28px) rotateY(5deg)'}}/>
-         <div className="absolute inset-[8%] overflow-hidden rounded-[18%] opacity-20 blur-[2px]" style={{transform:'translateZ(-18px) scale(.96)'}}><Media item={media[img]} alt="" className="w-full h-full object-cover"/></div>
-         <div className="absolute inset-0 flex items-center justify-center" style={{transform:'translateZ(45px)'}}><div className="absolute inset-[12%] rounded-full bg-[#b4bf41]/10 blur-3xl"/>
-           <div key={img} className="media-transition h-full w-full"><Media item={media[img]} alt={p.name} className="max-h-full max-w-full w-full h-full object-contain drop-shadow-[0_38px_48px_rgba(20,30,10,.30)]"/></div>
-         </div>
-         <div className="absolute left-[10%] right-[10%] bottom-[7%] h-[14%] rounded-[50%] bg-white/20 blur-xl" style={{transform:'translateZ(15px)'}}/>
-       </div>}
-       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center text-[8px] uppercase tracking-[.25em] text-[#5f654f]/65">{product3dUrl?'Drag to rotate the real 3D model':'Swipe to explore product images'} · {media[img]?.kind==="video"?"Live film":"Product media"}</div>
+      {media.length>1&&<div className="gallery-thumbs">{media.map((m,i)=><button type="button" key={m.url+'-'+i} onClick={()=>selectMedia(i)} aria-label={'View product media '+(i+1)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#7357ff] shadow-[0_8px_25px_rgba(50,26,90,.18)]':'border-[#7357ff]/15')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#7357ff]"/>}</button>)}</div>}
+      <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={()=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative overflow-hidden flex items-center justify-center">
+       <div className="afsana-product-stage-glow"/>
+       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#665d79]">AFSANA / {String(img+1).padStart(2,"0")}</div>
+       <div className="absolute top-5 right-5 z-10 flex items-center gap-2 border border-[#7357ff]/15 bg-white/70 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.18em] text-[#46375f]"><Rotate3D className="w-3.5 h-3.5"/> {showRealModel?'Interactive 3D bottle':product3dUrl?'Loading 3D preview':media.length?'Interactive product view':'Bottle preview'}</div>
+       {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-5 z-10 border border-[#7357ff]/15 bg-white/75 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.18em] text-[#392650]">{autoRotate?'Stop gallery':'Auto gallery'}</button>}
+       <div className="afsana-product-shadow" style={{transform:`translateX(${tilt.y*1.4}px) scaleX(${1+Math.abs(tilt.y)/180})`}}/>
+       {showRealModel
+        ? <model-viewer ref={modelViewerRef} src={product3dUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.2" exposure="1.05" environment-image="neutral" interaction-prompt="auto" style={{width:'88%',height:'88%',background:'transparent','--poster-color':'transparent','--progress-bar-color':'#7357ff','--progress-mask':'#f2eef8'}}/>
+        : hasProductVisual
+         ? <div className={"product-3d relative z-[1] w-[84%] h-[88%] "+(stagePulse?"stage-pulse":"")} style={{transform:`perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out',transformStyle:'preserve-3d'}}>
+            <div className="absolute inset-[5%] rounded-[38%] bg-[#7357ff]/10 blur-3xl" style={{transform:'translateZ(-65px) scale(.92)'}}/>
+            <div className="absolute inset-[4%] rounded-[32%] border border-[#7357ff]/15 opacity-60" style={{transform:'translateZ(-28px) rotateY(5deg)'}}/>
+            <div className="absolute inset-0 flex items-center justify-center" style={{transform:'translateZ(42px)'}}>
+             <div className="absolute inset-[12%] rounded-full bg-[#b7a0da]/20 blur-3xl"/>
+             <div key={img} className="media-transition h-full w-full"><Media item={activeMedia} alt={p.name} onError={()=>setMediaBroken(true)} className="max-h-full max-w-full w-full h-full object-contain drop-shadow-[0_38px_48px_rgba(25,13,44,.28)]"/></div>
+            </div>
+           </div>
+         : <BottlePreview name={p.name} style={{transform:`perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out'}}/>}
+       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 text-center text-[8px] uppercase tracking-[.2em] text-[#665d79]/80">{showRealModel?'Drag to rotate · True 3D model':hasProductVisual?'Move or drag to explore the bottle image':product3dUrl&&!modelViewerFailed?'Preparing interactive model':'3D-style bottle preview · Add product photos or GLB in CMS'}</div>
       </div>
     </div>
     <div className="lg:pt-5">
