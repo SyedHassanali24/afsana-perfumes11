@@ -28,3 +28,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </Router>
   </React.StrictMode>
 );
+
+// Cloudflare deploy refresh: rebuild the CMS frontend uploader bundle.
