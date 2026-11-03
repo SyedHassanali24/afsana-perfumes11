@@ -354,36 +354,43 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     }));
     return <section className="afsana-ref-films afsana-film-experience">
       <style>{`
-        .afsana-film-experience{position:relative;isolation:isolate;overflow:hidden;padding:clamp(58px,6vw,88px) 0;background:radial-gradient(ellipse at 50% 0%,#241442 0%,#100b20 48%,#080711 100%);color:#fbf8ff}
-        .afsana-film-experience:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 18%,rgba(164,111,255,.25),transparent 36%),radial-gradient(ellipse at 88% 78%,rgba(108,73,188,.24),transparent 38%),linear-gradient(120deg,transparent 35%,rgba(255,255,255,.035) 50%,transparent 65%);animation:afsanaFilmAura 16s ease-in-out infinite alternate}
-        .afsana-film-experience:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(204,174,255,.72),transparent)}
-        .afsana-film-experience .container-xl{position:relative;z-index:1}
-        .afsana-film-heading{display:flex;align-items:end;justify-content:space-between;gap:36px;margin:0 auto clamp(28px,3.5vw,46px);max-width:1800px;padding:0 18px}
-        .afsana-film-kicker{display:flex;align-items:center;gap:12px;color:#d5b8ff;font-size:9px;font-weight:700;letter-spacing:.34em;text-transform:uppercase}
-        .afsana-film-kicker:before{content:"";width:34px;height:1px;background:#c4b0ed}
-        .afsana-film-heading h2{margin:20px 0 0;font-family:var(--font-display,Georgia,serif);font-size:clamp(48px,7.5vw,104px);font-weight:400;line-height:.88;letter-spacing:-.055em}
-        .afsana-film-heading h2 em{color:#d8baff;font-weight:400}
-        .afsana-film-intro{max-width:340px;margin:0 0 5px;color:rgba(251,248,255,.66);font-size:12px;line-height:2;letter-spacing:.025em}
-        .afsana-ref-film-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:calc(100% - 36px);max-width:1800px;margin:0 auto}
-         .afsana-ref-film-card{position:relative;isolation:isolate;overflow:hidden;min-width:0;aspect-ratio:.69;border:1px solid rgba(205,177,255,.32);border-radius:12px;background:#171126;box-shadow:0 20px 58px rgba(0,0,0,.42);transform:translateY(0);transition:transform .65s cubic-bezier(.2,.75,.2,1),border-color .5s,box-shadow .6s}
-        .afsana-ref-film-card:before{content:"";position:absolute;inset:8px;z-index:4;border:1px solid rgba(230,211,255,.22);pointer-events:none;transition:inset .65s,border-color .5s}
-        .afsana-ref-film-card:after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(8,5,18,.22),transparent 24%,transparent 45%,rgba(8,5,18,.82)),linear-gradient(115deg,rgba(174,119,255,.17),transparent 48%)}
-        .afsana-ref-film-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.12) contrast(1.08);transform:scale(1.025);transition:transform 1.2s cubic-bezier(.2,.7,.2,1),filter .8s}
-        .afsana-ref-film-card:hover{transform:translateY(-9px);border-color:rgba(216,185,255,.9);box-shadow:0 30px 78px rgba(0,0,0,.58),0 0 36px rgba(174,119,255,.2)}
-        .afsana-ref-film-card:hover:before{inset:14px;border-color:rgba(255,255,255,.36)}
-        .afsana-ref-film-card:hover video{transform:scale(1.11);filter:saturate(1.08) contrast(1.08)}
-        .afsana-ref-film-card>div:last-child{position:absolute;left:25px;right:20px;bottom:27px;z-index:5}
-        .afsana-ref-film-card small{display:block;margin-bottom:10px;color:#e1caff;font-size:8px;font-weight:700;letter-spacing:.24em}
-        .afsana-ref-film-card h3{max-width:95%;font-family:var(--font-display,Georgia,serif);font-size:clamp(18px,2vw,27px);font-weight:400;line-height:1.12;color:#fff}
-        .afsana-ref-film-play{position:absolute;top:50%;left:50%;z-index:5;display:grid;width:54px;height:54px;place-items:center;border:1px solid rgba(255,255,255,.62);border-radius:50%;background:rgba(7,9,6,.23);color:#fff;font-size:13px;transform:translate(-50%,-50%);backdrop-filter:blur(9px);transition:background .35s,transform .5s,border-color .35s}
-        .afsana-ref-film-card:hover .afsana-ref-film-play{background:rgba(177,126,255,.94);border-color:#ead9ff;color:#170d27;transform:translate(-50%,-50%) scale(1.12)}
-        .afsana-film-mute{position:absolute;top:22px;right:22px;z-index:7;display:grid;width:39px;height:39px;place-items:center;border:1px solid rgba(255,255,255,.38);border-radius:50%;background:rgba(17,10,31,.68);color:white;backdrop-filter:blur(12px);transition:background .25s,transform .25s}
-        .afsana-film-mute:hover{background:rgba(177,126,255,.95);color:#170d27;transform:scale(1.08)}
-        .afsana-ref-film-placeholder{display:grid;place-items:center;color:#d4d99a;font-size:9px;letter-spacing:.2em}
+        /* AFSANA — cinematic fragrance film gallery. All rules remain scoped to this section. */
+        .afsana-film-experience{position:relative;isolation:isolate;overflow:hidden;padding:clamp(68px,7.5vw,112px) 0 clamp(72px,8vw,120px);background:#080611;color:#fbf8ff}
+        .afsana-film-experience:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 8%,rgba(142,83,255,.26),transparent 34%),radial-gradient(ellipse at 88% 64%,rgba(103,53,180,.24),transparent 38%),radial-gradient(ellipse at 50% 110%,rgba(193,148,85,.11),transparent 42%),repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 1px,transparent 1px 110px);animation:afsanaFilmAura 18s ease-in-out infinite alternate}
+        .afsana-film-experience:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(224,190,137,.8),rgba(196,157,255,.65),transparent)}
+        .afsana-film-experience>.container-xl{position:relative;z-index:1;width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important}
+        .afsana-film-heading{display:flex;align-items:end;justify-content:space-between;gap:44px;width:calc(100% - clamp(32px,7vw,140px));max-width:1760px;margin:0 auto clamp(34px,4.2vw,58px);padding:0}
+        .afsana-film-kicker{display:flex;align-items:center;gap:14px;color:#d8bbff;font-size:10px;font-weight:700;letter-spacing:.38em;text-transform:uppercase}
+        .afsana-film-kicker:before{content:"";width:42px;height:1px;background:linear-gradient(90deg,#d7b8ff,#e7c895)}
+        .afsana-film-heading h2{margin:22px 0 0;font-family:var(--font-display,Georgia,serif);font-size:clamp(58px,8.4vw,136px);font-weight:400;line-height:.82;letter-spacing:-.068em;color:#fff}
+        .afsana-film-heading h2 em{color:#e2c497;font-weight:400;font-style:italic;text-shadow:0 0 35px rgba(216,174,118,.16)}
+        .afsana-film-intro{max-width:370px;margin:0 0 8px;color:rgba(244,237,255,.68);font-size:13px;line-height:2;letter-spacing:.035em}
+        .afsana-ref-film-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(5px,.55vw,10px);width:calc(100% - clamp(20px,3.5vw,68px));max-width:1900px;margin:0 auto}
+        .afsana-ref-film-card{position:relative;isolation:isolate;overflow:hidden;min-width:0;height:clamp(570px,56vw,790px);min-height:570px;aspect-ratio:auto;border:1px solid rgba(213,183,255,.3);border-radius:8px;background:#151020;box-shadow:0 24px 70px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.025);transform:translateY(0);transition:transform .8s cubic-bezier(.2,.78,.2,1),border-color .5s,box-shadow .7s;animation:afsanaFilmReveal .9s both}
+        .afsana-ref-film-card:nth-child(2){animation-delay:.09s}
+        .afsana-ref-film-card:nth-child(3){animation-delay:.18s}
+        .afsana-ref-film-card:nth-child(4){animation-delay:.27s}
+        .afsana-ref-film-card:before{content:"";position:absolute;inset:12px;z-index:4;border:1px solid rgba(255,255,255,.2);border-radius:3px;pointer-events:none;transition:inset .7s,border-color .6s,opacity .6s}
+        .afsana-ref-film-card:after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(8,5,18,.26) 0%,transparent 22%,transparent 48%,rgba(7,4,17,.28) 65%,rgba(7,4,17,.92) 100%),linear-gradient(125deg,rgba(169,118,255,.16),transparent 44%),linear-gradient(0deg,rgba(8,5,18,.18),transparent 35%)}
+        .afsana-ref-film-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.12) contrast(1.08) brightness(.94);transform:scale(1.035);transition:transform 1.35s cubic-bezier(.2,.7,.2,1),filter 1s}
+        .afsana-ref-film-card:hover{transform:translateY(-10px);border-color:rgba(229,198,151,.9);box-shadow:0 34px 90px rgba(0,0,0,.64),0 0 42px rgba(157,101,255,.18)}
+        .afsana-ref-film-card:hover:before{inset:18px;border-color:rgba(246,222,183,.58)}
+        .afsana-ref-film-card:hover video{transform:scale(1.105);filter:saturate(1.22) contrast(1.1) brightness(1.02)}
+        .afsana-ref-film-card>div:last-child{position:absolute;left:clamp(18px,2vw,30px);right:clamp(16px,1.8vw,26px);bottom:clamp(24px,3vw,42px);z-index:5}
+        .afsana-ref-film-card small{display:flex;align-items:center;gap:9px;margin-bottom:13px;color:#e9c995;font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+        .afsana-ref-film-card small:before{content:"";width:20px;height:1px;background:#e9c995}
+        .afsana-ref-film-card h3{max-width:95%;margin:0;font-family:var(--font-display,Georgia,serif);font-size:clamp(22px,2.35vw,38px);font-weight:400;line-height:1.02;letter-spacing:-.025em;color:#fff;text-shadow:0 5px 24px rgba(0,0,0,.42)}
+        .afsana-ref-film-play{position:absolute;top:50%;left:50%;z-index:5;display:grid;width:68px;height:68px;place-items:center;border:1px solid rgba(246,226,195,.78);border-radius:50%;background:rgba(17,9,30,.3);color:#fff;font-size:15px;transform:translate(-50%,-50%);backdrop-filter:blur(14px);box-shadow:0 0 0 9px rgba(255,255,255,.045),0 12px 38px rgba(0,0,0,.26);transition:background .4s,transform .55s,border-color .4s,box-shadow .4s}
+        .afsana-ref-film-card:hover .afsana-ref-film-play{background:rgba(224,190,137,.94);border-color:#f5dfbd;color:#160f20;transform:translate(-50%,-50%) scale(1.13);box-shadow:0 0 0 13px rgba(224,190,137,.1),0 14px 42px rgba(0,0,0,.3)}
+        .afsana-film-mute{position:absolute;top:25px;right:25px;z-index:7;display:grid;width:43px;height:43px;place-items:center;border:1px solid rgba(255,255,255,.42);border-radius:50%;background:rgba(13,8,24,.62);color:white;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.25);transition:background .3s,transform .3s,border-color .3s}
+        .afsana-film-mute:hover{background:rgba(224,190,137,.96);border-color:#f5dfbd;color:#160f20;transform:scale(1.09)}
+        .afsana-ref-film-placeholder{display:grid;place-items:center;color:#e1caff;font-size:10px;letter-spacing:.2em}
         @keyframes afsanaFilmAura{from{transform:scale(1);opacity:.72}to{transform:scale(1.08);opacity:1}}
-        @media(max-width:900px){.afsana-ref-film-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:calc(100% - 28px)}.afsana-film-intro{max-width:280px}}
-        @media(max-width:560px){.afsana-film-experience{padding:56px 0}.afsana-film-heading{display:block;margin-bottom:26px;padding:0 12px}.afsana-film-intro{margin-top:20px;max-width:100%}.afsana-ref-film-grid{gap:6px;width:calc(100% - 20px)}.afsana-ref-film-card{aspect-ratio:.68;border-radius:9px}.afsana-ref-film-card>div:last-child{left:18px;right:14px;bottom:20px}.afsana-ref-film-card h3{font-size:19px}.afsana-ref-film-card small{font-size:7px}.afsana-film-mute{top:17px;right:17px;width:35px;height:35px}.afsana-ref-film-card:before{inset:6px}}
-        @media(prefers-reduced-motion:reduce){.afsana-film-experience:before{animation:none}.afsana-ref-film-card,.afsana-ref-film-card video,.afsana-film-mute{transition:none}}
+        @keyframes afsanaFilmReveal{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:1050px){.afsana-ref-film-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:calc(100% - 28px)}.afsana-ref-film-card{height:clamp(520px,76vw,680px);min-height:520px}.afsana-film-heading{width:calc(100% - 48px)}.afsana-film-intro{max-width:300px}}
+        @media(max-width:600px){.afsana-film-experience{padding:58px 0 66px}.afsana-film-heading{display:block;width:calc(100% - 32px);margin-bottom:28px}.afsana-film-kicker{font-size:8px;letter-spacing:.28em}.afsana-film-kicker:before{width:28px}.afsana-film-heading h2{margin-top:18px;font-size:clamp(52px,13vw,78px)}.afsana-film-intro{margin-top:19px;max-width:100%;font-size:12px}.afsana-ref-film-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:calc(100% - 16px)}.afsana-ref-film-card{height:clamp(390px,112vw,520px);min-height:390px;border-radius:6px}.afsana-ref-film-card:before{inset:7px}.afsana-ref-film-card>div:last-child{left:14px;right:12px;bottom:18px}.afsana-ref-film-card small{font-size:7px;letter-spacing:.14em;margin-bottom:9px;gap:6px}.afsana-ref-film-card small:before{width:12px}.afsana-ref-film-card h3{font-size:clamp(18px,5.2vw,25px)}.afsana-ref-film-play{width:48px;height:48px;font-size:12px}.afsana-film-mute{top:15px;right:15px;width:35px;height:35px}}
+        @media(max-width:360px){.afsana-ref-film-card{height:370px;min-height:370px}.afsana-film-heading h2{font-size:48px}}
+        @media(prefers-reduced-motion:reduce){.afsana-film-experience:before,.afsana-ref-film-card{animation:none}.afsana-ref-film-card,.afsana-ref-film-card video,.afsana-film-mute,.afsana-ref-film-play{transition:none}}
       `}</style>
       <div className="container-xl">
         <div className="afsana-film-heading">
