@@ -150,6 +150,14 @@ export class MongoDBConnection extends DurableObject {
         return mediaJson({ success: false, error: { message: "Invalid upload chunk." } }, 400);
       }
       const bytes = await request.arrayBuffer();
+      if (index === 0) {
+        const signature = new Uint8Array(bytes);
+        const isMp4 = meta.contentType === "video/mp4" && signature.length >= 12 &&
+          String.fromCharCode(...signature.slice(4, 8)) === "ftyp";
+        const isWebm = meta.contentType === "video/webm" && signature.length >= 4 &&
+          signature[0] === 0x1a && signature[1] === 0x45 && signature[2] === 0xdf && signature[3] === 0xa3;
+        if (!isMp4 && !isWebm) return mediaJson({ success: false, error: { message: "The selected file is not a valid MP4/WebM video." } }, 400);
+      }
       const expected = Math.min(meta.chunkSize, meta.size - index * meta.chunkSize);
       if (bytes.byteLength !== expected) return mediaJson({ success: false, error: { message: "The uploaded chunk size does not match." } }, 400);
       await bucket.put("media:" + uploadId + ":chunk:" + index, bytes, { expirationTtl: MEDIA_UPLOAD_TTL });
