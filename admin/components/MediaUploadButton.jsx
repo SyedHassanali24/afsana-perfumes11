@@ -3,7 +3,6 @@ import { Upload, CheckCircle2 } from 'lucide-react';
 import Button from './Button';
 import { mediaApi } from '../../src/services';
 import shrinkImage from '../../src/lib/shrinkImage';
-import compressVideoForUpload from '../../src/lib/compressVideoForUpload';
 
 const TYPE_BY_EXTENSION = {
   glb: 'model/gltf-binary',
@@ -16,8 +15,6 @@ const TYPE_BY_EXTENSION = {
   ogv: 'video/ogg',
   '3gp': 'video/3gpp'
 };
-const MAX_DIRECT_VIDEO_BYTES = 3.5 * 1024 * 1024;
-
 function toBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -27,7 +24,7 @@ function toBase64(file) {
   });
 }
 
-export default function MediaUploadButton({ onUploaded, accept='image/*', label='Upload media', className='' }) {
+export default function MediaUploadButton({ onUploaded, accept='image/*,video/mp4,video/webm,.glb', label='Upload media', className='' }) {
   const ref = useRef(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -50,22 +47,17 @@ export default function MediaUploadButton({ onUploaded, accept='image/*', label=
         const optimized = await shrinkImage(file);
         payload = { ...optimized, filename: file.name };
       } else if (isVideo) {
-        const isServerFormat = ['video/mp4', 'video/webm'].includes(originalType);
-        if (file.size > MAX_DIRECT_VIDEO_BYTES || !isServerFormat) {
-          setProgress('Preparing video for upload…');
-          const optimized = await compressVideoForUpload(file, ({ percent, attempt }) => {
-            setProgress(`Optimizing video · ${percent}% · pass ${attempt}/3`);
-          });
-          setProgress('Uploading optimized video…');
-          payload = {
-            filename: optimized.filename,
-            contentType: optimized.contentType,
-            data: await toBase64(optimized.blob)
-          };
-        } else {
-          setProgress('Uploading video…');
-          payload = { filename: file.name, contentType: originalType, data: await toBase64(file) };
+        if (!['video/mp4', 'video/webm'].includes(originalType)) {
+          throw new Error('Please select an MP4 or WebM video. Other video formats are not supported yet.');
         }
+        setProgress('Uploading original video… 0%');
+        const uploadedMedia = await mediaApi.uploadVideo(file, (percent) => {
+          setProgress('Uploading original video… ' + percent + '%');
+        });
+        onUploaded?.(uploadedMedia.url);
+        setUploaded(true);
+        setProgress('');
+        return;
       } else {
         setProgress('Uploading media…');
         payload = { filename: file.name, contentType: originalType, data: await toBase64(file) };
