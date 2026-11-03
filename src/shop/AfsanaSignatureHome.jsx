@@ -349,8 +349,8 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     if (section.type === 'video_grid') {
     const videos = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({
       ...x,
-      image: [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || x.image,
-      link: [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || x.link
+      image: x.image || [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || '',
+      link: x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || ''
     }));
     return <section className="afsana-ref-films"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p><h2>Feel the <em>fragrance.</em></h2></div><p>{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p></div><div className="afsana-ref-film-grid">{videos.map((x,i)=><article key={i} className="afsana-ref-film-card">{x.image && <video src={x.image} poster={x.link || undefined} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls} onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span className="afsana-ref-film-play">▶</span><div><small>{['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'][i]}</small><h3>{x.title}</h3></div></article>)}</div></div></section>;
   }
