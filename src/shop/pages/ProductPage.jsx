@@ -138,6 +138,55 @@ export default function ProductPage(){
    .afsana-bottle-label span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Georgia,serif;font-size:clamp(9px,1vw,13px);letter-spacing:.08em}
    .afsana-bottle-label i{font-size:6px;font-style:normal;letter-spacing:.22em;opacity:.8}
    @keyframes afsanaBottleIn{from{opacity:0;transform:translateY(28px) rotateY(-13deg) scale(.94)}to{opacity:1;transform:translateY(0) rotateY(0) scale(1)}}
+   /* Two editorial product-detail sections: note pyramid + related collection */
+   .afsana-note-story{position:relative;isolation:isolate;overflow:hidden;width:100vw;margin-left:calc(50% - 50vw);padding:clamp(76px,8vw,118px) clamp(18px,5vw,76px);color:#f8f4fb;background:radial-gradient(ellipse at 8% 10%,rgba(133,89,196,.3),transparent 32%),radial-gradient(ellipse at 92% 82%,rgba(188,145,91,.16),transparent 32%),linear-gradient(130deg,#100b1b 0%,#1b1230 50%,#0b0912 100%)}
+   .afsana-note-story:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.24;background:repeating-linear-gradient(115deg,transparent 0 74px,rgba(255,255,255,.08) 75px,transparent 76px 150px)}
+   .afsana-note-story:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,#d3ad7b 35%,#b69add 65%,transparent)}
+   .afsana-note-story-inner{max-width:1500px;margin:0 auto}
+   .afsana-note-story-head{position:relative;display:grid;grid-template-columns:1.05fr .65fr;align-items:end;gap:34px;margin-bottom:clamp(42px,5vw,68px)}
+   .afsana-note-kicker,.afsana-complete-kicker{display:flex;align-items:center;gap:12px;color:#d9bc96;font-size:9px;font-weight:700;letter-spacing:.34em}
+   .afsana-note-kicker:before,.afsana-complete-kicker:before{content:"";width:34px;height:1px;background:#d9bc96}
+   .afsana-note-story-head h2,.afsana-complete-story-head h2{margin:22px 0 0;font-family:var(--font-display,Georgia,serif);font-size:clamp(54px,7.2vw,108px);font-weight:400;line-height:.86;letter-spacing:-.06em;color:#fff}
+   .afsana-note-story-head h2 em,.afsana-complete-story-head h2 em{color:#d6b88f;font-weight:400;font-style:italic}
+   .afsana-note-intro{max-width:410px;margin:0 0 5px;color:rgba(248,244,251,.66);font-size:13px;line-height:2.1;letter-spacing:.02em}
+   .afsana-note-edition{position:absolute;right:0;top:0;color:rgba(246,228,203,.48);font-size:8px;letter-spacing:.25em}
+   .afsana-note-story-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+   .afsana-note-card{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;min-height:340px;padding:clamp(24px,3vw,40px);border:1px solid rgba(224,197,164,.23);border-radius:8px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.018));box-shadow:0 20px 55px rgba(0,0,0,.2);transition:transform .55s cubic-bezier(.2,.8,.2,1),border-color .45s,background .45s}
+   .afsana-note-card:after{content:"";position:absolute;right:-22%;bottom:-35%;z-index:-1;width:75%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(192,157,224,.19),transparent 67%);transition:transform .8s}
+   .afsana-note-card:hover{transform:translateY(-9px);border-color:rgba(226,194,151,.7);background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.025))}
+   .afsana-note-card:hover:after{transform:scale(1.25)}
+   .afsana-note-card-top{display:flex;justify-content:space-between;gap:10px;color:#cfb28f;font-size:8px;font-weight:700;letter-spacing:.22em}
+   .afsana-note-card-rule{width:100%;height:1px;margin:24px 0 28px;background:linear-gradient(90deg,rgba(218,187,145,.72),rgba(218,187,145,.05))}
+   .afsana-note-card-overline{color:rgba(246,228,203,.68);font-size:8px;font-weight:700;letter-spacing:.2em}
+   .afsana-note-card h3{margin:11px 0 0;font-family:var(--font-display,Georgia,serif);font-size:clamp(30px,3.2vw,48px);font-weight:400;line-height:1;color:#fff;letter-spacing:-.035em}
+   .afsana-note-card-copy{margin:13px 0 0;color:rgba(248,244,251,.55);font-size:11px;line-height:1.8}
+   .afsana-note-pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:28px}
+   .afsana-note-pills span{padding:8px 11px;border:1px solid rgba(234,211,180,.2);border-radius:30px;background:rgba(255,255,255,.045);color:#f2e3d0;font-size:9px;letter-spacing:.04em}
+   .afsana-note-card-index{position:absolute;right:22px;top:45%;font-family:Georgia,serif;font-size:92px;line-height:1;color:rgba(255,255,255,.035);pointer-events:none}
+   .afsana-complete-story{position:relative;margin:clamp(76px,9vw,128px) 0 clamp(30px,4vw,64px);padding:0 0 10px}
+   .afsana-complete-story-head{display:flex;align-items:end;justify-content:space-between;gap:35px;margin-bottom:clamp(32px,4vw,55px);padding-bottom:30px;border-bottom:1px solid rgba(115,87,255,.2)}
+   .afsana-complete-kicker{color:#8060bd}
+   .afsana-complete-kicker:before{background:#8060bd}
+   .afsana-complete-story-head h2{color:#171023;font-size:clamp(54px,7vw,100px)}
+   .afsana-complete-story-head h2 em{color:#7357ff}
+   .afsana-complete-story-aside{max-width:360px;padding-bottom:6px}
+   .afsana-complete-story-aside p{color:#70677b;font-size:12px;line-height:2}
+   .afsana-complete-story-link{display:inline-flex;align-items:center;gap:16px;margin-top:20px;padding-bottom:9px;border-bottom:1px solid #9f83cb;color:#4e3676;font-size:8px;font-weight:700;letter-spacing:.19em;transition:gap .3s,color .3s}
+   .afsana-complete-story-link:hover{gap:23px;color:#7357ff}
+   .afsana-complete-story-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px!important;margin-top:0!important}
+   .afsana-related-item{position:relative;min-width:0;padding:10px;border:1px solid rgba(115,87,255,.12);border-radius:17px;background:linear-gradient(155deg,#fff,#f6f2fb);box-shadow:0 12px 38px rgba(37,21,62,.055);transition:transform .45s,box-shadow .45s,border-color .45s}
+   .afsana-related-item:hover{transform:translateY(-7px);border-color:rgba(115,87,255,.33);box-shadow:0 22px 52px rgba(37,21,62,.12)}
+   .afsana-related-number{position:absolute;top:17px;left:17px;z-index:4;display:grid;place-items:center;width:29px;height:29px;border:1px solid rgba(115,87,255,.2);border-radius:50%;background:rgba(255,255,255,.84);color:#7357ff;font-size:8px;letter-spacing:.08em;backdrop-filter:blur(10px)}
+   .afsana-complete-story-grid .product-card-stage{border-radius:12px!important;background:radial-gradient(circle at 50% 24%,rgba(151,119,204,.17),transparent 34%),linear-gradient(145deg,#f8f5fb,#eee8f5)!important}
+   .afsana-complete-story-grid .product-card-stage img{border-radius:12px}
+   .afsana-complete-story-grid .group h3{font-family:var(--font-display,Georgia,serif);font-size:21px;color:#211730}
+   .afsana-complete-story-grid .group p{color:#8060bd}
+   .afsana-complete-story-grid .group>a>div:last-child{padding:0 5px 6px}
+   .afsana-complete-story-grid .group>a{display:block}
+   @media(max-width:900px){.afsana-note-story-head{grid-template-columns:1fr}.afsana-note-edition{top:4px}.afsana-note-intro{max-width:580px}.afsana-note-story-grid{gap:9px}.afsana-note-card{min-height:315px;padding:24px}.afsana-complete-story-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+   @media(max-width:600px){.afsana-note-story{padding:64px 16px}.afsana-note-story-head{gap:20px;margin-bottom:30px}.afsana-note-story-head h2,.afsana-complete-story-head h2{font-size:clamp(48px,13vw,72px)}.afsana-note-edition{position:static;margin-top:0;font-size:7px}.afsana-note-story-grid{grid-template-columns:1fr;gap:10px}.afsana-note-card{min-height:265px;padding:25px}.afsana-note-card-rule{margin:17px 0 21px}.afsana-note-pills{padding-top:20px}.afsana-note-card-index{font-size:78px}.afsana-complete-story{margin:70px 0 25px}.afsana-complete-story-head{display:block;margin-bottom:24px;padding-bottom:23px}.afsana-complete-story-aside{margin-top:20px}.afsana-complete-story-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}.afsana-related-item{padding:7px;border-radius:12px}.afsana-related-number{top:12px;left:12px;width:25px;height:25px}.afsana-complete-story-grid .group h3{font-size:16px}.afsana-complete-story-grid .product-card-stage{border-radius:8px!important}}
+   @media(prefers-reduced-motion:reduce){.afsana-note-card,.afsana-related-item,.afsana-complete-story-link{transition:none}}
+
    model-viewer{--poster-color:transparent;--progress-bar-color:#7357ff;--progress-mask:#f2eef8}
    @media(max-width:980px){.product-detail-grid{grid-template-columns:minmax(0,1fr);gap:42px}.product-gallery{grid-template-columns:64px minmax(0,1fr)}.main-product-stage{height:clamp(560px,78vw,720px)}}
    @media(max-width:600px){.product-detail-grid{margin-top:22px}.product-gallery{display:flex;flex-direction:column;gap:12px}.main-product-stage{order:1;width:100%;height:clamp(480px,130vw,620px);min-height:480px;border-radius:16px}.gallery-thumbs{order:2;flex-direction:row;width:100%;max-height:none;overflow-x:auto;overflow-y:hidden;padding:2px 0 7px}.gallery-thumbs button{width:60px;min-width:60px}.afsana-bottle-preview{min-height:350px;height:76%;width:74%}.afsana-bottle-label{gap:5px}.afsana-bottle-label strong{font-size:18px}}
@@ -182,10 +231,48 @@ export default function ProductPage(){
       <div className="mt-7 flex flex-wrap gap-2 text-[8px] uppercase tracking-[.16em] text-[#5f654f]"><span className="border border-[#263e0e]/10 px-3 py-2">Premium Oils</span><span className="border border-[#263e0e]/10 px-3 py-2">Gift Ready</span><span className="border border-[#263e0e]/10 px-3 py-2">Nationwide Delivery</span></div>
     </div>
    </div>
-   <section className="notes-section mt-24 py-20 bg-[#263e0e] text-white"><div className="notes-grid"><div><div className="text-[9px] uppercase tracking-[.35em] text-[#b4bf41]">The architecture of the scent</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">Three chapters.<br/>One <em className="text-[#b4bf41]">memory.</em></h2><p className="mt-6 max-w-lg text-sm leading-8 text-white/55">Every Afsana fragrance is built like a story. The top notes create the first impression. The heart reveals personality. The base becomes the memory that remains.</p></div><div className="note-pyramid space-y-2">{[['TOP',ns.top],['HEART',ns.heart],['BASE',ns.base]].map(([t,l],i)=><div key={t} className={'note-layer mx-auto '+(i===0?'note-top':i===1?'note-heart':'note-base')}><span className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">{t}</span><div className="mt-2">{l.join(' · ')}</div></div>)}</div></div></section>
+   <section className="notes-section afsana-note-story mt-24">
+    <div className="afsana-note-story-inner">
+     <header className="afsana-note-story-head">
+      <div>
+       <p className="afsana-note-kicker">THE ARCHITECTURE OF A SCENT</p>
+       <h2>Three chapters.<br/><em>One memory.</em></h2>
+      </div>
+      <p className="afsana-note-intro">A fragrance reveals itself in its own time. An unforgettable opening, a character at its heart, and a final trace that stays with you.</p>
+      <span className="afsana-note-edition">AFSANA / SCENT PROFILE</span>
+     </header>
+     <div className="afsana-note-story-grid">
+      {[
+       ['TOP','THE FIRST IMPRESSION','The opening that draws you in.',ns.top],
+       ['HEART','THE SOUL OF THE SCENT','The character that makes it yours.',ns.heart],
+       ['BASE','THE LASTING MEMORY','The warm trail that lingers.',ns.base]
+      ].map(([label,title,copy,values],i)=><article key={label} className={'afsana-note-card afsana-note-card-'+label.toLowerCase()}>
+       <div className="afsana-note-card-top"><span>0{i+1} / 03</span><span>{label} NOTES</span></div>
+       <div className="afsana-note-card-rule"/>
+       <p className="afsana-note-card-overline">{title}</p>
+       <h3>{label==='TOP'?'The opening.':label==='HEART'?'The character.':'The memory.'}</h3>
+       <p className="afsana-note-card-copy">{copy}</p>
+       <div className="afsana-note-pills">{(values||[]).length?(values||[]).map((note,j)=><span key={note+'-'+j}>{note}</span>):<span>Signature accord</span>}</div>
+       <span className="afsana-note-card-index">{label==='TOP'?'01':label==='HEART'?'02':'03'}</span>
+      </article>)}
+     </div>
+    </div>
+   </section>
    <section className="py-20"><div className="mb-12"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">Inside the bottle</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">More than<br/><em className="text-[#263e0e]">a fragrance.</em></h2></div><div className="product-banner-grid">{banners.map((src,i)=><article key={i} className="product-banner relative"><img src={src} className="w-full h-full object-cover" alt=""/><div className="absolute inset-0 bg-gradient-to-t from-[#182308]/85 to-transparent"/><div className="product-banner-copy absolute bottom-0 p-7 text-white"><div className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1} — {['The Opening','The Heart','The Memory','Your Ritual'][i]}</div><h3 className="mt-2 font-display text-3xl">{['First impressions matter.','Where the story unfolds.','What remains after you leave.','Make it unmistakably yours.'][i]}</h3><p className="mt-2 text-xs text-white/60">Spray. Layer. Wear. Remember.</p></div></article>)}</div></section>
    <section className="py-14 border-y border-[#263e0e]/10"><div className="tabs flex flex-wrap gap-8 text-[10px] uppercase tracking-[.22em]">{[['story','The Story'],['details','Details'],['reviews','Reviews']].map(([id,label])=><button key={id} onClick={()=>setTab(id)} className={tab===id?'tab active text-[#263e0e] border-b border-[#263e0e] pb-3':'tab text-[#5f654f] pb-3'}>{label}</button>)}</div><div className="mt-8 max-w-3xl text-sm leading-8 text-[#5f654f]">{tab==='story'&&'A fragrance composed to become part of your identity. Spray it close to the skin, let it warm naturally, and allow each layer to reveal itself in its own time.'}{tab==='details'&&(p.content?.fullDescription||'Premium fragrance oils, carefully composed and designed for an evolving trail.')}{tab==='reviews'&&<ReviewsSection slug={slug}/>}</div></section>
-   {data.related?.length>0&&<section className="py-20"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">You may also love</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">Complete<br/><em className="text-[#263e0e]">the story.</em></h2><div className="product-grid mt-12">{data.related.map(r=><ProductCard key={r.id||r._id} product={r}/>)}</div></section>}
+   {data.related?.length>0&&<section className="afsana-complete-story">
+     <div className="afsana-complete-story-head">
+      <div>
+       <p className="afsana-complete-kicker">CURATED FOR YOU / 0{Math.min(data.related.length,9)}</p>
+       <h2>Complete<br/><em>the story.</em></h2>
+      </div>
+      <div className="afsana-complete-story-aside">
+       <p>Another scent. Another chapter. Discover a fragrance that feels unmistakably yours.</p>
+       <Link to="/shop" className="afsana-complete-story-link">EXPLORE THE COLLECTION <span>↗</span></Link>
+      </div>
+     </div>
+     <div className="product-grid afsana-complete-story-grid">{data.related.map((r,i)=><div className="afsana-related-item" key={r.id||r._id}><span className="afsana-related-number">0{i+1}</span><ProductCard product={r}/></div>)}</div>
+    </section>}
   </>}</StateBox>
  </Container>;
 }
