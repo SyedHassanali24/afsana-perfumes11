@@ -31,7 +31,7 @@ function cacheable(pathname, method) {
 
 async function handleApi(request, env, ctx) {
   const incoming = new URL(request.url);
-  const isRangedMedia = /^\\/api\\/media\\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.headers.has("Range");
+  const isRangedMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.headers.has("Range");
   const canCache = cacheable(incoming.pathname, request.method) && !isRangedMedia;
   const immutableMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.method === "GET";
   const cacheKey = new Request(
