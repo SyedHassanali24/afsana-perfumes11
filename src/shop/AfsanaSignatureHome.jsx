@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
+import { ArrowRight, Sparkles, X, Instagram, Facebook, Youtube, Music2, Pin, Volume2, VolumeX } from 'lucide-react';
 import useApi from '../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../services';
 import useShopSettings from './useShopSettings';
@@ -352,7 +352,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
       image: x.image || [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || '',
       link: x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || ''
     }));
-    return <section className="afsana-ref-films"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p><h2>Feel the <em>fragrance.</em></h2></div><p>{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p></div><div className="afsana-ref-film-grid">{videos.map((x,i)=><article key={i} className="afsana-ref-film-card">{x.image && <video src={x.image} poster={x.link || undefined} autoPlay={c.autoplay!==false} muted={c.muted!==false} loop playsInline controls={!!c.controls} onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span className="afsana-ref-film-play">▶</span><div><small>{['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'][i]}</small><h3>{x.title}</h3></div></article>)}</div></div></section>;
+    return <section className="afsana-ref-films"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p><h2>Feel the <em>fragrance.</em></h2></div><p>{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p></div><div className="afsana-ref-film-grid">{videos.map((x,i)=><FilmCard key={i} film={x} index={i} autoplay={c.autoplay!==false}/>)}</div></div></section>;
   }
   if (section.type === 'post_grid' || section.type === 'blog_grid') {
     const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||3)).map((x,i) => ({
@@ -460,6 +460,24 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
   return null;
 }
+function FilmCard({ film, index, autoplay = true }) {
+  const [muted, setMuted] = useState(true);
+  const videoRef = useRef(null);
+  const source = String(film.image || '').trim();
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !source) return;
+    video.muted = muted;
+    if (autoplay) video.play().catch(() => {});
+  }, [source, muted, autoplay]);
+  return <article className="afsana-ref-film-card">
+    {source ? <video ref={videoRef} key={source} src={source} poster={film.link || undefined} autoPlay={autoplay} muted={muted} loop playsInline preload="metadata" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}}/> : <div className="afsana-ref-film-placeholder">ADD A VIDEO IN CMS</div>}
+    {source && <button type="button" className="absolute right-3 top-3 z-20 grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-black/65 text-white backdrop-blur transition hover:bg-black/85" aria-label={muted ? 'Unmute video' : 'Mute video'} title={muted ? 'Unmute video' : 'Mute video'} onClick={() => setMuted((value) => !value)}>{muted ? <VolumeX className="h-4 w-4"/> : <Volume2 className="h-4 w-4"/>}</button>}
+    <span className="afsana-ref-film-play">▶</span>
+    <div><small>{['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'][index] || 'AFSANA FILM'}</small><h3>{film.title}</h3></div>
+  </article>;
+}
+
 function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const shopSettings = useShopSettings();
