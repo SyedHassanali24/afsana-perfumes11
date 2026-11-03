@@ -85,7 +85,7 @@ export default function ProductPage(){
   if(!script){
    script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';
    script.addEventListener('load',ready,{once:true});script.addEventListener('error',()=>{if(active)setModelViewerFailed(true)},{once:true});document.head.appendChild(script);
-  } else if(!window.customElements.get('model-viewer')) {
+  } else if(!isViewerDefined && script) {
    script.addEventListener('load',ready,{once:true});
    script.addEventListener('error',()=>{if(active)setModelViewerFailed(true)},{once:true});
    ready();
@@ -116,7 +116,7 @@ export default function ProductPage(){
  return <Container className="pt-10 sm:pt-16 pb-24">
   <style>{`
    .product-detail-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(360px,.88fr);gap:clamp(28px,4.8vw,76px);align-items:start}
-   .product-gallery{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:start;min-width:0}
+   .product-gallery{display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px;align-items:start;min-width:0}.product-gallery.no-thumbs{grid-template-columns:minmax(0,1fr)}
    .gallery-thumbs{display:flex;flex-direction:column;gap:10px;max-height:720px;overflow:auto;scrollbar-width:thin}
    .gallery-thumbs button{flex:none;border-radius:7px;background:#f7f4fb}
    .main-product-stage{height:clamp(590px,62vw,790px);min-height:590px;border-radius:24px;background:radial-gradient(ellipse at 50% 32%,rgba(157,119,218,.2),transparent 33%),radial-gradient(ellipse at 50% 92%,rgba(211,177,133,.18),transparent 35%),linear-gradient(145deg,#faf8fd,#ede7f5);border:1px solid rgba(115,87,255,.13);box-shadow:0 25px 80px rgba(32,17,54,.09)}
@@ -146,7 +146,7 @@ export default function ProductPage(){
   <StateBox loading={loading} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
    <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">Home</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">Collection</Link> <span>/</span> {p.name}</div>
    <div className="product-detail-grid mt-8">
-    <div className="product-gallery">
+    <div className={"product-gallery "+(media.length>1?"has-thumbs":"no-thumbs")}>
       {media.length>1&&<div className="gallery-thumbs">{media.map((m,i)=><button type="button" key={m.url+'-'+i} onClick={()=>selectMedia(i)} aria-label={'View product media '+(i+1)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#7357ff] shadow-[0_8px_25px_rgba(50,26,90,.18)]':'border-[#7357ff]/15')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#7357ff]"/>}</button>)}</div>}
       <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={()=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative overflow-hidden flex items-center justify-center">
        <div className="afsana-product-stage-glow"/>
