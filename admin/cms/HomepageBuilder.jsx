@@ -278,7 +278,9 @@ export default function HomepageBuilder() {
   const allPageRows = rows.filter((item) => (item.pageKey || 'home') === pageKey);
   const canonicalTemplateId = 'afsana-neon-experience-v1';
   const canonicalPageRows = allPageRows.filter((item) => item.config?.templateId === canonicalTemplateId);
-  const pageRows = canonicalPageRows.length ? canonicalPageRows : allPageRows;
+  // Keep every saved section visible, including custom sections added after the canonical AFSANA template.
+  // The previous conditional hid all non-template rows whenever any canonical template row existed.
+  const pageRows = allPageRows;
   const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   const experienceSlots = new Set(rows.filter((item) => item.config?.templateId === canonicalTemplateId).map((item) => item.config?.templateSlot));
   const hasExperienceTemplate = AFSANA_EXPECTED_SLOTS.every((slot) => experienceSlots.has(slot)) && AFSANA_GLOBAL_SECTIONS.filter((section)=>section.isEnabled).every((section)=>rows.some((item)=>item.config?.templateId===canonicalTemplateId&&item.config?.templateSlot===section.slot&&item.isEnabled!==false));
