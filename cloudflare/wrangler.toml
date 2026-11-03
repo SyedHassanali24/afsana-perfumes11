@@ -1,4 +1,5 @@
-# AFSANA Cloudflare preview configuration
+# AFSANA Cloudflare production configuration
+# Deploy trigger: activate free chunked video uploads via KV.
 name = "afsana-perfumes11"
 main = "worker.js"
 compatibility_date = "2026-10-31"
