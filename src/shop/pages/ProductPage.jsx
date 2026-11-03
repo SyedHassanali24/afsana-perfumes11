@@ -12,13 +12,49 @@ import { money } from '../format';
 import useTitle from '../useTitle';
 
 const notes=(p)=>({top:p?.notes?.top||['Citrus','Saffron'],heart:p?.notes?.heart||['Rose','Jasmine','Spice'],base:p?.notes?.base||['Oud','Amber','Musk','Woods']});
+const mediaUrl = (value) => {
+ if (typeof value === 'string') return value.trim();
+ if (!value || typeof value !== 'object') return '';
+ return String(value.url || value.src || value.imageUrl || value.secure_url || value.path || value.image?.url || '').trim();
+};
+const normaliseProductMedia = (product) => {
+ const raw = Array.isArray(product?.media) ? product.media
+  : product?.media && typeof product.media === 'object' ? Object.values(product.media)
+  : Array.isArray(product?.images) ? product.images
+  : Array.isArray(product?.gallery) ? product.gallery : [];
+ const legacy = [product?.mainImage, product?.image, product?.featuredImage, product?.imageUrl, product?.thumbnail].filter(Boolean);
+ const mapped = [...raw, ...legacy].map((entry, index) => {
+  const url = mediaUrl(entry);
+  const item = typeof entry === 'string' ? {} : (entry || {});
+  const kind = item.kind || item.type || item.role || (index === 0 ? 'main' : 'gallery');
+  return { ...item, url, kind, sortOrder: item.sortOrder ?? index, alt: item.alt || product?.name || 'AFSANA fragrance' };
+ }).filter((item) => item.url);
+ const seen = new Set();
+ return mapped.filter((item) => { if (seen.has(item.url)) return false; seen.add(item.url); return true; });
+};
 
-function Media({item,alt,className=''}) {
- if (!item?.url) return <Placeholder className={className||'w-full h-full'}/>;
- if (item.kind==='video' || /\.(mp4|webm|mov)(\?|$)/i.test(item.url)) {
-   return <video className={className||'w-full h-full object-cover'} src={item.url} autoPlay muted loop playsInline controls={false} aria-label={alt}/>;
+
+function Media({item,alt,className='',onError}) {
+ const url = mediaUrl(item);
+ if (!url) return <Placeholder className={className||'w-full h-full'}/>;
+ if (item?.kind==='video' || /\.(mp4|webm|mov)(\?|$)/i.test(url)) {
+   return <video className={className||'w-full h-full object-cover'} src={url} autoPlay muted loop playsInline controls={false} aria-label={alt} onError={onError}/>;
  }
- return <img src={item.url} alt={alt} className={className||'w-full h-full object-cover'}/>;
+ return <img src={url} alt={alt} className={className||'w-full h-full object-cover'} onError={onError}/>;
+}
+
+function BottlePreview({name,style}) {
+ return <div className="afsana-bottle-preview" style={style} aria-label={name+' bottle preview'}>
+  <div className="afsana-bottle-shadow"/>
+  <div className="afsana-bottle-cap"><span/></div>
+  <div className="afsana-bottle-neck"/>
+  <div className="afsana-bottle-body">
+   <div className="afsana-bottle-liquid"/>
+   <div className="afsana-bottle-glass"/>
+   <div className="afsana-bottle-highlight"/>
+   <div className="afsana-bottle-label"><small>THE HOUSE OF</small><strong>AFSANA</strong><span>{name}</span><i>EAU DE PARFUM</i></div>
+  </div>
+ </div>;
 }
 
 export default function ProductPage(){
@@ -30,22 +66,50 @@ export default function ProductPage(){
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
  const [tilt,setTilt]=useState({x:0,y:0});
  const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false),[autoRotate,setAutoRotate]=useState(false),[dragX,setDragX]=useState(null);
- const stageRef=useRef(null);
+ const [mediaBroken,setMediaBroken]=useState(false),[modelViewerReady,setModelViewerReady]=useState(false),[modelViewerFailed,setModelViewerFailed]=useState(false);
+ const stageRef=useRef(null),modelViewerRef=useRef(null);
  const p=data?.product, variants=data?.variants||[];
  useTitle(p?.seo?.title||p?.name);
  useEffect(()=>{if(variants.length){setVid((variants.find(v=>v.available>0)||variants[0]).id);setQty(1);setImg(0)}},[data]);
- const media=useMemo(()=>[...(p?.media||[])].filter((item)=>item.kind!=='model3d').sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[p]);
- const product3dUrl=(p?.media||[]).find((item)=>item.kind==='model3d')?.url || referenceAssets.product3dModelUrl || '';
- useEffect(()=>{if(!autoRotate || media.length<2)return;const id=window.setInterval(()=>setImg(i=>(i+1)%media.length),1400);return()=>window.clearInterval(id)},[autoRotate,media.length]);
- useEffect(()=>{if(!product3dUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[product3dUrl]);
+ const productMedia=useMemo(()=>normaliseProductMedia(p),[p]);
+ const media=useMemo(()=>productMedia.filter((item)=>item.kind!=='model3d'&&!/\.(glb|gltf)(\?|$)/i.test(item.url)).sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[productMedia]);
+ const product3dUrl=productMedia.find((item)=>item.kind==='model3d'||/\.(glb|gltf)(\?|$)/i.test(item.url))?.url || p?.model3dUrl || p?.modelUrl || referenceAssets.product3dModelUrl || '';
+ useEffect(()=>{setMediaBroken(false);setModelViewerFailed(false);setImg(0)},[slug]);
+ useEffect(()=>{if(!autoRotate || media.length<2)return;const id=window.setInterval(()=>{setImg(i=>(i+1)%media.length);setMediaBroken(false)},1400);return()=>window.clearInterval(id)},[autoRotate,media.length]);
+ useEffect(()=>{
+  if(!product3dUrl || typeof window==='undefined' || !window.customElements) { setModelViewerReady(false); return; }
+  let active=true;
+  const ready=()=>window.customElements.whenDefined('model-viewer').then(()=>{if(active)setModelViewerReady(true)}).catch(()=>{if(active)setModelViewerFailed(true)});
+  if(window.customElements.get('model-viewer')) ready();
+  let script=document.querySelector('script[data-afsana-model-viewer]');
+  if(!script){
+   script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';
+   script.addEventListener('load',ready,{once:true});script.addEventListener('error',()=>{if(active)setModelViewerFailed(true)},{once:true});document.head.appendChild(script);
+  } else if(!window.customElements.get('model-viewer')) {
+   script.addEventListener('load',ready,{once:true});
+   script.addEventListener('error',()=>{if(active)setModelViewerFailed(true)},{once:true});
+   ready();
+  }
+  return ()=>{active=false;};
+ },[product3dUrl]);
+ useEffect(()=>{
+  const viewer=modelViewerRef.current;
+  if(!viewer)return;
+  const onError=()=>setModelViewerFailed(true),onLoad=()=>setModelViewerFailed(false);
+  viewer.addEventListener('error',onError);viewer.addEventListener('load',onLoad);
+  return ()=>{viewer.removeEventListener('error',onError);viewer.removeEventListener('load',onLoad)};
+ },[product3dUrl,modelViewerReady]);
  const ratingAvg=Number(p?.ratingAvg||0),ratingCount=Number(p?.ratingCount||0);
  const v=variants.find(x=>x.id===vid), price=v&&(v.salePrice>0&&v.salePrice<v.price?v.salePrice:v.price), soldOut=!v||v.available<=0, ns=notes(p);
  const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);window.setTimeout(()=>setAdding(false),650)}};
  const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
+ const activeMedia=media[img]||media[0]||null;
+ const hasProductVisual=!!(activeMedia?.url&&!mediaBroken);
+ const showRealModel=!!(product3dUrl&&modelViewerReady&&!modelViewerFailed);
  const banners=[imageMedia[0]?.url||'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85',imageMedia[1]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',imageMedia[2]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',imageMedia[3]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85'];
  const onMove=(e)=>{const r=stageRef.current?.getBoundingClientRect();if(!r)return;const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;setTilt({x:y*-7,y:x*10})};
  const resetTilt=()=>setTilt({x:0,y:0});
- const selectMedia=(i)=>{setImg((i+media.length)%media.length);setStagePulse(true);window.setTimeout(()=>setStagePulse(false),650)};
+ const selectMedia=(i)=>{if(!media.length)return;setImg((i+media.length)%media.length);setMediaBroken(false);setStagePulse(true);window.setTimeout(()=>setStagePulse(false),650)};
  const beginDrag=(e)=>setDragX(e.clientX ?? e.touches?.[0]?.clientX ?? null);
  const moveDrag=(e)=>{if(dragX==null)return;const x=e.clientX ?? e.touches?.[0]?.clientX ?? dragX;if(Math.abs(x-dragX)>28){selectMedia(img+(x<dragX?1:-1));setDragX(x)}};
  const endDrag=()=>setDragX(null);
