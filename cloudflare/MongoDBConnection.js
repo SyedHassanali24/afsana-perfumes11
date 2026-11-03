@@ -127,7 +127,7 @@ export class MongoDBConnection extends DurableObject {
         status: "uploading",
         createdAt: new Date().toISOString()
       };
-      await bucket.put("media:" + uploadId + ":meta", JSON.stringify(meta), { expirationTtl: MEDIA_UPLOAD_TTL });
+      await bucket.put("media:" + uploadId + ":upload", JSON.stringify(meta), { expirationTtl: MEDIA_UPLOAD_TTL });
       const cleanupKey = "afsana:media-upload:" + uploadId;
       await this.ctx.storage.put(cleanupKey, { chunkCount, expiresAt });
       const currentAlarm = await this.ctx.storage.getAlarm();
@@ -146,7 +146,7 @@ export class MongoDBConnection extends DurableObject {
     if (request.method === "PUT" && chunkMatch) {
       const uploadId = chunkMatch[1];
       if (!(await this.verifyMediaToken(uploadId, request))) return mediaJson({ success: false, error: { message: "Upload authorization expired. Start the upload again." } }, 401);
-      const rawMeta = await bucket.get("media:" + uploadId + ":meta");
+      const rawMeta = await bucket.get("media:" + uploadId + ":upload");
       if (!rawMeta) return mediaJson({ success: false, error: { message: "Upload session expired." } }, 404);
       const meta = JSON.parse(rawMeta);
       const index = Number(chunkMatch[2]);
@@ -172,10 +172,16 @@ export class MongoDBConnection extends DurableObject {
     if (request.method === "POST" && completeMatch) {
       const uploadId = completeMatch[1];
       if (!(await this.verifyMediaToken(uploadId, request))) return mediaJson({ success: false, error: { message: "Upload authorization expired. Start the upload again." } }, 401);
-      const rawMeta = await bucket.get("media:" + uploadId + ":meta");
-      if (!rawMeta) return mediaJson({ success: false, error: { message: "Upload session expired." } }, 404);
+      const rawMeta = await bucket.get("media:" + uploadId + ":upload");
+      if (!rawMeta) {
+        const completed = await bucket.get("media:" + uploadId + ":meta");
+        if (completed) {
+          const saved = JSON.parse(completed);
+          if (saved.status === "complete") return mediaJson({ success: true, url: "/api/media/" + uploadId, size: saved.size });
+        }
+        return mediaJson({ success: false, error: { message: "Upload session expired." } }, 404);
+      }
       const meta = JSON.parse(rawMeta);
-      if (meta.status === "complete") return mediaJson({ success: true, url: "/api/media/" + uploadId, size: meta.size });
       if (meta.status !== "uploading") return mediaJson({ success: false, error: { message: "Invalid upload state." } }, 409);
       for (let index = 0; index < meta.chunkCount; index += 1) {
         const key = "media:" + uploadId + ":chunk:" + index;
@@ -187,6 +193,7 @@ export class MongoDBConnection extends DurableObject {
       meta.status = "complete";
       meta.completedAt = new Date().toISOString();
       await bucket.put("media:" + uploadId + ":meta", JSON.stringify(meta));
+      await bucket.delete("media:" + uploadId + ":upload");
       await this.ctx.storage.delete("afsana:media-upload:" + uploadId);
       return mediaJson({ success: true, url: "/api/media/" + uploadId, size: meta.size });
     }
@@ -268,7 +275,7 @@ export class MongoDBConnection extends DurableObject {
           for (let index = 0; index < meta.chunkCount; index += 1) {
             await bucket.delete("media:" + uploadId + ":chunk:" + index);
           }
-          await bucket.delete("media:" + uploadId + ":meta");
+          await bucket.delete("media:" + uploadId + ":upload");
         }
         await this.ctx.storage.delete(key);
       } else if (nextAlarm === null || meta.expiresAt < nextAlarm) {
