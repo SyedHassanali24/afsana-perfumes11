@@ -115,7 +115,9 @@ export async function uploadChunkedMedia(file, onProgress) {
   if (!file || !Number.isSafeInteger(file.size) || file.size < 1 || file.size > MAX_BYTES) {
     throw new ApiError(400, 'MEDIA_TOO_LARGE', 'Choose a video smaller than 250 MB.');
   }
-  if (!['video/mp4', 'video/webm'].includes(file.type)) {
+  const extension = String(file.name || '').split('.').pop().toLowerCase();
+  const contentType = file.type || (['mp4', 'm4v'].includes(extension) ? 'video/mp4' : extension === 'webm' ? 'video/webm' : '');
+  if (!['video/mp4', 'video/webm'].includes(contentType)) {
     throw new ApiError(400, 'MEDIA_TYPE', 'Please select an MP4 or WebM video.');
   }
   const requestJson = async (path, { method = 'POST', body, token } = {}) => {
@@ -144,7 +146,7 @@ export async function uploadChunkedMedia(file, onProgress) {
   };
 
   const session = await requestJson('/media/chunked/init', {
-    body: { filename: file.name, contentType: file.type, size: file.size }
+    body: { filename: file.name, contentType, size: file.size }
   });
   const chunkSize = Number(session.chunkSize) || CHUNK_BYTES;
   const totalChunks = Math.ceil(file.size / chunkSize);
