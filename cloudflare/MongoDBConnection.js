@@ -160,7 +160,7 @@ export class MongoDBConnection extends DurableObject {
       }
       const expected = Math.min(meta.chunkSize, meta.size - index * meta.chunkSize);
       if (bytes.byteLength !== expected) return mediaJson({ success: false, error: { message: "The uploaded chunk size does not match." } }, 400);
-      await bucket.put("media:" + uploadId + ":chunk:" + index, bytes, { expirationTtl: MEDIA_UPLOAD_TTL });
+      await bucket.put("media:" + uploadId + ":chunk:" + index, bytes);
       return mediaJson({ success: true, index, receivedBytes: bytes.byteLength });
     }
 
