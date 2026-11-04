@@ -95,6 +95,11 @@ export async function onRequest(context) {
   if (env.UPSTASH_REDIS_REST_TOKEN) process.env.UPSTASH_REDIS_REST_TOKEN = env.UPSTASH_REDIS_REST_TOKEN;
   if (env.ADMIN_EMAIL) process.env.ADMIN_EMAIL = env.ADMIN_EMAIL;
   if (env.EASTWALA_EMAIL) process.env.EASTWALA_EMAIL = env.EASTWALA_EMAIL;
+  if (env.OWNER_EMAIL) process.env.OWNER_EMAIL = env.OWNER_EMAIL;
+  if (env.GMAIL_CLIENT_ID) process.env.GMAIL_CLIENT_ID = env.GMAIL_CLIENT_ID;
+  if (env.GMAIL_CLIENT_SECRET) process.env.GMAIL_CLIENT_SECRET = env.GMAIL_CLIENT_SECRET;
+  if (env.GMAIL_REFRESH_TOKEN) process.env.GMAIL_REFRESH_TOKEN = env.GMAIL_REFRESH_TOKEN;
+  if (env.GMAIL_SENDER_EMAIL) process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL;
 
   const event = await netlifyEvent(request, functionPath);
   try {
