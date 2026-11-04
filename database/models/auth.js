@@ -25,6 +25,17 @@ const userSchema = new Schema({
   resetOtpVerifiedExpires: Date,
   resetOtpAttempts: { type: Number, default: 0 },
   resetOtpRequestedAt: Date,
+  trustedDevices: [{
+    tokenHash: { type: String, required: true },
+    label: String,
+    lastUsedAt: Date,
+    expiresAt: Date,
+  }],
+  loginOtpChallengeHash: { type: String, select: false },
+  loginOtpHash: { type: String, select: false },
+  loginOtpDeviceHash: { type: String, select: false },
+  loginOtpExpires: Date,
+  loginOtpAttempts: { type: Number, default: 0 },
 }, { timestamps: true });
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ phone: 1 }, { unique: true, sparse: true });
