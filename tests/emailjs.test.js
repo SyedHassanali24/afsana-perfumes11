@@ -57,12 +57,44 @@ test('EmailJS rejects invalid recipients and malformed OTPs before network calls
   assert.equal(calls, 0);
 });
 
-test('EmailJS provider errors do not expose provider response contents', async () => {
-  await assert.rejects(
-    sendEmailJsOtp(
-      { to: 'owner@example.com', otp: '123456' },
-      { config: getEmailJsConfig(validEnv), fetchImpl: async () => ({ ok: false, status: 401, text: async () => 'private key leaked' }) },
-    ),
-    (error) => { assert.match(error.message, /HTTP 401/); assert.doesNotMatch(error.message, /private key/); return true; },
-  );
+test('EmailJS provider errors are logged with safe diagnostic text only', async () => {
+  const original = console.error;
+  const logged = [];
+  console.error = (...args) => logged.push(args.join(' '));
+  try {
+    await assert.rejects(
+      sendEmailJsOtp(
+        { to: 'owner@example.com', otp: '123456' },
+        { config: getEmailJsConfig(validEnv), fetchImpl: async () => ({
+          ok: false, status: 422, text: async () => 'The recipients address is empty'
+        }) },
+      ),
+      /HTTP 422/,
+    );
+  } finally {
+    console.error = original;
+  }
+  assert.match(logged.join(' '), /HTTP 422/);
+  assert.match(logged.join(' '), /recipients address is empty/);
+  assert.doesNotMatch(logged.join(' '), /owner@example.com|123456|private_test_key/);
+});
+
+test('EmailJS provider error logging redacts email addresses and credential-like values', async () => {
+  const original = console.error;
+  const logged = [];
+  console.error = (...args) => logged.push(args.join(' '));
+  try {
+    await assert.rejects(
+      sendEmailJsOtp(
+        { to: 'owner@example.com', otp: '123456' },
+        { config: getEmailJsConfig(validEnv), fetchImpl: async () => ({
+          ok: false, status: 412, text: async () => 'Gmail error at owner@example.com. accessToken=SECRET1234567890123456789012345678901234567890'
+        }) },
+      ),
+      /HTTP 412/,
+    );
+  } finally {
+    console.error = original;
+  }
+  assert.doesNotMatch(logged.join(' '), /owner@example.com|SECRET1234567890123456789012345678901234567890/);
 });
