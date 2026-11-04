@@ -245,6 +245,8 @@ export const PAGE_COPY_FIELDS = {
   site_navigation: [
     ['announcementDefault','Default top announcement','COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500'], ['menuLabel','Mobile menu accessibility label','Menu'], ['searchLabel','Search accessibility label','Search'], ['accountLabel','Account accessibility label','My account'], ['loginLabel','Login accessibility label','Login / register'], ['cartLabel','Cart accessibility label','Cart'],
     ['marqueeDiscover','Top marquee message 1','DISCOVER YOUR SIGNATURE'], ['marqueeCrafted','Top marquee message 2','CRAFTED FOR MEMORIES'], ['marqueeCollection','Top marquee message 3','THE AFSANA PRIVATE COLLECTION'],
+    ['homeLink','Home navigation label','Home'], ['collectionLinkNav','Collection navigation label','Collection'], ['discoverLink','Scent finder navigation label','Scent finder'], ['journalLinkNav','Journal navigation label','Journal'], ['houseLinkNav','The House navigation label','The house'], ['giftingLinkNav','Gifting navigation label','Gifting'],
+    ['announcementBrand','Announcement brand label','AFSANA'],
     ['searchEyebrow','Search eyebrow','The Afsana search'], ['searchTitle','Search heading','Search Afsana'],
     ['searchPlaceholder','Search placeholder','Search fragrances...'], ['searchButton','Search button','Search'],
     ['popularPathsTitle','Popular paths heading','Popular paths'], ['ritualTitle','Discovery panel heading','Find your ritual'],
