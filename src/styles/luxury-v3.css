@@ -1971,3 +1971,785 @@
 @media(prefers-reduced-motion:reduce){
   .afsana-product-page *{scroll-behavior:auto!important;transition:none!important}
 }
+
+
+/* AFSANA fragrance notes — three distinct, editorial note cards with a soft motion reveal. */
+.afsana-product-page .afsana-note-story{
+  border:0!important;
+  border-radius:0!important;
+  padding:clamp(48px,6vw,78px) clamp(18px,3vw,42px)!important;
+  background:
+    radial-gradient(ellipse at 4% 0%,rgba(205,179,225,.22),transparent 34%),
+    radial-gradient(ellipse at 100% 100%,rgba(222,194,151,.18),transparent 34%),
+    #fbfafc!important;
+}
+.afsana-product-page .afsana-note-story:after{
+  height:2px!important;
+  background:linear-gradient(90deg,transparent,#bba0d1 22%,#d7b98d 50%,#9bb1a0 78%,transparent)!important;
+}
+.afsana-product-page .afsana-note-story-head{margin-bottom:42px!important}
+.afsana-product-page .afsana-note-kicker{
+  color:#76529a!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.16em!important;
+}
+.afsana-product-page .afsana-note-story-head h2{
+  font-size:clamp(38px,4.8vw,60px)!important;
+  line-height:1.08!important;
+}
+.afsana-product-page .afsana-note-intro{
+  max-width:480px!important;
+  font-size:14px!important;
+  line-height:1.85!important;
+}
+.afsana-product-page .afsana-note-story-grid{
+  gap:16px!important;
+  align-items:stretch;
+}
+.afsana-product-page .afsana-note-card{
+  position:relative;
+  isolation:isolate;
+  min-height:335px!important;
+  overflow:hidden;
+  padding:clamp(22px,2.3vw,32px)!important;
+  border:1px solid #e9e4ed!important;
+  border-radius:15px!important;
+  background:linear-gradient(145deg,#fff,#faf8fc)!important;
+  box-shadow:0 10px 30px rgba(43,31,58,.055)!important;
+  animation:afsana-note-card-in .65s cubic-bezier(.2,.8,.2,1) both;
+}
+.afsana-product-page .afsana-note-card:nth-child(2){animation-delay:.09s}
+.afsana-product-page .afsana-note-card:nth-child(3){animation-delay:.18s}
+.afsana-product-page .afsana-note-card:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:-62px;
+  right:-50px;
+  width:190px;
+  height:190px;
+  border:1px solid rgba(112,83,145,.12);
+  border-radius:50%;
+  box-shadow:0 0 0 18px rgba(112,83,145,.025),0 0 0 38px rgba(112,83,145,.02);
+}
+.afsana-product-page .afsana-note-card:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  right:22px;
+  bottom:22px;
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.7),transparent 70%);
+  opacity:.75;
+  pointer-events:none;
+}
+.afsana-product-page .afsana-note-card-top{
+  align-items:center!important;
+  color:#68517e!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.14em!important;
+}
+.afsana-product-page .afsana-note-card-top span:first-child{
+  display:inline-flex;
+  min-width:54px;
+  min-height:28px;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(105,76,136,.16);
+  border-radius:7px;
+  background:rgba(255,255,255,.72);
+}
+.afsana-product-page .afsana-note-card-rule{
+  position:relative;
+  height:2px!important;
+  margin:23px 0 25px!important;
+  border:0!important;
+  background:linear-gradient(90deg,var(--note-accent,#9873b8),rgba(255,255,255,0))!important;
+}
+.afsana-product-page .afsana-note-card-overline{
+  color:#766b80!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.11em!important;
+}
+.afsana-product-page .afsana-note-card h3{
+  margin-top:13px!important;
+  color:#272230!important;
+  font-size:clamp(27px,2.6vw,36px)!important;
+  font-weight:800!important;
+  line-height:1.08!important;
+  letter-spacing:-.045em!important;
+}
+.afsana-product-page .afsana-note-card-copy{
+  max-width:300px;
+  margin-top:12px!important;
+  color:#706978!important;
+  font-size:13px!important;
+  line-height:1.75!important;
+}
+.afsana-product-page .afsana-note-pills{
+  position:relative;
+  z-index:2;
+  gap:7px!important;
+  padding-top:24px!important;
+}
+.afsana-product-page .afsana-note-pills span{
+  border:1px solid rgba(96,70,122,.16)!important;
+  border-radius:8px!important;
+  background:rgba(255,255,255,.78)!important;
+  color:#59466b!important;
+  font-size:11px!important;
+  font-weight:650!important;
+  padding:8px 11px!important;
+}
+.afsana-product-page .afsana-note-card-index{
+  right:17px!important;
+  top:43%!important;
+  color:rgba(85,61,108,.075)!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(76px,8vw,118px)!important;
+  font-weight:850!important;
+  letter-spacing:-.09em;
+}
+.afsana-product-page .afsana-note-card-top{
+  --note-accent:#b58b62;
+}
+.afsana-product-page .afsana-note-card-top .afsana-note-card-rule{background:linear-gradient(90deg,#c69b6f,transparent)!important}
+.afsana-product-page .afsana-note-card-top{
+  background:linear-gradient(145deg,#fffaf4,#f8f0e7)!important;
+  border-color:#eadfce!important;
+}
+.afsana-product-page .afsana-note-card-heart{
+  background:linear-gradient(145deg,#fffafd,#f4edf8)!important;
+  border-color:#e7dced!important;
+}
+.afsana-product-page .afsana-note-card-base{
+  background:linear-gradient(145deg,#fbfdfb,#edf4ef)!important;
+  border-color:#dce8df!important;
+}
+.afsana-product-page .afsana-note-card-top .afsana-note-card-top{color:#856342!important}
+.afsana-product-page .afsana-note-card-heart .afsana-note-card-top{color:#78538f!important}
+.afsana-product-page .afsana-note-card-base .afsana-note-card-top{color:#52765e!important}
+.afsana-product-page .afsana-note-card-heart .afsana-note-card-rule{background:linear-gradient(90deg,#a982bd,transparent)!important}
+.afsana-product-page .afsana-note-card-base .afsana-note-card-rule{background:linear-gradient(90deg,#80a98a,transparent)!important}
+.afsana-product-page .afsana-note-card-heart:before{border-color:rgba(145,99,172,.15);box-shadow:0 0 0 18px rgba(145,99,172,.035),0 0 0 38px rgba(145,99,172,.02)}
+.afsana-product-page .afsana-note-card-base:before{border-color:rgba(87,132,97,.16);box-shadow:0 0 0 18px rgba(87,132,97,.035),0 0 0 38px rgba(87,132,97,.02)}
+.afsana-product-page .afsana-note-card:hover{
+  transform:translateY(-7px)!important;
+  box-shadow:0 20px 42px rgba(43,31,58,.11)!important;
+}
+@keyframes afsana-note-card-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){
+  .afsana-product-page .afsana-note-story{padding:38px 14px!important}
+  .afsana-product-page .afsana-note-story-grid{gap:10px!important}
+  .afsana-product-page .afsana-note-card{min-height:0!important;padding:19px!important}
+  .afsana-product-page .afsana-note-card h3{font-size:27px!important}
+}
+
+/* Product reviews sit directly on the page; real submitted reviews remain API-driven. */
+.afsana-product-page .afsana-reviews{
+  margin:38px 0 0!important;
+  padding:clamp(22px,3vw,38px)!important;
+  border:1px solid #e8e3ec!important;
+  border-radius:17px!important;
+  background:linear-gradient(145deg,#fff,#faf8fc)!important;
+  box-shadow:0 12px 34px rgba(35,25,49,.055)!important;
+}
+.afsana-product-page .afsana-reviews #reviews-title{
+  color:#292330!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:25px!important;
+  font-weight:800!important;
+  letter-spacing:-.04em!important;
+}
+.afsana-product-page .afsana-reviews>div:first-child{margin-bottom:20px!important}
+.afsana-product-page .afsana-reviews>div:first-child p,
+.afsana-product-page .afsana-reviews>p{color:#706978!important;font-size:13px!important;line-height:1.7!important}
+.afsana-product-page .afsana-reviews a{color:#694398!important;font-weight:750!important;text-underline-offset:3px}
+.afsana-product-page .afsana-reviews [role=img]{color:#c99a37!important;letter-spacing:.09em}
+.afsana-product-page .afsana-reviews [role=img] span{color:#e7e2ea!important}
+.afsana-product-page .afsana-reviews button:not([type=submit]){
+  color:#694398;
+}
+.afsana-product-page .afsana-review-preview{
+  margin-top:28px;
+  padding-top:24px;
+  border-top:1px solid #eae5ee;
+}
+.afsana-review-preview-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.afsana-review-preview-kicker{
+  color:#8563a7;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.afsana-review-preview-head h3{
+  margin-top:5px;
+  color:#2b2432;
+  font-size:19px;
+  font-weight:800;
+  letter-spacing:-.025em;
+}
+.afsana-review-preview-head>span{
+  padding:6px 9px;
+  border:1px solid #eadfc9;
+  border-radius:7px;
+  background:#fffaf0;
+  color:#8b6937;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.afsana-review-preview-note{
+  margin:0 0 15px;
+  color:#817888;
+  font-size:11px;
+  line-height:1.6;
+}
+.afsana-review-preview-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:11px;
+}
+.afsana-review-preview-card{
+  min-width:0;
+  padding:17px;
+  border:1px solid #e9e4ed;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(42,30,55,.035);
+}
+.afsana-review-preview-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.afsana-review-preview-meta span{
+  color:#45384f;
+  font-size:12px;
+  font-weight:750;
+}
+.afsana-review-preview-meta small{
+  color:#9a8da4;
+  font-size:8px;
+  font-weight:750;
+  letter-spacing:.08em;
+}
+.afsana-review-preview-stars{
+  margin-top:12px;
+  color:#c99a37;
+  font-size:16px;
+  letter-spacing:.12em;
+}
+.afsana-review-preview-card>p{
+  margin:9px 0 13px;
+  color:#675f6f;
+  font-size:13px;
+  line-height:1.7;
+}
+.afsana-review-preview-label{
+  display:inline-flex;
+  padding:5px 8px;
+  border-radius:5px;
+  background:#f4f0f7;
+  color:#806397;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+@media(max-width:640px){
+  .afsana-product-page .afsana-reviews{margin-top:26px!important;padding:19px!important}
+  .afsana-review-preview-grid{grid-template-columns:1fr}
+  .afsana-review-preview-card{padding:15px}
+}
+
+/* The World of Afsana — Instagram embed in a fixed, non-scrollable frame. */
+.afsana-world-reel{
+  position:relative;
+  overflow:hidden;
+  padding:clamp(42px,6vw,78px) 0;
+  background:
+    radial-gradient(ellipse at 8% 12%,rgba(203,187,225,.28),transparent 34%),
+    radial-gradient(ellipse at 92% 90%,rgba(224,199,157,.20),transparent 31%),
+    linear-gradient(120deg,#fbfafc 0%,#f5f1f8 53%,#fffaf4 100%);
+  color:#282330;
+}
+.afsana-world-reel-shell{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(320px,440px);
+  align-items:center;
+  gap:clamp(30px,6vw,88px);
+}
+.afsana-world-reel-copy{max-width:610px}
+.afsana-world-reel-kicker{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  color:#79559e;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.16em;
+}
+.afsana-world-reel-kicker:before{content:"";width:34px;height:1px;background:linear-gradient(90deg,#79559e,#c49b65)}
+.afsana-world-reel-copy h2{
+  margin:20px 0 0;
+  color:#282330;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+  font-size:clamp(42px,5vw,68px);
+  font-weight:800;
+  line-height:1.02;
+  letter-spacing:-.06em;
+}
+.afsana-world-reel-copy>p:not(.afsana-world-reel-kicker){
+  max-width:500px;
+  margin-top:18px;
+  color:#746c7b;
+  font-size:15px;
+  line-height:1.8;
+}
+.afsana-world-reel-link{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  margin-top:26px;
+  padding:13px 18px;
+  border:1px solid #ded5e7;
+  border-radius:9px;
+  background:#fff;
+  color:#694398;
+  font-size:12px;
+  font-weight:750;
+  box-shadow:0 6px 18px rgba(35,25,49,.05);
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.afsana-world-reel-link:hover{transform:translateY(-2px);border-color:#bda8d0;box-shadow:0 10px 25px rgba(35,25,49,.09)}
+.afsana-world-reel-frame{
+  position:relative;
+  width:100%;
+  height:760px;
+  max-height:calc(100vh - 60px);
+  min-height:630px;
+  overflow:hidden!important;
+  border:1px solid rgba(103,76,132,.18);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 25px 70px rgba(36,25,50,.16),0 0 0 7px rgba(255,255,255,.72);
+  overscroll-behavior:contain;
+}
+.afsana-world-reel-iframe{
+  display:block;
+  width:100%;
+  height:790px;
+  min-height:790px;
+  margin:0;
+  border:0!important;
+  overflow:hidden!important;
+  background:#fff;
+  scrollbar-width:none;
+}
+.afsana-world-reel-iframe::-webkit-scrollbar{display:none}
+@media(max-width:850px){
+  .afsana-world-reel-shell{grid-template-columns:1fr;gap:25px}
+  .afsana-world-reel-copy{max-width:720px}
+  .afsana-world-reel-frame{width:min(100%,440px);height:760px;max-height:none;min-height:0;margin:0 auto}
+  .afsana-world-reel-iframe{height:790px;min-height:790px}
+}
+@media(max-width:480px){
+  .afsana-world-reel{padding:39px 0}
+  .afsana-world-reel-copy h2{font-size:clamp(37px,10vw,48px)}
+  .afsana-world-reel-frame{width:100%;height:730px;border-radius:13px}
+  .afsana-world-reel-iframe{height:760px;min-height:760px}
+}
+
+/* AFSANA Moving Image — asymmetric film editorial, not four identical video tiles. */
+.afsana-film-experience.afsana-ref-films{
+  padding:clamp(55px,6vw,88px) 0!important;
+  background:
+    radial-gradient(ellipse at 4% 5%,rgba(124,89,172,.20),transparent 28%),
+    radial-gradient(ellipse at 94% 94%,rgba(184,142,87,.16),transparent 30%),
+    linear-gradient(130deg,#11101a 0%,#1b1725 48%,#11101a 100%)!important;
+}
+.afsana-film-experience .afsana-film-heading{
+  align-items:flex-end!important;
+  gap:28px!important;
+  margin-bottom:34px!important;
+}
+.afsana-film-experience .afsana-film-kicker{
+  color:#d5bc9d!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.16em!important;
+}
+.afsana-film-experience .afsana-film-kicker:before{background:linear-gradient(90deg,#c59d6e,#c8b4dc)!important}
+.afsana-film-experience .afsana-film-heading h2{
+  margin-top:17px!important;
+  color:#fff!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(42px,5.4vw,76px)!important;
+  font-weight:800!important;
+  line-height:1.02!important;
+  letter-spacing:-.06em!important;
+}
+.afsana-film-experience .afsana-film-heading h2 em{
+  color:#d9c19e!important;
+  font-family:inherit!important;
+  font-style:normal!important;
+  font-weight:800!important;
+  text-shadow:none!important;
+}
+.afsana-film-experience .afsana-film-intro{
+  max-width:370px!important;
+  color:rgba(246,242,250,.68)!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:14px!important;
+  line-height:1.8!important;
+  letter-spacing:0!important;
+}
+.afsana-film-experience .afsana-ref-film-grid{
+  grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr) minmax(0,.88fr)!important;
+  grid-template-rows:repeat(2,minmax(285px,320px));
+  gap:12px!important;
+  width:calc(100% - clamp(28px,6vw,100px))!important;
+  max-width:1500px!important;
+}
+.afsana-film-experience .afsana-ref-film-card{
+  height:100%!important;
+  min-height:285px!important;
+  border:1px solid rgba(226,213,237,.20)!important;
+  border-radius:13px!important;
+  background:#221d2d!important;
+  box-shadow:0 14px 38px rgba(0,0,0,.24)!important;
+  animation:afsana-film-editorial-in .7s cubic-bezier(.2,.8,.2,1) both;
+}
+.afsana-film-experience .afsana-ref-film-card:nth-child(1){
+  grid-column:1;
+  grid-row:1 / span 2;
+}
+.afsana-film-experience .afsana-ref-film-card:nth-child(2){grid-column:2;grid-row:1}
+.afsana-film-experience .afsana-ref-film-card:nth-child(3){grid-column:3;grid-row:1}
+.afsana-film-experience .afsana-ref-film-card:nth-child(4){grid-column:2 / span 2;grid-row:2}
+.afsana-film-experience .afsana-ref-film-card:before{
+  inset:10px!important;
+  border-color:rgba(255,255,255,.20)!important;
+}
+.afsana-film-experience .afsana-ref-film-card:after{
+  background:linear-gradient(180deg,rgba(11,8,18,.04),rgba(11,8,18,.08) 30%,rgba(11,8,18,.82) 100%)!important;
+}
+.afsana-film-experience .afsana-ref-film-card video{
+  filter:saturate(.88) contrast(1.06) brightness(.84)!important;
+  transform:scale(1.02);
+}
+.afsana-film-experience .afsana-ref-film-card:hover{
+  transform:translateY(-5px)!important;
+  border-color:rgba(224,196,153,.62)!important;
+  box-shadow:0 22px 56px rgba(0,0,0,.36),0 0 25px rgba(160,129,191,.11)!important;
+}
+.afsana-film-experience .afsana-ref-film-card:hover video{
+  transform:scale(1.075);
+  filter:saturate(1.08) contrast(1.07) brightness(.98)!important;
+}
+.afsana-film-experience .afsana-ref-film-card>div:last-child{
+  left:23px!important;
+  right:22px!important;
+  bottom:22px!important;
+}
+.afsana-film-experience .afsana-ref-film-card small{
+  color:#e4c79f!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:9px!important;
+  font-weight:800!important;
+  letter-spacing:.14em!important;
+}
+.afsana-film-experience .afsana-ref-film-card h3{
+  color:#fff!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(20px,2.3vw,30px)!important;
+  font-weight:800!important;
+  line-height:1.12!important;
+  letter-spacing:-.04em!important;
+}
+.afsana-film-experience .afsana-ref-film-play{
+  width:54px!important;
+  height:54px!important;
+  border:1px solid rgba(255,255,255,.7)!important;
+  background:rgba(18,14,25,.48)!important;
+  color:#fff!important;
+  box-shadow:0 0 0 6px rgba(255,255,255,.055)!important;
+}
+.afsana-film-experience .afsana-ref-film-card:hover .afsana-ref-film-play{
+  background:#d6bd99!important;
+  border-color:#d6bd99!important;
+  color:#211a28!important;
+}
+.afsana-film-experience .afsana-film-mute{
+  top:17px!important;
+  right:17px!important;
+  width:37px!important;
+  height:37px!important;
+  border-color:rgba(255,255,255,.33)!important;
+  background:rgba(18,14,25,.6)!important;
+}
+.afsana-film-experience .afsana-ref-film-placeholder{
+  color:#e4d8ed!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:11px!important;
+  letter-spacing:.14em!important;
+}
+@keyframes afsana-film-editorial-in{
+  from{opacity:0;transform:translateY(18px) scale(.985)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:1050px){
+  .afsana-film-experience .afsana-ref-film-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-rows:auto!important;
+  }
+  .afsana-film-experience .afsana-ref-film-card:nth-child(1){grid-column:1 / span 2;grid-row:auto;height:440px!important}
+  .afsana-film-experience .afsana-ref-film-card:nth-child(2),
+  .afsana-film-experience .afsana-ref-film-card:nth-child(3),
+  .afsana-film-experience .afsana-ref-film-card:nth-child(4){grid-column:auto;grid-row:auto;height:360px!important}
+}
+@media(max-width:600px){
+  .afsana-film-experience .afsana-film-heading{width:calc(100% - 32px)!important}
+  .afsana-film-experience .afsana-film-heading h2{font-size:clamp(39px,10vw,54px)!important;line-height:1.02!important}
+  .afsana-film-experience .afsana-film-intro{font-size:12px!important}
+  .afsana-film-experience .afsana-ref-film-grid{gap:9px!important;width:calc(100% - 24px)!important}
+  .afsana-film-experience .afsana-ref-film-card:nth-child(1){grid-column:1 / span 2;height:340px!important;min-height:340px!important}
+  .afsana-film-experience .afsana-ref-film-card:nth-child(2),
+  .afsana-film-experience .afsana-ref-film-card:nth-child(3),
+  .afsana-film-experience .afsana-ref-film-card:nth-child(4){height:250px!important;min-height:250px!important}
+  .afsana-film-experience .afsana-ref-film-card>div:last-child{left:13px!important;right:12px!important;bottom:14px!important}
+  .afsana-film-experience .afsana-ref-film-card small{font-size:7px!important;letter-spacing:.09em!important}
+  .afsana-film-experience .afsana-ref-film-card h3{font-size:18px!important}
+  .afsana-film-experience .afsana-ref-film-play{width:42px!important;height:42px!important;font-size:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .afsana-film-experience:before,.afsana-film-experience .afsana-ref-film-card{animation:none!important}
+  .afsana-film-experience .afsana-ref-film-card,.afsana-film-experience video{transition:none!important}
+}
+
+/* Newsletter / The Private List — a soft pearl-and-lilac letter from the house. */
+.afsana-ref-newsletter{
+  position:relative;
+  overflow:hidden;
+  padding:clamp(48px,6vw,82px) 0!important;
+  background:
+    radial-gradient(ellipse at 7% 90%,rgba(203,187,225,.34),transparent 31%),
+    radial-gradient(ellipse at 95% 8%,rgba(224,199,157,.23),transparent 27%),
+    linear-gradient(115deg,#f8f6fb,#f3eff7 52%,#fbf8f2)!important;
+  color:#292330!important;
+}
+.afsana-ref-newsletter:before{
+  content:"AFSANA";
+  position:absolute;
+  right:2%;
+  bottom:-.28em;
+  color:rgba(105,67,152,.035);
+  font-size:clamp(110px,20vw,250px);
+  font-weight:850;
+  letter-spacing:-.09em;
+  line-height:1;
+  pointer-events:none;
+}
+.afsana-ref-newsletter-shell{
+  display:grid!important;
+  grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr)!important;
+  align-items:center!important;
+  gap:clamp(25px,5vw,65px)!important;
+  max-width:1240px!important;
+}
+.afsana-ref-newsletter-copy{position:relative;z-index:1}
+.afsana-ref-newsletter-kicker{
+  color:#76519a!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.17em!important;
+}
+.afsana-ref-newsletter-copy h2{
+  max-width:540px;
+  margin:17px 0 0!important;
+  color:#292330!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(38px,4.8vw,62px)!important;
+  font-weight:850!important;
+  line-height:1.04!important;
+  letter-spacing:-.06em!important;
+}
+.afsana-ref-newsletter-description{
+  max-width:440px!important;
+  margin-top:17px!important;
+  color:#706877!important;
+  font-size:15px!important;
+  line-height:1.8!important;
+}
+.afsana-ref-newsletter-signoff{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:26px;
+  color:#93879d;
+  font-size:9px;
+  font-weight:750;
+  letter-spacing:.11em;
+}
+.afsana-ref-newsletter-signoff i{width:30px;height:1px;background:#bea8cf}
+.afsana-ref-newsletter-form{position:relative;z-index:2;min-width:0}
+.afsana-newsletter-card{
+  width:100%;
+  padding:0!important;
+  background:transparent!important;
+  color:#292330!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+}
+.afsana-newsletter-card *{font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+.afsana-newsletter-card .pointer-events-none>div:first-child{background:rgba(188,158,216,.13)!important}
+.afsana-newsletter-card .pointer-events-none>div:nth-child(2){background:rgba(217,187,135,.13)!important}
+.afsana-newsletter-card .pointer-events-none>div:nth-child(3){opacity:.035!important}
+.afsana-newsletter-layout{gap:20px!important}
+.afsana-newsletter-intro{max-width:100%!important}
+.afsana-newsletter-badge{
+  border:1px solid #e1d5eb!important;
+  background:#fff!important;
+  color:#76519a!important;
+  font-size:9px!important;
+  letter-spacing:.12em!important;
+  box-shadow:0 4px 14px rgba(50,36,65,.035);
+}
+.afsana-newsletter-badge svg{color:#a183bb!important}
+.afsana-newsletter-overline{color:#9a8fa1!important;font-size:10px!important}
+.afsana-newsletter-main-title{
+  color:#282330!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(38px,4.2vw,58px)!important;
+  font-weight:850!important;
+  line-height:1.02!important;
+  letter-spacing:-.06em!important;
+}
+.afsana-newsletter-main-title em{color:#76509b!important;font-style:normal!important}
+.afsana-newsletter-main-copy{color:#726a79!important;font-size:14px!important;line-height:1.8!important}
+.afsana-newsletter-benefits{color:#786d82!important;font-size:9px!important;font-weight:750!important}
+.afsana-newsletter-benefits svg{color:#9271aa!important}
+.afsana-newsletter-letter-wrap{padding:0!important}
+.afsana-newsletter-letter-outline{
+  border:1px solid rgba(122,89,151,.20)!important;
+  border-radius:20px!important;
+  transform:rotate(1.2deg)!important;
+}
+.afsana-newsletter-letter{
+  border:1px solid #e7e0eb!important;
+  border-radius:16px!important;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(211,194,226,.19),transparent 32%),
+    linear-gradient(145deg,#fff 0%,#fff 60%,#fbf8f3 100%)!important;
+  box-shadow:0 18px 50px rgba(48,34,62,.085)!important;
+  color:#292330!important;
+}
+.afsana-newsletter-letter-kicker{color:#8a69a7!important;font-size:9px!important;letter-spacing:.16em!important}
+.afsana-newsletter-letter-title{
+  color:#282330!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(25px,3vw,35px)!important;
+  font-weight:800!important;
+  line-height:1.12!important;
+  letter-spacing:-.045em!important;
+}
+.afsana-newsletter-letter-copy{color:#716a79!important;font-size:13px!important;line-height:1.7!important}
+.afsana-newsletter-letter-icon{
+  border:1px solid #e5d9ec!important;
+  background:#f8f4fb!important;
+  color:#7956a0!important;
+}
+.afsana-newsletter-field-label{color:#665a71!important;font-size:10px!important;letter-spacing:.1em!important}
+.afsana-newsletter-input-wrap>svg{color:#93859f!important}
+.afsana-newsletter-input{
+  min-height:54px;
+  border:1px solid #ded7e6!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#2d2635!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:14px!important;
+  box-shadow:none!important;
+}
+.afsana-newsletter-input::placeholder{color:#aaa2b0!important}
+.afsana-newsletter-input:focus{
+  border-color:#9878b2!important;
+  box-shadow:0 0 0 3px rgba(121,86,158,.12)!important;
+}
+.afsana-newsletter-submit{
+  min-height:54px!important;
+  border:1px solid #67418f!important;
+  border-radius:9px!important;
+  background:#70499b!important;
+  color:#fff!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:11px!important;
+  font-weight:800!important;
+  letter-spacing:.06em!important;
+}
+.afsana-newsletter-submit:hover{background:#58377e!important}
+.afsana-newsletter-privacy{color:#918897!important;font-size:11px!important;line-height:1.6!important}
+.afsana-newsletter-signoff{border-color:#eee8f0!important}
+.afsana-newsletter-signoff>div{color:#92899a!important;font-size:9px!important}
+.afsana-newsletter-card [role=status]{
+  border:1px solid #dbe8dd!important;
+  background:#f4faf4!important;
+  color:#426f4a!important;
+}
+.afsana-newsletter-card [role=status] h4{color:#2d5736!important}
+.afsana-newsletter-card [role=status] p{color:#68816b!important}
+.afsana-newsletter-card [role=status] button{color:#5b4080!important}
+@media(max-width:800px){
+  .afsana-ref-newsletter-shell{grid-template-columns:1fr!important;gap:26px!important}
+}
+@media(max-width:600px){
+  .afsana-ref-newsletter{padding:40px 0!important}
+  .afsana-ref-newsletter-copy h2{font-size:clamp(37px,10vw,48px)!important}
+  .afsana-ref-newsletter-description{font-size:13px!important}
+  .afsana-newsletter-letter{padding:20px!important}
+  .afsana-newsletter-layout{gap:14px!important}
+  .afsana-newsletter-main-title{font-size:clamp(36px,10vw,46px)!important}
+  .afsana-newsletter-letter-outline{inset:-5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .afsana-newsletter-card *{transition:none!important;animation:none!important}
+}
+
+/* Official platform colours for the footer's social account icons. */
+.afsana-social-link{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  flex:none;
+  border-color:rgba(255,255,255,.17)!important;
+  color:#fff!important;
+  box-shadow:0 5px 15px rgba(0,0,0,.14);
+  transition:transform .2s,filter .2s,box-shadow .2s;
+}
+.afsana-social-link svg{width:18px!important;height:18px!important;stroke-width:2.1}
+.afsana-social-link:hover{filter:brightness(1.08);box-shadow:0 9px 22px rgba(0,0,0,.22)}
+.afsana-social-instagram{background:linear-gradient(135deg,#feda75 0%,#fa7e1e 28%,#d62976 56%,#962fbf 78%,#4f5bd5 100%)!important;border-color:transparent!important}
+.afsana-social-facebook{background:#1877f2!important;border-color:#1877f2!important}
+.afsana-social-tiktok{background:#090909!important;border-color:#262626!important;filter:drop-shadow(2px 1px 0 rgba(37,244,238,.45)) drop-shadow(-2px -1px 0 rgba(254,44,85,.35))}
+.afsana-social-youtube{background:#ff0033!important;border-color:#ff0033!important}
+.afsana-social-pinterest{background:#e60023!important;border-color:#e60023!important}
+.afsana-social-x{background:#080808!important;border-color:#343434!important}
+.afsana-social-link.is-unconnected{background:#2b2633!important;border-color:#4b4354!important;color:#a9a0b1!important;filter:none!important;opacity:.55}
+
+/* Keep social logos crisp on hover while preserving each brand's own colours. */
+.afsana-social-instagram:hover,.afsana-social-facebook:hover,.afsana-social-tiktok:hover,.afsana-social-youtube:hover,.afsana-social-pinterest:hover,.afsana-social-x:hover{filter:brightness(1.09)}
+
+/* AFSANA review preview is deliberately labelled as sample copy until real reviews are approved. */
