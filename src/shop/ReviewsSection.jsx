@@ -18,7 +18,7 @@ export default function ReviewsSection({ slug }) {
   const { status } = useCustomer();
   const [page, setPage] = useState(1);
   useEffect(() => { setPage(1); }, [slug]);
-  const list = useApi(() => reviewsApi.list(slug, { page, limit: 10 }), [slug, page]);
+  const list = useApi(() => reviewsApi.list(slug, { page, limit: 3 }), [slug, page]);
   const mine = useApi(() => (status === 'authed' ? reviewsApi.mine(slug) : Promise.resolve(null)), [slug, status]);
   const [form, setForm] = useState(null); // null = closed, otherwise { rating, title, text }
   const [busy, setBusy] = useState(false);
