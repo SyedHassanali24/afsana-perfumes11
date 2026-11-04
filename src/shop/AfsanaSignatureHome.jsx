@@ -648,7 +648,7 @@ export function ScentFinderPage(){
     {id:'discover-fallback-hero',type:'hero',pageKey:'discover',title:'There is a scent for that.',config:{layout:'inner',eyebrow:'AFSANA SCENT INTELLIGENCE / BETA',subtitle:'Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.'}},
     {id:'discover-fallback-worlds',type:'category_tiles',pageKey:'discover',title:'Choose a feeling.',config:{eyebrow:'A MORE PERSONAL DISCOVERY',subtitle:'Fragrance is personal. Let your instinct lead, and explore a scent world that matches your energy.',items:[{title:'Make a statement',text:'Confident, vivid, unforgettable.',link:'/shop'},{title:'Feel luminous',text:'Soft, airy, effortless.',link:'/shop'},{title:'Stay mysterious',text:'Deep, warm, magnetic.',link:'/shop'}]}}
   ];
-  return <><CmsSectionList sections={sections} faq={data?.faqs||[]} inheritedAssets={referenceAssets}/><Finder/></>;
+  return <><CmsSectionList sections={sections} faq={data?.faqs||[]} inheritedAssets={referenceAssets}/>{sections.some((item)=>item.type==='scent_finder')?null:<Finder/>}</>;
 }
 
 export default function AfsanaSignatureHome(){
