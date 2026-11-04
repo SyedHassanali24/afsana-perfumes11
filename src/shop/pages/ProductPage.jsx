@@ -44,7 +44,7 @@ function Media({item,alt,className='',onError}) {
  return <img src={url} alt={alt} className={className||'w-full h-full object-cover'} onError={onError}/>;
 }
 
-function BottlePreview({name,style}) {
+function BottlePreview({name,style,copy={}}) {
  return <div className="afsana-bottle-preview" style={style} aria-label={name+' bottle preview'}>
   <div className="afsana-bottle-shadow"/>
   <div className="afsana-bottle-cap"><span/></div>
@@ -53,7 +53,7 @@ function BottlePreview({name,style}) {
    <div className="afsana-bottle-liquid"/>
    <div className="afsana-bottle-glass"/>
    <div className="afsana-bottle-highlight"/>
-   <div className="afsana-bottle-label"><small>THE HOUSE OF</small><strong>AFSANA</strong><span>{name}</span><i>EAU DE PARFUM</i></div>
+   <div className="afsana-bottle-label"><small>{copy.bottleHouseLabel}</small><strong>{copy.bottleBrandName}</strong><span>{name}</span><i>{copy.bottleTypeLabel}</i></div>
   </div>
  </div>;
 }
@@ -260,7 +260,7 @@ export default function ProductPage(){
    @media(max-width:600px){.product-detail-grid{margin-top:22px}.product-gallery{display:flex;flex-direction:column;gap:12px}.main-product-stage{order:1;width:100%;height:clamp(480px,130vw,620px);min-height:480px;border-radius:16px}.gallery-thumbs{order:2;flex-direction:row;width:100%;max-height:none;overflow-x:auto;overflow-y:hidden;padding:2px 0 7px}.gallery-thumbs button{width:60px;min-width:60px}.afsana-bottle-preview{min-height:350px;height:76%;width:74%}.afsana-bottle-label{gap:5px}.afsana-bottle-label strong{font-size:18px}}
    @media(prefers-reduced-motion:reduce){.afsana-bottle-preview{animation:none}}
   `}</style>
-  <StateBox loading={loading} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
+  <StateBox loading={loading} error={error?.status===404?{message:copy.pageNotFound}:error} onRetry={reload}>{p&&<>
    <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">{t("homeCrumb")}</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">{t("collectionCrumb")}</Link> <span>/</span> {p.name}</div>
    <div className="product-detail-grid mt-8">
     <div className={"product-gallery "+(media.length>1?"has-thumbs":"no-thumbs")}>
@@ -282,13 +282,13 @@ export default function ProductPage(){
              <div key={img} className="media-transition h-full w-full"><Media item={activeMedia} alt={p.name} onError={()=>setMediaBroken(true)} className="max-h-full max-w-full w-full h-full object-contain drop-shadow-[0_38px_48px_rgba(25,13,44,.28)]"/></div>
             </div>
            </div>
-         : <BottlePreview name={p.name} style={{transform:`perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out'}}/>}
-       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 text-center text-[8px] uppercase tracking-[.2em] text-[#665d79]/80">{showRealModel?'Drag to rotate · True 3D model':hasProductVisual?'Move or drag to explore the bottle image':product3dUrl&&!modelViewerFailed?'Preparing interactive model':'3D-style bottle preview · Add product photos or GLB in CMS'}</div>
+         : <BottlePreview name={p.name} copy={copy} style={{transform:`perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out'}}/>}
+       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 text-center text-[8px] uppercase tracking-[.2em] text-[#665d79]/80">{showRealModel?t('viewerDrag3d'):hasProductVisual?t('viewerDragImage'):product3dUrl&&!modelViewerFailed?t('viewerPreparing'):t('viewerFallback')}</div>
       </div>
     </div>
     <div className="afsana-product-info">
       <div className="afsana-product-info-topline">
-       <span className="afsana-product-eyebrow">{p.fragrance?.gender||'Signature'}</span>
+       <span className="afsana-product-eyebrow">{p.fragrance?.gender||t('genderFallback')}</span>
        {p.fragrance?.concentration&&<span className="afsana-product-concentration">{p.fragrance.concentration}</span>}
        <span className="afsana-product-ref">{t("productReference")}</span>
       </div>
@@ -316,7 +316,7 @@ export default function ProductPage(){
       <div className="afsana-product-perks">{[['01',t('perk1Title'),t('perk1Text')],['02',t('perk2Title'),t('perk2Text')],['03',t('perk3Title'),t('perk3Text')]].map(([n,a,b])=><div className="afsana-product-perk" key={n}><span>{n}</span><p><strong>{a}</strong><small>{b}</small></p></div>)}</div>
       <div className="afsana-product-specs">
        <div className="afsana-specs-heading"><span>{t("profileHeading")}</span><small>{t("profileDetails")}</small></div>
-       <div className="afsana-specs-grid">{[['Longevity',p.fragrance?.longevity],['Projection',p.fragrance?.projection],['Concentration',p.fragrance?.concentration],['Gender',p.fragrance?.gender],['Season',p.fragrance?.seasons?.join(', ')],['Occasion',p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="afsana-spec-card"><span>{label}</span><strong>{value}</strong></div>)}</div>
+       <div className="afsana-specs-grid">{[[t('specLongevity'),p.fragrance?.longevity],[t('specProjection'),p.fragrance?.projection],[t('specConcentration'),p.fragrance?.concentration],[t('specGender'),p.fragrance?.gender],[t('specSeason'),p.fragrance?.seasons?.join(', ')],[t('specOccasion'),p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="afsana-spec-card"><span>{label}</span><strong>{value}</strong></div>)}</div>
       </div>
     </div>
    </div>
@@ -328,15 +328,15 @@ export default function ProductPage(){
        <h2>{t("storyHeading")}<br/><em>{t("storyHeadingAccent")}</em></h2>
       </div>
       <p className="afsana-note-intro">{t("storyIntro")}</p>
-      <span className="afsana-note-edition">AFSANA / SCENT PROFILE</span>
+      <span className="afsana-note-edition">{t("profileEdition")}</span>
      </header>
      <div className="afsana-note-story-grid">
       {[
-       ['TOP',t('openingOverline'),t('openingDescription'),ns.top],
-       ['HEART',t('heartOverline'),t('heartDescription'),ns.heart],
-       ['BASE',t('memoryOverline'),t('memoryDescription'),ns.base]
+       [t('noteStepTop'),t('openingOverline'),t('openingDescription'),ns.top],
+       [t('noteStepHeart'),t('heartOverline'),t('heartDescription'),ns.heart],
+       [t('noteStepBase'),t('memoryOverline'),t('memoryDescription'),ns.base]
       ].map(([label,title,copy,values],i)=><article key={label} className={'afsana-note-card afsana-note-card-'+label.toLowerCase()}>
-       <div className="afsana-note-card-top"><span>0{i+1} / 03</span><span>{label} NOTES</span></div>
+       <div className="afsana-note-card-top"><span>0{i+1} / {t('noteCount')}</span><span>{label} {t('noteSuffix')}</span></div>
        <div className="afsana-note-card-rule"/>
        <p className="afsana-note-card-overline">{title}</p>
        <h3>{label==='TOP'?t('openingTitle'):label==='HEART'?t('heartTitle'):t('memoryTitle')}</h3>
@@ -357,8 +357,8 @@ export default function ProductPage(){
        <h2>{t("relatedHeading")}<br/><em>{t("relatedHeadingAccent")}</em></h2>
       </div>
       <div className="afsana-complete-story-aside">
-       <p>Another scent. Another chapter. Discover a fragrance that feels unmistakably yours.</p>
-       <Link to="/shop" className="afsana-complete-story-link">EXPLORE THE COLLECTION <span>↗</span></Link>
+       <p>{t('relatedAside')}</p>
+       <Link to="/shop" className="afsana-complete-story-link">{t("relatedButton")} <span>↗</span></Link>
       </div>
      </div>
      <div className="product-grid afsana-complete-story-grid">{data.related.map((r,i)=><div className="afsana-related-item" key={r.id||r._id}><span className="afsana-related-number">0{i+1}</span><ProductCard product={r}/></div>)}</div>
