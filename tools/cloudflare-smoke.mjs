@@ -52,14 +52,33 @@ console.log(`CMS API: HTTP ${cms.response.status}; public content endpoint is re
 
 const mediaPaths = findMediaPaths([products.data, cms.data]);
 for (const path of mediaPaths) {
-  const response = await fetch(new URL(path, base), { signal: AbortSignal.timeout(20000) });
+  // Video checks request only the first 16 bytes; never pull a potentially 250 MB file into CI memory.
+  const response = await fetch(new URL(path, base), {
+    headers: { Range: "bytes=0-15" },
+    signal: AbortSignal.timeout(20000)
+  });
   if (!response.ok) throw new Error(`Uploaded media ${path} returned HTTP ${response.status}`);
   const contentType = response.headers.get("content-type") || "";
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  if (!bytes.length) throw new Error(`Uploaded media ${path} returned an empty file`);
   if (!/^(image\/(jpeg|png|webp)|video\/(mp4|webm)|model\/gltf-binary)(;|$)/i.test(contentType)) {
+    await response.body?.cancel();
     throw new Error(`Uploaded media ${path} returned unexpected content type: ${contentType}`);
   }
+
+  if (contentType.startsWith("video/")) {
+    const contentRange = response.headers.get("content-range") || "";
+    if (response.status !== 206 || !/^bytes 0-\d+\/\d+$/i.test(contentRange)) {
+      await response.body?.cancel();
+      throw new Error(`Uploaded video ${path} does not support byte-range playback (HTTP ${response.status})`);
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (!bytes.length || bytes.length > 16) throw new Error(`Uploaded video ${path} returned an invalid byte-range payload`);
+    console.log(`Uploaded video: HTTP 206, ${contentType}, range ${contentRange}`);
+    continue;
+  }
+
+  // Existing MongoDB image/GLB media does not use the KV video range reader.
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (!bytes.length) throw new Error(`Uploaded media ${path} returned an empty file`);
   console.log(`Uploaded media: HTTP ${response.status}, ${contentType}, ${bytes.length} bytes`);
 }
 if (!mediaPaths.size) console.log("No existing public records reference an uploaded /api/media asset yet.");
