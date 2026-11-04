@@ -96,17 +96,17 @@ function DefaultHome(){return <div className="bg-[#faf8f4] text-[#263e0e]"><Hero
 
 
 const cmsItems = (items) => Array.isArray(items) ? items : [];
-function CmsTimer({ endAt }) {
+function CmsTimer({ endAt, digital = false }) {
   const [left, setLeft] = useState(Math.max(0, new Date(endAt || 0).getTime() - Date.now()));
   useEffect(() => { const id = window.setInterval(() => setLeft(Math.max(0, new Date(endAt || 0).getTime() - Date.now())), 1000); return () => window.clearInterval(id); }, [endAt]);
   if (!endAt || left <= 0) return null;
   const total = Math.floor(left / 1000), d = Math.floor(total / 86400), h = Math.floor((total % 86400) / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
-  return <div className="cms-timer afsana-digital-countdown" aria-label="Offer countdown">
+  return digital ? <div className="cms-timer afsana-digital-countdown" aria-label="Offer countdown">
     <span className="cms-timer-unit"><b>{String(d).padStart(2,'0')}</b><small>DAYS</small></span><i>:</i>
     <span className="cms-timer-unit"><b>{String(h).padStart(2,'0')}</b><small>HRS</small></span><i>:</i>
     <span className="cms-timer-unit"><b>{String(m).padStart(2,'0')}</b><small>MIN</small></span><i>:</i>
     <span className="cms-timer-unit"><b>{String(s).padStart(2,'0')}</b><small>SEC</small></span>
-  </div>;
+  </div> : <div className="cms-timer" aria-label="Offer countdown"><span>{String(d).padStart(2,'0')}d</span><b>:</b><span>{String(h).padStart(2,'0')}h</span><b>:</b><span>{String(m).padStart(2,'0')}m</span><b>:</b><span>{String(s).padStart(2,'0')}s</span></div>;
 }
 function AnimatedValue({ value }) {
   const raw = String(value ?? '').trim();
@@ -353,7 +353,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   }
   if (section.type === 'ai_concierge') return <ConciergeFloat section={section}/>;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
-  if (section.type === 'offer_timer') return <section className="afsana-ref-offer-banner"><div className="container-xl afsana-ref-offer-inner"><div><p className="afsana-ref-eyebrow">{c.label || 'A LITTLE EXTRA FROM THE HOUSE'}</p><h2>{section.title || 'Good taste. Even better delivery.'}</h2><p>{c.offerText || 'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.'}</p>{btn}</div><div className="afsana-ref-offer-stamp"><div className="afsana-offer-stamp-copy"><b>✳</b><span>LIMITED TIME</span><strong>AFSANA OFFER</strong></div>{c.endAt && <CmsTimer endAt={c.endAt}/>}</div></div></section>;
+  if (section.type === 'offer_timer') return <section className="afsana-ref-offer-banner"><div className="container-xl afsana-ref-offer-inner"><div><p className="afsana-ref-eyebrow">{c.label || 'A LITTLE EXTRA FROM THE HOUSE'}</p><h2>{section.title || 'Good taste. Even better delivery.'}</h2><p>{c.offerText || 'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.'}</p>{btn}</div><div className="afsana-ref-offer-stamp"><div className="afsana-offer-stamp-copy"><b>✳</b><span>LIMITED TIME</span><strong>AFSANA OFFER</strong></div>{c.endAt && <CmsTimer endAt={c.endAt} digital/>}</div></div></section>;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p>{!c.hideTimer && c.endAt ? <CmsTimer endAt={c.endAt}/> : null}{btn}</div></div></section>;
   if (section.type === 'muse_scene') return <MuseScene section={section}/>;
     if (section.type === 'product_3d_showcase') return <Product3DShowcase section={{...section,config:c}} products={products}/>;
