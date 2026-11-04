@@ -74,19 +74,20 @@ export default function CheckoutPage() {
     } finally { setBusy(false); }
   };
 
-  if (items.length === 0) return <Container><div className="py-16 text-center space-y-4"><p className="text-[#5f654f]">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div></Container>;
+  if (items.length === 0) return <Container><div className="py-16 text-center space-y-4"><p className="afsana-checkout-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div></Container>;
 
   return (
+    <div className="afsana-checkout">
     <Container>
       <PageTitle title="Checkout" subtitle="Securely complete your fragrance order." />
       <StateBox loading={loading && !q} error={error} onRetry={reload}>
         {q && !q.canCheckout && <div className="rounded-xl border border-[#748e40]/20 bg-[#b4bf41]/10 p-4 text-sm mb-6" role="alert">Some items in your cart need attention. <Link to="/cart" className="underline">Review your cart</Link></div>}
         {q && (
-          <form onSubmit={submit} className="grid gap-6 sm:gap-8 lg:grid-cols-[1fr_340px]" noValidate>
-            <div className="space-y-8">
-              {status !== 'authed' && <p className="rounded-xl border border-[#263e0e]/10 bg-[#263e0e]/5 px-4 py-3 text-sm text-[#5f654f]">Have an account? <Link to="/login" state={{ from: '/checkout' }} className="underline text-[#263e0e]">Sign in</Link> to use your saved addresses and see this order in your account.</p>}
-              <section className="space-y-4 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
-                <h2 className="font-display text-xl">Contact</h2>
+          <form onSubmit={submit} className="afsana-checkout-grid grid gap-6 sm:gap-8 lg:grid-cols-[1fr_360px]" noValidate>
+            <div className="afsana-checkout-main space-y-6">
+              {status !== 'authed' && <p className="afsana-checkout-signin rounded-xl px-4 py-3 text-sm">Have an account? <Link to="/login" state={{ from: '/checkout' }} className="underline text-[#263e0e]">Sign in</Link> to use your saved addresses and see this order in your account.</p>}
+              <section className="afsana-checkout-section space-y-4 rounded-2xl border p-5 sm:p-6">
+                <h2 className="afsana-checkout-heading">Contact</h2>
                 <Field label="Full name" error={errors['customer.name']}><Input required autoComplete="name" value={f.name} onChange={set('name')} error={errors['customer.name']} /></Field>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Phone" error={errors['customer.phone']} hint="We call or message this number about your order."><Input required inputMode="tel" autoComplete="tel" value={f.phone} onChange={set('phone')} placeholder="0300 1234567" error={errors['customer.phone']} /></Field>
@@ -103,27 +104,28 @@ export default function CheckoutPage() {
                   <Field label="Postal code (optional)"><Input autoComplete="postal-code" value={f.postalCode} onChange={set('postalCode')} /></Field>
                 </div>
               </section>
-              <section className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
+              <section className="afsana-checkout-section afsana-checkout-payment space-y-3 rounded-2xl border p-5 sm:p-6">
                 <h2 className="font-display text-xl">Payment</h2>
                 {Object.entries(PAYMENT_LABEL).map(([k, label]) => (
                   <label key={k} className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition ${pay === k ? 'border-[#263e0e] bg-[#263e0e]/5' : 'border-[#263e0e]/10 hover:border-[#263e0e]/20'}`}>
                     <input type="radio" name="pay" value={k} checked={pay === k} onChange={() => setPay(k)} className="mt-1 accent-[#263e0e]" />
-                    <span><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-[#5f654f] mt-0.5">{k === 'COD' ? 'Pay in cash when your order arrives.' : (shop?.bank ? 'We will show our bank account right after you place the order.' : BANK_NOTE)}</span></span>
+                    <span><span className="block text-sm font-medium">{label}</span><span className="afsana-checkout-payment-copy block mt-1">{k === 'COD' ? 'Pay in cash when your order arrives.' : (shop?.bank ? 'We will show our bank account right after you place the order.' : BANK_NOTE)}</span></span>
                   </label>
                 ))}
               </section>
             </div>
-            <aside className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 h-fit space-y-5 shadow-[0_18px_50px_rgba(24,35,8,.06)] lg:sticky lg:top-24">
+            <aside className="afsana-checkout-summary rounded-2xl border p-5 sm:p-6 h-fit space-y-5 lg:sticky lg:top-24">
               <h2 className="font-display text-xl">Order summary</h2>
-              <ul className="space-y-2 text-sm">{q.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span className="text-[#5f654f]">{l.name} {l.label} × {l.quantity}</span><span className="tabular-nums">{l.status === 'unavailable' ? '—' : money(l.lineTotal)}</span></li>)}</ul>
+              <ul className="space-y-2 text-sm">{q.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span className="afsana-checkout-muted">{l.name} {l.label} × {l.quantity}</span><span className="tabular-nums">{l.status === 'unavailable' ? '—' : money(l.lineTotal)}</span></li>)}</ul>
               <Totals q={q} />
-              {formError && <p role="alert" className="text-sm text-[#9b3f3f]">{formError}</p>}
-              <Button type="submit" className="w-full min-h-11 rounded-xl" disabled={busy || !q.canCheckout}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
-              <p className="text-xs text-[#5f654f]">Final price and stock are confirmed by our server when you place the order.</p>
+              {formError && <p role="alert" className="afsana-checkout-error text-sm">{formError}</p>}
+              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || !q.canCheckout}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
+              <p className="afsana-checkout-note text-xs">Final price and stock are confirmed by our server when you place the order.</p>
             </aside>
           </form>
         )}
       </StateBox>
     </Container>
+    </div>
   );
 }
