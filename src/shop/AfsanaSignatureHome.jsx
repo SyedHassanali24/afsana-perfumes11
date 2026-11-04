@@ -630,10 +630,11 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   const preview = readCmsPreview();
   const queryPage = new URLSearchParams(window.location.search).get('afsanaPageKey');
   const previewSections = Array.isArray(preview?.layouts?.[pageKey]) ? preview.layouts[pageKey] : preview && (queryPage || preview.pageKey || 'home') === pageKey ? preview.sections : null;
-  const sections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
+  const rawSections = previewSections || data?.pageSections?.[pageKey] || (pageKey === 'home' ? data?.homepageSections : []) || [];
+  // page_copy sections provide replacement text only; they must never hide the existing page layout.
+  const sections = rawSections.filter((section) => section?.type !== 'page_copy');
   const isPreviewPage = !!preview && (Array.isArray(preview.layouts?.[pageKey]) || (queryPage || preview.pageKey || 'home') === pageKey);
-  const hasManagedLayout = (data?.managedPageKeys || []).includes(pageKey);
-  if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
+  if (!sections.length && !isPreviewPage) return fallback;
   const previewAssets = preview?.layouts?.home?.find((item) => item.type === 'reference_assets')?.config || {};
   const referenceAssets = Object.keys(previewAssets).length ? previewAssets : (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
   return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
