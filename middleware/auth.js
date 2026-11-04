@@ -52,7 +52,7 @@ async function sendOtpEmail(to, subject, purpose, otp) {
       'Content-Type: text/html; charset=UTF-8',
       '',
       html,
-    ].join('\\r\\n');
+    ].join(String.fromCharCode(13, 10));
     const raw = Buffer.from(mime, 'utf8').toString('base64url');
     const sent = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
