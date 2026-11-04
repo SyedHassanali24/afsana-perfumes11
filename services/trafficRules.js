@@ -6,7 +6,7 @@ const SOURCES = [
   { key: 'facebook', label: 'Facebook' },
   { key: 'whatsapp', label: 'WhatsApp' },
   { key: 'search', label: 'Search engines' },
-  { key: 'direct', label: 'Direct / typed URL' },
+  { key: 'direct', label: 'Direct / unknown' },
   { key: 'email', label: 'Email' },
   { key: 'other_social', label: 'Other social' },
   { key: 'referral', label: 'Other websites' },
