@@ -5,9 +5,11 @@ import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
 import { useCmsPageCopy } from "../shop/cmsCopy";
+import useTitle from "../shop/useTitle";
 
 export default function ForgotPasswordPage() {
   const copy = useCmsPageCopy("customer_forgot_password");
+  useTitle(copy.browserTitle);
   const [identifier, setIdentifier] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
