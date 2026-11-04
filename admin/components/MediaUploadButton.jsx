@@ -75,7 +75,7 @@ export default function MediaUploadButton({ onUploaded, accept='image/*,video/mp
 
   return <div className={'flex flex-wrap items-center gap-2 '+className}>
     <input ref={ref} type="file" accept={accept} className="hidden" onChange={pick} />
-    <Button type="button" variant="secondary" size="sm" icon={Upload} disabled={busy} onClick={() => ref.current?.click()}>{busy ? 'Preparing…' : label}</Button>
+    <Button type="button" variant="secondary" size="sm" icon={Upload} disabled={busy} onClick={() => ref.current?.click()}>{busy ? 'Working…' : label}</Button>
     {busy && progress && <span className="text-xs text-[#5f654f]" aria-live="polite">{progress}</span>}
     {uploaded && <span className="inline-flex items-center gap-1 text-xs text-[#3d6b35]"><CheckCircle2 className="h-3.5 w-3.5"/> Uploaded</span>}
     {error && <span role="alert" className="text-xs text-[#9b3f3f]">{error}</span>}
