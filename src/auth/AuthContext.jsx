@@ -8,6 +8,21 @@ const DEMO_ADMIN = import.meta.env.BASE_URL !== '/';
 const DEMO_SESSION_KEY = 'afsana_demo_admin_v1';
 const DEMO_USER = { id: 'demo-admin', email: 'demo@afsana.local', name: 'Afsana Demo Admin', role: 'owner' };
 const DEMO_PERMISSIONS = { unrestricted: true, modules: {}, deniedFields: [] };
+const STAFF_DEVICE_KEY = 'afsana_staff_device_v1';
+
+function getStaffDeviceId() {
+  try {
+    let id = localStorage.getItem(STAFF_DEVICE_KEY);
+    if (id && /^[a-f0-9-]{20,128}$/i.test(id)) return id;
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    id = Array.from(bytes, (v) => v.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(STAFF_DEVICE_KEY, id);
+    return id;
+  } catch {
+    return 'temporary-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+}
 
 // status: 'loading' (checking session) | 'authed' | 'guest'
 export function AuthProvider({ children }) {
@@ -41,9 +56,16 @@ export function AuthProvider({ children }) {
     if (DEMO_ADMIN && email.toLowerCase() === DEMO_USER.email && password === 'AfsanaDemo123!') {
       localStorage.setItem(DEMO_SESSION_KEY, '1');
       setState({ status: 'authed', user: DEMO_USER, permissions: DEMO_PERMISSIONS, mustChangePassword: false });
-      return;
+      return { demo: true };
     }
-    await authApi.login(email, password); // throws ApiError on failure (message is safe to show)
+    const result = await authApi.login(email, password, getStaffDeviceId());
+    if (result?.requiresTwoFactor) return result;
+    await refresh();
+    return result;
+  }, [refresh]);
+
+  const completeTwoFactor = useCallback(async (email, challengeId, otp) => {
+    await authApi.verifyLoginOtp(email, challengeId, otp, getStaffDeviceId());
     await refresh();
   }, [refresh]);
 
@@ -55,9 +77,9 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     ...state,
-    login, logout, refresh,
+    login, completeTwoFactor, logout, refresh,
     can: (key) => canFn(state.permissions, key),
-  }), [state, login, logout, refresh]);
+  }), [state, login, completeTwoFactor, logout, refresh]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
