@@ -24,8 +24,8 @@ export function Timeline({ events }) {
 }
 
 export default function TrackOrderPage() {
-  useTitle('Track your order');
   const copy = useCmsPageCopy('track_before');
+  useTitle(copy.browserTitle);
   const t = (key) => copy[key];
   const [sp] = useSearchParams();
   const [f, setF] = useState({ order: sp.get('order') || '', phone: '' });
