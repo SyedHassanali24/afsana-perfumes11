@@ -33,7 +33,7 @@ function Metric({ icon: Icon, label, value, detail }) {
         <span className="text-xs font-medium text-[#64748b]">{label}</span>
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#4f46e5]/10 text-[#4f46e5]"><Icon className="h-4 w-4" /></span>
       </div>
-      <p className="mt-3 text-2xl font-semibold tracking-tight text-[#172033]">{number(value)}</p>
+      <p className="mt-3 text-2xl font-semibold tracking-tight text-[#172033]">{typeof value === "number" ? number(value) : value}</p>
       {detail && <p className="mt-1 text-[11px] text-[#64748b]">{detail}</p>}
     </div>
   );
@@ -50,8 +50,9 @@ export default function TrafficAnalytics() {
   const nonZeroSources = useMemo(() => (traffic?.sources || []).filter((item) => item.visits > 0), [traffic?.sources]);
   const topSource = nonZeroSources[0];
   const campaignUrl = useMemo(() => {
-    const path = destination.trim().startsWith("/") ? destination.trim() : "/" + destination.trim();
-    const target = new URL(path || "/", window.location.origin);
+    const entered = destination.trim() || "/";
+    const path = entered.startsWith("/") && !entered.startsWith("//") ? entered : "/";
+    const target = new URL(path, window.location.origin);
     target.searchParams.set("utm_source", platform);
     target.searchParams.set("utm_medium", platform === "youtube" ? "video" : platform === "whatsapp" ? "messaging" : "social");
     target.searchParams.set("utm_campaign", slug(campaign) || "afsana-campaign");
