@@ -5,9 +5,11 @@ import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
 import { useCmsPageCopy } from "../shop/cmsCopy";
+import useTitle from "../shop/useTitle";
 
 export default function CustomerLoginPage() {
   const copy = useCmsPageCopy("customer_login");
+  useTitle(copy.browserTitle);
   const { status, login } = useCustomer();
   const navigate = useNavigate(); const from = useLocation().state?.from || "/account";
   const [f,setF]=useState({identifier:"",password:""}); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
