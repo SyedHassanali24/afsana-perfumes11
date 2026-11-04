@@ -12,6 +12,13 @@ import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 
 const PAGE_OPTIONS = [["home","Homepage"],["site_navigation","Header navigation"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["discover","Scent finder page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"],["site_footer","Complete site footer"]];
+const SECTION_TYPE_GROUPS = [
+  { label: "Images, video & visual stories", keys: ["hero","image_banner","video_banner","split_story","cinematic_statement","lookbook","muse_scene","interactive_gallery","fragrance_dna","product_3d_showcase","reference_assets"] },
+  { label: "Products & collections", keys: ["featured_collection","best_sellers","new_arrivals","under_2000","gift_boxes","category_tiles"] },
+  { label: "Stories, trust & community", keys: ["blog_grid","post_grid","testimonials","community_pulse","trust_grid","benefits","values_grid"] },
+  { label: "Offers & customer engagement", keys: ["promo_timer","offer_timer","newsletter","scent_finder","faq","instagram","marquee","video_grid","rich_text","spacer"] },
+  { label: "Navigation & site-wide tools", keys: ["nav_menu","custom_footer","footer_showcase","whatsapp_float","ai_concierge"] }
+];
 
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
@@ -66,7 +73,7 @@ const parseItems = (text) => (Array.isArray(text) ? text : String(text || '').sp
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
   return { title: title.trim(), text: textValue.trim(), image: image.trim(), link: link.trim() };
 })).map((x) => ({ title: String(x?.title || '').trim(), text: String(x?.text || '').trim(), image: String(x?.image || '').trim(), link: String(x?.link || '').trim() }));
-const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
+const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].join('|')).join('\n') : String(items || '');
 
 const AFSANA_EXPERIENCE_SECTIONS = [
       { type:'reference_assets', title:'AFSANA image & 3D asset library', config:defaults('reference_assets') },
@@ -121,6 +128,7 @@ export default function HomepageBuilder() {
   const [layoutPreviewed, setLayoutPreviewed] = useState(false);
   const [notice, setNotice] = useState('');
   const [del, setDel] = useState(null);
+  const [editorTab, setEditorTab] = useState('content');
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
     if (loading || drawer.open) return;
@@ -239,6 +247,7 @@ export default function HomepageBuilder() {
       const initialType = pageKey === 'site_navigation' ? 'nav_menu' : pageKey === 'site_footer' ? 'custom_footer' : 'hero';
       setForm({ type: initialType, title: '', pageKey, config: defaults(initialType), isEnabled: true });
     }
+    setEditorTab('content');
     setDrawer({ open: true, item: item || null });
   };
   const openHeroAssetLibrary = () => {
@@ -250,6 +259,7 @@ export default function HomepageBuilder() {
     setPageKey('home');
     setInsertAfter(null);
     setForm({ type: 'reference_assets', title: 'AFSANA image & 3D asset library', pageKey: 'home', config: defaults('reference_assets'), isEnabled: true });
+    setEditorTab('content');
     setDrawer({ open: true, item: null });
   };
   const openLogoSettings = () => {
@@ -261,6 +271,7 @@ export default function HomepageBuilder() {
       return;
     }
     setForm({ type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', config:defaults('nav_menu'), isEnabled:true });
+    setEditorTab('content');
     setDrawer({ open:true, item:null });
   };
   const close = () => { setDrawer({ open: false, item: null }); setInsertAfter(null); };
@@ -325,10 +336,16 @@ export default function HomepageBuilder() {
   const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'nav_menu') : form.pageKey === 'site_footer' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'custom_footer') : HOMEPAGE_SECTION_TYPES.filter((x) => !['nav_menu','custom_footer'].includes(x.key));
   const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu','custom_footer'];
   return <div className="space-y-5">
-    <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-4 sm:p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
-        <div className="flex flex-wrap items-center gap-2">{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}<Select aria-label="Website page" value={pageKey} onChange={(e) => { setPageKey(e.target.value); setLayoutPreviewed(false); }}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>{can('homepage.edit') && pageKey === 'home' && <Button variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}{can('homepage.create') && pageKey === 'home' && <Button disabled={busy || hasExperienceTemplate || !layoutPreviewed} onClick={addExperienceLayout}>{busy ? 'Publishing…' : hasExperienceTemplate ? 'Already published' : 'Confirm & Publish'}</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto">
+          <Select className="w-full sm:min-w-[220px] sm:w-auto" aria-label="Website page" value={pageKey} onChange={(e) => { setPageKey(e.target.value); setLayoutPreviewed(false); }}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>
+          {can('homepage.create') && <Button className="w-full sm:w-auto" icon={Plus} onClick={() => open(null)}>Add section</Button>}
+          {can('homepage.edit') && pageKey === 'home' && <Button className="w-full sm:w-auto" variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}
+          {can('homepage.edit') && pageKey === 'home' && <Button className="w-full sm:w-auto" variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}
+          {can('homepage.create') && pageKey === 'home' && <Button className="w-full sm:w-auto" disabled={busy || hasExperienceTemplate || !layoutPreviewed} onClick={addExperienceLayout}>{busy ? 'Publishing…' : hasExperienceTemplate ? 'Already published' : 'Confirm & Publish'}</Button>}
+        </div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
@@ -336,51 +353,71 @@ export default function HomepageBuilder() {
       {sorted.map((item, index) => {
         const meta = HOMEPAGE_SECTION_TYPES.find((x) => x.key === item.type);
         const cfg = item.config || {};
-        return <div key={item.id} draggable={can('homepage.edit')} onDragStart={() => setDragId(item.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => { reorder(dragId, item.id); setDragId(null); }} className="group rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-4 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-hover)] transition-shadow">
-          <div className="flex items-center gap-3">
+        return <div key={item.id} draggable={can('homepage.edit')} onDragStart={() => setDragId(item.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => { reorder(dragId, item.id); setDragId(null); }} className="group rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-3 sm:p-4 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-hover)] transition-shadow">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <button type="button" className="cursor-grab p-2 rounded-xl bg-[#f3f1e9] text-[#5f654f]" aria-label="Drag section"><GripVertical className="w-5 h-5" /></button>
             <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="text-xs font-semibold text-[#748e40]">{String(index + 1).padStart(2, '0')}</span><h3 className="font-medium truncate">{item.title || meta?.label || item.type}</h3>{item.type.includes('video') && <Video className="w-4 h-4 text-[#263e0e]" />}{item.type.includes('image') && <ImageIcon className="w-4 h-4 text-[#263e0e]" />}</div><p className="text-xs text-[#5f654f] mt-1">{meta?.label || item.type} · {cfg.columns || 1} columns · {cfg.align || 'left'} · {cfg.width || 100}%</p></div>
             <span className={item.isEnabled ? 'text-xs rounded-full bg-[#e6f0e4] text-[#3d6b3d] px-2.5 py-1' : 'text-xs rounded-full bg-[#f3f1e9] text-[#5f654f] px-2.5 py-1'}>{item.isEnabled ? 'Live' : 'Hidden'}</span>
-            {can('homepage.create') && <button type="button" onClick={() => open(null, item)} className="p-2 rounded-xl text-[#748e40] hover:bg-[#eef2e5]" title="Insert a new section after this one"><Plus className="w-4 h-4" /></button>}
-            {can('homepage.edit') && <div className="flex items-center gap-1">
-              <button type="button" disabled={index === 0} onClick={() => moveBy(item.id, -1)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move up"><ArrowUp className="w-4 h-4" /></button>
-              <button type="button" disabled={index === sorted.length - 1} onClick={() => moveBy(item.id, 1)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move down"><ArrowDown className="w-4 h-4" /></button>
-              <button type="button" onClick={() => duplicate(item)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title="Duplicate"><Copy className="w-4 h-4" /></button>
-              <button type="button" onClick={() => api.setActive(item.id, !item.isEnabled).then(reload)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title={item.isEnabled ? 'Hide' : 'Show'}><Power className="w-4 h-4" /></button>
-              <button type="button" onClick={() => open(item)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title="Edit"><Pencil className="w-4 h-4" /></button>
+            {can('homepage.create') && <button type="button" onClick={() => open(null, item)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#748e40] hover:bg-[#eef2e5]" title="Insert a new section after this one"><Plus className="w-4 h-4" /><span>Insert</span></button>}
+            {can('homepage.edit') && <div className="flex flex-wrap items-center gap-1 sm:ml-auto">
+              <button type="button" disabled={index === 0} onClick={() => moveBy(item.id, -1)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move up"><ArrowUp className="w-4 h-4" /><span>Up</span></button>
+              <button type="button" disabled={index === sorted.length - 1} onClick={() => moveBy(item.id, 1)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move down"><ArrowDown className="w-4 h-4" /><span>Down</span></button>
+              <button type="button" onClick={() => duplicate(item)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title="Duplicate"><Copy className="w-4 h-4" /><span>Copy</span></button>
+              <button type="button" onClick={() => api.setActive(item.id, !item.isEnabled).then(reload)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title={item.isEnabled ? 'Hide' : 'Show'}><Power className="w-4 h-4" /><span>{item.isEnabled ? 'Hide' : 'Show'}</span></button>
+              <button type="button" onClick={() => open(item)} className="inline-flex items-center gap-1 rounded-lg bg-[#263e0e] px-3 py-2 text-xs text-white hover:bg-[#182308]" title="Edit"><Pencil className="w-4 h-4" /><span>Edit</span></button>
             </div>}
-            {can('homepage.delete') && <button type="button" onClick={() => setDel(item)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" title="Delete"><Trash2 className="w-4 h-4" /></button>}
+            {can('homepage.delete') && <button type="button" onClick={() => setDel(item)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#9b3f3f] hover:bg-[#f7e7e5]" title="Delete"><Trash2 className="w-4 h-4" /><span>Delete</span></button>}
           </div>
         </div>;
       })}
       {!sorted.length && <Card><div className="py-10 text-center"><Sparkles className="w-8 h-8 mx-auto text-[#748e40]" /><p className="font-medium mt-3">No sections on this page yet</p><p className="text-sm text-[#5f654f] mt-1">Add a hero, product row, story, video grid, post grid, 3D theatre, offer timer or any other section.</p></div></Card>}
     </div>}
-    <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
+    <Drawer size="xl" open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button className="w-full sm:w-auto" variant="secondary" type="button" onClick={close}>Cancel</Button><Button className="w-full sm:w-auto" type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
+        <div className="sticky top-0 z-10 -mx-3 sm:-mx-5 -mt-2 mb-2 border-b border-[#263e0e]/10 bg-[#faf8f4] px-3 pb-3 pt-2 sm:px-5">
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f3f1e9] p-1">
+            <button type="button" onClick={() => setEditorTab('content')} aria-pressed={editorTab === 'content'} className={"rounded-lg px-3 py-3 text-sm font-semibold transition " + (editorTab === 'content' ? "bg-[#263e0e] text-white shadow" : "text-[#5f654f] hover:bg-white")}>Content & details</button>
+            <button type="button" onClick={() => setEditorTab('design')} aria-pressed={editorTab === 'design'} className={"rounded-lg px-3 py-3 text-sm font-semibold transition " + (editorTab === 'design' ? "bg-[#263e0e] text-white shadow" : "text-[#5f654f] hover:bg-white")}>Design & layout</button>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[#5f654f]">{editorTab === 'content' ? 'Edit the words, images, links and section content here. You do not need to change the design settings for normal updates.' : 'Choose the overall look here. The recommended defaults already work well on phones and desktop.'}</p>
+        </div>
+        {editorTab === 'content' && <>
+        <div className="rounded-xl border border-[#b4bf41]/30 bg-[#eef2e5] p-3 text-xs leading-5 text-[#40552c]">
+          <b>Easy editing:</b> Change the text, photos and links. Optional settings are kept in the Design tab.
+        </div>
         <Field label="Place this section on"><Select disabled={form.type === 'nav_menu' || form.type === 'custom_footer'} value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
-        <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{formPageTypes.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
-        <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
+        <Field label="What would you like to add?"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{SECTION_TYPE_GROUPS.map((group) => { const options = formPageTypes.filter((x) => group.keys.includes(x.key)); return options.length ? <optgroup key={group.label} label={group.label}>{options.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</optgroup> : null; })}</Select></Field>
+        <Field label="Section title" hint="The main heading visitors will see. Leave empty to use the suggested heading."><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
+        </>}
 
+        {editorTab === 'design' && <>
         <div className="rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4 space-y-3">
           <Field label="Visual palette"><Select value={form.config.theme || 'neon'} onChange={(e) => setConfig('theme', e.target.value)}><option value="neon">Electric violet + acid lime</option><option value="classic">AFSANA forest + olive</option></Select></Field>
           <div className="flex items-center gap-2 text-sm font-semibold"><LayoutGrid className="w-4 h-4 text-[#748e40]" /> Layout controls</div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Width %"><Input type="number" min="20" max="100" value={form.config.width ?? 100} onChange={(e) => setConfig('width', Math.min(100, Math.max(20, Number(e.target.value))))} /></Field>
-            <Field label="Height"><Input value={form.config.height ?? 'auto'} onChange={(e) => setConfig('height', e.target.value)} placeholder="auto or 650px" /></Field>
-            <Field label="Columns"><Select value={form.config.columns ?? 4} onChange={(e) => setConfig('columns', Number(e.target.value))}>{[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} columns</option>)}</Select></Field>
-            <Field label="Gap px"><Input type="number" min="0" max="64" value={form.config.gap ?? 16} onChange={(e) => setConfig('gap', Number(e.target.value))} /></Field>
-            <Field label="Top padding"><Input type="number" min="0" max="240" value={form.config.paddingTop ?? 80} onChange={(e) => setConfig('paddingTop', Number(e.target.value))} /></Field>
-            <Field label="Bottom padding"><Input type="number" min="0" max="240" value={form.config.paddingBottom ?? 80} onChange={(e) => setConfig('paddingBottom', Number(e.target.value))} /></Field>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Section width"><Select value={Number(form.config.width ?? 100)} onChange={(e) => setConfig('width', Number(e.target.value))}><option value="100">Full width</option><option value="90">Wide</option><option value="80">Narrow</option><option value="70">Compact</option></Select></Field>
+            <Field label="Cards per row"><Select value={form.config.columns ?? 4} onChange={(e) => setConfig('columns', Number(e.target.value))}>{[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} columns</option>)}</Select></Field>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[['left',AlignLeft,'Left'],['center',AlignCenter,'Center'],['right',AlignRight,'Right']].map(([value,Icon,label]) => <button type="button" key={value} onClick={() => setConfig('align', value)} className={'flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs '+(form.config.align===value?'border-[#263e0e] bg-[#263e0e] text-white':'border-[#263e0e]/10 bg-white text-[#5f654f]')}><Icon className="w-4 h-4"/>{label}</button>)}
           </div>
+          <details className="rounded-xl border border-[#263e0e]/10 bg-white p-3">
+            <summary className="cursor-pointer text-sm font-medium text-[#263e0e]">More layout settings (optional)</summary>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Height"><Input value={form.config.height ?? 'auto'} onChange={(e) => setConfig('height', e.target.value)} placeholder="auto or 650px" /></Field>
+              <Field label="Space between cards (px)"><Input type="number" min="0" max="64" value={form.config.gap ?? 16} onChange={(e) => setConfig('gap', Number(e.target.value))} /></Field>
+              <Field label="Top spacing (px)"><Input type="number" min="0" max="240" value={form.config.paddingTop ?? 80} onChange={(e) => setConfig('paddingTop', Number(e.target.value))} /></Field>
+              <Field label="Bottom spacing (px)"><Input type="number" min="0" max="240" value={form.config.paddingBottom ?? 80} onChange={(e) => setConfig('paddingBottom', Number(e.target.value))} /></Field>
+            </div>
+          </details>
         </div>
+        </>}
 
-        {common && <><Field label="Eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Body copy"><Textarea rows={5} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
+        {editorTab === 'content' && <>
+        {common && <><Field label="Section eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Body copy"><Textarea rows={5} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
         {['hero','image_banner','split_story','lookbook'].includes(form.type) && <><Field label="Image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} placeholder="https://…" /></Field><Field label="Mobile image URL"><Input value={form.config.mobileImageUrl || ''} onChange={(e) => setConfig('mobileImageUrl', e.target.value)} /></Field></>}
         {['video_banner','cinematic_statement'].includes(form.type) && <><Field label="Background video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="Upload an MP4/WebM video or paste its URL" /><div className="mt-2"><MediaUploadButton label="Upload original video" accept="video/mp4,video/webm,.mp4,.webm" onUploaded={(url) => setConfig('videoUrl', url)} /></div></Field><Field label="Video poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} /></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
-        {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-2 gap-3"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
+        {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
         {['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','blog_grid'].includes(form.type) && <><Field label="Collection / query hint"><Input value={form.config.query || ''} onChange={(e) => setConfig('query', e.target.value)} placeholder="Optional category / collection / query" /></Field><Field label="Number of items"><Input type="number" min="1" max="12" value={form.config.limit ?? 4} onChange={(e) => setConfig('limit', Number(e.target.value))} /></Field></>}
         {['category_tiles','video_grid'].includes(form.type) && <div className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4">
           <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#263e0e]">Quick media uploads</p>
@@ -394,14 +431,46 @@ export default function HomepageBuilder() {
               {item.image && <p className="truncate text-[10px] text-[#748e40]">Video: {item.image}</p>}
             </div>
           ))}
-          <Field label="Advanced items" hint="One per line: Title|Description|Image/Video URL|Link/Poster URL."><Textarea rows={7} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>
+          <details className="rounded-xl border border-[#263e0e]/10 bg-white p-3">
+            <summary className="cursor-pointer text-xs font-semibold text-[#263e0e]">Advanced: edit raw item data</summary>
+            <Field label="Manual item data" hint="One per line: Title|Description|Image/Video URL|Link/Poster URL."><Textarea rows={6} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>
+          </details>
         </div>}
-        {itemTypes.includes(form.type) && !['category_tiles','video_grid'].includes(form.type) && <Field label="Items" hint="One per line: Title|Description|Image URL|Link."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
+        {itemTypes.includes(form.type) && !['category_tiles','video_grid'].includes(form.type) && <div className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-3 sm:p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><p className="text-sm font-semibold text-[#263e0e]">{form.type === 'community_pulse' ? 'Community cards' : form.type === 'nav_menu' ? 'Navigation links' : 'Content cards'}</p><p className="mt-1 text-xs leading-5 text-[#5f654f]">{form.type === 'community_pulse' ? 'Enter only genuine, verified numbers. You can use words such as “Growing” when there is no verified number.' : form.type === 'nav_menu' ? 'Add one link per row. Use site paths such as /shop or /journal.' : 'Add or remove cards using the fields below. No special formatting is needed.'}</p></div>
+            <Button type="button" variant="secondary" className="w-full sm:w-auto" icon={Plus} onClick={() => { const items = parseItems(form.config.items); if (items.length < 12) setConfig('items', [...items, { title: '', text: '', image: '', link: '' }]); }}>Add item</Button>
+          </div>
+          {parseItems(form.config.items).slice(0, 12).map((item, index) => {
+            const updateItem = (key, value) => { const items = parseItems(form.config.items); items[index] = { ...items[index], [key]: value }; setConfig('items', items); };
+            const isPulse = form.type === 'community_pulse';
+            const isNavigation = form.type === 'nav_menu';
+            const isFooter = form.type === 'custom_footer';
+            return <div key={index} className="rounded-xl border border-[#263e0e]/10 bg-white p-3 sm:p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-semibold uppercase tracking-[.12em] text-[#748e40]">Item {String(index + 1).padStart(2, '0')}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" disabled={index === 0} onClick={() => { const items = parseItems(form.config.items); const [moved] = items.splice(index, 1); items.splice(index - 1, 0, moved); setConfig('items', items); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] disabled:opacity-30"><ArrowUp className="h-4 w-4" /><span>Up</span></button>
+                  <button type="button" disabled={index === parseItems(form.config.items).length - 1} onClick={() => { const items = parseItems(form.config.items); const [moved] = items.splice(index, 1); items.splice(index + 1, 0, moved); setConfig('items', items); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] disabled:opacity-30"><ArrowDown className="h-4 w-4" /><span>Down</span></button>
+                  <button type="button" disabled={parseItems(form.config.items).length <= 1} onClick={() => setConfig('items', parseItems(form.config.items).filter((_, i) => i !== index))} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#9b3f3f] hover:bg-[#f7e7e5] disabled:opacity-30"><Trash2 className="h-4 w-4" /><span>Remove</span></button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label={isPulse ? 'Card title' : isNavigation ? 'Menu label' : 'Title'}><Input value={item.title || ''} onChange={(e) => updateItem('title', e.target.value)} placeholder={isPulse ? 'e.g. Verified Reviews' : 'Enter a short title'} /></Field>
+                <Field label={isPulse ? 'Value / number (verified only)' : isNavigation ? 'Page path' : 'Description'} hint={isPulse ? 'Use only a real, verified number. Leave empty if not verified.' : isNavigation ? 'Example: /shop' : undefined}><Input value={item.text || ''} onChange={(e) => updateItem('text', e.target.value)} placeholder={isPulse ? 'e.g. 125' : isNavigation ? '/shop' : 'Write a short description'} /></Field>
+                {!isPulse && !isNavigation && !isFooter && <Field label="Image URL (optional)"><div className="space-y-2"><Input value={item.image || ''} onChange={(e) => updateItem('image', e.target.value)} placeholder="Paste an image URL or upload below" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload image" onUploaded={(url) => updateItem('image', url)} /></div></Field>}
+                {isPulse && <Field label="Supporting detail"><Input value={item.image || ''} onChange={(e) => updateItem('image', e.target.value)} placeholder="e.g. Real customer feedback" /></Field>}
+                {!isNavigation && <Field label="Link / destination" hint="Example: /shop"><Input value={item.link || ''} onChange={(e) => updateItem('link', e.target.value)} placeholder="/shop" /></Field>}
+              </div>
+            </div>;
+          })}
+          {parseItems(form.config.items).length >= 12 && <p className="text-xs text-[#5f654f]">Maximum 12 items per section.</p>}
+        </div>}
         {['promo_timer','offer_timer'].includes(form.type) && <><Field label="Offer label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Offer end (ISO/date-time)"><Input type="datetime-local" value={form.config.endAt || ''} onChange={(e) => setConfig('endAt', e.target.value)} /></Field><Field label="Offer text"><Textarea rows={3} value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></>}
         {form.type === 'muse_scene' && <><Field label="Character image URL"><Input value={form.config.characterImageUrl || ''} onChange={(e) => setConfig('characterImageUrl', e.target.value)} placeholder="Upload/host an editorial character image" /></Field><p className="text-xs text-[#5f654f]">Best result: transparent PNG/WebP of the AFSANA Muse. The storefront adds cinematic glow and motion.</p></>}
         {form.type === 'product_3d_showcase' && <><Field label="Product slug (optional)"><Input value={form.config.productSlug || ''} onChange={(e) => setConfig('productSlug', e.target.value)} placeholder="e.g. signature-oud" /></Field><Field label="Fallback bottle image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The homepage theatre uses the product media already stored in Products. Add multiple product images in Admin → Products for the strongest 360° effect.</p></>}
         {form.type === 'community_pulse' && <><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Verified-number disclaimer"><Input value={form.config.disclaimer || ''} onChange={(e) => setConfig('disclaimer', e.target.value)} /></Field></>}
-        {form.type === 'footer_showcase' && <><Field label="Body"><Textarea rows={4} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Offer label"><Input value={form.config.offerLabel || ''} onChange={(e) => setConfig('offerLabel', e.target.value)} /></Field><Field label="Offer text"><Input value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></div></>}
+        {form.type === 'footer_showcase' && <><Field label="Body"><Textarea rows={4} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Offer label"><Input value={form.config.offerLabel || ''} onChange={(e) => setConfig('offerLabel', e.target.value)} /></Field><Field label="Offer text"><Input value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></div></>}
         {form.type === 'reference_assets' && <div className="space-y-5">
           <p className="text-xs leading-5 text-[#5f654f]">Upload your real AFSANA bottle image, GLB 3D model and campaign photos. Leave a field blank to keep its existing visual fallback. Images are optimized before upload; GLB assets can be up to 4 MB.</p>
           <Field label="Hero perfume bottle image"><Input value={form.config.heroBottleImageUrl || ''} onChange={(e) => setConfig('heroBottleImageUrl', e.target.value)} placeholder="Uploaded media URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload hero bottle photo" onUploaded={(url) => setConfig('heroBottleImageUrl', url)} /></Field>
@@ -423,11 +492,11 @@ export default function HomepageBuilder() {
             ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded MP4/WebM URL" /><MediaUploadButton accept="video/*" label="Upload campaign video" onUploaded={(url) => setConfig(key, url)} /></Field>)}
           </div>
         </div>}
-        {form.type === 'custom_footer' && <><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || ''} onChange={(e) => setConfig('tagline', e.target.value)} /></Field><Field label="Footer description"><Textarea rows={3} value={form.config.description || ''} onChange={(e) => setConfig('description', e.target.value)} /></Field><Field label="Footer links" hint="One per line: Label|Description||/internal-route"><Textarea rows={7} value={typeof form.config.items === 'string' ? form.config.items : itemText(form.config.items)} onChange={(e) => setConfig('items', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Contact email"><Input value={form.config.email || ''} onChange={(e) => setConfig('email', e.target.value)} /></Field><Field label="Contact phone"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} /></Field><Field label="Instagram URL"><Input value={form.config.instagramUrl || ''} onChange={(e) => setConfig('instagramUrl', e.target.value)} placeholder="https://instagram.com/your-page" /></Field><Field label="Facebook URL"><Input value={form.config.facebookUrl || ''} onChange={(e) => setConfig('facebookUrl', e.target.value)} placeholder="https://facebook.com/your-page" /></Field><Field label="TikTok URL"><Input value={form.config.tiktokUrl || ''} onChange={(e) => setConfig('tiktokUrl', e.target.value)} placeholder="https://tiktok.com/@your-page" /></Field><Field label="YouTube URL"><Input value={form.config.youtubeUrl || ''} onChange={(e) => setConfig('youtubeUrl', e.target.value)} placeholder="https://youtube.com/@your-channel" /></Field><Field label="Pinterest URL"><Input value={form.config.pinterestUrl || ''} onChange={(e) => setConfig('pinterestUrl', e.target.value)} placeholder="https://pinterest.com/your-page" /></Field><Field label="X / Twitter URL"><Input value={form.config.xUrl || ''} onChange={(e) => setConfig('xUrl', e.target.value)} placeholder="https://x.com/your-page" /></Field></div><Field label="Bottom copyright / note"><Input value={form.config.footerNote || ''} onChange={(e) => setConfig('footerNote', e.target.value)} /></Field></>}
+        {form.type === 'custom_footer' && <><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || ''} onChange={(e) => setConfig('tagline', e.target.value)} /></Field><Field label="Footer description"><Textarea rows={3} value={form.config.description || ''} onChange={(e) => setConfig('description', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">Edit footer links in the simple Content cards list above. Add, remove or reorder them there without typing special separators.</p><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Contact email"><Input value={form.config.email || ''} onChange={(e) => setConfig('email', e.target.value)} /></Field><Field label="Contact phone"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} /></Field><Field label="Instagram URL"><Input value={form.config.instagramUrl || ''} onChange={(e) => setConfig('instagramUrl', e.target.value)} placeholder="https://instagram.com/your-page" /></Field><Field label="Facebook URL"><Input value={form.config.facebookUrl || ''} onChange={(e) => setConfig('facebookUrl', e.target.value)} placeholder="https://facebook.com/your-page" /></Field><Field label="TikTok URL"><Input value={form.config.tiktokUrl || ''} onChange={(e) => setConfig('tiktokUrl', e.target.value)} placeholder="https://tiktok.com/@your-page" /></Field><Field label="YouTube URL"><Input value={form.config.youtubeUrl || ''} onChange={(e) => setConfig('youtubeUrl', e.target.value)} placeholder="https://youtube.com/@your-channel" /></Field><Field label="Pinterest URL"><Input value={form.config.pinterestUrl || ''} onChange={(e) => setConfig('pinterestUrl', e.target.value)} placeholder="https://pinterest.com/your-page" /></Field><Field label="X / Twitter URL"><Input value={form.config.xUrl || ''} onChange={(e) => setConfig('xUrl', e.target.value)} placeholder="https://x.com/your-page" /></Field></div><Field label="Bottom copyright / note"><Input value={form.config.footerNote || ''} onChange={(e) => setConfig('footerNote', e.target.value)} /></Field></>}
         {form.type === 'nav_menu' && <>
           <Field label="Header logo image"><Input value={form.config.logoUrl || ''} onChange={(e) => setConfig('logoUrl', e.target.value)} placeholder="Uploaded logo image URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload header logo" onUploaded={(url) => setConfig('logoUrl', url)} /></Field>
-          <div className="grid grid-cols-2 gap-3"><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || 'THE ART OF SCENT'} onChange={(e) => setConfig('tagline', e.target.value)} /></Field></div>
-          <Field label="Navigation links" hint="One per line: Label|/internal-route. Example: Journal|/journal"><Textarea rows={8} value={typeof form.config.items === 'string' ? form.config.items : itemText(form.config.items)} onChange={(e) => setConfig('items', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The order here becomes the desktop and mobile navigation order. Use routes such as /shop, /about and /journal.</p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || 'THE ART OF SCENT'} onChange={(e) => setConfig('tagline', e.target.value)} /></Field></div>
+          <p className="text-xs text-[#5f654f]">Edit navigation links in the simple Navigation links list above. Their order is used on desktop and mobile.</p>
         </>}
         {form.type === 'whatsapp_float' && <><Field label="WhatsApp phone (international digits)"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} placeholder="923001234567" /></Field><Field label="Button label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="First message"><Textarea rows={3} value={form.config.message || ''} onChange={(e) => setConfig('message', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This becomes a floating WhatsApp button on every page when placed in the global footer area.</p></>}
         {form.type === 'ai_concierge' && <><Field label="Assistant label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Description"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This opens the guided scent discovery experience. It is a front-end guided assistant, not a connected LLM service yet.</p></>}
@@ -467,6 +536,7 @@ export default function HomepageBuilder() {
         </div>}
         {form.type === 'instagram' && <><Field label="Social URL"><Input value={form.config.url || ''} onChange={(e) => setConfig('url', e.target.value)} placeholder="https://instagram.com/…" /></Field><Field label="Intro text"><Textarea rows={3} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
         <Check label="Show this section on the storefront" checked={form.isEnabled} onChange={(v) => set('isEnabled', v)} />
+        </>}
       </form>
     </Drawer>
     <ConfirmDialog open={!!del} danger title="Delete this section?" message="The section will disappear from the homepage. You can add another section later." confirmLabel="Delete" onClose={() => setDel(null)} onConfirm={async () => { await api.remove(del.id); setDel(null); setNotice('Section deleted.'); reload(); }} />
