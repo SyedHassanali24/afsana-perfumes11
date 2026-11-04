@@ -41,7 +41,7 @@ const TABS = [['orders', 'Orders'], ['returns', 'Returns'], ['addresses', 'Addre
 export default function AccountPage() {
   const copy = useCmsPageCopy('account');
   const TABS = [['orders', copy.ordersTab], ['returns', copy.returnsTab], ['addresses', copy.addressesTab], ['profile', copy.profileTab]];
-  useTitle(copy.titleFallback);
+  useTitle(copy.pageTitle);
   const { customer, logout } = useCustomer();
   const [sp, setSp] = useSearchParams();
   const navigate = useNavigate();
