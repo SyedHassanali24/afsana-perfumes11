@@ -37,7 +37,7 @@ function enforceMediaRange(request, response, pathname) {
       !/^\/api\/media\/[0-9a-f]{24}$/i.test(pathname)) return response;
   const range = request.headers.get("Range");
   if (!range) return response;
-  const total = Number(response.headers.get("Content-Length"));
+  const total = Number(response.headers.get("Content-Length") || response.headers.get("X-Afsana-Media-Size"));
   const match = /^bytes=(\d*)-(\d*)$/i.exec(range.trim());
   if (!Number.isSafeInteger(total) || total <= 0 || !match || (!match[1] && !match[2])) return response;
   let start = match[1] ? Number(match[1]) : Math.max(0, total - Number(match[2]));
