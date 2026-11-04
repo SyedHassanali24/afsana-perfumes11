@@ -457,7 +457,7 @@ export default function ProductPage(){
        <div className="product-specs-heading"><strong>Fragrance profile</strong><span>THE DETAILS</span></div>
        <div className="afsana-specs-grid">{[['Longevity',p.fragrance?.longevity],['Projection',p.fragrance?.projection],['Concentration',p.fragrance?.concentration],['Gender',p.fragrance?.gender],['Season',p.fragrance?.seasons?.join(', ')],['Occasion',p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="afsana-spec-card"><span>{label}</span><strong>{value}</strong></div>)}</div>
       </div>
-     </div>    </div>
+     </div>
    </div>
    <ReviewsSection slug={slug}/>
    <section className="notes-section afsana-note-story mt-24">
