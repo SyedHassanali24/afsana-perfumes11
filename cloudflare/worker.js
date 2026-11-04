@@ -21,8 +21,10 @@ function json(data, status, headers = {}) {
 
 function cacheable(pathname, method) {
   if (method !== "GET") return false;
-  return /^\/api\/media\/[0-9a-f]{24}$/i.test(pathname) ||
-    /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
+  // Media responses support HTTP Range requests. Keep them out of the custom
+  // Cache API because a pathname-only cache key can replay a full 200 response
+  // for a later byte-range request and break video seeking.
+  return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
     /^\/api\/taxonomy\/public(?:\/|$)/i.test(pathname) ||
     /^\/api\/settings\/public\/?$/i.test(pathname) ||
     /^\/api\/cms\/public\/?$/i.test(pathname) ||
@@ -33,7 +35,6 @@ async function handleApi(request, env, ctx) {
   const incoming = new URL(request.url);
   const isRangedMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.headers.has("Range");
   const canCache = cacheable(incoming.pathname, request.method) && !isRangedMedia;
-  const immutableMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.method === "GET";
   const cacheKey = new Request(
     new URL(incoming.pathname + incoming.search, SITE_ORIGIN).toString(),
     { method: "GET" }
@@ -65,9 +66,7 @@ async function handleApi(request, env, ctx) {
     const cacheHeaders = new Headers(responseHeaders);
     cacheHeaders.set(
       "Cache-Control",
-      immutableMedia
-        ? (responseHeaders.get("Cache-Control") || "public, max-age=31536000, immutable")
-        : "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
+      "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
     );
     const cacheResponse = new Response(apiResponse.clone().body, {
       status: apiResponse.status,
