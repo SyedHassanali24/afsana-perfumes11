@@ -68,7 +68,7 @@ for (const path of mediaPaths) {
     const contentRange = response.headers.get("content-range") || "";
     if (response.status !== 206 || !/^bytes 0-\d+\/\d+$/i.test(contentRange)) {
       await response.body?.cancel();
-      throw new Error(`Uploaded video ${path} does not support byte-range playback (HTTP ${response.status})`);
+      throw new Error(`Uploaded video ${path} does not support byte-range playback (HTTP ${response.status}, cache=${response.headers.get('x-afsana-cache') || 'n/a'}, processor=${response.headers.get('x-afsana-api-processor') || 'n/a'}, content-range=${response.headers.get('content-range') || 'n/a'})`);
     }
     const bytes = new Uint8Array(await response.arrayBuffer());
     if (!bytes.length || bytes.length > 16) throw new Error(`Uploaded video ${path} returned an invalid byte-range payload`);
