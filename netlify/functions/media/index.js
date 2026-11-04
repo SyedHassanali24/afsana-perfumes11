@@ -41,7 +41,7 @@ const api = createHandler('media', [
 exports.handler = async (event) => {
   const method = (event.httpMethod || 'GET').toUpperCase();
   const id = stripPrefix(event.path || '/', 'media').replace(/^\//, '');
-  if (method === 'GET' && /^[0-9a-f]{24}$/.test(id)) {
+  if ((method === 'GET' || method === 'HEAD') && /^[0-9a-f]{24}$/.test(id)) {
     try {
       await connectDB();
       const doc = await Media.findById(id).select('contentType data').lean();
