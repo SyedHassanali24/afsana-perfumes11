@@ -4,8 +4,12 @@ import { accountApi } from "../services";
 import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
+import { useCmsPageCopy } from "../shop/cmsCopy";
+import useTitle from "../shop/useTitle";
 
 export default function ResetPasswordPage() {
+  const copy = useCmsPageCopy("customer_reset_password");
+  useTitle(copy.browserTitle);
   const token = useSearchParams()[0].get("token") || "";
   const [pw, setPw] = useState("");
   const [done, setDone] = useState(false);
@@ -13,21 +17,21 @@ export default function ResetPasswordPage() {
   const [busy, setBusy] = useState(false);
   const submit = async (e) => {
     e.preventDefault(); setError("");
-    if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return setError("At least 8 characters, with letters and numbers.");
+    if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) return setError(copy.passwordError);
     setBusy(true);
     try { await accountApi.resetPassword(token, pw); setDone(true); }
     catch (err) { setError(err.details?.[0]?.message || err.message); }
     finally { setBusy(false); }
   };
   return (
-    <AuthCard title="Choose a new password" footer={<Link to="/login" className="underline">Back to sign in</Link>}>
-      {!token ? <p className="text-sm text-[#9b3f3f] rounded-xl bg-[#9b3f3f]/10 px-3 py-2">This reset link is incomplete. Please request a new one.</p>
-        : done ? <p role="status" className="text-sm text-[#182308]">Your password has been changed. <Link to="/login" className="underline">Sign in</Link> with the new password.</p>
+    <AuthCard title={copy.title} footer={<Link to="/login" className="underline">{copy.backLink}</Link>}>
+      {!token ? <p className="text-sm text-[#9b3f3f] rounded-xl bg-[#9b3f3f]/10 px-3 py-2">{copy.invalidLink}</p>
+        : done ? <p role="status" className="text-sm text-[#182308]">{copy.success} <Link to="/login" className="underline">{copy.signIn}</Link> {copy.successSuffix}</p>
         : (
           <form onSubmit={submit} className="space-y-5">
-            <Field label="New password" hint="At least 8 characters, letters and numbers"><Input type="password" required autoFocus autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} /></Field>
+            <Field label={copy.password} hint={copy.passwordHint}><Input type="password" required autoFocus autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} /></Field>
             {error && <p role="alert" className="text-sm text-[#9b3f3f]">{error}</p>}
-            <Button type="submit" className="w-full rounded-xl min-h-11" disabled={busy}>{busy ? "Saving…" : "Change password"}</Button>
+            <Button type="submit" className="w-full rounded-xl min-h-11" disabled={busy}>{busy ? copy.busy : copy.submit}</Button>
           </form>
         )}
     </AuthCard>

@@ -8,6 +8,7 @@ import { ordersApi } from '../../services';
 import { fmtDateTime, PAYMENT_LABEL } from '../format';
 import useTitle from '../useTitle';
 import ShipmentInfo from '../ShipmentInfo';
+import { useCmsPageCopy } from '../cmsCopy';
 
 export function Timeline({ events }) {
   return (
@@ -23,7 +24,9 @@ export function Timeline({ events }) {
 }
 
 export default function TrackOrderPage() {
-  useTitle('Track your order');
+  const copy = useCmsPageCopy('track_before');
+  useTitle(copy.browserTitle);
+  const t = (key) => copy[key];
   const [sp] = useSearchParams();
   const [f, setF] = useState({ order: sp.get('order') || '', phone: '' });
   const [res, setRes] = useState(null);
@@ -33,22 +36,22 @@ export default function TrackOrderPage() {
   const submit = async (e) => {
     e.preventDefault(); setError(''); setRes(null); setBusy(true);
     try { setRes((await ordersApi.track(f.order.trim().toUpperCase(), f.phone.trim())).order); }
-    catch (err) { setError(err.status === 429 ? 'Too many attempts. Please wait a few minutes.' : err.message); }
+    catch (err) { setError(err.status === 429 ? (copy.rateLimitError || 'Too many attempts. Please wait a few minutes.') : err.message); }
     finally { setBusy(false); }
   };
   return (
     <Container className="max-w-xl">
-      <PageTitle title="Track your order" subtitle="Enter your order number and the phone number you used at checkout." />
+      <PageTitle title={t('title')} subtitle={t('subtitle')} />
       <form onSubmit={submit} className="space-y-4 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
-        <Field label="Order number"><Input required value={f.order} onChange={(e) => setF({ ...f, order: e.target.value })} placeholder="AFS-000123" /></Field>
-        <Field label="Phone number"><Input required inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} placeholder="0300 1234567" /></Field>
+        <Field label={t('orderNumber')}><Input required value={f.order} onChange={(e) => setF({ ...f, order: e.target.value })} placeholder={t('orderPlaceholder')} /></Field>
+        <Field label={t('phoneNumber')}><Input required inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} placeholder={t('phonePlaceholder')} /></Field>
         {error && <p role="alert" className="text-sm text-[#9b3f3f]">{error}</p>}
-        <Button type="submit" className="w-full sm:w-auto min-h-11 rounded-xl" disabled={busy}>{busy ? 'Checking…' : 'Track order'}</Button>
+        <Button type="submit" className="w-full sm:w-auto min-h-11 rounded-xl" disabled={busy}>{busy ? t('checking') : t('trackButton')}</Button>
       </form>
       {res && (
         <div className="mt-8 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 space-y-5 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
           <div className="flex items-center justify-between"><p className="font-display text-xl">{res.orderNumber}</p><StatusPill status={res.status} /></div>
-          <p className="text-sm text-[#5f654f]">Payment: {res.paymentStatus}</p>
+          <p className="text-sm text-[#5f654f]">{t('payment')} {res.paymentStatus}</p>
           <ShipmentInfo shipment={res.shipment} />
           <Timeline events={res.timeline} />
         </div>

@@ -10,10 +10,11 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { cmsApi } from '../../src/services';
 import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
+import { PAGE_COPY_FIELDS, pageCopyDefaults } from '../../src/shop/cmsCopy';
 
-const PAGE_OPTIONS = [["home","Homepage"],["site_navigation","Header navigation"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["discover","Scent finder page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"],["site_footer","Complete site footer"]];
+const PAGE_OPTIONS = [["home","Homepage"],["site_navigation","Header navigation"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["discover","Scent finder page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"],["site_footer","Complete site footer"],["order_success","Order success page"],["wishlist","Wishlist"],["account","Customer account"],["order_detail","Order detail"],["customer_login","Customer login"],["customer_register","Customer registration"],["customer_forgot_password","Forgot password"],["customer_reset_password","Reset password"]];
 
-const defaults = (type) => ({
+const defaults = (type, pageKey = 'home') => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
   buttonText: '', buttonLink: '', limit: 4, query: '', height: 'auto',
   width: 100, columns: 4, gap: 16, align: 'left', paddingTop: 80, paddingBottom: 80,
@@ -24,6 +25,7 @@ const defaults = (type) => ({
   ...(type === 'promo_timer' || type === 'offer_timer' ? { endAt: '2026-11-05T23:59', label: 'PRIVATE COLLECTION OFFER', offerText: 'A special AFSANA offer ends soon.', buttonText: 'Shop the offer', buttonLink: '/shop' } : {}),
   ...(type === 'community_pulse' ? { eyebrow: 'THE AFSANA CIRCLE', subtitle: 'Use only verified brand numbers. Non-numeric values are treated as editorial labels.', disclaimer: 'Only publish verified numbers here.', items: 'Verified Reviews|0|Real customer feedback|/journal\nAfsana Circle|0|Community members|/account\nSignature Scents|0|Fragrances discovered|/shop\nGift Moments|0|Gifts created|/gifting' } : {}),
   ...(type === 'footer_showcase' ? { eyebrow: 'THE FINAL CHAPTER', body: 'Every scent leaves a trace. Make yours unforgettable.', offerLabel: 'PRIVATE ACCESS', offerText: 'Discover your signature scent.', buttonText: 'Explore Collection', buttonLink: '/shop' } : {}),
+  ...(type === 'page_copy' ? { copy: pageCopyDefaults(pageKey) } : {}),
   ...(type === 'reference_assets' ? {
     heroBottleImageUrl:'', product3dModelUrl:'', product3dPosterUrl:'',
     filmAtmosphereVideoUrl:'', filmBotanicalVideoUrl:'', filmCraftVideoUrl:'', filmEmotionVideoUrl:'',
@@ -232,12 +234,12 @@ export default function HomepageBuilder() {
     setInsertAfter(afterItem);
     if (item) {
       setPageKey(item.pageKey || 'home');
-      const cfg = { ...defaults(item.type), ...(item.config || {}) };
+      const cfg = { ...defaults(item.type, item.pageKey || 'home'), ...(item.config || {}) };
       cfg.items = itemText(cfg.items);
       setForm({ type: item.type, title: item.title || '', pageKey: item.pageKey || 'home', config: cfg, isEnabled: item.isEnabled !== false });
     } else {
       const initialType = pageKey === 'site_navigation' ? 'nav_menu' : pageKey === 'site_footer' ? 'custom_footer' : 'hero';
-      setForm({ type: initialType, title: '', pageKey, config: defaults(initialType), isEnabled: true });
+      setForm({ type: initialType, title: '', pageKey, config: defaults(initialType, pageKey), isEnabled: true });
     }
     setDrawer({ open: true, item: item || null });
   };
@@ -249,7 +251,7 @@ export default function HomepageBuilder() {
     }
     setPageKey('home');
     setInsertAfter(null);
-    setForm({ type: 'reference_assets', title: 'AFSANA image & 3D asset library', pageKey: 'home', config: defaults('reference_assets'), isEnabled: true });
+    setForm({ type: 'reference_assets', title: 'AFSANA image & 3D asset library', pageKey: 'home', config: defaults('reference_assets', 'home'), isEnabled: true });
     setDrawer({ open: true, item: null });
   };
   const openLogoSettings = () => {
@@ -322,7 +324,7 @@ export default function HomepageBuilder() {
   };
 
   const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
-  const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'nav_menu') : form.pageKey === 'site_footer' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'custom_footer') : HOMEPAGE_SECTION_TYPES.filter((x) => !['nav_menu','custom_footer'].includes(x.key));
+  const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => ['nav_menu','page_copy'].includes(x.key)) : form.pageKey === 'site_footer' ? HOMEPAGE_SECTION_TYPES.filter((x) => ['custom_footer','page_copy'].includes(x.key)) : HOMEPAGE_SECTION_TYPES.filter((x) => !['nav_menu','custom_footer'].includes(x.key) && (x.key !== 'page_copy' || !!PAGE_COPY_FIELDS[form.pageKey]));
   const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu','custom_footer'];
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
@@ -357,8 +359,8 @@ export default function HomepageBuilder() {
     </div>}
     <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
-        <Field label="Place this section on"><Select disabled={form.type === 'nav_menu' || form.type === 'custom_footer'} value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
-        <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{formPageTypes.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
+        <Field label="Place this section on"><Select disabled={form.type === 'nav_menu' || form.type === 'custom_footer'} value={form.pageKey || pageKey} onChange={(e) => { const nextPage=e.target.value; setForm((state) => ({ ...state, pageKey: nextPage, config: state.type === 'page_copy' ? { ...state.config, copy: { ...pageCopyDefaults(nextPage), ...(state.config.copy || {}) } } : state.config })); }}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
+        <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value, s.pageKey) }))}>{formPageTypes.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
 
         <div className="rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4 space-y-3">
@@ -409,6 +411,7 @@ export default function HomepageBuilder() {
           <Field label="3D model poster / fallback image"><Input value={form.config.product3dPosterUrl || ''} onChange={(e) => setConfig('product3dPosterUrl', e.target.value)} /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload 3D poster" onUploaded={(url) => setConfig('product3dPosterUrl', url)} /></Field>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
+              ['homeHeroImageUrl','Homepage hero background'],['homeSignatureImageUrl','Homepage hero product image'],['homeWorldSignatureImageUrl','Homepage signature card image'],['homeWorldOudImageUrl','Homepage oud card image'],['homeWorldFloralImageUrl','Homepage floral card image'],['homeWorldGiftingImageUrl','Homepage gifting card image'],['homeStoryImageUrl','Homepage House story image'],['homePrivateImageUrl','Homepage private collection image'],['homeFilmPosterImageUrl','Homepage film wall poster fallback'],
               ['worldDarkImageUrl','Dark & magnetic world'],['worldSoftImageUrl','Soft & luminous world'],['worldBoldImageUrl','Bright & bold world'],
               ['filmAtmosphereImageUrl','Film 01 — Atmosphere'],['filmBotanicalImageUrl','Film 02 — Botanical'],['filmCraftImageUrl','Film 03 — Craft'],['filmEmotionImageUrl','Film 04 — Emotion'],
               ['journalHeroImageUrl','Journal page hero'],['journalImage1Url','Journal image 01'],['journalImage2Url','Journal image 02'],['journalImage3Url','Journal image 03'],
@@ -431,6 +434,22 @@ export default function HomepageBuilder() {
         </>}
         {form.type === 'whatsapp_float' && <><Field label="WhatsApp phone (international digits)"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} placeholder="923001234567" /></Field><Field label="Button label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="First message"><Textarea rows={3} value={form.config.message || ''} onChange={(e) => setConfig('message', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This becomes a floating WhatsApp button on every page when placed in the global footer area.</p></>}
         {form.type === 'ai_concierge' && <><Field label="Assistant label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Description"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This opens the guided scent discovery experience. It is a front-end guided assistant, not a connected LLM service yet.</p></>}
+        {form.type === 'page_copy' && <div className="space-y-4">
+          <div className="rounded-xl border border-[#7357ff]/20 bg-[#f4efff] p-4">
+            <p className="text-sm font-semibold text-[#392650]">All fixed text on this page</p>
+            <p className="mt-1 text-xs leading-5 text-[#665d79]">Edit headings, descriptions, labels and buttons here. Blank fields automatically use the current site text. This does not change product records, prices, stock, orders, cart or checkout calculations.</p>
+          </div>
+          {(PAGE_COPY_FIELDS[form.pageKey] || []).map(([key,label,defaultValue]) => {
+            const value = form.config.copy?.[key] ?? defaultValue;
+            const multiline = String(defaultValue).length > 85 || /description|introduction|paragraph|helper|note|message|manifesto|body/i.test(key);
+            return <Field key={key} label={label}>
+              {multiline
+                ? <Textarea rows={3} value={value} onChange={(e) => setConfig('copy', { ...(form.config.copy || {}), [key]: e.target.value })} />
+                : <Input value={value} onChange={(e) => setConfig('copy', { ...(form.config.copy || {}), [key]: e.target.value })} />}
+            </Field>;
+          })}
+          {!(PAGE_COPY_FIELDS[form.pageKey] || []).length && <p className="text-sm text-[#9b3f3f]">This page position has no fixed-text fields configured. Choose a supported page such as Collection, Product, The House, Journal, Gifting, Cart, Checkout, Track order, Order success, Header or Footer.</p>}
+        </div>}
         {form.type === 'rich_text' && <Field label="Content"><Textarea rows={10} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field>}
         {form.type === 'spacer' && <Field label="Height (px)"><Input type="number" min="20" max="500" value={form.config.height || 80} onChange={(e) => setConfig('height', Number(e.target.value))} /></Field>}
         {form.type === 'faq' && <p className="text-sm text-[#5f654f]">This section automatically uses active FAQ content.</p>}

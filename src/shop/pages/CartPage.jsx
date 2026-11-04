@@ -8,43 +8,45 @@ import { useCart } from '../CartContext';
 import useQuote from '../useQuote';
 import { money } from '../format';
 import useTitle from '../useTitle';
+import { useCmsPageCopy } from '../cmsCopy';
 
-export function LineIssue({ line, onFix, onRemove }) {
+export function LineIssue({ line, onFix, onRemove, copy = {} }) {
   if (line.status === 'ok') return null;
   return (
     <p className="text-xs text-[#9b3f3f] mt-1" role="alert">
-      {line.status === 'unavailable' && <>No longer available. <button type="button" className="underline" onClick={onRemove}>Remove</button></>}
-      {line.status === 'out_of_stock' && <>Sold out. <button type="button" className="underline" onClick={onRemove}>Remove</button></>}
-      {line.status === 'limited' && <>Only {line.available} left. <button type="button" className="underline" onClick={() => onFix(line.available)}>Set to {line.available}</button></>}
+      {line.status === 'unavailable' && <>{copy.unavailable || 'No longer available.'} <button type="button" className="underline" onClick={onRemove}>{copy.remove || 'Remove'}</button></>}
+      {line.status === 'out_of_stock' && <>{copy.soldOut || 'Sold out.'} <button type="button" className="underline" onClick={onRemove}>{copy.remove || 'Remove'}</button></>}
+      {line.status === 'limited' && <>{copy.only || 'Only'} {line.available} {copy.left || 'left.'} <button type="button" className="underline" onClick={() => onFix(line.available)}>{copy.setTo || 'Set to'} {line.available}</button></>}
     </p>
   );
 }
 
-export function Totals({ q }) {
+export function Totals({ q, copy = {} }) {
   const row = (l, v, cls = '') => <div className={`flex justify-between text-sm ${cls}`}><span className="text-[#5f654f]">{l}</span><span>{v}</span></div>;
   return (
     <div className="space-y-2">
-      {row('Subtotal', money(q.subtotal))}
-      {q.discount > 0 && row('Discount', `− ${money(q.discount)}`, 'text-[#3d6b3d]')}
-      {row('Delivery', q.shipping === 0 ? 'Free' : money(q.shipping))}
-      {q.delivery?.estDays && <p className="text-xs text-[#5f654f]">Estimated delivery: {q.delivery.estDays}.</p>}
-      {q.freeShippingRemaining > 0 && <p className="text-xs text-[#5f654f]">Add {money(q.freeShippingRemaining)} more for free delivery.</p>}
-      <div className="flex justify-between pt-4 border-t border-[#263e0e]/10 font-display text-2xl text-[#263e0e]"><span>Total</span><span>{money(q.total)}</span></div>
+      {row(copy.subtotal || 'Subtotal', money(q.subtotal))}
+      {q.discount > 0 && row(copy.discount || 'Discount', `− ${money(q.discount)}`, 'text-[#3d6b3d]')}
+      {row(copy.delivery || 'Delivery', q.shipping === 0 ? (copy.free || 'Free') : money(q.shipping))}
+      {q.delivery?.estDays && <p className="text-xs text-[#5f654f]">{copy.estimatedDelivery || 'Estimated delivery'}: {q.delivery.estDays}.</p>}
+      {q.freeShippingRemaining > 0 && <p className="text-xs text-[#5f654f]">Add {money(q.freeShippingRemaining)} {copy.freeShippingRemaining || 'more for free delivery'}.</p>}
+      <div className="flex justify-between pt-4 border-t border-[#263e0e]/10 font-display text-2xl text-[#263e0e]"><span>{copy.total || 'Total'}</span><span>{money(q.total)}</span></div>
     </div>
   );
 }
 
 export default function CartPage() {
-  useTitle('Your cart');
+  const copy = useCmsPageCopy('cart_before');
+  useTitle(copy.browserTitle);
   const { items, couponCode, setQty, remove, setCoupon } = useCart();
   const { data: q, loading, error, reload } = useQuote(items, couponCode);
   const [code, setCode] = useState(couponCode);
 
   return (
     <Container className="pb-12">
-      <PageTitle title="Your cart" subtitle="Review your fragrances before you checkout." />
+      <PageTitle title={copy.title} subtitle={copy.subtitle} />
       {items.length === 0 ? (
-        <div className="py-20 text-center space-y-5"><p className="text-[#5f654f]">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div>
+        <div className="py-20 text-center space-y-5"><p className="text-[#5f654f]">{copy.emptyCart}</p><Link to="/shop"><Button>{copy.browsePerfumes}</Button></Link></div>
       ) : (
         <StateBox loading={loading && !q} error={error} onRetry={reload}>
           {q && (
@@ -65,7 +67,7 @@ export default function CartPage() {
                         {l.status !== 'unavailable' && <QtyStepper value={l.quantity} max={l.available || l.quantity} onChange={(n) => setQty(l.variantId, n)} label={`Quantity for ${l.name}`} />}
                         <button type="button" onClick={() => remove(l.variantId)} className="p-2 text-[#5f654f] hover:text-[#9b3f3f]" aria-label={`Remove ${l.name}`}><Trash2 className="w-4 h-4" /></button>
                       </div>
-                      <LineIssue line={l} onFix={(n) => setQty(l.variantId, n)} onRemove={() => remove(l.variantId)} />
+                      <LineIssue copy={copy} line={l} onFix={(n) => setQty(l.variantId, n)} onRemove={() => remove(l.variantId)} />
                     </div>
                   </li>
                 ))}
@@ -73,15 +75,15 @@ export default function CartPage() {
 
               <aside className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 h-fit space-y-5 shadow-[0_18px_50px_rgba(24,35,8,.06)] lg:sticky lg:top-24">
                 <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); setCoupon(code); }}>
-                  <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code" aria-label="Coupon code" />
-                  <Button type="submit" variant="secondary" className="rounded-xl">Apply</Button>
+                  <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder={copy.couponPlaceholder} aria-label={copy.couponPlaceholder} />
+                  <Button type="submit" variant="secondary" className="rounded-xl">{copy.applyCoupon}</Button>
                 </form>
                 {q.coupon && (q.coupon.valid
-                  ? <p className="text-xs text-[#3d6b3d] -mt-3">Coupon {q.coupon.code} applied. <button type="button" className="underline" onClick={() => { setCoupon(''); setCode(''); }}>Remove</button></p>
+                  ? <p className="text-xs text-[#3d6b3d] -mt-3">{copy.couponApplied || 'Coupon'} {q.coupon.code} applied. <button type="button" className="underline" onClick={() => { setCoupon(''); setCode(''); }}>Remove</button></p>
                   : <p className="text-xs text-[#9b3f3f] -mt-3" role="alert">{q.coupon.message}</p>)}
-                <Totals q={q} />
-                {q.canCheckout ? <Link to="/checkout" className="block"><Button className="w-full rounded-xl">Checkout</Button></Link> : <Button className="w-full rounded-xl" disabled>Checkout</Button>}
-                {!q.canCheckout && <p className="text-xs text-[#5f654f]">Please fix the items marked above to continue.</p>}
+                <Totals q={q} copy={copy} />
+                {q.canCheckout ? <Link to="/checkout" className="block"><Button className="w-full rounded-xl">{copy.checkout}</Button></Link> : <Button className="w-full rounded-xl" disabled>{copy.checkout}</Button>}
+                {!q.canCheckout && <p className="text-xs text-[#5f654f]">{copy.fixItems}</p>}
               </aside>
             </div>
           )}

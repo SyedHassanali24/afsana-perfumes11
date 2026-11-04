@@ -111,6 +111,7 @@ export const HOMEPAGE_SECTION_TYPES = [
   { key: 'rich_text', label: 'Rich text' },
   { key: 'spacer', label: 'Spacer' },
   { key: 'reference_assets', label: 'AFSANA reference media / 3D assets' },
+  { key: 'page_copy', label: 'Page text & labels (editable copy)' },
   { key: 'custom_footer', label: 'Complete custom site footer' },
   { key: 'nav_menu', label: 'Header navigation links' },
   { key: 'whatsapp_float', label: 'Floating WhatsApp contact' },

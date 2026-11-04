@@ -4,8 +4,12 @@ import { accountApi } from "../services";
 import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
+import { useCmsPageCopy } from "../shop/cmsCopy";
+import useTitle from "../shop/useTitle";
 
 export default function ForgotPasswordPage() {
+  const copy = useCmsPageCopy("customer_forgot_password");
+  useTitle(copy.browserTitle);
   const [identifier, setIdentifier] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -13,18 +17,18 @@ export default function ForgotPasswordPage() {
   const submit = async (e) => {
     e.preventDefault(); setError(""); setBusy(true);
     try { await accountApi.forgotPassword(identifier.trim()); setSent(true); }
-    catch (err) { setError(err.status === 429 ? "Too many requests. Please try again later." : err.message); }
+    catch (err) { setError(err.status === 429 ? copy.rateLimit : err.message); }
     finally { setBusy(false); }
   };
   return (
-    <AuthCard title="Reset your password" footer={<Link to="/login" className="underline">Back to sign in</Link>}>
+    <AuthCard title={copy.title} footer={<Link to="/login" className="underline">{copy.backLink}</Link>}>
       {sent ? (
-        <p role="status" className="text-sm text-[#182308]">If an account exists with a saved email, we've sent a link to reset the password. It expires in 30 minutes. If you signed up without an email, please contact us.</p>
+        <p role="status" className="text-sm text-[#182308]">{copy.success}</p>
       ) : (
         <form onSubmit={submit} className="space-y-5">
-          <Field label="Email or phone number"><Input required autoFocus value={identifier} onChange={(e) => setIdentifier(e.target.value)} /></Field>
+          <Field label={copy.identifier}><Input required autoFocus value={identifier} onChange={(e) => setIdentifier(e.target.value)} /></Field>
           {error && <p role="alert" className="text-sm text-[#9b3f3f] rounded-xl bg-[#9b3f3f]/10 px-3 py-2">{error}</p>}
-          <Button type="submit" className="w-full rounded-xl min-h-11" disabled={busy}>{busy ? "Sending…" : "Send reset link"}</Button>
+          <Button type="submit" className="w-full rounded-xl min-h-11" disabled={busy}>{busy ? copy.busy : copy.submit}</Button>
         </form>
       )}
     </AuthCard>
