@@ -208,36 +208,22 @@ async function login({ email, password, ip, userAgent, deviceId }) {
       trusted.lastUsedAt = now;
       await user.save();
     } else {
-      // Migration: allow the browser already holding a live session from this same
-      // IP + User-Agent to enroll its persistent device token once, without locking
-      // the owner out on the first release of 2FA.
-      const existing = ip && userAgent ? await Session.findOne({
-        userId: user._id, revokedAt: { $exists: false }, expiresAt: { $gt: now },
-        'device.ip': ip, 'device.userAgent': userAgent,
-      }) : null;
-      if (existing) {
-        user.trustedDevices = (user.trustedDevices || []).filter((d) => d.expiresAt && d.expiresAt > now);
-        user.trustedDevices.push({ tokenHash: deviceHash, label: String(userAgent).slice(0, 120), lastUsedAt: now, expiresAt: new Date(now.getTime() + TRUSTED_DEVICE_DAYS * 86400000) });
-        user.trustedDevices = user.trustedDevices.slice(-15);
+      const otp = String(crypto.randomInt(100000, 1000000));
+      const challengeId = crypto.randomBytes(32).toString('hex');
+      user.loginOtpChallengeHash = sha256(challengeId);
+      user.loginOtpHash = sha256(otp);
+      user.loginOtpDeviceHash = deviceHash;
+      user.loginOtpExpires = new Date(now.getTime() + LOGIN_OTP_TTL_MS);
+      user.loginOtpAttempts = 0;
+      await user.save();
+      try {
+        await sendOwnerOtp(otp, 'admin login verification');
+      } catch (error) {
+        clearLoginChallenge(user);
         await user.save();
-      } else {
-        const otp = String(crypto.randomInt(100000, 1000000));
-        const challengeId = crypto.randomBytes(32).toString('hex');
-        user.loginOtpChallengeHash = sha256(challengeId);
-        user.loginOtpHash = sha256(otp);
-        user.loginOtpDeviceHash = deviceHash;
-        user.loginOtpExpires = new Date(now.getTime() + LOGIN_OTP_TTL_MS);
-        user.loginOtpAttempts = 0;
-        await user.save();
-        try {
-          await sendOwnerOtp(otp, 'admin login verification');
-        } catch (error) {
-          clearLoginChallenge(user);
-          await user.save();
-          throw error;
-        }
-        return { requiresTwoFactor: true, challengeId };
+        throw error;
       }
+      return { requiresTwoFactor: true, challengeId };
     }
   }
 
