@@ -729,3 +729,122 @@
   .afsana-ref-match-copy{padding:7px 5px 10px}
   .afsana-ref-finder-result .afsana-ref-match-copy h4{font-size:39px}
 }
+
+
+/* Standard, accessible AFSANA cart drawer — clearer hierarchy and comfortable controls. */
+.afsana-cart-overlay{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#211b2b}
+.afsana-cart-backdrop{border:0;background:rgba(14,10,26,.58);backdrop-filter:blur(3px);cursor:pointer}
+.afsana-cart-drawer{width:min(100%,560px);max-width:560px;background:#fff;color:#211b2b;border-left:1px solid #e9e4ef;box-shadow:-24px 0 70px rgba(22,13,38,.20);animation:afsana-cart-enter .28s ease-out}
+@keyframes afsana-cart-enter{from{transform:translateX(24px);opacity:.85}to{transform:translateX(0);opacity:1}}
+.afsana-cart-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 26px;border-bottom:1px solid #eee9f2;background:#fff}
+.afsana-cart-header-icon{display:grid;width:48px;height:48px;flex:none;place-items:center;border:1px solid #e7def4;border-radius:15px;background:linear-gradient(145deg,#f4efff,#fff8f1);color:#6942a3}
+.afsana-cart-header-icon svg{width:22px;height:22px;stroke-width:1.8}
+.afsana-cart-header h2{margin:0;color:#211b2b;font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.04em}
+.afsana-cart-header p{margin:5px 0 0;color:#71697d;font-size:14px;font-weight:500;line-height:1.4}
+.afsana-cart-close{display:grid;width:44px;height:44px;flex:none;place-items:center;border:1px solid #e9e4ef;border-radius:50%;background:#fff;color:#645b70;transition:background .2s,color .2s,border-color .2s}
+.afsana-cart-close svg{width:21px;height:21px}
+.afsana-cart-close:hover{border-color:#d7c8ec;background:#f7f2ff;color:#58358e}
+.afsana-cart-shipping{padding:18px 26px 16px;border-bottom:1px solid #eee9f2;background:#faf8fd}
+.afsana-cart-shipping-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.afsana-cart-shipping-heading p{margin:0;color:#5f566c;font-size:14px;line-height:1.55}
+.afsana-cart-shipping-heading strong{color:#5c3695;font-weight:800}
+.afsana-cart-shipping-heading p>b{color:#332047;font-weight:700}
+.afsana-cart-shipping-heading>span{flex:none;padding:4px 8px;border-radius:7px;background:#eee6fa;color:#68459a;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.afsana-cart-shipping-unlocked{display:flex;align-items:center;gap:8px;color:#366d4b!important;font-weight:700}
+.afsana-cart-shipping-unlocked svg{width:17px;height:17px}
+.afsana-cart-progress-track{height:7px;margin-top:12px;overflow:hidden;border-radius:99px;background:#e8e2ed}
+.afsana-cart-progress-track>span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7850bd,#bf8bc4,#d5ad68);transition:width .35s ease}
+.afsana-cart-shipping-foot{display:flex;align-items:center;gap:7px;margin-top:9px;color:#8a8194;font-size:12px;line-height:1.4}
+.afsana-cart-shipping-foot svg{width:15px;height:15px;color:#9372ba}
+.afsana-cart-items{min-height:0;flex:1;overflow-y:auto;padding:8px 26px 20px;background:#fff;overscroll-behavior:contain}
+.afsana-cart-item{display:flex;gap:17px;padding:20px 0;border-bottom:1px solid #eeeaf2}
+.afsana-cart-item:last-child{border-bottom:0}
+.afsana-cart-product-image{position:relative;display:grid;width:108px;height:132px;flex:none;place-items:center;overflow:hidden;border:1px solid #ece6f1;border-radius:13px;background:radial-gradient(circle at 50% 36%,#fff 0,#f6f1fb 58%,#f8f3ec 100%);color:#72579c}
+.afsana-cart-product-image img{width:100%;height:100%;object-fit:contain;padding:7px;transition:transform .35s ease}
+.afsana-cart-product-image:hover img{transform:scale(1.04)}
+.afsana-cart-product-image>span{font-family:Georgia,serif;font-size:18px;letter-spacing:.15em}
+.afsana-cart-product-details{display:flex;min-width:0;flex:1;flex-direction:column;justify-content:space-between;gap:16px}
+.afsana-cart-product-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.afsana-cart-product-name{display:block;overflow:hidden;color:#241b30;font-size:18px;font-weight:700;line-height:1.3;letter-spacing:-.02em;text-overflow:ellipsis}
+.afsana-cart-product-name:hover{color:#754cac}
+.afsana-cart-product-meta{margin:6px 0 0;color:#766d80;font-size:14px;line-height:1.45}
+.afsana-cart-product-meta span{padding:0 3px;color:#b5aabd}
+.afsana-cart-remove{display:inline-flex;min-height:36px;flex:none;align-items:center;gap:6px;padding:5px 7px;border:0;border-radius:8px;background:transparent;color:#8a8291;font-size:12px;font-weight:600;transition:background .2s,color .2s}
+.afsana-cart-remove svg{width:15px;height:15px}
+.afsana-cart-remove:hover{background:#fff0f0;color:#ad4646}
+.afsana-cart-product-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+.afsana-cart-quantity{display:inline-flex;height:42px;align-items:center;overflow:hidden;border:1px solid #ded7e7;border-radius:10px;background:#fff}
+.afsana-cart-quantity button{display:grid;width:40px;height:40px;place-items:center;border:0;background:#faf9fc;color:#584b66;transition:background .2s,color .2s}
+.afsana-cart-quantity button svg{width:16px;height:16px;stroke-width:2}
+.afsana-cart-quantity button:hover:not(:disabled){background:#f0e9fa;color:#5d3996}
+.afsana-cart-quantity button:disabled{cursor:not-allowed;opacity:.35}
+.afsana-cart-quantity>span{min-width:34px;text-align:center;color:#281d35;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.afsana-cart-price{text-align:right}
+.afsana-cart-price strong{display:block;color:#251b31;font-size:18px;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums}
+.afsana-cart-price span{display:block;margin-top:4px;color:#82798b;font-size:12px}
+.afsana-cart-footer{flex:none;max-height:58vh;overflow-y:auto;padding:17px 26px 20px;border-top:1px solid #eae5ee;background:#fbfafc;overscroll-behavior:contain}
+.afsana-cart-coupon label{display:block;margin-bottom:8px;color:#3a3046;font-size:13px;font-weight:700}
+.afsana-cart-coupon-row{display:flex;min-height:48px;align-items:center;overflow:hidden;border:1px solid #ded7e7;border-radius:11px;background:#fff;transition:border-color .2s,box-shadow .2s}
+.afsana-cart-coupon-row:focus-within{border-color:#9673c4;box-shadow:0 0 0 3px rgba(127,87,177,.11)}
+.afsana-cart-coupon-row>span{display:grid;width:43px;flex:none;place-items:center;color:#9279ae}
+.afsana-cart-coupon-row>span svg{width:17px;height:17px}
+.afsana-cart-coupon-row input{width:100%;min-width:0;height:46px;border:0!important;outline:0!important;background:#fff!important;box-shadow:none!important;color:#2c2238;font:500 14px/1.3 Inter,ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.02em}
+.afsana-cart-coupon-row input::placeholder{color:#aaa1b2}
+.afsana-cart-coupon-row button{height:38px;flex:none;margin-right:5px;padding:0 17px;border:0;border-radius:8px;background:#eee7f7;color:#5e3c91;font-size:13px;font-weight:800;transition:background .2s,color .2s}
+.afsana-cart-coupon-row button:hover{background:#65419b;color:#fff}
+.afsana-cart-coupon-success{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;padding:10px 12px;border:1px solid #d4e9dc;border-radius:9px;background:#f2faf5;color:#34734b;font-size:13px}
+.afsana-cart-coupon-success span{display:flex;align-items:center;gap:7px;font-weight:700}
+.afsana-cart-coupon-success svg{width:16px;height:16px}
+.afsana-cart-coupon-success strong{font-weight:800}
+.afsana-cart-coupon-error{margin:9px 0 0;color:#b34141;font-size:13px;line-height:1.45}
+.afsana-cart-totals{display:grid;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid #e9e4ed}
+.afsana-cart-totals>div{display:flex;align-items:center;justify-content:space-between;gap:15px;color:#71687b;font-size:14px;line-height:1.4}
+.afsana-cart-totals>div strong{color:#33283f;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+.afsana-cart-totals .afsana-cart-savings,.afsana-cart-totals .afsana-cart-savings strong{color:#34734b}
+.afsana-cart-totals>div strong em{color:#34734b;font-style:normal;font-weight:800}
+.afsana-cart-totals .afsana-cart-grand-total{margin-top:3px;padding-top:13px;border-top:1px solid #e3dce9;color:#261b32;font-size:17px;font-weight:800}
+.afsana-cart-totals .afsana-cart-grand-total strong{color:#4e2e7d;font-size:23px;font-weight:900;letter-spacing:-.035em}
+.afsana-cart-actions{display:grid;gap:9px;margin-top:16px}
+.afsana-cart-checkout{display:flex;min-height:54px;align-items:center;justify-content:center;gap:12px;padding:0 18px;border:1px solid #5b3b8f;border-radius:11px;background:linear-gradient(100deg,#67429e,#805ab4);box-shadow:0 9px 22px rgba(95,60,147,.18);color:#fff;font-size:15px;font-weight:800;transition:transform .2s,box-shadow .2s,filter .2s}
+.afsana-cart-checkout svg{width:19px;height:19px}
+.afsana-cart-checkout:hover{transform:translateY(-1px);filter:brightness(1.05);box-shadow:0 13px 28px rgba(95,60,147,.25)}
+.afsana-cart-view-full{min-height:46px;border:1px solid #ded7e7;border-radius:10px;background:#fff;color:#51465e;font-size:14px;font-weight:700;transition:background .2s,border-color .2s}
+.afsana-cart-view-full:hover{border-color:#c9b7df;background:#f7f3fc;color:#59388b}
+.afsana-cart-next-step{margin:11px 0 0;color:#8b8293;font-size:12px;line-height:1.55;text-align:center}
+.afsana-cart-empty{display:flex;min-height:100%;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center}
+.afsana-cart-empty-icon{display:grid;width:68px;height:68px;place-items:center;border-radius:22px;background:#f3edfb;color:#7953aa}
+.afsana-cart-empty-icon svg{width:30px;height:30px}
+.afsana-cart-empty h3{margin:18px 0 0;color:#281e35;font-size:22px;font-weight:800}
+.afsana-cart-empty p{max-width:290px;margin:9px 0 0;color:#766d80;font-size:14px;line-height:1.65}
+.afsana-cart-empty button{display:inline-flex;min-height:48px;align-items:center;gap:10px;margin-top:22px;padding:0 20px;border:0;border-radius:10px;background:#67429e;color:#fff;font-size:14px;font-weight:800}
+.afsana-cart-empty button svg{width:17px;height:17px}
+.afsana-cart-drawer button:focus-visible,.afsana-cart-drawer a:focus-visible,.afsana-cart-drawer input:focus-visible{outline:3px solid rgba(124,86,174,.38);outline-offset:2px}
+@media(max-width:600px){
+ .afsana-cart-drawer{max-width:none}
+ .afsana-cart-header{padding:16px 17px}
+ .afsana-cart-header-icon{width:43px;height:43px;border-radius:13px}
+ .afsana-cart-header h2{font-size:23px}
+ .afsana-cart-shipping{padding:15px 17px 13px}
+ .afsana-cart-shipping-heading p{font-size:13px}
+ .afsana-cart-shipping-foot{font-size:11px}
+ .afsana-cart-items{padding:5px 17px 15px}
+ .afsana-cart-item{gap:12px;padding:16px 0}
+ .afsana-cart-product-image{width:86px;height:112px;border-radius:11px}
+ .afsana-cart-product-name{font-size:16px}
+ .afsana-cart-product-meta{font-size:12px}
+ .afsana-cart-remove{width:34px;min-height:34px;justify-content:center}
+ .afsana-cart-remove span{display:none}
+ .afsana-cart-quantity{height:38px}
+ .afsana-cart-quantity button{width:34px;height:36px}
+ .afsana-cart-quantity>span{min-width:28px;font-size:14px}
+ .afsana-cart-price strong{font-size:16px}
+ .afsana-cart-price span{font-size:11px}
+ .afsana-cart-footer{max-height:64vh;padding:14px 17px calc(14px + env(safe-area-inset-bottom))}
+ .afsana-cart-coupon-row{min-height:46px}
+ .afsana-cart-coupon-row input{height:44px;font-size:14px!important}
+ .afsana-cart-checkout{min-height:51px;font-size:14px}
+ .afsana-cart-view-full{min-height:43px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ .afsana-cart-drawer,.afsana-cart-progress-track>span,.afsana-cart-product-image img,.afsana-cart-checkout{animation:none;transition:none}
+}
