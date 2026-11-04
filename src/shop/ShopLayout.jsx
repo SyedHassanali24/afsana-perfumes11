@@ -150,10 +150,12 @@ export default function ShopLayout(){
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">Track order</Link><Link className="block hover:text-white transition" to="/account">Account</Link><Link className="block hover:text-white transition" to="/shop">Fragrance care</Link><Link className="block hover:text-white transition" to="/gifting">Gift guide</Link></div></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2">{socialLinks.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] hover:border-[#d9ff55] hover:bg-white/10 transition">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</span>)}</div><p className="mt-2 text-[9px] text-white/35">Official links can be connected in the Footer settings in CMS.</p></div>
       </div>
-      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
+      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span><Link to="/privacy-policy" className="text-white/50 transition hover:text-[#d9ff55] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d9ff55]">PRIVACY POLICY</Link> · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
     </Container>
    </div>
   </footer>}
+
+  {hasManagedFooter && <div className="border-t border-[#d9ff55]/15 bg-[#100d24] px-4 py-4 text-center text-[9px] uppercase tracking-[.2em] text-white/45"><Link to="/privacy-policy" className="transition hover:text-[#d9ff55]">Privacy Policy</Link></div>}
 
   {search&&<div className="fixed inset-0 z-[65] bg-[#100d24]/98 backdrop-blur-xl text-white overflow-y-auto">
     <Container className="container-xl min-h-full py-8 md:py-12">
