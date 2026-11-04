@@ -46,9 +46,57 @@ exports.handler = async (event) => {
       await connectDB();
       const doc = await Media.findById(id).select('contentType data').lean();
       if (!doc) return json(404, { success: false, error: { code: 'NOT_FOUND', message: 'Picture not found.' } });
+      const bytes = Buffer.from(doc.data.buffer ? doc.data.buffer : doc.data);
+      const headers = {
+        'Content-Type': doc.contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+        'Accept-Ranges': 'bytes',
+      };
+      const rangeHeader = event.headers?.range || event.headers?.Range || '';
+      let start = 0;
+      let end = bytes.length - 1;
+      let statusCode = 200;
+
+      if (rangeHeader) {
+        const match = String(rangeHeader).trim().match(/^bytes=(\\d*)-(\\d*)$/i);
+        if (!match || (!match[1] && !match[2])) {
+          headers['Content-Range'] = `bytes */${bytes.length}`;
+          headers['Content-Length'] = '0';
+          return { statusCode: 416, isBase64Encoded: true, body: '', headers };
+        }
+
+        if (!match[1]) {
+          const suffixLength = Number(match[2]);
+          if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0) {
+            headers['Content-Range'] = `bytes */${bytes.length}`;
+            headers['Content-Length'] = '0';
+            return { statusCode: 416, isBase64Encoded: true, body: '', headers };
+          }
+          start = Math.max(0, bytes.length - suffixLength);
+        } else {
+          start = Number(match[1]);
+          if (match[2]) end = Math.min(bytes.length - 1, Number(match[2]));
+        }
+
+        if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) ||
+            start < 0 || start >= bytes.length || end < start) {
+          headers['Content-Range'] = `bytes */${bytes.length}`;
+          headers['Content-Length'] = '0';
+          return { statusCode: 416, isBase64Encoded: true, body: '', headers };
+        }
+        statusCode = 206;
+        headers['Content-Range'] = `bytes ${start}-${end}/${bytes.length}`;
+      }
+
+      const payload = bytes.subarray(start, end + 1);
+      headers['Content-Length'] = String(payload.length);
       return {
-        statusCode: 200, isBase64Encoded: true, body: Buffer.from(doc.data.buffer ? doc.data.buffer : doc.data).toString('base64'),
-        headers: { 'Content-Type': doc.contentType, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; sandbox" },
+        statusCode,
+        isBase64Encoded: true,
+        body: payload.toString('base64'),
+        headers,
       };
     } catch (e) {
       console.error('[media] read failed:', e && e.name);
