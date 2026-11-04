@@ -117,7 +117,7 @@ export const PAGE_COPY_FIELDS = {
     ['createAccount','Create account link','Create an account'], ['accountBenefit','Account helper','to check out faster next time.'],
   ],
   site_navigation: [
-    ['announcementDefault','Default top announcement','COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500'],
+    ['announcementDefault','Default top announcement','COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500'], ['menuLabel','Mobile menu accessibility label','Menu'], ['searchLabel','Search accessibility label','Search'], ['accountLabel','Account accessibility label','My account'], ['loginLabel','Login accessibility label','Login / register'], ['cartLabel','Cart accessibility label','Cart'],
     ['marqueeDiscover','Top marquee message 1','DISCOVER YOUR SIGNATURE'], ['marqueeCrafted','Top marquee message 2','CRAFTED FOR MEMORIES'], ['marqueeCollection','Top marquee message 3','THE AFSANA PRIVATE COLLECTION'],
     ['searchEyebrow','Search eyebrow','The Afsana search'], ['searchTitle','Search heading','Search Afsana'],
     ['searchPlaceholder','Search placeholder','Search fragrances...'], ['searchButton','Search button','Search'],
@@ -126,6 +126,7 @@ export const PAGE_COPY_FIELDS = {
     ['discoverCard','Discovery card 1','Discover your signature'], ['giftingCard','Discovery card 2','Choose a gift'], ['collectionCard','Discovery card 3','Explore the collection'],
   ],
   site_footer: [
+    ['footerEyebrow','Footer brand eyebrow','THE HOUSE OF AFSANA'], ['footerDisplayBrand','Footer large brand name','AFSANA'],
     ['marquee1','Footer marquee 1','THE ART OF SCENT'], ['marquee2','Footer marquee 2','CRAFTED FOR MEMORIES'], ['marquee3','Footer marquee 3','AFSANA PERFUMES'], ['marquee4','Footer marquee 4','LEAVE A TRACE'], ['marquee5','Footer marquee 5','THE PRIVATE COLLECTION'],
     ['contactLabel','Contact block label','Afsana / Contact'], ['contactDescription','Contact block description','For fragrance questions, gifting help and order support, visit your account or explore the collection.'],
     ['customerCare','Customer care link','Customer care'], ['exploreHeading','Explore links heading','Explore'], ['customerHeading','Customer links heading','Customer'],
