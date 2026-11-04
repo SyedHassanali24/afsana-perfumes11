@@ -88,6 +88,7 @@ export const PAGE_COPY_FIELDS = {
     ['storyTab','Story tab','The Story'], ['detailsTab','Details tab','Details'],
     ['defaultStory','Default story tab content','A fragrance composed to become part of your identity. Spray it close to the skin, let it warm naturally, and allow each layer to reveal itself in its own time.'],
     ['defaultDetails','Default details tab content','Premium fragrance oils, carefully composed and designed for an evolving trail.'],
+    ['soldOutLabel','Product card sold-out label','Sold out'], ['cardBrandLabel','Product image brand label','AFSANA'], ['cardCategoryFallback','Product category fallback','Extrait de Parfum'], ['priceFromPrefix','Price from prefix','From'], ['emptyPrice','Empty product price marker','—'],
     ['relatedKicker','Related products eyebrow','CURATED FOR YOU'], ['relatedHeading','Related products heading','Complete'], ['relatedHeadingAccent','Related products accent','the story.'],
   ],
   house: [
@@ -153,6 +154,7 @@ export const PAGE_COPY_FIELDS = {
     ['phoneNumber','Phone number label','Phone number'], ['phonePlaceholder','Phone placeholder','0300 1234567'],
     ['trackButton','Track button','Track order'], ['checking','Checking label','Checking…'], ['payment','Payment label','Payment:'],
     ['rateLimitError','Rate limit error','Too many attempts. Please wait a few minutes.'],
+    ['shipmentDeliveryLabel','Shipment delivery label','Delivery:'], ['shipmentCourierLabel','Shipment courier label','Courier:'], ['shipmentTrackingLabel','Shipment tracking label','Tracking number:'], ['trackCourierLink','Track courier link','Track with courier'],
   ],
   order_success: [
     ['title','Success title','Thank you for your order'], ['description','Success description','Your order number is'],
