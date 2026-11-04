@@ -5,7 +5,7 @@ const json = (status, body, headers = {}) => ({
 });
 const res = (status, data = {}, headers = {}) => ({ __res: true, status, data, headers });
 const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-const clientIp = (h) => h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+const clientIp = (h) => h['x-nf-client-connection-ip'] || h['cf-connecting-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
 function parseCookies(header = '') {
   const out = {};
