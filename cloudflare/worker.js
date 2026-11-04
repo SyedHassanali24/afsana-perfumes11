@@ -19,43 +19,15 @@ function json(data, status, headers = {}) {
   return Response.json(data, { status, headers });
 }
 
-function responseWithMediaLength(response, headers, pathname) {
-  if (pathname.startsWith("/api/media/") && response.body) {
-    let length = Number(headers.get("Content-Length"));
-    if ((!Number.isSafeInteger(length) || length < 0) && response.status === 200) {
-      length = Number(headers.get("X-Afsana-Media-Size"));
-    }
-    if (Number.isSafeInteger(length) && length >= 0) {
-      headers.set("Content-Length", String(length));
-      const fixed = new FixedLengthStream(length);
-      response.body.pipeTo(fixed.writable).catch((error) => {
-        console.error("[media-stream]", error?.message || error);
-      });
-      return new Response(fixed.readable, {
-        status: response.status,
-        statusText: response.statusText,
-        headers
-      });
-    }
-  }
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  });
-}
-
 function cacheable(pathname, method) {
   if (method !== "GET") return false;
-  // Media responses support HTTP Range requests. Keep them out of the custom
-  // Cache API because a pathname-only cache key can replay a full 200 response
-  // for a later byte-range request and break video seeking.
+  // Media responses are cached by Workers Caching at the edge. Do not add
+  // them to the application Cache API because Cloudflare handles Range slicing.
   return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
     /^\/api\/taxonomy\/public(?:\/|$)/i.test(pathname) ||
     /^\/api\/settings\/public\/?$/i.test(pathname) ||
     /^\/api\/cms\/public\/?$/i.test(pathname) ||
-    /^\/api\/reviews\/product\//i.test(pathname) ||
-    /^\/api\/media\/[0-9a-f]{24}$/i.test(pathname);
+    /^\/api\/reviews\/product\//i.test(pathname);
 }
 
 
@@ -116,6 +88,7 @@ function enforceMediaRange(request, response, pathname) {
 async function handleApi(request, env, ctx) {
   const incoming = new URL(request.url);
   const isRangedMedia = incoming.pathname.startsWith("/api/media/") && request.headers.has("Range");
+  const isMediaGet = request.method === "GET" && incoming.pathname.startsWith("/api/media/");
   const canCache = cacheable(incoming.pathname, request.method) && !isRangedMedia;
   const cacheKey = new Request(
     new URL(incoming.pathname + incoming.search, SITE_ORIGIN).toString(),
@@ -164,24 +137,6 @@ async function handleApi(request, env, ctx) {
   const responseHeaders = new Headers(apiResponse.headers);
   responseHeaders.set("X-Afsana-API-Processor", "cloudflare-durable-object");
   responseHeaders.set("X-Afsana-Cache", canCache ? "MISS" : "BYPASS");
-  if (incoming.pathname.startsWith("/api/media/")) {
-    responseHeaders.set("X-Afsana-Range-Debug",
-      "request-range=" + (request.headers.get("Range") || "missing") +
-      ";is-ranged=" + String(isRangedMedia) +
-      ";raw-status=" + rawApiResponse.status +
-      ";raw-length=" + (rawApiResponse.headers.get("Content-Length") || "missing") +
-      ";raw-size=" + (rawApiResponse.headers.get("X-Afsana-Media-Size") || "missing") +
-      ";body=" + (rawApiResponse.body ? "yes" : "no"));
-  }
-  if (isRangedMedia && apiResponse.status === 200) {
-    responseHeaders.set("X-Afsana-Range-Debug",
-      "range=" + (request.headers.get("Range") || "missing") +
-      ";raw-length=" + (rawApiResponse.headers.get("Content-Length") || "missing") +
-      ";raw-size=" + (rawApiResponse.headers.get("X-Afsana-Media-Size") || "missing") +
-      ";body=" + (rawApiResponse.body ? "yes" : "no") +
-      ";" + rangeHeadDiagnostics);
-  }
-
   const hasCookie = responseHeaders.has("set-cookie");
   if (canCache && apiResponse.ok && !hasCookie) {
     const cacheHeaders = new Headers(responseHeaders);
@@ -191,13 +146,19 @@ async function handleApi(request, env, ctx) {
     );
     const cacheResponse = responseWithMediaLength(apiResponse.clone(), cacheHeaders, incoming.pathname);
     ctx.waitUntil(caches.default.put(cacheKey, cacheResponse));
+  } else if (isMediaGet && apiResponse.ok && !hasCookie) {
+    responseHeaders.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=300");
   } else if (!canCache) {
     responseHeaders.set("Cache-Control", "no-store, private");
     responseHeaders.delete("CDN-Cache-Control");
     responseHeaders.delete("Cloudflare-CDN-Cache-Control");
   }
 
-  return responseWithMediaLength(apiResponse, responseHeaders, incoming.pathname);
+  return new Response(apiResponse.body, {
+    status: apiResponse.status,
+    statusText: apiResponse.statusText,
+    headers: responseHeaders
+  });
 }
 
 export default {
@@ -215,7 +176,29 @@ export default {
         const headers = new Headers(response.headers);
         Object.entries(cors(origin)).forEach(([key, value]) => headers.set(key, value));
         headers.set("X-Afsana-Backend", "cloudflare-api");
-        return responseWithMediaLength(response, headers, url.pathname);
+        if (url.pathname.startsWith("/api/media/") && response.body) {
+          let mediaLength = Number(headers.get("Content-Length"));
+          if ((!Number.isSafeInteger(mediaLength) || mediaLength < 0) && response.status === 200) {
+            mediaLength = Number(headers.get("X-Afsana-Media-Size"));
+          }
+          if (Number.isSafeInteger(mediaLength) && mediaLength >= 0) {
+            headers.set("Content-Length", String(mediaLength));
+            const fixed = new FixedLengthStream(mediaLength);
+            response.body.pipeTo(fixed.writable).catch((error) => {
+              console.error("[media-stream]", error?.message || error);
+            });
+            return new Response(fixed.readable, {
+              status: response.status,
+              statusText: response.statusText,
+              headers
+            });
+          }
+        }
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers
+        });
       } catch (error) {
         console.error("[cloud-api]", error?.message || error);
         return json({
