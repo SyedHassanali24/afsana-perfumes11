@@ -79,13 +79,14 @@ function ResetPasswordDialog({ reset, setReset, error, busy, onForgot, onVerify,
 }
 
 export default function LoginPage() {
-  const { status, login } = useAuth();
+  const { status, login, completeTwoFactor } = useAuth();
   const navigate = useNavigate();
   const from = useLocation().state?.from || '/admin';
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [twoFactor, setTwoFactor] = useState(null);
   const [reset, setReset] = useState({ open: false, step: 1, email: '', otp: '', resetToken: '', password: '', confirm: '', msg: '' });
 
   if (status === 'authed') return <Navigate to={from} replace />;
@@ -131,10 +132,26 @@ export default function LoginPage() {
     e.preventDefault();
     setError(''); setBusy(true);
     try {
-      await login(form.email.trim(), form.password);
+      const result = await login(form.email.trim(), form.password);
+      if (result?.requiresTwoFactor) {
+        setTwoFactor({ email: form.email.trim(), challengeId: result.challengeId, otp: '' });
+        return;
+      }
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.status === 429 ? 'Too many attempts. Please wait a few minutes and try again.' : err.message);
+      setError(err.status === 429 ? 'Too many attempts. Your account may be locked for 3 minutes.' : err.message);
+    } finally { setBusy(false); }
+  };
+
+  const verifyAdminOtp = async (e) => {
+    e.preventDefault();
+    if (!twoFactor) return;
+    setError(''); setBusy(true);
+    try {
+      await completeTwoFactor(twoFactor.email, twoFactor.challengeId, twoFactor.otp.trim());
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.status === 429 ? 'Too many incorrect codes. Please sign in again.' : err.message);
     } finally { setBusy(false); }
   };
 
@@ -195,38 +212,71 @@ export default function LoginPage() {
               <p className="mt-3 text-sm leading-6 text-[#898196]">Please sign in to continue to your workspace.</p>
             </div>
 
-            <form onSubmit={submit} className="space-y-5">
-              <label className="block text-xs font-semibold text-[#4c4261]">
-                Email address
-                <span className="relative mt-2 block">
-                  <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9a8fb0]" size={17} />
-                  <input type="email" name="email" autoComplete="username" required autoFocus value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="name@afsana.com" className={inputClass + ' pl-11'} />
-                </span>
-              </label>
+            {!twoFactor && (
+              <form onSubmit={submit} className="space-y-5">
+                            <label className="block text-xs font-semibold text-[#4c4261]">
+                              Email address
+                              <span className="relative mt-2 block">
+                                <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9a8fb0]" size={17} />
+                                <input type="email" name="email" autoComplete="username" required autoFocus value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="name@afsana.com" className={inputClass + ' pl-11'} />
+                              </span>
+                            </label>
+              
+                            <label className="block text-xs font-semibold text-[#4c4261]">
+                              Password
+                              <span className="relative mt-2 block">
+                                <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9a8fb0]" size={17} />
+                                <input type={showPassword ? 'text' : 'password'} name="password" autoComplete="current-password" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Enter your password" className={inputClass + ' pl-11 pr-12'} />
+                                <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-[#9288a4] transition hover:bg-[#f0ebff] hover:text-[#5e43a8]">
+                                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                                </button>
+                              </span>
+                            </label>
+              
+                            <div className="flex items-center justify-end pt-0.5">
+                              <button type="button" onClick={() => { setError(''); setReset(v => ({ ...v, open: true, step: 1, email: form.email, otp: '', resetToken: '', password: '', confirm: '', msg: '' })); }} className="text-xs font-semibold text-[#7654c9] transition hover:text-[#4e329d] hover:underline">Forgot password?</button>
+                            </div>
+              
+                            {error && !reset.open && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
+              
+                            <button type="submit" disabled={busy} className="group relative mt-1 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold tracking-wide text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_17px_34px_rgba(80,55,145,.30)] disabled:cursor-wait disabled:opacity-60">
+                              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                              <span className="relative">{busy ? 'Signing in…' : 'Sign in'}</span>
+                              {!busy && <ArrowUpRight className="relative transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={17} />}
+                            </button>
+                          </form>
+            )}
 
-              <label className="block text-xs font-semibold text-[#4c4261]">
-                Password
-                <span className="relative mt-2 block">
-                  <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#9a8fb0]" size={17} />
-                  <input type={showPassword ? 'text' : 'password'} name="password" autoComplete="current-password" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Enter your password" className={inputClass + ' pl-11 pr-12'} />
-                  <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-2 text-[#9288a4] transition hover:bg-[#f0ebff] hover:text-[#5e43a8]">
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </span>
-              </label>
-
-              <div className="flex items-center justify-end pt-0.5">
-                <button type="button" onClick={() => { setError(''); setReset(v => ({ ...v, open: true, step: 1, email: form.email, otp: '', resetToken: '', password: '', confirm: '', msg: '' })); }} className="text-xs font-semibold text-[#7654c9] transition hover:text-[#4e329d] hover:underline">Forgot password?</button>
-              </div>
-
-              {error && !reset.open && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
-
-              <button type="submit" disabled={busy} className="group relative mt-1 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold tracking-wide text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_17px_34px_rgba(80,55,145,.30)] disabled:cursor-wait disabled:opacity-60">
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                <span className="relative">{busy ? 'Signing in…' : 'Sign in'}</span>
-                {!busy && <ArrowUpRight className="relative transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={17} />}
-              </button>
-            </form>
+            {twoFactor && (
+              <form onSubmit={verifyAdminOtp} className="space-y-5">
+                <div className="rounded-2xl border border-[#e8e1f3] bg-[#fbfaff] p-4">
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-[#eee8ff] text-[#7352d0]"><ShieldCheck size={19} /></div>
+                  <p className="text-sm font-bold text-[#33234f]">Verify this device</p>
+                  <p className="mt-1 text-xs leading-5 text-[#827992]">A 6-digit security code is required for a new admin device. Check the owner email inbox.</p>
+                </div>
+                <label className="block text-xs font-semibold text-[#4c4261]">
+                  6-digit security code
+                  <input
+                    className={inputClass + ' text-center text-xl font-semibold tracking-[.5em]'}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    required
+                    autoFocus
+                    value={twoFactor.otp}
+                    onChange={e => setTwoFactor(v => ({ ...v, otp: e.target.value.replace(/\D/g, '') }))}
+                    placeholder="••••••"
+                  />
+                </label>
+                {error && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
+                <button type="submit" disabled={busy || twoFactor.otp.length !== 6} className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60">
+                  {busy ? 'Verifying…' : 'Verify and continue'}
+                  {!busy && <ArrowUpRight size={17} />}
+                </button>
+                <button type="button" disabled={busy} onClick={() => { setTwoFactor(null); setError(''); setForm(v => ({ ...v, password: '' })); }} className="w-full text-center text-xs font-semibold text-[#887f97] hover:text-[#4b357e]">Back to sign in</button>
+              </form>
+            )}
 
             <div className="my-8 flex items-center gap-4">
               <span className="h-px flex-1 bg-[#eeeaf4]" />
