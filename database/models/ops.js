@@ -32,9 +32,16 @@ storeScoped(expenseSchema);
 const analyticsEventSchema = new Schema({
   event: { type: String, enum: ['page_view', 'product_view', 'add_to_cart', 'begin_checkout', 'purchase'], required: true },
   productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed,
+  // Anonymous acquisition attribution. Store only the host and path (never the full referrer URL or query string).
+  source: { type: String, enum: ['instagram', 'tiktok', 'youtube', 'facebook', 'whatsapp', 'search', 'direct', 'email', 'other_social', 'referral', 'other'] },
+  medium: String, campaign: String, referrerHost: String, path: String, landingPath: String,
   at: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 180 },
 });
+storeScoped(analyticsEventSchema);
 analyticsEventSchema.index({ event: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, event: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, sessionRef: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, source: 1, at: -1 });
 analyticsEventSchema.index({ productId: 1, event: 1 });
 
 // Append-only. Updates/deletes are blocked at the model layer.
