@@ -24,6 +24,9 @@ export const PAGE_COPY_FIELDS = {
     ['homeCrumb','Home breadcrumb','Home'], ['collectionCrumb','Collection breadcrumb','Collection'],
     ['galleryLabel','Gallery label','AFSANA /'], ['autoGallery','Automatic gallery button','Auto gallery'], ['stopGallery','Stop gallery button','Stop gallery'],
     ['modelReady','3D model ready label','Interactive 3D bottle'], ['modelLoading','3D model loading label','Loading 3D preview'], ['interactiveView','Product view label','Interactive product view'], ['bottlePreview','Bottle preview label','Bottle preview'],
+    ['mediaAlt','Product media accessibility label','View product media'], ['productReference','Product reference label','AFSANA / 01'], ['reviewSingular','Review count singular','review'], ['reviewPlural','Review count plural','reviews'],
+    ['quantityLabel','Quantity label','QTY'], ['selectedSize','Selected size label','SELECTED'], ['chooseSize','Choose size label','CHOOSE'],
+    ['perk1Title','Product benefit 1 title','Premium'], ['perk1Text','Product benefit 1 subtitle','Fragrance Oils'], ['perk2Title','Product benefit 2 title','Gift Ready'], ['perk2Text','Product benefit 2 subtitle','Luxury Packaging'], ['perk3Title','Product benefit 3 title','Fast'], ['perk3Text','Product benefit 3 subtitle','Nationwide Delivery'],
     ['quantityLabel','Quantity label','QTY'], ['selectedSize','Selected size label','SELECTED'], ['chooseSize','Choose size label','CHOOSE'], ['productDescription','Fallback product description','A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.'],
     ['ratingEmpty','Empty rating label','NOT RATED YET'], ['noReviews','No reviews message','No approved reviews yet — be the first to share your experience.'],
     ['priceLabel','Price heading','YOUR FRAGRANCE'], ['unavailable','Unavailable message','Currently unavailable'],
@@ -114,6 +117,8 @@ export const PAGE_COPY_FIELDS = {
     ['createAccount','Create account link','Create an account'], ['accountBenefit','Account helper','to check out faster next time.'],
   ],
   site_navigation: [
+    ['announcementDefault','Default top announcement','COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500'],
+    ['marqueeDiscover','Top marquee message 1','DISCOVER YOUR SIGNATURE'], ['marqueeCrafted','Top marquee message 2','CRAFTED FOR MEMORIES'], ['marqueeCollection','Top marquee message 3','THE AFSANA PRIVATE COLLECTION'],
     ['searchEyebrow','Search eyebrow','The Afsana search'], ['searchTitle','Search heading','Search Afsana'],
     ['searchPlaceholder','Search placeholder','Search fragrances...'], ['searchButton','Search button','Search'],
     ['popularPathsTitle','Popular paths heading','Popular paths'], ['ritualTitle','Discovery panel heading','Find your ritual'],
@@ -121,6 +126,7 @@ export const PAGE_COPY_FIELDS = {
     ['discoverCard','Discovery card 1','Discover your signature'], ['giftingCard','Discovery card 2','Choose a gift'], ['collectionCard','Discovery card 3','Explore the collection'],
   ],
   site_footer: [
+    ['marquee1','Footer marquee 1','THE ART OF SCENT'], ['marquee2','Footer marquee 2','CRAFTED FOR MEMORIES'], ['marquee3','Footer marquee 3','AFSANA PERFUMES'], ['marquee4','Footer marquee 4','LEAVE A TRACE'], ['marquee5','Footer marquee 5','THE PRIVATE COLLECTION'],
     ['contactLabel','Contact block label','Afsana / Contact'], ['contactDescription','Contact block description','For fragrance questions, gifting help and order support, visit your account or explore the collection.'],
     ['customerCare','Customer care link','Customer care'], ['exploreHeading','Explore links heading','Explore'], ['customerHeading','Customer links heading','Customer'],
     ['collectionLink','Collection link','Collection'], ['houseLink','The House link','The House'], ['journalLink','Journal link','Journal'], ['giftingLink','Gifting link','Gifting'],
@@ -144,4 +150,9 @@ export function resolvePageCopy(data, pageKey) {
 export function useCmsPageCopy(pageKey) {
   const { data } = useApi(() => cmsPublicApi.content(), [pageKey]);
   return resolvePageCopy(data, pageKey);
+}
+
+export function useCmsReferenceAssets() {
+  const { data } = useApi(() => cmsPublicApi.content(), []);
+  return (data?.homepageSections || []).find((section) => section?.type === 'reference_assets')?.config || {};
 }
