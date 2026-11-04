@@ -5,6 +5,10 @@ main = "worker.js"
 compatibility_date = "2026-10-31"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+EMAILJS_SERVICE_ID = "service_jx5mizj"
+EMAILJS_TEMPLATE_ID = "template_36spa09"
+
 [assets]
 directory = "../dist"
 binding = "ASSETS"
