@@ -144,7 +144,11 @@ async function handleApi(request, env, ctx) {
       "Cache-Control",
       "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
     );
-    const cacheResponse = responseWithMediaLength(apiResponse.clone(), cacheHeaders, incoming.pathname);
+    const cacheResponse = new Response(apiResponse.clone().body, {
+      status: apiResponse.status,
+      statusText: apiResponse.statusText,
+      headers: cacheHeaders
+    });
     ctx.waitUntil(caches.default.put(cacheKey, cacheResponse));
   } else if (isMediaGet && apiResponse.ok && !hasCookie) {
     responseHeaders.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=300");
