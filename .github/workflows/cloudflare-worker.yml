@@ -5,6 +5,7 @@ on:
   push:
     branches: ["main", "feat/universal-afsana-page-builder"]
     paths:
+      - "admin/**"
       - "cloudflare/**"
       - "functions/**"
       - "netlify/functions/**"
