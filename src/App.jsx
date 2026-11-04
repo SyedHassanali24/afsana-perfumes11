@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import RequireAuth from './auth/RequireAuth';
 import LoginPage from './auth/LoginPage';
 import ChangePasswordPage from './auth/ChangePasswordPage';
@@ -73,10 +73,21 @@ function AfsanaLoader({ suspense = false }) {
   );
 }
 
+function TrafficTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    const isAdmin = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
+    const isPreview = new URLSearchParams(location.search).get('afsanaPreview') === '1';
+    if (!isAdmin && !isPreview) trackStorefrontPageView(location.pathname, location.search);
+  }, [location.pathname, location.search]);
+  return null;
+}
+
 export default function App() {
   return (
     <>
-      {!window.location.pathname.startsWith("/admin/login") && <AfsanaLoader />}
+      <TrafficTracker />
+      {!window.location.pathname.startsWith("/admin/login") && <AfsanaLoader />
       <Suspense fallback={window.location.pathname.startsWith("/admin") ? <AfsanaLoader suspense /> : <AfsanaLoader suspense />}>
         <Routes>
           <Route path="/admin/login" element={<LoginPage />} />
