@@ -5,6 +5,7 @@ const { User, Session, Staff, Role } = require('../database/models');
 const { E, ApiError } = require('./errors');
 const { parseCookies, serializeCookie } = require('./http');
 const { resolve, withinWorkingHours } = require('./permissions');
+const { getEmailJsConfig, sendEmailJsOtp } = require('../services/emailjs');
 
 const COOKIE = 'afsana_staff';
 const SESSION_DAYS = 7;
@@ -31,6 +32,13 @@ async function ownerEmail() {
 async function sendOtpEmail(to, subject, purpose, otp) {
   const text = `Your AFSANA ${purpose} code is ${otp}. It expires in ${purpose === 'admin login verification' ? '5' : '10'} minutes. If you did not request this code, ignore this email.`;
   const html = `<div style="font-family:Arial,sans-serif;color:#24183e;max-width:520px;margin:auto;padding:28px"><p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold">AFSANA · THE ART OF SCENT</p><h2 style="font-size:24px">Security verification</h2><p>Your ${purpose} code is:</p><div style="font-size:32px;letter-spacing:9px;font-weight:bold;background:#f3efff;padding:18px;text-align:center;border-radius:12px">${otp}</div><p style="color:#746b83;font-size:13px">${text}</p></div>`;
+
+  // Prefer EmailJS when fully configured. The private key remains server-side.
+  const emailJsConfig = getEmailJsConfig();
+  if (emailJsConfig) {
+    await sendEmailJsOtp({ to, subject, purpose, otp }, { config: emailJsConfig });
+    return;
+  }
 
   const clientId = process.env.GMAIL_CLIENT_ID;
   const clientSecret = process.env.GMAIL_CLIENT_SECRET;
@@ -74,7 +82,7 @@ async function sendOtpEmail(to, subject, purpose, otp) {
     if (!sent.ok) throw new Error('Email provider could not deliver the security email.');
     return;
   }
-  throw new Error('Email OTP is not configured. Add Gmail OAuth secrets or Resend email credentials to the Cloudflare Worker.');
+  throw new Error('Email OTP is not configured. Add EmailJS, Gmail OAuth, or Resend credentials to the Cloudflare Worker.');
 }
 
 async function sendOwnerOtp(otp, purpose) {
