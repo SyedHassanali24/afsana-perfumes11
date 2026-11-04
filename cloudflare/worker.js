@@ -111,7 +111,24 @@ async function handleApi(request, env, ctx) {
 
   const id = env.MONGODB_CONNECTION.idFromName(API_OBJECT_NAME);
   const stub = env.MONGODB_CONNECTION.get(id);
-  const rawApiResponse = await stub.fetch(request);
+  let rawApiResponse = await stub.fetch(request);
+  if (isRangedMedia && rawApiResponse.status === 200 &&
+      !(Number(rawApiResponse.headers.get("Content-Length") || rawApiResponse.headers.get("X-Afsana-Media-Size")) > 0)) {
+    const headHeaders = new Headers(request.headers);
+    headHeaders.delete("Range");
+    headHeaders.delete("If-Range");
+    const headResponse = await stub.fetch(new Request(request.url, { method: "HEAD", headers: headHeaders }));
+    const mediaSize = Number(headResponse.headers.get("Content-Length") || headResponse.headers.get("X-Afsana-Media-Size"));
+    if (Number.isSafeInteger(mediaSize) && mediaSize > 0) {
+      const enrichedHeaders = new Headers(rawApiResponse.headers);
+      enrichedHeaders.set("X-Afsana-Media-Size", String(mediaSize));
+      rawApiResponse = new Response(rawApiResponse.body, {
+        status: rawApiResponse.status,
+        statusText: rawApiResponse.statusText,
+        headers: enrichedHeaders
+      });
+    }
+  }
   const apiResponse = enforceMediaRange(request, rawApiResponse, incoming.pathname);
   const responseHeaders = new Headers(apiResponse.headers);
   responseHeaders.set("X-Afsana-API-Processor", "cloudflare-durable-object");
