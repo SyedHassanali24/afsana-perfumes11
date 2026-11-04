@@ -8,7 +8,6 @@ import { Container } from './ui';
 import useApi from '../hooks/useApi';
 import { cmsPublicApi } from '../services';
 import useShopSettings from './useShopSettings';
-import { trackStorefrontPageView } from './trafficTracking';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
@@ -84,7 +83,6 @@ export default function ShopLayout(){
  const brandTagline = navConfig.tagline || 'THE ART OF SCENT';
 
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
- useEffect(()=>{if(new URLSearchParams(location.search).get('afsanaPreview')!=='1')trackStorefrontPageView(location.pathname,location.search)},[location.pathname,location.search]);
  useEffect(()=>{let timer;try{if(!sessionStorage.getItem('afsana-reference-intro-v1')){sessionStorage.setItem('afsana-reference-intro-v1','seen');setShowIntro(true);timer=window.setTimeout(()=>setShowIntro(false),1650);}}catch{}return()=>{if(timer)window.clearTimeout(timer)};},[]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
 
