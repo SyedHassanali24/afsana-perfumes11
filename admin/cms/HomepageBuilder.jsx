@@ -73,7 +73,7 @@ const parseItems = (text) => (Array.isArray(text) ? text : String(text || '').sp
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
   return { title: title.trim(), text: textValue.trim(), image: image.trim(), link: link.trim() };
 })).map((x) => ({ title: String(x?.title || '').trim(), text: String(x?.text || '').trim(), image: String(x?.image || '').trim(), link: String(x?.link || '').trim() }));
-const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
+const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].join('|')).join('\n') : String(items || '');
 
 const AFSANA_EXPERIENCE_SECTIONS = [
       { type:'reference_assets', title:'AFSANA image & 3D asset library', config:defaults('reference_assets') },
