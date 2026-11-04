@@ -19,6 +19,32 @@ function json(data, status, headers = {}) {
   return Response.json(data, { status, headers });
 }
 
+function responseWithMediaLength(response, headers, pathname) {
+  if (pathname.startsWith("/api/media/") && response.body) {
+    let length = Number(headers.get("Content-Length"));
+    if ((!Number.isSafeInteger(length) || length < 0) && response.status === 200) {
+      length = Number(headers.get("X-Afsana-Media-Size"));
+    }
+    if (Number.isSafeInteger(length) && length >= 0) {
+      headers.set("Content-Length", String(length));
+      const fixed = new FixedLengthStream(length);
+      response.body.pipeTo(fixed.writable).catch((error) => {
+        console.error("[media-stream]", error?.message || error);
+      });
+      return new Response(fixed.readable, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+      });
+    }
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
 function cacheable(pathname, method) {
   if (method !== "GET") return false;
   // Media responses support HTTP Range requests. Keep them out of the custom
@@ -28,7 +54,8 @@ function cacheable(pathname, method) {
     /^\/api\/taxonomy\/public(?:\/|$)/i.test(pathname) ||
     /^\/api\/settings\/public\/?$/i.test(pathname) ||
     /^\/api\/cms\/public\/?$/i.test(pathname) ||
-    /^\/api\/reviews\/product\//i.test(pathname);
+    /^\/api\/reviews\/product\//i.test(pathname) ||
+    /^\/api\/media\/[0-9a-f]{24}$/i.test(pathname);
 }
 
 
@@ -162,11 +189,7 @@ async function handleApi(request, env, ctx) {
       "Cache-Control",
       "public, max-age=60, s-maxage=60, stale-while-revalidate=300"
     );
-    const cacheResponse = new Response(apiResponse.clone().body, {
-      status: apiResponse.status,
-      statusText: apiResponse.statusText,
-      headers: cacheHeaders
-    });
+    const cacheResponse = responseWithMediaLength(apiResponse.clone(), cacheHeaders, incoming.pathname);
     ctx.waitUntil(caches.default.put(cacheKey, cacheResponse));
   } else if (!canCache) {
     responseHeaders.set("Cache-Control", "no-store, private");
@@ -174,11 +197,7 @@ async function handleApi(request, env, ctx) {
     responseHeaders.delete("Cloudflare-CDN-Cache-Control");
   }
 
-  return new Response(apiResponse.body, {
-    status: apiResponse.status,
-    statusText: apiResponse.statusText,
-    headers: responseHeaders
-  });
+  return responseWithMediaLength(apiResponse, responseHeaders, incoming.pathname);
 }
 
 export default {
@@ -196,11 +215,7 @@ export default {
         const headers = new Headers(response.headers);
         Object.entries(cors(origin)).forEach(([key, value]) => headers.set(key, value));
         headers.set("X-Afsana-Backend", "cloudflare-api");
-        return new Response(response.body, {
-          status: response.status,
-          statusText: response.statusText,
-          headers
-        });
+        return responseWithMediaLength(response, headers, url.pathname);
       } catch (error) {
         console.error("[cloud-api]", error?.message || error);
         return json({
