@@ -117,7 +117,7 @@ export const PAGE_COPY_FIELDS = {
   cart_before: [
     ['title','Cart page title','Your cart'], ['subtitle','Cart page subtitle','Review your fragrances before you checkout.'],
     ['emptyCart','Empty cart message','Your cart is empty.'], ['browsePerfumes','Browse button','Browse perfumes'],
-    ['drawerHeading','Mini cart heading','Your bag'], ['fragranceSingular','Cart count singular','fragrance'], ['fragrancePlural','Cart count plural','fragrances'],
+    ['drawerHeading','Mini cart heading','Your bag'], ['closeBag','Close mini cart accessibility label','Close shopping bag'], ['fragranceSingular','Cart count singular','fragrance'], ['fragrancePlural','Cart count plural','fragrances'],
     ['freeShippingPrompt','Free shipping progress prompt','more for complimentary express shipping'], ['freeShippingUnlocked','Free shipping unlocked message','Complimentary express shipping unlocked!'], ['freeShippingFoot','Free shipping threshold message','Free express shipping on orders above PKR 7,500'],
     ['drawerEmptyTitle','Empty mini cart heading','Your bag is empty'], ['drawerEmptyDescription','Empty mini cart description','Your next favourite fragrance is waiting to be discovered.'], ['drawerExplore','Empty mini cart button','Explore fragrances'],
     ['drawerRemove','Mini cart remove label','Remove'], ['decreaseQuantity','Decrease quantity accessibility label','Decrease quantity'], ['increaseQuantity','Increase quantity accessibility label','Increase quantity'],
