@@ -50,6 +50,14 @@ if (!cms.response.ok || cms.data.success !== true) {
 }
 console.log(`CMS API: HTTP ${cms.response.status}; public content endpoint is responding`);
 
+// The audience acquisition endpoint is staff-only. Without a session it must return
+// 401 (not 404), proving that the analytics route is registered in the deployed API.
+const traffic = await getJson("/api/analytics/traffic?days=30");
+if (traffic.response.status !== 401) {
+  throw new Error(`Traffic analytics route should be registered and protected (expected HTTP 401 without a session, received HTTP ${traffic.response.status})`);
+}
+console.log("Traffic analytics route: registered and protected (HTTP 401 expected without a login cookie)");
+
 const mediaPaths = findMediaPaths([products.data, cms.data]);
 for (const path of mediaPaths) {
   // Video checks request only the first 16 bytes; never pull a potentially 250 MB file into CI memory.
