@@ -41,7 +41,7 @@ export default function ReviewsSection({ slug }) {
   };
 
   return (
-    <section className="mt-16 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-7 shadow-[0_18px_50px_rgba(24,35,8,.06)]" aria-labelledby="reviews-title">
+    <section className="afsana-reviews mt-16 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-7 shadow-[0_18px_50px_rgba(24,35,8,.06)]" aria-labelledby="reviews-title">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
           <h2 id="reviews-title" className="font-display text-2xl">Customer reviews</h2>
@@ -90,6 +90,29 @@ export default function ReviewsSection({ slug }) {
             ))}
           </ul>
         )}
+      <div className="afsana-review-preview" aria-label="Illustrative sample review cards">
+        <div className="afsana-review-preview-head">
+          <div><p className="afsana-review-preview-kicker">THE AFSANA EXPERIENCE</p><h3>Review examples</h3></div>
+          <span>4 SAMPLE CARDS</span>
+        </div>
+        <p className="afsana-review-preview-note">Illustrative sample copy only — these are not customer submissions or verified buyer reviews. Replace them with approved customer feedback.</p>
+        <div className="afsana-review-preview-grid">
+          {[
+            {group:'Men · Sample',language:'ENGLISH',text:'A clean opening, a warm dry-down, and a scent that feels confident without trying too hard.'},
+            {group:'Men · Sample',language:'ROMAN URDU',text:'Khushboo bohat achi hai, aur iska dry-down bhi kaafi zabardast hai. Rozana use ke liye perfect.'},
+            {group:'Women · Sample',language:'ENGLISH',text:'Beautifully balanced. It feels elegant from the first spray and stays soft through the day.'},
+            {group:'Women · Sample',language:'ENGLISH',text:'Polished, memorable and lovely on the skin. The fragrance settles into a really beautiful trail.'}
+          ].map((review,index)=>(
+            <article className="afsana-review-preview-card" key={index}>
+              <div className="afsana-review-preview-meta"><span>{review.group}</span><small>{review.language}</small></div>
+              <div className="afsana-review-preview-stars" aria-label="Sample 5 out of 5 stars">★★★★★</div>
+              <p>{review.text}</p>
+              <span className="afsana-review-preview-label">SAMPLE · NOT VERIFIED</span>
+            </article>
+          ))}
+        </div>
+      </div>
+
       {pg && pg.pages > 1 && (
         <div className="flex items-center gap-3 mt-6 text-sm">
           <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
