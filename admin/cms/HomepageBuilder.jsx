@@ -41,6 +41,26 @@ const defaults = (type) => ({
   ...(type === 'fragrance_dna' ? { eyebrow: 'FRAGRANCE DNA', body: 'Explore the personality behind every composition.', items: 'OUD|Deep & mysterious| |/shop\nAMBER|Warm & magnetic| |/shop\nROSE|Soft & luminous| |/shop\nMUSK|Clean & intimate| |/shop' } : {}),
   ...(type === 'product_3d_showcase' ? { eyebrow: 'THE AFSANA OBJECT', body: 'Explore the signature bottle in motion.', productSlug: '', imageUrl: '', buttonText: 'Explore fragrance', buttonLink: '/shop' } : {}),
   ...(type === 'interactive_gallery' ? { eyebrow: 'THE VISUAL JOURNEY', items: 'The Signature|Luminous opening|https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85|/shop\nDark Woods|Deep oud atmosphere|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1000&q=85|/shop\nSoft Light|Floral world|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1000&q=85|/shop' } : {}),
+
+  ...(type === 'scent_finder' ? {
+    finderEyebrow:'AFSANA SCENT INTELLIGENCE',finderHeading:'Your scent',finderHeadingAccent:'has a personality.',
+    finderIntro:'Answer five thoughtful questions and discover a fragrance from the live AFSANA collection that matches your mood, notes and moment.',
+    stepLabel:'STEP',step1Title:'How do you want your fragrance to feel?',step1Subtitle:'Start with the energy you want to carry.',
+    step1Options:'Magnetic|Deep, confident and a little mysterious.|\\nLuminous|Fresh, airy and effortlessly radiant.|\\nElectric|Bright, bold and full of energy.|\\nComforting|Warm, soft and quietly addictive.',
+    step2Title:'Which world pulls you in?',step2Subtitle:'Think about the atmosphere you love.',
+    step2Options:'After dark|Warm lights, velvet textures and late nights.|\\nOpen air|Sunlight, fresh air and wide-open spaces.|\\nCity pulse|Art, movement, music and new ideas.|\\nSlow mornings|Soft light, calm rituals and comfort.',
+    step3Title:'Which notes sound most like you?',step3Subtitle:'Choose what you naturally gravitate towards.',
+    step3Options:'Amber & woods|Warm resin, sandalwood and smoky depth.|\\nFlorals & musk|Petals, clean skin and soft elegance.|\\nCitrus & spice|Fresh zest, pepper and aromatic lift.|\\nVanilla & tonka|Creamy warmth and gentle sweetness.',
+    step4Title:'When will you wear it most?',step4Subtitle:'A scent can change with the moment.',
+    step4Options:'Everyday signature|Something that feels like you, daily.|\\nEvening presence|A memorable trail after sunset.|\\nSpecial occasions|Something expressive and distinctive.|\\nA little of everything|Versatile, balanced and easy to love.',
+    step5Title:'How should it announce you?',step5Subtitle:'The final detail makes the match personal.',
+    step5Options:'Close & intimate|A personal discovery, just for those close.|\\nNoticeable & elegant|A beautiful trail that turns heads.|\\nBold & unforgettable|A confident entrance with presence.|\\nFresh & effortless|A clean impression that feels natural.',
+    backText:'← Back',nextText:'Next step',revealText:'Reveal my scent',resultEyebrow:'YOUR SCENT MATCH IS READY',
+    resultTitle:'Your next chapter\\nsmells like this.',matchLabel:'YOUR MATCH · CURATED FROM THE LIVE COLLECTION',
+    matchFallback:'A fragrance selected from the AFSANA collection based on your answers.',
+    noMatchText:'Your matching collection is loading. Browse the complete collection to find your scent.',
+    restartText:'Start again',matchButtonText:'Explore my match',noMatchButtonText:'Explore collection'
+  } : {}),
 });
 const parseItems = (text) => (Array.isArray(text) ? text : String(text || '').split('\n').map((x) => x.trim()).filter(Boolean).map((x) => {
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
@@ -415,7 +435,36 @@ export default function HomepageBuilder() {
         {form.type === 'spacer' && <Field label="Height (px)"><Input type="number" min="20" max="500" value={form.config.height || 80} onChange={(e) => setConfig('height', Number(e.target.value))} /></Field>}
         {form.type === 'faq' && <p className="text-sm text-[#5f654f]">This section automatically uses active FAQ content.</p>}
         {form.type === 'newsletter' && <p className="text-sm text-[#5f654f]">Newsletter signup can be placed anywhere.</p>}
-        {form.type === 'scent_finder' && <p className="text-sm text-[#5f654f]">Uses the interactive AFSANA scent-finder experience.</p>}
+        {form.type === 'scent_finder' && <div className="space-y-5">
+          <div className="rounded-xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[.15em] text-[#263e0e]">Scent finder content & result control</p>
+            <p className="mt-2 text-xs leading-5 text-[#5f654f]">Edit every heading and option. For each option, add product slug(s) in the third column to control the exact perfume recommendation. Separate multiple slugs with commas. Leave blank to use automatic fragrance matching.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Section eyebrow"><Input value={form.config.finderEyebrow || ''} onChange={e=>setConfig('finderEyebrow',e.target.value)}/></Field>
+            <Field label="Step label"><Input value={form.config.stepLabel || ''} onChange={e=>setConfig('stepLabel',e.target.value)}/></Field>
+            <Field label="Main heading"><Input value={form.config.finderHeading || ''} onChange={e=>setConfig('finderHeading',e.target.value)}/></Field>
+            <Field label="Heading accent"><Input value={form.config.finderHeadingAccent || ''} onChange={e=>setConfig('finderHeadingAccent',e.target.value)}/></Field>
+          </div>
+          <Field label="Intro text"><Textarea rows={3} value={form.config.finderIntro || ''} onChange={e=>setConfig('finderIntro',e.target.value)}/></Field>
+          {[1,2,3,4,5].map(n=><div key={n} className="space-y-3 rounded-xl border border-[#263e0e]/10 bg-white p-4">
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-[#263e0e]">Step {String(n).padStart(2,'0')} / 05</p>
+            <Field label="Question"><Input value={form.config['step'+n+'Title'] || ''} onChange={e=>setConfig('step'+n+'Title',e.target.value)}/></Field>
+            <Field label="Supporting text"><Input value={form.config['step'+n+'Subtitle'] || ''} onChange={e=>setConfig('step'+n+'Subtitle',e.target.value)}/></Field>
+            <Field label="Options & exact product mapping" hint="One option per line: Option title|Description|product-slug (optional). Multiple product slugs: yawar,oud.">
+              <Textarea rows={6} value={form.config['step'+n+'Options'] || ''} onChange={e=>setConfig('step'+n+'Options',e.target.value)}/>
+            </Field>
+          </div>)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              ['backText','Back button'],['nextText','Next button'],['revealText','Final reveal button'],
+              ['resultEyebrow','Result eyebrow'],['resultTitle','Result heading'],['matchLabel','Matched product label'],
+              ['matchFallback','Matched product fallback description'],['noMatchText','No product fallback message'],
+              ['restartText','Restart button'],['matchButtonText','Matched product CTA'],['noMatchButtonText','Collection CTA']
+            ].map(([key,label])=><Field key={key} label={label}><Input value={form.config[key] || ''} onChange={e=>setConfig(key,e.target.value)}/></Field>)}
+          </div>
+          <p className="text-xs leading-5 text-[#5f654f]">Product slugs are read from Admin → Products. The finder recommends real catalogue products; if multiple answers map to products, the most frequently selected mapped slug wins. Without a mapping, automatic fragrance-note matching is used.</p>
+        </div>}
         {form.type === 'instagram' && <><Field label="Social URL"><Input value={form.config.url || ''} onChange={(e) => setConfig('url', e.target.value)} placeholder="https://instagram.com/…" /></Field><Field label="Intro text"><Textarea rows={3} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
         <Check label="Show this section on the storefront" checked={form.isEnabled} onChange={(v) => set('isEnabled', v)} />
       </form>
