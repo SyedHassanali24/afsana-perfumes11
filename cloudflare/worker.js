@@ -31,6 +31,61 @@ function cacheable(pathname, method) {
     /^\/api\/reviews\/product\//i.test(pathname);
 }
 
+
+function enforceMediaRange(request, response, pathname) {
+  if (request.method !== "GET" || response.status !== 200 ||
+      !/^\/api\/media\/[0-9a-f]{24}$/i.test(pathname)) return response;
+  const range = request.headers.get("Range");
+  if (!range) return response;
+  const total = Number(response.headers.get("Content-Length"));
+  const match = /^bytes=(\\d*)-(\\d*)$/i.exec(range.trim());
+  if (!Number.isSafeInteger(total) || total <= 0 || !match || (!match[1] && !match[2])) return response;
+  let start = match[1] ? Number(match[1]) : Math.max(0, total - Number(match[2]));
+  let end = match[2] && match[1] ? Math.min(total - 1, Number(match[2])) :
+    (match[1] ? total - 1 : total - 1);
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start >= total || end < start) {
+    const headers = new Headers(response.headers);
+    headers.set("Content-Range", "bytes */" + total);
+    headers.set("Content-Length", "0");
+    return new Response(null, { status: 416, headers });
+  }
+  const reader = response.body?.getReader();
+  if (!reader) return response;
+  const headers = new Headers(response.headers);
+  headers.set("Accept-Ranges", "bytes");
+  headers.set("Content-Range", "bytes " + start + "-" + end + "/" + total);
+  headers.set("Content-Length", String(end - start + 1));
+  let position = 0;
+  let finished = false;
+  const body = new ReadableStream({
+    async pull(controller) {
+      try {
+        while (!finished) {
+          const { value, done } = await reader.read();
+          if (done) { finished = true; controller.close(); return; }
+          const chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+          const chunkStart = position;
+          const chunkEnd = position + chunk.byteLength - 1;
+          position += chunk.byteLength;
+          if (chunkEnd < start) continue;
+          if (chunkStart > end) {
+            finished = true; await reader.cancel(); controller.close(); return;
+          }
+          const from = Math.max(0, start - chunkStart);
+          const to = Math.min(chunk.byteLength, end - chunkStart + 1);
+          if (to > from) controller.enqueue(chunk.subarray(from, to));
+          if (chunkEnd >= end) {
+            finished = true; await reader.cancel();
+            controller.close(); return;
+          }
+        }
+      } catch (error) { controller.error(error); }
+    },
+    async cancel(reason) { finished = true; await reader.cancel(reason); }
+  });
+  return new Response(body, { status: 206, headers });
+}
+
 async function handleApi(request, env, ctx) {
   const incoming = new URL(request.url);
   const isRangedMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.headers.has("Range");
@@ -56,7 +111,8 @@ async function handleApi(request, env, ctx) {
 
   const id = env.MONGODB_CONNECTION.idFromName(API_OBJECT_NAME);
   const stub = env.MONGODB_CONNECTION.get(id);
-  const apiResponse = await stub.fetch(request);
+  const rawApiResponse = await stub.fetch(request);
+  const apiResponse = enforceMediaRange(request, rawApiResponse, incoming.pathname);
   const responseHeaders = new Headers(apiResponse.headers);
   responseHeaders.set("X-Afsana-API-Processor", "cloudflare-durable-object");
   responseHeaders.set("X-Afsana-Cache", canCache ? "MISS" : "BYPASS");
