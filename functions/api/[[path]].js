@@ -100,6 +100,10 @@ export async function onRequest(context) {
   if (env.GMAIL_CLIENT_SECRET) process.env.GMAIL_CLIENT_SECRET = env.GMAIL_CLIENT_SECRET;
   if (env.GMAIL_REFRESH_TOKEN) process.env.GMAIL_REFRESH_TOKEN = env.GMAIL_REFRESH_TOKEN;
   if (env.GMAIL_SENDER_EMAIL) process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL;
+  if (env.EMAILJS_SERVICE_ID) process.env.EMAILJS_SERVICE_ID = env.EMAILJS_SERVICE_ID;
+  if (env.EMAILJS_TEMPLATE_ID) process.env.EMAILJS_TEMPLATE_ID = env.EMAILJS_TEMPLATE_ID;
+  if (env.EMAILJS_PUBLIC_KEY) process.env.EMAILJS_PUBLIC_KEY = env.EMAILJS_PUBLIC_KEY;
+  if (env.EMAILJS_PRIVATE_KEY) process.env.EMAILJS_PRIVATE_KEY = env.EMAILJS_PRIVATE_KEY;
 
   const event = await netlifyEvent(request, functionPath);
   try {
