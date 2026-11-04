@@ -447,7 +447,14 @@ export default function HomepageBuilder() {
             const isNavigation = form.type === 'nav_menu';
             const isFooter = form.type === 'custom_footer';
             return <div key={index} className="rounded-xl border border-[#263e0e]/10 bg-white p-3 sm:p-4">
-              <div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-[.12em] text-[#748e40]">Item {String(index + 1).padStart(2, '0')}</span><button type="button" disabled={parseItems(form.config.items).length <= 1} onClick={() => setConfig('items', parseItems(form.config.items).filter((_, i) => i !== index))} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#9b3f3f] hover:bg-[#f7e7e5] disabled:opacity-30"><Trash2 className="h-4 w-4" />Remove</button></div>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-semibold uppercase tracking-[.12em] text-[#748e40]">Item {String(index + 1).padStart(2, '0')}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" disabled={index === 0} onClick={() => { const items = parseItems(form.config.items); const [moved] = items.splice(index, 1); items.splice(index - 1, 0, moved); setConfig('items', items); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] disabled:opacity-30"><ArrowUp className="h-4 w-4" /><span>Up</span></button>
+                  <button type="button" disabled={index === parseItems(form.config.items).length - 1} onClick={() => { const items = parseItems(form.config.items); const [moved] = items.splice(index, 1); items.splice(index + 1, 0, moved); setConfig('items', items); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] disabled:opacity-30"><ArrowDown className="h-4 w-4" /><span>Down</span></button>
+                  <button type="button" disabled={parseItems(form.config.items).length <= 1} onClick={() => setConfig('items', parseItems(form.config.items).filter((_, i) => i !== index))} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#9b3f3f] hover:bg-[#f7e7e5] disabled:opacity-30"><Trash2 className="h-4 w-4" /><span>Remove</span></button>
+                </div>
+              </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Field label={isPulse ? 'Card title' : isNavigation ? 'Menu label' : 'Title'}><Input value={item.title || ''} onChange={(e) => updateItem('title', e.target.value)} placeholder={isPulse ? 'e.g. Verified Reviews' : 'Enter a short title'} /></Field>
                 <Field label={isPulse ? 'Value / number (verified only)' : isNavigation ? 'Page path' : 'Description'} hint={isPulse ? 'Use only a real, verified number. Leave empty if not verified.' : isNavigation ? 'Example: /shop' : undefined}><Input value={item.text || ''} onChange={(e) => updateItem('text', e.target.value)} placeholder={isPulse ? 'e.g. 125' : isNavigation ? '/shop' : 'Write a short description'} /></Field>
