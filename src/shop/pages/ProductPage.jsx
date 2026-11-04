@@ -62,15 +62,31 @@ export default function ProductPage(){
  const {data,loading,error,reload}=useApi(()=>productsApi.bySlug(slug),[slug]);
  const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
  const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
+ const activeOffer=useMemo(()=>(
+  (cmsContent?.homepageSections||[]).find((section)=>{
+   const endAt=section?.config?.endAt;
+   return ['promo_timer','offer_timer'].includes(section?.type)&&!section?.config?.hideTimer&&endAt&&Number.isFinite(Date.parse(endAt))&&Date.parse(endAt)>Date.now();
+  })||null
+ ),[cmsContent]);
+ const offerEndAt=activeOffer?.config?.endAt||null;
  const {add}=useCart(); const {has,toggle}=useWishlist();
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
  const [tilt,setTilt]=useState({x:0,y:0});
+ const [offerRemaining,setOfferRemaining]=useState(0);
  const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false),[autoRotate,setAutoRotate]=useState(false),[dragX,setDragX]=useState(null);
  const [mediaBroken,setMediaBroken]=useState(false),[modelViewerReady,setModelViewerReady]=useState(false),[modelViewerFailed,setModelViewerFailed]=useState(false);
  const stageRef=useRef(null),modelViewerRef=useRef(null);
  const p=data?.product, variants=data?.variants||[];
  useTitle(p?.seo?.title||p?.name);
  useEffect(()=>{if(variants.length){setVid((variants.find(v=>v.available>0)||variants[0]).id);setQty(1);setImg(0)}},[data]);
+ useEffect(()=>{
+  const end=offerEndAt?new Date(offerEndAt).getTime():0;
+  if(!Number.isFinite(end)||end<=Date.now()){setOfferRemaining(0);return;}
+  const update=()=>setOfferRemaining(Math.max(0,end-Date.now()));
+  update();
+  const timer=window.setInterval(update,1000);
+  return ()=>window.clearInterval(timer);
+ },[offerEndAt]);
  const productMedia=useMemo(()=>normaliseProductMedia(p),[p]);
  const media=useMemo(()=>productMedia.filter((item)=>item.kind!=='model3d'&&!/\.(glb|gltf)(\?|$)/i.test(item.url)).sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[productMedia]);
  const product3dUrl=productMedia.find((item)=>item.kind==='model3d'||/\.(glb|gltf)(\?|$)/i.test(item.url))?.url || p?.model3dUrl || p?.modelUrl || referenceAssets.product3dModelUrl || '';
@@ -100,7 +116,7 @@ export default function ProductPage(){
   return ()=>{viewer.removeEventListener('error',onError);viewer.removeEventListener('load',onLoad)};
  },[product3dUrl,modelViewerReady]);
  const ratingAvg=Number(p?.ratingAvg||0),ratingCount=Number(p?.ratingCount||0);
- const v=variants.find(x=>x.id===vid), price=v&&(v.salePrice>0&&v.salePrice<v.price?v.salePrice:v.price), soldOut=!v||v.available<=0, ns=notes(p);
+ const v=variants.find(x=>x.id===vid), hasSalePrice=Boolean(v&&v.salePrice>0&&v.salePrice<v.price), price=v&&(hasSalePrice?v.salePrice:v.price), discountPct=hasSalePrice?Math.round((1-v.salePrice/v.price)*100):0, soldOut=!v||v.available<=0, ns=notes(p);
  const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);window.setTimeout(()=>setAdding(false),650)}};
  const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
  const activeMedia=media[img]||media[0]||null;
@@ -255,6 +271,100 @@ export default function ProductPage(){
    model-viewer{--poster-color:transparent;--progress-bar-color:#7357ff;--progress-mask:#f2eef8}
    @media(max-width:980px){.product-detail-grid{grid-template-columns:minmax(0,1fr);gap:42px}.product-gallery{grid-template-columns:64px minmax(0,1fr)}.main-product-stage{height:clamp(560px,78vw,720px)}}
    @media(max-width:600px){.product-detail-grid{margin-top:22px}.product-gallery{display:flex;flex-direction:column;gap:12px}.main-product-stage{order:1;width:100%;height:clamp(480px,130vw,620px);min-height:480px;border-radius:16px}.gallery-thumbs{order:2;flex-direction:row;width:100%;max-height:none;overflow-x:auto;overflow-y:hidden;padding:2px 0 7px}.gallery-thumbs button{width:60px;min-width:60px}.afsana-bottle-preview{min-height:350px;height:76%;width:74%}.afsana-bottle-label{gap:5px}.afsana-bottle-label strong{font-size:18px}}
+   /* Standard product information panel: warm neutral palette, clear price hierarchy and compact stock/offer details. */
+   .product-info-standard{isolation:auto!important;overflow:visible!important;margin-top:0!important;padding:clamp(21px,2.5vw,34px)!important;border:1px solid #e8e3da!important;border-radius:18px!important;background:#fff!important;box-shadow:0 14px 42px rgba(24,24,24,.055)!important;color:#202020!important}
+   .product-info-standard:before{display:none!important}
+   .product-info-header{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding-bottom:17px;border-bottom:1px solid #eee9e1}
+   .product-brand-label{display:inline-flex;align-items:center;padding:7px 10px;border-radius:5px;background:#f3f0e9;color:#51493e;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+   .product-concentration-label{color:#77716a;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+   .product-edition-label{margin-left:auto;color:#9a9287;font-size:9px;letter-spacing:.13em}
+   .product-standard-title{margin:23px 0 0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;color:#1d1d1d!important;font-family:var(--font-display,Georgia,serif)!important;font-size:clamp(40px,4.5vw,60px)!important;font-weight:500!important;line-height:1!important;letter-spacing:-.035em!important;text-transform:capitalize;overflow-wrap:anywhere}
+   .product-review-summary{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:13px;color:#726c64;font-size:11px}
+   .product-review-summary strong{color:#252525;font-size:12px}
+   .product-review-summary a{margin-left:4px;color:#6a573e;font-size:10px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+   .product-review-empty{padding:4px 7px;border-radius:4px;background:#f4f1eb;color:#655c50;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+   .product-standard-description{max-width:560px;margin:18px 0 0!important;color:#68635d!important;font-size:13px!important;line-height:1.85!important}
+   .product-offer-card{margin-top:21px;padding:15px 17px;border:1px solid #e3d6c1;border-radius:10px;background:linear-gradient(110deg,#f7f3eb,#fcfaf6)}
+   .product-offer-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#705738;font-size:9px;font-weight:800;letter-spacing:.13em}
+   .product-offer-topline strong{padding:5px 8px;border-radius:4px;background:#705738;color:#fff;font-size:9px;letter-spacing:.06em}
+   .product-offer-card>p{margin:8px 0 0;color:#665f56;font-size:11px}
+   .product-offer-timer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid #e9dfd0}
+   .product-offer-timer>span{color:#6b6258;font-size:10px;font-weight:600}
+   .product-countdown{display:flex;align-items:center;gap:6px}
+   .product-countdown>div{display:grid;min-width:37px;justify-items:center;padding:6px 5px;border:1px solid #e7ddcf;border-radius:5px;background:#fff}
+   .product-countdown b{color:#2b2926;font-size:15px;font-variant-numeric:tabular-nums;line-height:1.1}
+   .product-countdown small{margin-top:3px;color:#8b8174;font-size:7px;letter-spacing:.08em}
+   .product-countdown>i{color:#9d8c76;font-size:11px;font-style:normal}
+   .product-purchase-standard{margin-top:20px;padding:21px;border:1px solid #ebe6df;border-radius:11px;background:#fff}
+   .product-price-row-standard{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+   .product-price-stack{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+   .product-price-caption{color:#8b8379;font-size:9px;font-weight:800;letter-spacing:.15em}
+   .product-price-stack del{color:#999188;font-size:13px;text-decoration:line-through}
+   .product-price-stack>strong{color:#1e1e1e;font-family:var(--font-display,Georgia,serif);font-size:clamp(30px,3.2vw,40px);font-weight:600;line-height:1.05}
+   .product-price-stack>small{color:#6d5940;font-size:9px;font-weight:700}
+   .product-stock-standard{display:grid;grid-template-columns:8px auto;align-items:center;column-gap:7px;row-gap:3px;max-width:170px;padding:9px 11px;border:1px solid #e7e4dd;border-radius:7px;background:#faf9f6}
+   .product-stock-indicator{grid-row:1/3;width:7px;height:7px;border-radius:50%;background:#5d8b60}
+   .product-stock-standard strong{color:#3e5e41;font-size:10px}
+   .product-stock-standard small{color:#8a847a;font-size:8px}
+   .product-stock-standard.is-low{border-color:#ecdcc7;background:#fcf8f1}
+   .product-stock-standard.is-low .product-stock-indicator{background:#bd8a45}
+   .product-stock-standard.is-low strong{color:#8b6030}
+   .product-stock-standard.is-out{border-color:#ead7d3;background:#fbf4f2}
+   .product-stock-standard.is-out .product-stock-indicator{background:#ad5c50}
+   .product-stock-standard.is-out strong{color:#964b41}
+   .product-standard-divider{height:1px;margin:18px 0;background:#eeeae4}
+   .product-size-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#292725;font-size:11px;font-weight:700}
+   .product-size-heading small{color:#8a8278;font-size:9px;font-weight:600}
+   .afsana-product-info .afsana-size-options{gap:8px;margin-top:11px}
+   .afsana-product-info .afsana-size-option{min-width:86px;gap:5px;padding:10px 12px;border:1px solid #e4dfd7;border-radius:7px;background:#fff;color:#4c4842;font-size:10px;letter-spacing:.04em}
+   .afsana-product-info .afsana-size-option span{color:#968d82;font-size:7px}
+   .afsana-product-info .afsana-size-option:hover:not(:disabled){transform:translateY(-1px);border-color:#9b886e}
+   .afsana-product-info .afsana-size-option.is-selected{border-color:#7e684b;background:#f6f2eb;color:#4a3c2b;box-shadow:inset 0 0 0 1px #7e684b}
+   .afsana-product-info .afsana-size-option.is-selected span{color:#796449}
+   .afsana-product-info .afsana-size-option.is-unavailable,.afsana-product-info .afsana-size-option:disabled{cursor:not-allowed;opacity:.45;text-decoration:line-through}
+   .afsana-product-info .afsana-product-actions{grid-template-columns:100px minmax(0,1fr) 46px;gap:9px;margin-top:17px}
+   .afsana-product-info .afsana-quantity-wrap{min-width:0}
+   .afsana-product-info .afsana-quantity-wrap>span{color:#81796f;font-size:8px}
+   .afsana-product-info .afsana-add-to-bag{min-height:48px;border:1px solid #262421;border-radius:7px;background:#242321;box-shadow:none;color:#fff;font-size:9px;letter-spacing:.12em}
+   .afsana-product-info .afsana-add-to-bag span{color:#e3c99f}
+   .afsana-product-info .afsana-add-to-bag:hover:not(:disabled){background:#49443c;box-shadow:0 8px 18px rgba(0,0,0,.1);filter:none}
+   .afsana-product-info .afsana-wishlist-button{min-height:48px;border:1px solid #e3ded6;border-radius:7px;background:#fff;color:#615343}
+   .afsana-product-info .afsana-wishlist-button:hover{background:#f5f2ed}
+   .product-perks-standard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+   .product-perks-standard>div{display:flex;align-items:flex-start;gap:8px;min-width:0;padding:10px 8px;border:1px solid #eeeae4;border-radius:7px;background:#fcfbf9}
+   .product-perks-standard>div>span{color:#9b815c;font-family:Georgia,serif;font-size:11px}
+   .product-perks-standard p{display:flex;min-width:0;flex-direction:column;gap:3px;margin:0}
+   .product-perks-standard strong{color:#393530;font-size:9px}
+   .product-perks-standard small{color:#8a837a;font-size:8px;line-height:1.35}
+   .product-specs-standard{margin-top:22px;padding-top:18px;border-top:1px solid #eeeae4}
+   .product-specs-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+   .product-specs-heading strong{color:#2c2a27;font-family:var(--font-display,Georgia,serif);font-size:20px;font-weight:500}
+   .product-specs-heading span{color:#9a9186;font-size:8px;font-weight:700;letter-spacing:.13em}
+   .product-info-standard .afsana-specs-grid{gap:8px}
+   .product-info-standard .afsana-spec-card{padding:10px 11px;border:1px solid #eeeae4;border-radius:7px;background:#fcfbf9}
+   .product-info-standard .afsana-spec-card span{color:#898176;font-size:8px;text-transform:uppercase;letter-spacing:.08em}
+   .product-info-standard .afsana-spec-card strong{color:#37332e;font-size:10px}
+   .afsana-reviews{border-color:#e8e3da!important;background:#fff!important;box-shadow:0 14px 42px rgba(24,24,24,.045)!important;color:#252525!important}
+   .afsana-reviews h2{color:#222!important}
+   .afsana-reviews a{color:#6a573e!important}
+   .afsana-reviews p{color:#716b63}
+   .afsana-reviews li{padding:15px;border:1px solid #eee9e1;border-radius:9px;background:#fff}
+   @media(max-width:600px){
+    .product-info-standard{padding:19px!important;border-radius:13px!important}
+    .product-standard-title{font-size:clamp(38px,11vw,54px)!important}
+    .product-price-row-standard{align-items:flex-start;flex-direction:column}
+    .product-stock-standard{max-width:none}
+    .product-offer-timer{align-items:flex-start;flex-direction:column}
+    .product-countdown{width:100%;justify-content:space-between}
+    .product-countdown>div{flex:1;min-width:0}
+    .afsana-product-info .afsana-product-actions{grid-template-columns:86px minmax(0,1fr) 42px;gap:7px}
+    .afsana-product-info .afsana-add-to-bag{padding:0 11px;font-size:8px}
+    .product-perks-standard{gap:5px}
+    .product-perks-standard>div{gap:5px;padding:9px 6px}
+    .product-perks-standard strong{font-size:8px}
+    .product-perks-standard small{font-size:7px}
+   }
+
    @media(prefers-reduced-motion:reduce){.afsana-bottle-preview{animation:none}}
   `}</style>
   <StateBox loading={loading} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
@@ -283,40 +393,73 @@ export default function ProductPage(){
        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 text-center text-[8px] uppercase tracking-[.2em] text-[#665d79]/80">{showRealModel?'Drag to rotate · True 3D model':hasProductVisual?'Move or drag to explore the bottle image':product3dUrl&&!modelViewerFailed?'Preparing interactive model':'3D-style bottle preview · Add product photos or GLB in CMS'}</div>
       </div>
     </div>
-    <div className="afsana-product-info">
-      <div className="afsana-product-info-topline">
-       <span className="afsana-product-eyebrow">{p.fragrance?.gender||'Signature'}</span>
-       {p.fragrance?.concentration&&<span className="afsana-product-concentration">{p.fragrance.concentration}</span>}
-       <span className="afsana-product-ref">AFSANA / 01</span>
+    <div className="afsana-product-info product-info-standard">
+      <div className="product-info-header">
+       <span className="product-brand-label">{p.fragrance?.gender||'Signature'} fragrance</span>
+       {p.fragrance?.concentration&&<span className="product-concentration-label">{p.fragrance.concentration}</span>}
+       <span className="product-edition-label">AFSANA / 01</span>
       </div>
-      <h1 className="afsana-product-title">{p.name}</h1>
-      <div className="afsana-product-rating">
+      <h1 className="product-standard-title">{p.name}</h1>
+      <div className="product-review-summary">
        {ratingCount>0
-        ? <><Stars value={ratingAvg} size="text-lg"/><span>{ratingAvg.toFixed(1)} / 5</span><i/> <span>{ratingCount} approved {ratingCount===1?'review':'reviews'}</span></>
-        : <><span className="afsana-rating-empty">NOT RATED YET</span><i/><span>No approved reviews yet — be the first to share your experience.</span></>}
+        ? <><Stars value={ratingAvg} size="text-base"/><strong>{ratingAvg.toFixed(1)}</strong><span>({ratingCount} approved {ratingCount===1?'review':'reviews'})</span></>
+        : <><span className="product-review-empty">Not rated yet</span><span>No approved reviews yet.</span></>}
+       <a href="#reviews-title">{ratingCount>0?'Read reviews':'Be the first to review'}</a>
       </div>
-      <p className="afsana-product-description">{p.content?.shortDescription||'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.'}</p>
-      <div className="afsana-product-purchase">
-       <div className="afsana-product-price-row">
-        <div><span className="afsana-product-price-label">YOUR FRAGRANCE</span><strong className="afsana-product-price">{v?money(price):'Currently unavailable'}</strong></div>
-        {v?.available>0&&<span className="afsana-stock-status"><i/>{v.available<5?"Limited availability":"In stock"}<small>Ready to ship</small></span>}
+      <p className="product-standard-description">{p.content?.shortDescription||'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.'}</p>
+
+      {hasSalePrice&&<div className="product-offer-card">
+       <div className="product-offer-topline"><span>LIMITED OFFER</span>{discountPct>0&&<strong> SAVE {discountPct}%</strong>}</div>
+       <p>Special price on your selected size</p>
+       {offerRemaining>0&&<div className="product-offer-timer" role="timer" aria-label="Offer ends in">
+        <span>Offer ends in</span>
+        <div className="product-countdown">
+         <div><b>{String(Math.floor(offerRemaining/86400000)).padStart(2,'0')}</b><small>DAYS</small></div>
+         <i>:</i>
+         <div><b>{String(Math.floor((offerRemaining%86400000)/3600000)).padStart(2,'0')}</b><small>HRS</small></div>
+         <i>:</i>
+         <div><b>{String(Math.floor((offerRemaining%3600000)/60000)).padStart(2,'0')}</b><small>MIN</small></div>
+         <i>:</i>
+         <div><b>{String(Math.floor((offerRemaining%60000)/1000)).padStart(2,'0')}</b><small>SEC</small></div>
+        </div>
+       </div>}
+      </div>}
+
+      <div className="product-purchase-standard">
+       <div className="product-price-row-standard">
+        <div className="product-price-stack">
+         <span className="product-price-caption">YOUR FRAGRANCE</span>
+         {hasSalePrice&&<del>{money(v.price)}</del>}
+         <strong>{v?money(price):'Currently unavailable'}</strong>
+         {hasSalePrice&&<small>Special price</small>}
+        </div>
+        <div className={`product-stock-standard ${soldOut?'is-out':v?.available<=5?'is-low':'is-ready'}`}>
+         <span className="product-stock-indicator"/>
+         <strong>{soldOut?'Out of stock':v.available<=5?`Only ${v.available} left`:`${v.available} in stock`}</strong>
+         <small>{soldOut?'Choose another size': 'Live stock · selected size'}</small>
+        </div>
        </div>
-       <div className="afsana-product-divider"/>
-       <div className="afsana-size-heading"><span>Choose your size</span><small>{v?.label|| (v?.sizeMl ? v.sizeMl+' ML' : 'SELECT SIZE')}</small></div>
-       <div className="afsana-size-options">{variants.map(x=><button type="button" key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} aria-pressed={x.id===vid} className={'afsana-size-option '+(x.id===vid?'is-selected':'')}>{x.label||x.sizeMl+' ML'}<span>{x.id===vid?'SELECTED':'CHOOSE'}</span></button>)}</div>
+       <div className="product-standard-divider"/>
+       <div className="product-size-heading"><span>Choose your size</span><small>{v?.label||(v?.sizeMl?v.sizeMl+' ML':'SELECT SIZE')}</small></div>
+       <div className="afsana-size-options">{variants.map(x=><button type="button" key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} aria-pressed={x.id===vid} disabled={x.available<=0} className={'afsana-size-option '+(x.id===vid?'is-selected':'')+(x.available<=0?' is-unavailable':'')}>{x.label||x.sizeMl+' ML'}<span>{x.id===vid?'SELECTED':x.available<=0?'SOLD OUT':'CHOOSE'}</span></button>)}</div>
        <div className="afsana-product-actions">
         <div className="afsana-quantity-wrap"><span>QTY</span><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/></div>
         <button disabled={soldOut} onClick={addToCart} className={"afsana-add-to-bag "+(adding?"add-bag-success":"")}>{adding ? "Added to bag" : <>Add to bag <span>↗</span></>}</button>
         <button type="button" onClick={()=>toggle(p.id||p._id)} aria-label={has(p.id||p._id)?'Remove from wishlist':'Add to wishlist'} aria-pressed={has(p.id||p._id)} className="afsana-wishlist-button"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4 h-4"/></button>
        </div>
       </div>
-      <div className="afsana-product-perks">{[['01','Premium','Fragrance Oils'],['02','Gift Ready','Luxury Packaging'],['03','Fast','Nationwide Delivery']].map(([n,a,b])=><div className="afsana-product-perk" key={n}><span>{n}</span><p><strong>{a}</strong><small>{b}</small></p></div>)}</div>
-      <div className="afsana-product-specs">
-       <div className="afsana-specs-heading"><span>Fragrance profile</span><small>THE DETAILS</small></div>
+      <div className="product-perks-standard">
+       <div><span>01</span><p><strong>Premium oils</strong><small>Carefully composed</small></p></div>
+       <div><span>02</span><p><strong>Gift ready</strong><small>Luxury packaging</small></p></div>
+       <div><span>03</span><p><strong>Nationwide</strong><small>Fast delivery</small></p></div>
+      </div>
+      <div className="product-specs-standard">
+       <div className="product-specs-heading"><strong>Fragrance profile</strong><span>THE DETAILS</span></div>
        <div className="afsana-specs-grid">{[['Longevity',p.fragrance?.longevity],['Projection',p.fragrance?.projection],['Concentration',p.fragrance?.concentration],['Gender',p.fragrance?.gender],['Season',p.fragrance?.seasons?.join(', ')],['Occasion',p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="afsana-spec-card"><span>{label}</span><strong>{value}</strong></div>)}</div>
       </div>
-    </div>
+     </div>    </div>
    </div>
+   <ReviewsSection slug={slug}/>
    <section className="notes-section afsana-note-story mt-24">
     <div className="afsana-note-story-inner">
      <header className="afsana-note-story-head">
@@ -346,7 +489,6 @@ export default function ProductPage(){
    </section>
    <section className="afsana-product-rituals py-16 sm:py-20"><div className="afsana-product-rituals-head mb-10 sm:mb-12"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">Inside the bottle</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">More than<br/><em className="text-[#263e0e]">a fragrance.</em></h2></div><div className="product-banner-grid">{banners.map((src,i)=><article key={i} className="product-banner relative"><img src={src} className="w-full h-full object-cover" alt=""/><div className="absolute inset-0 bg-gradient-to-t from-[#182308]/85 to-transparent"/><div className="product-banner-copy absolute bottom-0 p-7 text-white"><div className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1} — {['The Opening','The Heart','The Memory','Your Ritual'][i]}</div><h3 className="mt-2 font-display text-3xl">{['First impressions matter.','Where the story unfolds.','What remains after you leave.','Make it unmistakably yours.'][i]}</h3><p className="mt-2 text-xs text-white/60">Spray. Layer. Wear. Remember.</p></div></article>)}</div></section>
    <section className="afsana-product-tabs py-12 sm:py-14 border-y"><div className="tabs flex flex-wrap gap-6 text-[10px] uppercase tracking-[.22em]">{[['story','The Story'],['details','Details']].map(([id,label])=><button key={id} onClick={()=>setTab(id)} aria-pressed={tab===id} className={tab===id?'tab active text-[#263e0e] border-b border-[#263e0e] pb-3':'tab text-[#5f654f] pb-3'}>{label}</button>)}</div><div className="afsana-product-tab-content mt-8 max-w-3xl text-sm leading-8 text-[#5f654f]">{tab==='story'&&'A fragrance composed to become part of your identity. Spray it close to the skin, let it warm naturally, and allow each layer to reveal itself in its own time.'}{tab==='details'&&(p.content?.fullDescription||'Premium fragrance oils, carefully composed and designed for an evolving trail.')}</div></section>
-   <ReviewsSection slug={slug}/>
    {data.related?.length>0&&<section className="afsana-complete-story">
      <div className="afsana-complete-story-head">
       <div>
