@@ -54,6 +54,11 @@ exports.handler = async (event) => {
         'Content-Security-Policy': "default-src 'none'; sandbox",
         'Accept-Ranges': 'bytes',
       };
+      if (method === 'HEAD') {
+        headers['Content-Length'] = String(bytes.length);
+        headers['X-Afsana-Media-Size'] = String(bytes.length);
+        return { statusCode: 200, isBase64Encoded: true, body: '', headers };
+      }
       // Netlify events normally lowercase header names, but the Cloudflare adapter and
       // local runtimes may preserve original casing. Resolve Range case-insensitively.
       const rangeHeader = Object.entries(event.headers || {}).find(([name]) => name.toLowerCase() === 'range')?.[1] || ''; 
