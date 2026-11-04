@@ -66,10 +66,10 @@ async function sendEmailJsOtp({ to, subject, purpose, otp }, { config, fetchImpl
     }
     // Provider text is useful for diagnosis, but never log recipients, OTPs or credentials.
     const safeMessage = String(providerMessage || 'No provider detail returned')
-      .replace(/[\\r\\n\\t]+/g, ' ')
-      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, '[email]')
-      .replace(/(?:private|public)?\\s*(?:key|token)\\s*[:=]\\s*[^ ,;]+/gi, '[credential redacted]')
-      .replace(/\\b[A-Za-z0-9_-]{40,}\\b/g, '[credential redacted]')
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g, '[email]')
+      .replace(/(?:private|public)?\s*(?:key|token)\s*[:=]\s*[^\s,;]+/gi, '[credential redacted]')
+      .replace(/\b[A-Za-z0-9_-]{32,}\b/g, '[credential redacted]')
       .slice(0, 220);
     console.error('[emailjs] send failed' + (status ? ' HTTP ' + status : '') + ': ' + safeMessage);
     throw new Error(status ? 'EmailJS could not deliver the security email (HTTP ' + status + ').' : 'EmailJS could not deliver the security email.');
