@@ -3,8 +3,10 @@ import { Heart, ArrowUpRight } from 'lucide-react';
 import { useWishlist } from './WishlistContext';
 import { Placeholder } from './ui';
 import { money, cardOf } from './format';
+import { useCmsPageCopy } from './cmsCopy';
 
 export default function ProductCard({ product }) {
+  const copy = useCmsPageCopy('product_before');
   const p = cardOf(product);
   const { has, toggle } = useWishlist();
   const liked = has(p.id);
@@ -32,14 +34,14 @@ export default function ProductCard({ product }) {
               ) : null}
             </>
           ) : <Placeholder className="w-full h-full" />}
-          {p.inStock === false && <span className="afsana-product-stock">Sold out</span>}
-          <span className="afsana-product-image-mark">AFSANA</span>
+          {p.inStock === false && <span className="afsana-product-stock">{copy.soldOutLabel}</span>}
+          <span className="afsana-product-image-mark">{copy.cardBrandLabel}</span>
         </div>
         <div className="afsana-product-info">
-          <p className="afsana-product-category">{p.gender || 'Extrait de Parfum'}</p>
+          <p className="afsana-product-category">{p.gender || copy.cardCategoryFallback}</p>
           <h3 className="afsana-product-name">{p.name}</h3>
           <div className="afsana-product-bottom">
-            <p className="afsana-product-price">{p.priceFrom ? `From ${money(p.priceFrom)}` : '—'}</p>
+            <p className="afsana-product-price">{p.priceFrom ? `${copy.priceFromPrefix} ${money(p.priceFrom)}` : copy.emptyPrice}</p>
             <span className="afsana-product-open" aria-hidden="true"><ArrowUpRight /></span>
           </div>
         </div>
@@ -48,7 +50,7 @@ export default function ProductCard({ product }) {
         type="button"
         onClick={() => toggle(p.id)}
         aria-pressed={liked}
-        aria-label={liked ? 'Remove from wishlist' : 'Add to wishlist'}
+        aria-label={liked ? copy.removeWishlist : copy.addWishlist}
         className="afsana-product-wishlist"
       >
         <Heart fill={liked ? 'currentColor' : 'none'} />
