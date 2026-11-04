@@ -190,6 +190,10 @@ async function login({ email, password, ip, userAgent, deviceId }) {
         } },
       ],
     );
+    const lockState = await User.findById(user._id).select('lockedUntil');
+    if (lockState?.lockedUntil && lockState.lockedUntil > new Date()) {
+      throw E.tooMany('Three incorrect passwords. This account is locked for 3 minutes.');
+    }
     throw generic;
   }
   if (user.status !== 'Active') throw E.forbidden('This account is not active.');
