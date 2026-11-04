@@ -94,6 +94,7 @@ exports.handler = async (event) => {
 
       const payload = bytes.subarray(start, end + 1);
       headers['Content-Length'] = String(payload.length);
+      headers['X-Afsana-Media-Size'] = String(bytes.length);
       return {
         statusCode,
         isBase64Encoded: true,
