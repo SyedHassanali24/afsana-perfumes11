@@ -54,7 +54,9 @@ exports.handler = async (event) => {
         'Content-Security-Policy': "default-src 'none'; sandbox",
         'Accept-Ranges': 'bytes',
       };
-      const rangeHeader = event.headers?.range || event.headers?.Range || '';
+      // Netlify events normally lowercase header names, but the Cloudflare adapter and
+      // local runtimes may preserve original casing. Resolve Range case-insensitively.
+      const rangeHeader = Object.entries(event.headers || {}).find(([name]) => name.toLowerCase() === 'range')?.[1] || ''; 
       let start = 0;
       let end = bytes.length - 1;
       let statusCode = 200;
