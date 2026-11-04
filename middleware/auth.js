@@ -294,4 +294,4 @@ async function authenticate(req) {
     },
   };
 }
-module.exports = { login, verifyAdminLoginOtp, authenticate, sessionCookie, clearCookie, COOKIE, sha256, secret, secure };
+module.exports = { login, verifyAdminLoginOtp, requestPasswordReset, verifyPasswordResetOtp, resetPasswordWithToken, authenticate, sessionCookie, clearCookie, COOKIE, sha256, secret, secure };
