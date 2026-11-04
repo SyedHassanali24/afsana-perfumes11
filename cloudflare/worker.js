@@ -137,6 +137,15 @@ async function handleApi(request, env, ctx) {
   const responseHeaders = new Headers(apiResponse.headers);
   responseHeaders.set("X-Afsana-API-Processor", "cloudflare-durable-object");
   responseHeaders.set("X-Afsana-Cache", canCache ? "MISS" : "BYPASS");
+  if (incoming.pathname.startsWith("/api/media/")) {
+    responseHeaders.set("X-Afsana-Range-Debug",
+      "request-range=" + (request.headers.get("Range") || "missing") +
+      ";is-ranged=" + String(isRangedMedia) +
+      ";raw-status=" + rawApiResponse.status +
+      ";raw-length=" + (rawApiResponse.headers.get("Content-Length") || "missing") +
+      ";raw-size=" + (rawApiResponse.headers.get("X-Afsana-Media-Size") || "missing") +
+      ";body=" + (rawApiResponse.body ? "yes" : "no"));
+  }
   if (isRangedMedia && apiResponse.status === 200) {
     responseHeaders.set("X-Afsana-Range-Debug",
       "range=" + (request.headers.get("Range") || "missing") +
