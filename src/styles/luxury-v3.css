@@ -332,3 +332,104 @@
 @media(max-width:1000px){.afsana-journal-layout{grid-template-columns:1fr}.afsana-journal-feature{min-height:530px}.afsana-journal-side{display:grid;grid-template-columns:1fr 1fr}.afsana-journal-note{grid-column:span 2}}
 @media(max-width:700px){.afsana-journal-pro{padding:76px 0}.afsana-journal-heading{display:block;margin-bottom:29px}.afsana-journal-heading h2{font-size:clamp(45px,13vw,64px)}.afsana-journal-all{margin-top:22px}.afsana-journal-layout{gap:12px}.afsana-journal-feature{min-height:470px;border-radius:20px}.afsana-journal-feature-meta{left:18px;right:18px;top:18px;font-size:7px}.afsana-journal-feature-copy{left:21px;right:21px;bottom:25px}.afsana-journal-feature-copy h3{font-size:39px}.afsana-journal-side{display:flex;gap:10px}.afsana-journal-side-card{grid-template-columns:38% 1fr;gap:12px;min-height:144px;padding:9px;border-radius:16px}.afsana-journal-side-image{min-height:124px}.afsana-journal-side-copy h3{font-size:21px}.afsana-journal-side-copy p{font-size:9px}.afsana-journal-note{min-height:115px;padding:18px 20px;border-radius:16px}}
 @media(prefers-reduced-motion:reduce){.afsana-journal-feature>img,.afsana-journal-side-image img{transition:none}}
+
+
+/* ── AFSANA JOURNAL / PRIVATE LIST / SCENT MATCH — editorial luxury finish ── */
+.afsana-journal-pro{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(180deg,#f8f5f0 0%,#f0ebf6 100%);padding:clamp(78px,9vw,124px) 0}
+.afsana-journal-pro:before{content:"";position:absolute;z-index:-1;left:-190px;top:18%;width:440px;height:440px;border:1px solid rgba(115,87,255,.10);border-radius:50%;box-shadow:0 0 0 34px rgba(115,87,255,.025),0 0 0 76px rgba(115,87,255,.018);pointer-events:none}
+.afsana-journal-heading{margin-bottom:clamp(30px,4vw,52px)}
+.afsana-journal-kicker{color:#8c6b48;letter-spacing:.27em}
+.afsana-journal-kicker span{background:#c8a879}
+.afsana-journal-heading h2{letter-spacing:-.065em}
+.afsana-journal-heading h2 em{color:#7357ff}
+.afsana-journal-all{border-color:rgba(16,13,36,.20);border-radius:999px;padding:15px 21px;background:rgba(255,255,255,.48);transition:transform .3s,border-color .3s,background .3s,box-shadow .3s}
+.afsana-journal-all:hover{transform:translateY(-3px);border-color:#c8a879;background:#100d24;color:#e4c99e;box-shadow:0 14px 30px rgba(16,13,36,.14)}
+.afsana-journal-side{grid-template-rows:minmax(0,1fr) minmax(0,1fr) auto}
+.afsana-journal-side-card{border-radius:20px;border-color:rgba(16,13,36,.08);box-shadow:0 12px 35px rgba(16,13,36,.045)}
+.afsana-journal-side-card:hover{box-shadow:0 22px 48px rgba(16,13,36,.13)}
+.afsana-journal-note{position:relative;isolation:isolate;overflow:hidden;flex:unset;min-height:190px;padding:28px 30px;border:1px solid rgba(224,195,151,.44);border-radius:23px;background:radial-gradient(circle at 90% 12%,rgba(115,87,255,.28),transparent 37%),linear-gradient(135deg,#100d24 0%,#211735 62%,#2c2042 100%);box-shadow:0 22px 55px rgba(16,13,36,.16),inset 0 1px rgba(255,255,255,.08);color:#fff}
+.afsana-journal-note:before{content:"A";position:absolute;z-index:-1;right:11px;bottom:-.42em;color:rgba(255,255,255,.045);font:500 190px/.9 'Playfair Display',Georgia,serif;letter-spacing:-.12em;pointer-events:none}
+.afsana-journal-note:after{content:"";position:absolute;z-index:-1;right:28px;top:25px;width:70px;height:70px;border:1px solid rgba(224,195,151,.25);border-radius:50%;box-shadow:0 0 0 12px rgba(224,195,151,.035),0 0 0 24px rgba(224,195,151,.025);pointer-events:none}
+.afsana-journal-note>span{font:600 8px ui-monospace,monospace;letter-spacing:.26em;color:#e2c393}
+.afsana-journal-note p{position:relative;max-width:430px;margin:17px 0 21px;color:#fff;font:500 clamp(23px,2.1vw,31px)/1.13 'Playfair Display',Georgia,serif;letter-spacing:-.025em}
+.afsana-journal-note a{position:relative;align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding-bottom:7px;border-bottom:1px solid rgba(224,195,151,.58);color:#e4c99e;font:600 8px ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;transition:gap .25s,color .25s}
+.afsana-journal-note a:hover{gap:16px;color:#fff}
+
+/* Private list — an editorial invitation paired with a focused signup card. */
+.afsana-ref-newsletter{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 8% 50%,rgba(115,87,255,.23),transparent 34%),radial-gradient(ellipse at 92% 55%,rgba(200,168,121,.14),transparent 29%),linear-gradient(112deg,#0b0818 0%,#17112e 54%,#211735 100%);color:#fff;padding:clamp(62px,8vw,108px) 0}
+.afsana-ref-newsletter:before{content:"";position:absolute;z-index:-1;inset:0;opacity:.2;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:76px 76px;mask-image:linear-gradient(90deg,transparent,#000 30%,#000 80%,transparent);pointer-events:none}
+.afsana-ref-newsletter:after{content:"PRIVÉ";position:absolute;z-index:-1;right:1%;bottom:-.45em;color:rgba(255,255,255,.025);font:500 clamp(140px,24vw,330px)/.8 'Playfair Display',Georgia,serif;letter-spacing:-.09em;pointer-events:none}
+.afsana-ref-newsletter-shell{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);align-items:center;gap:clamp(36px,6vw,86px);max-width:1320px}
+.afsana-ref-newsletter-copy{max-width:570px}
+.afsana-ref-newsletter-kicker{display:flex;align-items:center;gap:13px;color:#e2c393;font:600 9px ui-monospace,monospace;letter-spacing:.29em;text-transform:uppercase}
+.afsana-ref-newsletter-kicker:before{content:"";width:34px;height:1px;background:linear-gradient(90deg,#e2c393,rgba(226,195,147,.18))}
+.afsana-ref-newsletter-copy h2{margin:23px 0 19px;color:#fff;font:500 clamp(48px,6vw,82px)/.92 'Playfair Display',Georgia,serif;letter-spacing:-.065em;text-wrap:balance}
+.afsana-ref-newsletter-copy h2 em{color:#e2c393}
+.afsana-ref-newsletter-description{max-width:500px;color:#c8c0d3;font-size:13px;line-height:2;letter-spacing:.01em}
+.afsana-ref-newsletter-signoff{display:flex;align-items:center;gap:12px;margin-top:32px;color:rgba(255,255,255,.4);font:600 8px ui-monospace,monospace;letter-spacing:.17em}
+.afsana-ref-newsletter-signoff span:first-child{color:#e2c393}
+.afsana-ref-newsletter-signoff i{width:25px;height:1px;background:rgba(226,195,147,.48)}
+.afsana-ref-newsletter-form{min-width:0}
+.afsana-ref-newsletter-form>section{padding:0!important;background:transparent!important;overflow:visible!important}
+.afsana-ref-newsletter-form>section>.container-xl{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+.afsana-ref-newsletter-form>section>.container-xl>div:first-child{display:none!important}
+.afsana-ref-newsletter-form>section>.container-xl>div:last-child{width:100%;min-width:0}
+.afsana-ref-newsletter-form>section>.container-xl>div:last-child>div.relative{position:relative}
+.afsana-ref-newsletter-form>section>.container-xl>div:last-child>div.relative>div.relative{border:1px solid rgba(224,195,151,.32)!important;border-radius:28px!important;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.025))!important;box-shadow:0 30px 85px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.09)!important;backdrop-filter:blur(18px)}
+.afsana-ref-newsletter-form input{border-color:rgba(255,255,255,.17)!important;background:rgba(8,6,18,.38)!important;border-radius:14px!important}
+.afsana-ref-newsletter-form input:focus{border-color:rgba(224,195,151,.8)!important}
+.afsana-ref-newsletter-form form button[type="submit"]{border:1px solid rgba(224,195,151,.65)!important;border-radius:14px!important;background:linear-gradient(135deg,#e5cda7,#c49c6d)!important;color:#171126!important;box-shadow:0 10px 28px rgba(0,0,0,.2);transition:transform .25s,filter .25s}
+.afsana-ref-newsletter-form form button[type="submit"]:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.afsana-ref-newsletter-form [role="status"]{border-color:rgba(224,195,151,.38)!important;background:rgba(224,195,151,.08)!important}
+.afsana-ref-newsletter-form [role="status"]>div{background:#e2c393!important;color:#171126!important}
+.afsana-ref-newsletter-form [role="status"] h4{color:#fff}
+.afsana-ref-newsletter-form [role="status"] button{color:#e2c393!important}
+
+/* Scent finder result — a distinct, celebratory final reveal. */
+.afsana-ref-finder-result{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 12% 60%,rgba(115,87,255,.22),transparent 35%),radial-gradient(ellipse at 90% 8%,rgba(224,195,151,.12),transparent 28%),linear-gradient(112deg,#0c091a 0%,#17112e 54%,#241a37 100%)!important;color:#fff!important;padding:clamp(58px,7vw,92px) 0}
+.afsana-ref-finder-result:after{content:"THE REVEAL";position:absolute;z-index:-1;right:2%;bottom:-.32em;color:rgba(255,255,255,.025);font:500 clamp(100px,17vw,230px)/.8 'Playfair Display',Georgia,serif;letter-spacing:-.08em;white-space:nowrap;pointer-events:none}
+.afsana-ref-finder-result .afsana-ref-finder-grid{position:relative;z-index:1;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(30px,6vw,82px)}
+.afsana-ref-finder-result .afsana-ref-eyebrow{color:#e2c393}
+.afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child h2{max-width:570px;color:#fff;font-size:clamp(44px,5.6vw,76px);line-height:.96;letter-spacing:-.06em}
+.afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child h2 em{color:#e2c393}
+.afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child>p:not(.afsana-ref-eyebrow){max-width:470px;color:#c8c0d3;font-size:13px;line-height:1.95}
+.afsana-ref-finder-result .afsana-ref-finder-box{width:100%;min-height:0;padding:clamp(23px,3vw,38px);border:1px solid rgba(224,195,151,.28);border-radius:29px;background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.025));box-shadow:0 30px 85px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.08);backdrop-filter:blur(18px)}
+.afsana-ref-finder-result .afsana-ref-finder-progress{background:rgba(255,255,255,.12)}
+.afsana-ref-finder-result .afsana-ref-finder-progress span{background:linear-gradient(90deg,#a995ec,#e2c393)}
+.afsana-ref-finder-result .afsana-ref-finder-step{color:#e2c393}
+.afsana-ref-finder-result .afsana-ref-finder-box h3{font-size:clamp(30px,3.8vw,48px);line-height:1.02;letter-spacing:-.045em}
+.afsana-ref-finder-result .afsana-ref-match{position:relative;overflow:hidden;margin-top:25px;padding:25px 28px;border:1px solid rgba(224,195,151,.34);border-radius:22px;background:radial-gradient(circle at 100% 0,rgba(115,87,255,.18),transparent 42%),linear-gradient(135deg,rgba(8,6,18,.72),rgba(255,255,255,.045));box-shadow:inset 0 1px rgba(255,255,255,.06)}
+.afsana-ref-finder-result .afsana-ref-match:after{content:"✳";position:absolute;right:21px;top:6px;color:rgba(224,195,151,.16);font:400 62px 'Playfair Display',Georgia,serif;pointer-events:none}
+.afsana-ref-finder-result .afsana-ref-match>p:first-child{position:relative;z-index:1;color:#e2c393;font-size:8px;letter-spacing:.19em}
+.afsana-ref-finder-result .afsana-ref-match h4{position:relative;z-index:1;margin:11px 0 7px;color:#fff;font:500 clamp(36px,4.2vw,52px)/.98 'Playfair Display',Georgia,serif;letter-spacing:-.045em}
+.afsana-ref-finder-result .afsana-ref-match span{position:relative;z-index:1;display:inline-flex;padding:7px 11px;border:1px solid rgba(184,167,246,.28);border-radius:999px;background:rgba(115,87,255,.12);color:#c9bdf4;font-size:8px;letter-spacing:.17em}
+.afsana-ref-finder-result .afsana-ref-match p:not(:first-child){position:relative;z-index:1;max-width:520px;margin:16px 0;color:#c8c0d3;font-size:12px;line-height:1.8}
+.afsana-ref-finder-result .afsana-ref-match strong{position:relative;z-index:1;display:inline-flex;margin-top:3px;color:#e2c393;font:600 17px ui-monospace,monospace;letter-spacing:.025em}
+.afsana-ref-finder-result .afsana-ref-finder-footer{justify-content:flex-start;gap:14px;margin-top:25px}
+.afsana-ref-finder-result .afsana-ref-finder-footer button{min-height:46px;padding:13px 20px;border-color:rgba(255,255,255,.2);color:#e6e0ee}
+.afsana-ref-finder-result .afsana-ref-finder-footer button:last-child{border-color:#d5b487;background:linear-gradient(135deg,#e5cda7,#c49c6d);color:#171126}
+.afsana-ref-finder-result .afsana-ref-finder-footer button:first-child:hover{border-color:rgba(224,195,151,.7);color:#fff}
+@media(max-width:900px){
+ .afsana-ref-newsletter-shell{grid-template-columns:1fr;gap:35px}
+ .afsana-ref-newsletter-copy{max-width:720px}
+ .afsana-ref-newsletter-form{max-width:760px;width:100%}
+ .afsana-ref-finder-result .afsana-ref-finder-grid{grid-template-columns:1fr}
+ .afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child h2{font-size:clamp(43px,8vw,64px)}
+}
+@media(max-width:700px){
+ .afsana-journal-side{grid-template-rows:auto}
+ .afsana-journal-note{min-height:176px;padding:23px 22px;border-radius:19px}
+ .afsana-journal-note p{max-width:310px;font-size:25px}
+ .afsana-journal-note:before{right:4px;font-size:150px}
+ .afsana-ref-newsletter{padding:54px 0}
+ .afsana-ref-newsletter-shell{gap:27px}
+ .afsana-ref-newsletter-copy h2{font-size:clamp(46px,13vw,62px)}
+ .afsana-ref-newsletter-description{font-size:12px}
+ .afsana-ref-newsletter-form>section>.container-xl>div:last-child>div.relative>div.relative{border-radius:21px!important;padding:22px!important}
+ .afsana-ref-newsletter-form input{min-height:52px}
+ .afsana-ref-finder-result{padding:53px 0 58px}
+ .afsana-ref-finder-result .afsana-ref-finder-box{padding:21px}
+ .afsana-ref-finder-result .afsana-ref-match{padding:21px 19px}
+ .afsana-ref-finder-result .afsana-ref-finder-footer{flex-wrap:wrap}
+ .afsana-ref-finder-result .afsana-ref-finder-footer button{flex:1}
+}
