@@ -5,9 +5,11 @@ import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
 import { useCmsPageCopy } from "../shop/cmsCopy";
+import useTitle from "../shop/useTitle";
 
 export default function ResetPasswordPage() {
   const copy = useCmsPageCopy("customer_reset_password");
+  useTitle(copy.browserTitle);
   const token = useSearchParams()[0].get("token") || "";
   const [pw, setPw] = useState("");
   const [done, setDone] = useState(false);
