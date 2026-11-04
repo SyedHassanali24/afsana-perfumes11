@@ -22,9 +22,9 @@ function newCheckoutKey() {
 }
 
 export default function CheckoutPage() {
-  useTitle('Checkout');
   const shop = useShopSettings();
   const copy = useCmsPageCopy('checkout_before');
+  useTitle(copy.browserTitle);
   const t = (key) => copy[key];
   const navigate = useNavigate();
   const { items, couponCode, clear } = useCart();
