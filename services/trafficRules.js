@@ -24,7 +24,7 @@ function safeHost(value) {
     return url.hostname.toLowerCase().replace(/^www\./, '').slice(0, 160);
   } catch { return ''; }
 }
-function sourceFromName(value, medium) {
+function sourceFromName(value, medium, campaign = false) {
   const s = cleanText(value, 100).toLowerCase().replace(/[^a-z0-9._ -]/g, '').replace(/\s+/g, '');
   if (!s) return '';
   if (/instagram|insta|ig$/.test(s)) return 'instagram';
@@ -36,10 +36,10 @@ function sourceFromName(value, medium) {
   if (/email|newsletter|mailchimp|klaviyo/.test(s) || /email/.test(String(medium || '').toLowerCase())) return 'email';
   if (/linkedin|pinterest|snapchat|reddit|threads|twitter|(^|\.)x\.com/.test(s)) return 'other_social';
   if (/social|paid_social/.test(String(medium || '').toLowerCase())) return 'other_social';
-  return 'other';
+  return campaign && s ? 'other' : '';
 }
 function classifySource(utmSource, utmMedium, referrerHost) {
-  const fromCampaign = sourceFromName(utmSource, utmMedium);
+  const fromCampaign = sourceFromName(utmSource, utmMedium, true);
   if (fromCampaign) return fromCampaign;
   const host = safeHost(referrerHost);
   if (!host || host === 'localhost' || host === '127.0.0.1' || host === 'afsana-perfumes11.eastwala12.workers.dev') return 'direct';
