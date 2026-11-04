@@ -26,9 +26,9 @@ async function sendEmailJsOtp({ to, subject, purpose, otp }, { config, fetchImpl
   if (!config) throw new Error('EmailJS configuration is missing.');
   if (typeof fetchImpl !== 'function') throw new Error('EmailJS network client is unavailable.');
   const recipient = String(to || '').trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient)) throw new Error('EmailJS recipient address is invalid.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) throw new Error('EmailJS recipient address is invalid.');
   const code = String(otp || '');
-  if (!/^\\d{6}$/.test(code)) throw new Error('EmailJS OTP must be a six-digit code.');
+  if (!/^\d{6}$/.test(code)) throw new Error('EmailJS OTP must be a six-digit code.');
   const expiryMinutes = purpose === 'admin login verification' ? 5 : 10;
   const response = await fetchImpl(EMAILJS_SEND_URL, {
     method: 'POST',
