@@ -64,7 +64,7 @@ function Finder({ section = {} }){
   ];
   const qs=defaults.map((base,index)=>{
     const n=index+1, raw=String(c['step'+n+'Options']||'').trim();
-    const opts=raw?raw.split('\\n').map(line=>{const [title='',description='',slugs='']=line.split('|');return [title.trim(),description.trim(),slugs.split(',').map(x=>x.trim()).filter(Boolean)]}).filter(x=>x[0]):base.opts.map(x=>[...x,[]]);
+    const opts=raw?raw.split(/\r?\n/).map(line=>{const [title='',description='',slugs='']=line.split('|');return [title.trim(),description.trim(),slugs.split(',').map(x=>x.trim()).filter(Boolean)]}).filter(x=>x[0]):base.opts.map(x=>[...x,[]]);
     return {q:c['step'+n+'Title']||base.q,sub:c['step'+n+'Subtitle']||base.sub,opts:opts.length?opts:base.opts.map(x=>[...x,[]])};
   });
   const [step,setStep]=useState(0),[answers,setAnswers]=useState([]);
