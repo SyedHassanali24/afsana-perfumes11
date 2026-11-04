@@ -10,7 +10,7 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 
 export function Stars({ value, size = 'text-base' }) {
   const v = Math.round(Number(value) || 0);
-  return <span className={`${size} text-[#d4af37]`} role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#5f654f]/40">{'★'.repeat(5 - v)}</span></span>;
+  return <span className={`${size} text-[#d4af37]`} role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#716b63]/40">{'★'.repeat(5 - v)}</span></span>;
 }
 const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
@@ -41,20 +41,20 @@ export default function ReviewsSection({ slug }) {
   };
 
   return (
-    <section className="afsana-reviews mt-16 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-7 shadow-[0_18px_50px_rgba(24,35,8,.06)]" aria-labelledby="reviews-title">
+    <section className="afsana-reviews mt-12 rounded-2xl border border-[#e8e3da] bg-white p-5 sm:p-8 shadow-[0_14px_42px_rgba(24,24,24,.045)]" aria-labelledby="reviews-title">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
-          <h2 id="reviews-title" className="font-display text-2xl">Customer reviews</h2>
+          <h2 id="reviews-title" className="font-display text-2xl text-[#222]">Customer reviews</h2>
           {s && s.count > 0 && <p className="text-sm text-[#5f654f] mt-1 flex items-center gap-2"><Stars value={s.avg} /> {s.avg} out of 5 · {s.count} {s.count === 1 ? 'review' : 'reviews'}</p>}
         </div>
         {status === 'authed' && canReview && !form && <Button variant="secondary" onClick={open}>{my ? 'Edit your review' : 'Write a review'}</Button>}
       </div>
 
       {notice && <p role="status" className="text-sm text-[#3d6b3d] mb-4">{notice}</p>}
-      {status === 'guest' && <p className="text-sm text-[#5f654f] mb-4"><Link to="/login" className="underline text-[#182308]">Sign in</Link> to review a perfume you have received.</p>}
+      {status === 'guest' && <p className="text-sm text-[#5f654f] mb-4"><Link to="/login" className="underline text-[#252525]">Sign in</Link> to review a perfume you have received.</p>}
       {status === 'authed' && mine.data && !canReview && !my && <p className="text-sm text-[#5f654f] mb-4">You can review this perfume after your order is delivered.</p>}
       {my && !form && (
-        <div className="rounded-xl border border-[#263e0e]/10 bg-[#faf8f4]-raised p-4 mb-6 text-sm space-y-1">
+        <div className="rounded-xl border border-[#eee9e1] bg-[#faf8f4]-raised p-4 mb-6 text-sm space-y-1">
           <p className="text-[#182308]">Your review <span className="text-[#5f654f]">({my.status === 'Pending' ? 'waiting for approval' : my.status === 'Rejected' ? 'not published' : 'published'})</span></p>
           <Stars value={my.rating} />{my.title && <p className="text-[#182308]">{my.title}</p>}{my.text && <p className="text-[#5f654f] whitespace-pre-wrap">{my.text}</p>}
           <button type="button" onClick={remove} className="text-xs text-[#9b3f3f] underline">Delete my review</button>
@@ -90,28 +90,7 @@ export default function ReviewsSection({ slug }) {
             ))}
           </ul>
         )}
-      <div className="afsana-review-preview" aria-label="Illustrative sample review cards">
-        <div className="afsana-review-preview-head">
-          <div><p className="afsana-review-preview-kicker">THE AFSANA EXPERIENCE</p><h3>Review examples</h3></div>
-          <span>4 SAMPLE CARDS</span>
-        </div>
-        <p className="afsana-review-preview-note">Illustrative sample copy only — these are not customer submissions or verified buyer reviews. Replace them with approved customer feedback.</p>
-        <div className="afsana-review-preview-grid">
-          {[
-            {group:'Men · Sample',language:'ENGLISH',text:'A clean opening, a warm dry-down, and a scent that feels confident without trying too hard.'},
-            {group:'Men · Sample',language:'ROMAN URDU',text:'Khushboo bohat achi hai, aur iska dry-down bhi kaafi zabardast hai. Rozana use ke liye perfect.'},
-            {group:'Women · Sample',language:'ENGLISH',text:'Beautifully balanced. It feels elegant from the first spray and stays soft through the day.'},
-            {group:'Women · Sample',language:'ENGLISH',text:'Polished, memorable and lovely on the skin. The fragrance settles into a really beautiful trail.'}
-          ].map((review,index)=>(
-            <article className="afsana-review-preview-card" key={index}>
-              <div className="afsana-review-preview-meta"><span>{review.group}</span><small>{review.language}</small></div>
-              <div className="afsana-review-preview-stars" aria-label="Sample 5 out of 5 stars">★★★★★</div>
-              <p>{review.text}</p>
-              <span className="afsana-review-preview-label">SAMPLE · NOT VERIFIED</span>
-            </article>
-          ))}
-        </div>
-      </div>
+
 
       {pg && pg.pages > 1 && (
         <div className="flex items-center gap-3 mt-6 text-sm">
