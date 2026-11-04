@@ -10,9 +10,9 @@ import { useCmsPageCopy } from '../cmsCopy';
 const KEYS = ['q', 'category', 'collection', 'brand', 'gender', 'sort', 'minPrice', 'maxPrice', 'page'];
 
 export default function ShopPage() {
-  useTitle('Shop');
   const [sp, setSp] = useSearchParams();
   const copy = useCmsPageCopy('collection_before');
+  useTitle(copy.browserTitle);
   const t = (key) => copy[key];
   const sorts = [['newest',t('sortNewest')],['price_asc',t('sortPriceAsc')],['price_desc',t('sortPriceDesc')],['popular',t('sortFeatured')]];
   const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
