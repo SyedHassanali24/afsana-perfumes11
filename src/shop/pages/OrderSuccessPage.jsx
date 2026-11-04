@@ -10,12 +10,12 @@ import BankDetails from '../BankDetails';
 import { useCmsPageCopy } from '../cmsCopy';
 
 export default function OrderSuccessPage() {
-  useTitle('Order placed');
   const { orderNumber } = useParams();
   const order = useLocation().state?.order; // only present right after checkout; a refresh just shows the number
   const { status } = useCustomer();
   const shop = useShopSettings();
   const copy = useCmsPageCopy('order_success');
+  useTitle(copy.browserTitle);
   const t = (key) => copy[key];
   return (
     <Container className="max-w-xl">
