@@ -12,6 +12,7 @@ import { Totals } from './CartPage';
 import { money, PAYMENT_LABEL, BANK_NOTE } from '../format';
 import useTitle from '../useTitle';
 import useShopSettings from '../useShopSettings';
+import { useCmsPageCopy } from '../cmsCopy';
 
 const blank = { name: '', phone: '', email: '', line1: '', line2: '', city: '', postalCode: '' };
 
@@ -23,6 +24,8 @@ function newCheckoutKey() {
 export default function CheckoutPage() {
   useTitle('Checkout');
   const shop = useShopSettings();
+  const copy = useCmsPageCopy('checkout_before');
+  const t = (key) => copy[key];
   const navigate = useNavigate();
   const { items, couponCode, clear } = useCart();
   const { status, customer } = useCustomer();
@@ -70,57 +73,57 @@ export default function CheckoutPage() {
       const fe = {}; (err.details || []).forEach((d) => { fe[d.path] = d.message; });
       setErrors(fe);
       if (err.code === 'OUT_OF_STOCK' || err.code === 'ITEM_UNAVAILABLE') { setFormError(`${err.message} Please review your cart.`); reload(); }
-      else setFormError(err.code === 'VALIDATION_ERROR' ? 'Please fix the highlighted fields.' : err.status === 429 ? 'Too many attempts. Please wait a few minutes.' : err.message);
+      else setFormError(err.code === 'VALIDATION_ERROR' ? (copy.validationError || 'Please fix the highlighted fields.') : err.status === 429 ? (copy.rateLimitError || 'Too many attempts. Please wait a few minutes.') : err.message);
     } finally { setBusy(false); }
   };
 
-  if (items.length === 0) return <Container><div className="py-16 text-center space-y-4"><p className="afsana-checkout-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div></Container>;
+  if (items.length === 0) return <Container><div className="py-16 text-center space-y-4"><p className="afsana-checkout-muted">{t('emptyCart')}</p><Link to="/shop"><Button>{t('browsePerfumes')}</Button></Link></div></Container>;
 
   return (
     <div className="afsana-checkout">
     <Container>
-      <PageTitle title="Checkout" subtitle="Securely complete your fragrance order." />
+      <PageTitle title={t('title')} subtitle={t('subtitle')} />
       <StateBox loading={loading && !q} error={error} onRetry={reload}>
-        {q && !q.canCheckout && <div className="rounded-xl border border-[#748e40]/20 bg-[#b4bf41]/10 p-4 text-sm mb-6" role="alert">Some items in your cart need attention. <Link to="/cart" className="underline">Review your cart</Link></div>}
+        {q && !q.canCheckout && <div className="rounded-xl border border-[#748e40]/20 bg-[#b4bf41]/10 p-4 text-sm mb-6" role="alert">{t('fixItems')} <Link to="/cart" className="underline">{t('reviewCart')}</Link></div>}
         {q && (
           <form onSubmit={submit} className="afsana-checkout-grid grid gap-6 sm:gap-8 lg:grid-cols-[1fr_360px]" noValidate>
             <div className="afsana-checkout-main space-y-6">
-              {status !== 'authed' && <p className="afsana-checkout-signin rounded-xl px-4 py-3 text-sm">Have an account? <Link to="/login" state={{ from: '/checkout' }} className="underline text-[#263e0e]">Sign in</Link> to use your saved addresses and see this order in your account.</p>}
+              {status !== 'authed' && <p className="afsana-checkout-signin rounded-xl px-4 py-3 text-sm">{t('haveAccount')} <Link to="/login" state={{ from: '/checkout' }} className="underline text-[#263e0e]">{t('signIn')}</Link> {t('signInInfo')}</p>}
               <section className="afsana-checkout-section space-y-4 rounded-2xl border p-5 sm:p-6">
-                <h2 className="afsana-checkout-heading">Contact</h2>
-                <Field label="Full name" error={errors['customer.name']}><Input required autoComplete="name" value={f.name} onChange={set('name')} error={errors['customer.name']} /></Field>
+                <h2 className="afsana-checkout-heading">{t('contactHeading')}</h2>
+                <Field label={t('fullName')} error={errors['customer.name']}><Input required autoComplete="name" value={f.name} onChange={set('name')} error={errors['customer.name']} /></Field>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Phone" error={errors['customer.phone']} hint="We call or message this number about your order."><Input required inputMode="tel" autoComplete="tel" value={f.phone} onChange={set('phone')} placeholder="0300 1234567" error={errors['customer.phone']} /></Field>
-                  <Field label="Email" error={errors['customer.email']}><Input required type="email" autoComplete="email" value={f.email} onChange={set('email')} placeholder="you@example.com" error={errors['customer.email']} /></Field>
+                  <Field label={t('phone')} error={errors['customer.phone']} hint={t('phoneHint')}><Input required inputMode="tel" autoComplete="tel" value={f.phone} onChange={set('phone')} placeholder="0300 1234567" error={errors['customer.phone']} /></Field>
+                  <Field label={t('email')} error={errors['customer.email']}><Input required type="email" autoComplete="email" value={f.email} onChange={set('email')} placeholder="you@example.com" error={errors['customer.email']} /></Field>
                 </div>
               </section>
               <section className="space-y-4 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
-                <h2 className="font-display text-xl">Delivery address</h2>
-                {(saved.data?.addresses || []).length > 0 && <Field label="Use a saved address"><Select defaultValue={(saved.data.addresses.find((a) => a.isDefault) || {}).id} onChange={(e) => { const a = saved.data.addresses.find((x) => x.id === e.target.value); if (a) fill(a); }}>{saved.data.addresses.map((a) => <option key={a.id} value={a.id}>{a.type} — {a.line1}, {a.city}</option>)}</Select></Field>}
-                <Field label="Address" error={errors['shippingAddress.line1']}><Input required autoComplete="address-line1" value={f.line1} onChange={set('line1')} placeholder="House, street, area" error={errors['shippingAddress.line1']} /></Field>
-                <Field label="Apartment, landmark (optional)"><Input autoComplete="address-line2" value={f.line2} onChange={set('line2')} /></Field>
+                <h2 className="font-display text-xl">{t('deliveryHeading')}</h2>
+                {(saved.data?.addresses || []).length > 0 && <Field label={t('savedAddress')}><Select defaultValue={(saved.data.addresses.find((a) => a.isDefault) || {}).id} onChange={(e) => { const a = saved.data.addresses.find((x) => x.id === e.target.value); if (a) fill(a); }}>{saved.data.addresses.map((a) => <option key={a.id} value={a.id}>{a.type} — {a.line1}, {a.city}</option>)}</Select></Field>}
+                <Field label={t('address')} error={errors['shippingAddress.line1']}><Input required autoComplete="address-line1" value={f.line1} onChange={set('line1')} placeholder={t('addressPlaceholder')} error={errors['shippingAddress.line1']} /></Field>
+                <Field label={t('apartment')}><Input autoComplete="address-line2" value={f.line2} onChange={set('line2')} /></Field>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="City" error={errors['shippingAddress.city']}><Input required autoComplete="address-level2" value={f.city} onChange={set('city')} error={errors['shippingAddress.city']} /></Field>
-                  <Field label="Postal code (optional)"><Input autoComplete="postal-code" value={f.postalCode} onChange={set('postalCode')} /></Field>
+                  <Field label={t('city')} error={errors['shippingAddress.city']}><Input required autoComplete="address-level2" value={f.city} onChange={set('city')} error={errors['shippingAddress.city']} /></Field>
+                  <Field label={t('postalCode')}><Input autoComplete="postal-code" value={f.postalCode} onChange={set('postalCode')} /></Field>
                 </div>
               </section>
               <section className="afsana-checkout-section afsana-checkout-payment space-y-3 rounded-2xl border p-5 sm:p-6">
-                <h2 className="font-display text-xl">Payment</h2>
+                <h2 className="font-display text-xl">{t('paymentHeading')}</h2>
                 {Object.entries(PAYMENT_LABEL).map(([k, label]) => (
                   <label key={k} className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition ${pay === k ? 'border-[#263e0e] bg-[#263e0e]/5' : 'border-[#263e0e]/10 hover:border-[#263e0e]/20'}`}>
                     <input type="radio" name="pay" value={k} checked={pay === k} onChange={() => setPay(k)} className="mt-1 accent-[#263e0e]" />
-                    <span><span className="block text-sm font-medium">{label}</span><span className="afsana-checkout-payment-copy block mt-1">{k === 'COD' ? 'Pay in cash when your order arrives.' : (shop?.bank ? 'We will show our bank account right after you place the order.' : BANK_NOTE)}</span></span>
+                    <span><span className="block text-sm font-medium">{label}</span><span className="afsana-checkout-payment-copy block mt-1">{k === 'COD' ? t('codNote') : (shop?.bank ? t('bankTransferNote') : BANK_NOTE)}</span></span>
                   </label>
                 ))}
               </section>
             </div>
             <aside className="afsana-checkout-summary rounded-2xl border p-5 sm:p-6 h-fit space-y-5 lg:sticky lg:top-24">
-              <h2 className="font-display text-xl">Order summary</h2>
+              <h2 className="font-display text-xl">{t('orderSummary')}</h2>
               <ul className="space-y-2 text-sm">{q.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span className="afsana-checkout-muted">{l.name} {l.label} × {l.quantity}</span><span className="tabular-nums">{l.status === 'unavailable' ? '—' : money(l.lineTotal)}</span></li>)}</ul>
-              <Totals q={q} />
+              <Totals q={q} copy={copy} />
               {formError && <p role="alert" className="afsana-checkout-error text-sm">{formError}</p>}
-              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || !q.canCheckout}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
-              <p className="afsana-checkout-note text-xs">Final price and stock are confirmed by our server when you place the order.</p>
+              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || !q.canCheckout}>{busy ? t('placingOrder') : `${t('placeOrder')} · ${money(q.total)}`}</Button>
+              <p className="afsana-checkout-note text-xs">{t('finalPriceNote')}</p>
             </aside>
           </form>
         )}
