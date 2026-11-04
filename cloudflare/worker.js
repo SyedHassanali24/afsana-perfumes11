@@ -133,6 +133,14 @@ async function handleApi(request, env, ctx) {
   const responseHeaders = new Headers(apiResponse.headers);
   responseHeaders.set("X-Afsana-API-Processor", "cloudflare-durable-object");
   responseHeaders.set("X-Afsana-Cache", canCache ? "MISS" : "BYPASS");
+  if (isRangedMedia && apiResponse.status === 200) {
+    responseHeaders.set("X-Afsana-Range-Debug",
+      "range=" + (request.headers.get("Range") || "missing") +
+      ";raw-length=" + (rawApiResponse.headers.get("Content-Length") || "missing") +
+      ";raw-size=" + (rawApiResponse.headers.get("X-Afsana-Media-Size") || "missing") +
+      ";body=" + (rawApiResponse.body ? "yes" : "no") +
+      ";" + rangeHeadDiagnostics);
+  }
 
   const hasCookie = responseHeaders.has("set-cookie");
   if (canCache && apiResponse.ok && !hasCookie) {
