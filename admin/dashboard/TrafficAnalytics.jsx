@@ -3,7 +3,7 @@ import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
-import { BarChart3, Copy, ExternalLink, Link2, RefreshCw, Users, Eye, Globe2 } from "lucide-react";
+import { Copy, Link2, RefreshCw, Users, Eye, Globe2 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import useApi from "../../src/hooks/useApi";
@@ -185,7 +185,7 @@ export default function TrafficAnalytics() {
             <div className="mt-3 break-all rounded-xl border border-[#1e1b4b]/10 bg-[#f8f9ff] p-3 font-mono text-[11px] leading-5 text-[#514b75]">{campaignUrl}</div>
             {copyState && <p role="status" className="mt-2 text-xs text-[#166534]">{copyState}</p>}
           </Card>
-          <p className="text-[10px] leading-5 text-[#64748b]">Visits are anonymous sessions within a page visit sequence, not verified unique people. Some social apps hide referrer information; use the trackable links above for the most reliable attribution. Traffic collection starts with this release, so historical visits are not reconstructed.</p>
+          <p className="text-[10px] leading-5 text-[#64748b]">Visits are anonymous sessions within a page visit sequence, not verified unique people. Some social apps hide referrer information; those visits appear as Direct / unknown unless you use the trackable links above. Traffic collection starts with this release, so historical visits are not reconstructed.</p>
         </>
       ) : null}
     </section>
