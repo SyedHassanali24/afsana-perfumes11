@@ -36,8 +36,8 @@ export function Totals({ q, copy = {} }) {
 }
 
 export default function CartPage() {
-  useTitle('Your cart');
   const copy = useCmsPageCopy('cart_before');
+  useTitle(copy.browserTitle);
   const { items, couponCode, setQty, remove, setCoupon } = useCart();
   const { data: q, loading, error, reload } = useQuote(items, couponCode);
   const [code, setCode] = useState(couponCode);
