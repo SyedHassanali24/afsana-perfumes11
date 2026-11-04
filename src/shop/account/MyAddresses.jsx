@@ -33,7 +33,7 @@ function AddressForm({ initial, onSaved, onCancel, copy }) {
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label={copy.city} error={errors.city}><Input required value={f.city} onChange={set('city')} error={errors.city} /></Field>
         <Field label={copy.postalCode}><Input value={f.postalCode || ''} onChange={set('postalCode')} /></Field>
-        <Field label={copy.addressType}><Select value={f.type} onChange={set('type')}><option>Home</option><option>Office</option><option>Other</option></Select></Field>
+        <Field label={copy.addressType}><Select value={f.type} onChange={set('type')}><option>{copy.addressHomeOption}</option><option>{copy.addressOfficeOption}</option><option>{copy.addressOtherOption}</option></Select></Field>
       </div>
       <Check label={copy.defaultAddress} checked={f.isDefault} onChange={(v) => setF({ ...f, isDefault: v })} />
       {error && <p role="alert" className="text-sm text-[#9b3f3f]">{error}</p>}
