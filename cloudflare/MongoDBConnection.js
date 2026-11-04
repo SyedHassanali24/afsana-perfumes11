@@ -211,6 +211,7 @@ export class MongoDBConnection extends DurableObject {
       "Content-Type": meta.contentType,
       "Content-Disposition": "inline; filename*=UTF-8''" + encodeURIComponent(meta.filename || "afsana-video"),
       "Content-Length": String(meta.size),
+      "X-Afsana-Media-Size": String(meta.size),
       "Accept-Ranges": "bytes",
       "Cache-Control": "public, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff"
