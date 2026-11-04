@@ -25,6 +25,11 @@ on:
 permissions:
   contents: read
 
+# Avoid overlapping production deployments; only the newest source revision should go live.
+concurrency:
+  group: afsana-cloudflare-production
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
