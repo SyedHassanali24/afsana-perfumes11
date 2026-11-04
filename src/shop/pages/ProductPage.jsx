@@ -10,6 +10,7 @@ import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
 import useTitle from '../useTitle';
+import { useCmsPageCopy } from '../cmsCopy';
 
 const notes=(p)=>({top:p?.notes?.top||['Citrus','Saffron'],heart:p?.notes?.heart||['Rose','Jasmine','Spice'],base:p?.notes?.base||['Oud','Amber','Musk','Woods']});
 const mediaUrl = (value) => {
@@ -58,6 +59,8 @@ function BottlePreview({name,style}) {
 }
 
 export default function ProductPage(){
+ const copy=useCmsPageCopy('product_before');
+ const t=(key)=>copy[key];
  const {slug}=useParams();
  const {data,loading,error,reload}=useApi(()=>productsApi.bySlug(slug),[slug]);
  const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
@@ -258,15 +261,15 @@ export default function ProductPage(){
    @media(prefers-reduced-motion:reduce){.afsana-bottle-preview{animation:none}}
   `}</style>
   <StateBox loading={loading} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
-   <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">Home</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">Collection</Link> <span>/</span> {p.name}</div>
+   <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">{t("homeCrumb")}</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">{t("collectionCrumb")}</Link> <span>/</span> {p.name}</div>
    <div className="product-detail-grid mt-8">
     <div className={"product-gallery "+(media.length>1?"has-thumbs":"no-thumbs")}>
       {media.length>1&&<div className="gallery-thumbs">{media.map((m,i)=><button type="button" key={m.url+'-'+i} onClick={()=>selectMedia(i)} aria-label={'View product media '+(i+1)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#7357ff] shadow-[0_8px_25px_rgba(50,26,90,.18)]':'border-[#7357ff]/15')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#7357ff]"/>}</button>)}</div>}
       <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={()=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative overflow-hidden flex items-center justify-center">
        <div className="afsana-product-stage-glow"/>
-       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#665d79]">AFSANA / {String(img+1).padStart(2,"0")}</div>
-       <div className="absolute top-5 right-5 z-10 flex items-center gap-2 border border-[#7357ff]/15 bg-white/70 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.18em] text-[#46375f]"><Rotate3D className="w-3.5 h-3.5"/> {showRealModel?'Interactive 3D bottle':product3dUrl?'Loading 3D preview':media.length?'Interactive product view':'Bottle preview'}</div>
-       {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-5 z-10 border border-[#7357ff]/15 bg-white/75 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.18em] text-[#392650]">{autoRotate?'Stop gallery':'Auto gallery'}</button>}
+       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#665d79]">{t("galleryLabel")} {String(img+1).padStart(2,"0")}</div>
+       <div className="absolute top-5 right-5 z-10 flex items-center gap-2 border border-[#7357ff]/15 bg-white/70 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.18em] text-[#46375f]"><Rotate3D className="w-3.5 h-3.5"/> {showRealModel?t('modelReady'):product3dUrl?t('modelLoading'):media.length?t('interactiveView'):t('bottlePreview')}</div>
+       {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-5 z-10 border border-[#7357ff]/15 bg-white/75 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.18em] text-[#392650]">{autoRotate?t('stopGallery'):t('autoGallery')}</button>}
        <div className="afsana-product-shadow" style={{transform:`translateX(${tilt.y*1.4}px) scaleX(${1+Math.abs(tilt.y)/180})`}}/>
        {showRealModel
         ? <model-viewer ref={modelViewerRef} src={product3dUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.2" exposure="1.05" environment-image="neutral" interaction-prompt="auto" style={{width:'88%',height:'88%',background:'transparent','--poster-color':'transparent','--progress-bar-color':'#7357ff','--progress-mask':'#f2eef8'}}/>
@@ -293,26 +296,26 @@ export default function ProductPage(){
       <div className="afsana-product-rating">
        {ratingCount>0
         ? <><Stars value={ratingAvg} size="text-lg"/><span>{ratingAvg.toFixed(1)} / 5</span><i/> <span>{ratingCount} approved {ratingCount===1?'review':'reviews'}</span></>
-        : <><span className="afsana-rating-empty">NOT RATED YET</span><i/><span>No approved reviews yet — be the first to share your experience.</span></>}
+        : <><span className="afsana-rating-empty">{t("ratingEmpty")}</span><i/><span>{t("noReviews")}</span></>}
       </div>
-      <p className="afsana-product-description">{p.content?.shortDescription||'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.'}</p>
+      <p className="afsana-product-description">{p.content?.shortDescription||(copy.productDescription || 'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.')}</p>
       <div className="afsana-product-purchase">
        <div className="afsana-product-price-row">
-        <div><span className="afsana-product-price-label">YOUR FRAGRANCE</span><strong className="afsana-product-price">{v?money(price):'Currently unavailable'}</strong></div>
-        {v?.available>0&&<span className="afsana-stock-status"><i/>{v.available<5?"Limited availability":"In stock"}<small>Ready to ship</small></span>}
+        <div><span className="afsana-product-price-label">{t("priceLabel")}</span><strong className="afsana-product-price">{v?money(price):t('unavailable')}</strong></div>
+        {v?.available>0&&<span className="afsana-stock-status"><i/>{v.available<5?t("limitedStock"):t("inStock")}<small>{t("readyToShip")}</small></span>}
        </div>
        <div className="afsana-product-divider"/>
-       <div className="afsana-size-heading"><span>Choose your size</span><small>{v?.label|| (v?.sizeMl ? v.sizeMl+' ML' : 'SELECT SIZE')}</small></div>
+       <div className="afsana-size-heading"><span>{t("sizeHeading")}</span><small>{v?.label|| (v?.sizeMl ? v.sizeMl+' ML' : t('selectSize'))}</small></div>
        <div className="afsana-size-options">{variants.map(x=><button type="button" key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} aria-pressed={x.id===vid} className={'afsana-size-option '+(x.id===vid?'is-selected':'')}>{x.label||x.sizeMl+' ML'}<span>{x.id===vid?'SELECTED':'CHOOSE'}</span></button>)}</div>
        <div className="afsana-product-actions">
         <div className="afsana-quantity-wrap"><span>QTY</span><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/></div>
-        <button disabled={soldOut} onClick={addToCart} className={"afsana-add-to-bag "+(adding?"add-bag-success":"")}>{adding ? "Added to bag" : <>Add to bag <span>↗</span></>}</button>
-        <button type="button" onClick={()=>toggle(p.id||p._id)} aria-label={has(p.id||p._id)?'Remove from wishlist':'Add to wishlist'} aria-pressed={has(p.id||p._id)} className="afsana-wishlist-button"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4 h-4"/></button>
+        <button disabled={soldOut} onClick={addToCart} className={"afsana-add-to-bag "+(adding?"add-bag-success":"")}>{adding ? t("addedToBag") : <>{t("addToBag")} <span>↗</span></>}</button>
+        <button type="button" onClick={()=>toggle(p.id||p._id)} aria-label={has(p.id||p._id)?t('removeWishlist'):t('addWishlist')} aria-pressed={has(p.id||p._id)} className="afsana-wishlist-button"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4 h-4"/></button>
        </div>
       </div>
       <div className="afsana-product-perks">{[['01','Premium','Fragrance Oils'],['02','Gift Ready','Luxury Packaging'],['03','Fast','Nationwide Delivery']].map(([n,a,b])=><div className="afsana-product-perk" key={n}><span>{n}</span><p><strong>{a}</strong><small>{b}</small></p></div>)}</div>
       <div className="afsana-product-specs">
-       <div className="afsana-specs-heading"><span>Fragrance profile</span><small>THE DETAILS</small></div>
+       <div className="afsana-specs-heading"><span>{t("profileHeading")}</span><small>{t("profileDetails")}</small></div>
        <div className="afsana-specs-grid">{[['Longevity',p.fragrance?.longevity],['Projection',p.fragrance?.projection],['Concentration',p.fragrance?.concentration],['Gender',p.fragrance?.gender],['Season',p.fragrance?.seasons?.join(', ')],['Occasion',p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="afsana-spec-card"><span>{label}</span><strong>{value}</strong></div>)}</div>
       </div>
     </div>
@@ -321,37 +324,37 @@ export default function ProductPage(){
     <div className="afsana-note-story-inner">
      <header className="afsana-note-story-head">
       <div>
-       <p className="afsana-note-kicker">THE ARCHITECTURE OF A SCENT</p>
-       <h2>Three chapters.<br/><em>One memory.</em></h2>
+       <p className="afsana-note-kicker">{t("storyKicker")}</p>
+       <h2>{t("storyHeading")}<br/><em>{t("storyHeadingAccent")}</em></h2>
       </div>
-      <p className="afsana-note-intro">A fragrance reveals itself in its own time. An unforgettable opening, a character at its heart, and a final trace that stays with you.</p>
+      <p className="afsana-note-intro">{t("storyIntro")}</p>
       <span className="afsana-note-edition">AFSANA / SCENT PROFILE</span>
      </header>
      <div className="afsana-note-story-grid">
       {[
-       ['TOP','THE FIRST IMPRESSION','The opening that draws you in.',ns.top],
-       ['HEART','THE SOUL OF THE SCENT','The character that makes it yours.',ns.heart],
-       ['BASE','THE LASTING MEMORY','The warm trail that lingers.',ns.base]
+       ['TOP',t('openingOverline'),t('openingDescription'),ns.top],
+       ['HEART',t('heartOverline'),t('heartDescription'),ns.heart],
+       ['BASE',t('memoryOverline'),t('memoryDescription'),ns.base]
       ].map(([label,title,copy,values],i)=><article key={label} className={'afsana-note-card afsana-note-card-'+label.toLowerCase()}>
        <div className="afsana-note-card-top"><span>0{i+1} / 03</span><span>{label} NOTES</span></div>
        <div className="afsana-note-card-rule"/>
        <p className="afsana-note-card-overline">{title}</p>
-       <h3>{label==='TOP'?'The opening.':label==='HEART'?'The character.':'The memory.'}</h3>
+       <h3>{label==='TOP'?t('openingTitle'):label==='HEART'?t('heartTitle'):t('memoryTitle')}</h3>
        <p className="afsana-note-card-copy">{copy}</p>
-       <div className="afsana-note-pills">{(values||[]).length?(values||[]).map((note,j)=><span key={note+'-'+j}>{note}</span>):<span>Signature accord</span>}</div>
+       <div className="afsana-note-pills">{(values||[]).length?(values||[]).map((note,j)=><span key={note+'-'+j}>{note}</span>):<span>{t("fallbackNote")}</span>}</div>
        <span className="afsana-note-card-index">{label==='TOP'?'01':label==='HEART'?'02':'03'}</span>
       </article>)}
      </div>
     </div>
    </section>
-   <section className="afsana-product-rituals py-16 sm:py-20"><div className="afsana-product-rituals-head mb-10 sm:mb-12"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">Inside the bottle</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">More than<br/><em className="text-[#263e0e]">a fragrance.</em></h2></div><div className="product-banner-grid">{banners.map((src,i)=><article key={i} className="product-banner relative"><img src={src} className="w-full h-full object-cover" alt=""/><div className="absolute inset-0 bg-gradient-to-t from-[#182308]/85 to-transparent"/><div className="product-banner-copy absolute bottom-0 p-7 text-white"><div className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1} — {['The Opening','The Heart','The Memory','Your Ritual'][i]}</div><h3 className="mt-2 font-display text-3xl">{['First impressions matter.','Where the story unfolds.','What remains after you leave.','Make it unmistakably yours.'][i]}</h3><p className="mt-2 text-xs text-white/60">Spray. Layer. Wear. Remember.</p></div></article>)}</div></section>
-   <section className="afsana-product-tabs py-12 sm:py-14 border-y"><div className="tabs flex flex-wrap gap-6 text-[10px] uppercase tracking-[.22em]">{[['story','The Story'],['details','Details']].map(([id,label])=><button key={id} onClick={()=>setTab(id)} aria-pressed={tab===id} className={tab===id?'tab active text-[#263e0e] border-b border-[#263e0e] pb-3':'tab text-[#5f654f] pb-3'}>{label}</button>)}</div><div className="afsana-product-tab-content mt-8 max-w-3xl text-sm leading-8 text-[#5f654f]">{tab==='story'&&'A fragrance composed to become part of your identity. Spray it close to the skin, let it warm naturally, and allow each layer to reveal itself in its own time.'}{tab==='details'&&(p.content?.fullDescription||'Premium fragrance oils, carefully composed and designed for an evolving trail.')}</div></section>
+   <section className="afsana-product-rituals py-16 sm:py-20"><div className="afsana-product-rituals-head mb-10 sm:mb-12"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">{t("insideBottle")}</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">{t("moreThan")}<br/><em className="text-[#263e0e]">{t("moreThanAccent")}</em></h2></div><div className="product-banner-grid">{banners.map((src,i)=><article key={i} className="product-banner relative"><img src={src} className="w-full h-full object-cover" alt=""/><div className="absolute inset-0 bg-gradient-to-t from-[#182308]/85 to-transparent"/><div className="product-banner-copy absolute bottom-0 p-7 text-white"><div className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1} — {[t('chapterOpening'),t('chapterHeart'),t('chapterMemory'),t('chapterRitual')][i]}</div><h3 className="mt-2 font-display text-3xl">{[t('chapterOpeningTitle'),t('chapterHeartTitle'),t('chapterMemoryTitle'),t('chapterRitualTitle')][i]}</h3><p className="mt-2 text-xs text-white/60">{t("chapterCaption")}</p></div></article>)}</div></section>
+   <section className="afsana-product-tabs py-12 sm:py-14 border-y"><div className="tabs flex flex-wrap gap-6 text-[10px] uppercase tracking-[.22em]">{[['story',t('storyTab')],['details',t('detailsTab')]].map(([id,label])=><button key={id} onClick={()=>setTab(id)} aria-pressed={tab===id} className={tab===id?'tab active text-[#263e0e] border-b border-[#263e0e] pb-3':'tab text-[#5f654f] pb-3'}>{label}</button>)}</div><div className="afsana-product-tab-content mt-8 max-w-3xl text-sm leading-8 text-[#5f654f]">{tab==='story'&&t('defaultStory')}{tab==='details'&&(p.content?.fullDescription||t('defaultDetails'))}</div></section>
    <ReviewsSection slug={slug}/>
    {data.related?.length>0&&<section className="afsana-complete-story">
      <div className="afsana-complete-story-head">
       <div>
-       <p className="afsana-complete-kicker">CURATED FOR YOU / 0{Math.min(data.related.length,9)}</p>
-       <h2>Complete<br/><em>the story.</em></h2>
+       <p className="afsana-complete-kicker">{t("relatedKicker")} / 0{Math.min(data.related.length,9)}</p>
+       <h2>{t("relatedHeading")}<br/><em>{t("relatedHeadingAccent")}</em></h2>
       </div>
       <div className="afsana-complete-story-aside">
        <p>Another scent. Another chapter. Discover a fragrance that feels unmistakably yours.</p>
