@@ -264,7 +264,7 @@ export default function ProductPage(){
    <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">{t("homeCrumb")}</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">{t("collectionCrumb")}</Link> <span>/</span> {p.name}</div>
    <div className="product-detail-grid mt-8">
     <div className={"product-gallery "+(media.length>1?"has-thumbs":"no-thumbs")}>
-      {media.length>1&&<div className="gallery-thumbs">{media.map((m,i)=><button type="button" key={m.url+'-'+i} onClick={()=>selectMedia(i)} aria-label={'View product media '+(i+1)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#7357ff] shadow-[0_8px_25px_rgba(50,26,90,.18)]':'border-[#7357ff]/15')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#7357ff]"/>}</button>)}</div>}
+      {media.length>1&&<div className="gallery-thumbs">{media.map((m,i)=><button type="button" key={m.url+'-'+i} onClick={()=>selectMedia(i)} aria-label={t('mediaAlt')+' '+(i+1)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#7357ff] shadow-[0_8px_25px_rgba(50,26,90,.18)]':'border-[#7357ff]/15')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#7357ff]"/>}</button>)}</div>}
       <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={()=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative overflow-hidden flex items-center justify-center">
        <div className="afsana-product-stage-glow"/>
        <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#665d79]">{t("galleryLabel")} {String(img+1).padStart(2,"0")}</div>
@@ -290,12 +290,12 @@ export default function ProductPage(){
       <div className="afsana-product-info-topline">
        <span className="afsana-product-eyebrow">{p.fragrance?.gender||'Signature'}</span>
        {p.fragrance?.concentration&&<span className="afsana-product-concentration">{p.fragrance.concentration}</span>}
-       <span className="afsana-product-ref">AFSANA / 01</span>
+       <span className="afsana-product-ref">{t("productReference")}</span>
       </div>
       <h1 className="afsana-product-title">{p.name}</h1>
       <div className="afsana-product-rating">
        {ratingCount>0
-        ? <><Stars value={ratingAvg} size="text-lg"/><span>{ratingAvg.toFixed(1)} / 5</span><i/> <span>{ratingCount} approved {ratingCount===1?'review':'reviews'}</span></>
+        ? <><Stars value={ratingAvg} size="text-lg"/><span>{ratingAvg.toFixed(1)} / 5</span><i/> <span>{ratingCount} approved {ratingCount===1?t('reviewSingular'):t('reviewPlural')}</span></>
         : <><span className="afsana-rating-empty">{t("ratingEmpty")}</span><i/><span>{t("noReviews")}</span></>}
       </div>
       <p className="afsana-product-description">{p.content?.shortDescription||(copy.productDescription || 'A fragrance composed to become part of your identity — luminous, sophisticated and designed to leave a trace.')}</p>
@@ -306,14 +306,14 @@ export default function ProductPage(){
        </div>
        <div className="afsana-product-divider"/>
        <div className="afsana-size-heading"><span>{t("sizeHeading")}</span><small>{v?.label|| (v?.sizeMl ? v.sizeMl+' ML' : t('selectSize'))}</small></div>
-       <div className="afsana-size-options">{variants.map(x=><button type="button" key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} aria-pressed={x.id===vid} className={'afsana-size-option '+(x.id===vid?'is-selected':'')}>{x.label||x.sizeMl+' ML'}<span>{x.id===vid?'SELECTED':'CHOOSE'}</span></button>)}</div>
+       <div className="afsana-size-options">{variants.map(x=><button type="button" key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} aria-pressed={x.id===vid} className={'afsana-size-option '+(x.id===vid?'is-selected':'')}>{x.label||x.sizeMl+' ML'}<span>{x.id===vid?t('selectedSize'):t('chooseSize')}</span></button>)}</div>
        <div className="afsana-product-actions">
-        <div className="afsana-quantity-wrap"><span>QTY</span><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/></div>
+        <div className="afsana-quantity-wrap"><span>{t("quantityLabel")}</span><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/></div>
         <button disabled={soldOut} onClick={addToCart} className={"afsana-add-to-bag "+(adding?"add-bag-success":"")}>{adding ? t("addedToBag") : <>{t("addToBag")} <span>↗</span></>}</button>
         <button type="button" onClick={()=>toggle(p.id||p._id)} aria-label={has(p.id||p._id)?t('removeWishlist'):t('addWishlist')} aria-pressed={has(p.id||p._id)} className="afsana-wishlist-button"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4 h-4"/></button>
        </div>
       </div>
-      <div className="afsana-product-perks">{[['01','Premium','Fragrance Oils'],['02','Gift Ready','Luxury Packaging'],['03','Fast','Nationwide Delivery']].map(([n,a,b])=><div className="afsana-product-perk" key={n}><span>{n}</span><p><strong>{a}</strong><small>{b}</small></p></div>)}</div>
+      <div className="afsana-product-perks">{[['01',t('perk1Title'),t('perk1Text')],['02',t('perk2Title'),t('perk2Text')],['03',t('perk3Title'),t('perk3Text')]].map(([n,a,b])=><div className="afsana-product-perk" key={n}><span>{n}</span><p><strong>{a}</strong><small>{b}</small></p></div>)}</div>
       <div className="afsana-product-specs">
        <div className="afsana-specs-heading"><span>{t("profileHeading")}</span><small>{t("profileDetails")}</small></div>
        <div className="afsana-specs-grid">{[['Longevity',p.fragrance?.longevity],['Projection',p.fragrance?.projection],['Concentration',p.fragrance?.concentration],['Gender',p.fragrance?.gender],['Season',p.fragrance?.seasons?.join(', ')],['Occasion',p.fragrance?.occasions?.join(', ')]].filter(([,value])=>value).map(([label,value])=><div key={label} className="afsana-spec-card"><span>{label}</span><strong>{value}</strong></div>)}</div>
