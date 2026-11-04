@@ -11,7 +11,7 @@ import { useCmsPageCopy } from '../cmsCopy';
 
 export default function WishlistPage() {
   const copy = useCmsPageCopy('wishlist');
-  useTitle(copy.title);
+  useTitle(copy.browserTitle);
   const { data, loading, error, reload } = useApi(() => wishlistApi.list(), []);
   const { count } = useWishlist();
   // ProductCard toggles the shared wishlist; refetch so removed hearts disappear from this grid immediately.
