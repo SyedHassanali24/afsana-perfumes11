@@ -97,22 +97,22 @@ export default function ShopLayout(){
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
   <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]">
-    <div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div>
+    <div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || navCopy.announcementDefault,navCopy.marqueeDiscover,navCopy.marqueeCrafted,navCopy.marqueeCollection]).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div>
   </div>
 
   <header className="sticky top-0 z-40 text-[#100d24]">
    <div className="absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/92 backdrop-blur-xl shadow-[0_10px_40px_rgba(16,13,36,.07)]"/>
    <Container className="container-xl relative flex h-[84px] items-center">
-    <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
+    <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label={navCopy.menuLabel} aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
     <Link to="/" className="logo group flex shrink-0 items-center gap-3" aria-label={brandName}>
       <span className="grid h-[31px] w-[31px] place-items-center overflow-hidden rounded-full bg-[#100d24]">{logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[19px] italic text-[#d9ff55]">A</span>}</span>
       <span className="block font-display text-[20px] tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[1px] block font-mono text-[8px] tracking-[.32em] text-[#80798f]">{brandTagline}</small></span>
     </Link>
     <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.13em] transition '+(isActive?'text-[#7357ff]':'text-[#514b62] hover:text-[#100d24]')}>{label}</NavLink>)}</nav>
     <div className="header-actions ml-auto flex items-center">
-      <button className={icon} onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="w-[18px]"/></button>
-      <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Login / register'} title={status==='authed'?'My account':'Login / register'}><User className="w-[18px]"/></Link>
-      <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#d9ff55] text-[#100d24] text-[9px] leading-4 text-center">{count}</span>}</button>
+      <button className={icon} onClick={()=>setSearch(true)} aria-label={navCopy.searchLabel} aria-expanded={search}><Search className="w-[18px]"/></button>
+      <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?navCopy.accountLabel:navCopy.loginLabel} title={status==='authed'?navCopy.accountLabel:navCopy.loginLabel}><User className="w-[18px]"/></Link>
+      <button className={icon+' relative'} onClick={openDrawer} aria-label={navCopy.cartLabel}><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#d9ff55] text-[#100d24] text-[9px] leading-4 text-center">{count}</span>}</button>
     </div>
    </Container>
    {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-[#100d24]/10 bg-[#f7f4ed]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-[#100d24]/10 py-4 text-[10px] uppercase tracking-[.2em] text-[#514b62] hover:text-[#7357ff]">{label}</Link>)}</nav></div>}
@@ -133,12 +133,12 @@ export default function ShopLayout(){
   <footer className="relative overflow-hidden bg-[#100d24] text-white border-t border-[#d9ff55]/20">
    <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_18%,rgba(115,87,255,.24),transparent_26%),radial-gradient(circle_at_88%_72%,rgba(217,255,85,.08),transparent_28%)]"/>
    <div className="relative">
-    <div className="border-b border-white/10 overflow-hidden"><div className="marquee-track flex min-w-max gap-12 py-3 text-[9px] uppercase tracking-[.32em] text-white/35">{['THE ART OF SCENT','CRAFTED FOR MEMORIES','AFSANA PERFUMES','LEAVE A TRACE','THE PRIVATE COLLECTION','THE ART OF SCENT'].map((x,i)=><span key={i}>{x}<b className="mx-12 text-[#d9ff55]">✦</b></span>)}</div></div>
+    <div className="border-b border-white/10 overflow-hidden"><div className="marquee-track flex min-w-max gap-12 py-3 text-[9px] uppercase tracking-[.32em] text-white/35">{[footerCopy.marquee1,footerCopy.marquee2,footerCopy.marquee3,footerCopy.marquee4,footerCopy.marquee5,footerCopy.marquee1].map((x,i)=><span key={i}>{x}<b className="mx-12 text-[#d9ff55]">✦</b></span>)}</div></div>
     <Container className="container-xl py-16 sm:py-24">
       <div className="grid lg:grid-cols-[1.3fr_.7fr] gap-12 pb-14 border-b border-white/10">
         <div>
-          <p className="text-[9px] uppercase tracking-[.4em] text-[#d9ff55]">{footerCms.eyebrow||'THE HOUSE OF AFSANA'}</p>
-          <div className="mt-5 font-display text-[clamp(5rem,14vw,11rem)] leading-[.68] tracking-[-.07em]">AFSANA</div>
+          <p className="text-[9px] uppercase tracking-[.4em] text-[#d9ff55]">{footerCms.eyebrow||footerCopy.footerEyebrow}</p>
+          <div className="mt-5 font-display text-[clamp(5rem,14vw,11rem)] leading-[.68] tracking-[-.07em]">{footerConfig.brandName||footerCopy.footerDisplayBrand}</div>
           <p className="mt-10 max-w-xl font-display text-2xl sm:text-4xl leading-tight text-white/90">{footerCms.body||'Fragrance as memory. Designed in chapters. Created to leave a trace.'}</p>
         </div>
         <div className="self-end rounded-3xl border border-[#d9ff55]/20 bg-white/[.035] p-6 sm:p-8 backdrop-blur-xl">
