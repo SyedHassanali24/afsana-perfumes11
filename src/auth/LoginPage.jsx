@@ -16,7 +16,7 @@ import {
 
 const inputClass = 'mt-2 block w-full rounded-xl border border-[#e6e1f0] bg-[#fbfaff] px-4 py-3.5 text-sm text-[#21183b] placeholder:text-[#aaa2b8] outline-none transition duration-200 focus:border-[#7958df] focus:bg-white focus:ring-4 focus:ring-[#7958df]/10';
 
-function ResetPasswordDialog({ reset, setReset, error, setError, busy, onForgot, onVerify, onReset }) {
+function ResetPasswordDialog({ reset, setReset, error, busy, onForgot, onVerify, onReset }) {
   if (!reset.open) return null;
 
   return (
@@ -49,7 +49,7 @@ function ResetPasswordDialog({ reset, setReset, error, setError, busy, onForgot,
         {reset.step === 2 && (
           <label className="mt-6 block text-xs font-semibold text-[#514765]">
             6-digit verification code
-            <input className={inputClass + ' text-center text-lg font-semibold tracking-[.45em]'} inputMode="numeric" autoComplete="one-time-code" maxLength={6} required autoFocus value={reset.otp} onChange={e => setReset(v => ({ ...v, otp: e.target.value.replace(/\\D/g, '') }))} placeholder="••••••" />
+            <input className={inputClass + ' text-center text-lg font-semibold tracking-[.45em]'} inputMode="numeric" autoComplete="one-time-code" maxLength={6} required autoFocus value={reset.otp} onChange={e => setReset(v => ({ ...v, otp: e.target.value.replace(/\D/g, '') }))} placeholder="••••••" />
           </label>
         )}
         {reset.step === 3 && (
