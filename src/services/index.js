@@ -52,6 +52,7 @@ export const ordersApi = {
 
 export const analyticsApi = {
   dashboard: () => api('/analytics/dashboard', { cacheTtl: 60000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }; a section is null when the role may not see it
+  traffic: (days = 30) => api('/analytics/traffic', { query: { days } }), // anonymous acquisition: visits, page views, sources and landing pages
 };
 
 // ---- Phase 4: team & access (all writes need confirmPassword) ----
