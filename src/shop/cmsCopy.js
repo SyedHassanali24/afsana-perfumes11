@@ -200,6 +200,18 @@ export const PAGE_COPY_FIELDS = {
     ['signOut','Sign out button','Sign out'], ['ordersTab','Orders tab','Orders'], ['returnsTab','Returns tab','Returns'],
     ['addressesTab','Addresses tab','Addresses'], ['profileTab','Profile tab','Profile'], ['wishlistLink','Wishlist link','Wishlist'],
     ['ordersEmpty','No orders message','You have not placed an order with this account yet.'], ['orderItemSingular','Order item singular','item'], ['orderItemPlural','Order item plural','items'],
+    ['addressesEmpty','No saved addresses message','You have no saved addresses yet.'], ['fullName','Full name label','Full name'], ['phone','Phone label','Phone'],
+    ['address','Address label','Address'], ['apartment','Apartment label','Apartment, landmark (optional)'], ['city','City label','City'], ['postalCode','Postal code label','Postal code'],
+    ['addressType','Address type label','Label'], ['defaultAddress','Default address checkbox','Use as my default address'], ['saving','Saving state','Saving…'],
+    ['saveAddress','Save address button','Save address'], ['cancel','Cancel button','Cancel'], ['removeAddressTitle','Remove address confirmation title','Remove this address?'],
+    ['edit','Edit address button','Edit'], ['remove','Remove address button','Remove'], ['addAddress','Add address button','Add an address'],
+    ['profileDetails','Profile details heading','Your details'], ['name','Name label','Name'], ['email','Email label','Email'], ['profileCity','Profile city label','City'],
+    ['emailPlaceholder','Email placeholder','you@example.com'], ['phoneInfo','Profile phone text','Phone:'], ['save','Save profile button','Save'], ['nameRequired','Name validation message','Name is required.'],
+    ['saved','Saved confirmation','Saved.'], ['currentPassword','Current password label','Current password'], ['newPassword','New password label','New password'],
+    ['passwordMinimum','Password minimum message','New password: at least 8 characters, with letters and numbers.'], ['passwordDifferent','Password difference message','New password must be different from your current password.'],
+    ['passwordChanged','Password changed confirmation','Password changed. Other devices were signed out.'], ['changePassword','Change password button','Change password'],
+    ['returnsEmpty','Returns empty state','You have not requested any returns. To start one, open a delivered order.'], ['viewOrder','View order link','View order'],
+
   ],
   order_detail: [
     ['allOrders','Back to orders link','← All orders'], ['placed','Placed label','Placed'], ['reorder','Reorder button','Reorder these items'],
