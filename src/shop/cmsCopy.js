@@ -3,7 +3,7 @@ import { cmsPublicApi } from '../services';
 
 export const PAGE_COPY_FIELDS = {
   home: [
-    ['heroEyebrow','Homepage hero eyebrow','AN AFSANA BEGINS'], ['heroTitleLine1','Hero heading line 1','SCENTS'], ['heroTitleLine2','Hero heading line 2','WITH A'], ['heroTitleAccent','Hero heading accent','A STORY.'],
+    ['browserTitle','Homepage browser tab title','AFSANA — The Art of Scent'], ['heroEyebrow','Homepage hero eyebrow','AN AFSANA BEGINS'], ['heroTitleLine1','Hero heading line 1','SCENTS'], ['heroTitleLine2','Hero heading line 2','WITH A'], ['heroTitleAccent','Hero heading accent','A STORY.'],
     ['heroMeta','Hero meta line','THE ART OF SCENT • PRIVATE COLLECTION'], ['heroDescription','Hero description','Some scents are worn. Others become memories. Discover a cinematic fragrance world crafted to leave a trace long after you leave the room.'],
     ['heroPrimaryButton','Hero primary button','Enter the Story'], ['heroSecondaryButton','Hero secondary button','Find Your AFSANA'],
     ['heroBullet1','Hero benefit 1','Premium Oils'], ['heroBullet2','Hero benefit 2','Long Lasting'], ['heroBullet3','Hero benefit 3','Gift Ready'],
@@ -225,7 +225,7 @@ export const PAGE_COPY_FIELDS = {
     ['submit','Change password button','Change password'], ['busy','Saving state label','Saving…'],
   ],
   wishlist: [
-    ['title','Wishlist title','Your wishlist'], ['subtitle','Wishlist subtitle','Perfumes you have saved.'],
+    ['browserTitle','Wishlist browser tab title','Wishlist — AFSANA'], ['title','Wishlist title','Your wishlist'], ['subtitle','Wishlist subtitle','Perfumes you have saved.'],
     ['empty','Wishlist empty message','Nothing saved yet. Tap the heart on any perfume.'], ['browse','Browse perfumes button','Browse perfumes'],
   ],
   account: [
