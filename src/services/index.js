@@ -2,7 +2,8 @@ import { api, uploadChunkedMedia } from './api';
 export { api, ApiError } from './api';
 
 export const authApi = {
-  login: (email, password) => api('/auth/login', { method: 'POST', body: { email, password } }),
+  login: (email, password, deviceId) => api('/auth/login', { method: 'POST', body: { email, password, deviceId } }),
+  verifyLoginOtp: (email, challengeId, otp, deviceId) => api('/auth/login/2fa/verify', { method: 'POST', body: { email, challengeId, otp, deviceId } }),
   logout: () => api('/auth/logout', { method: 'POST' }),
   logoutAll: () => api('/auth/logout-all', { method: 'POST' }),
   me: () => api('/auth/me'),
