@@ -2753,3 +2753,12 @@
 .afsana-social-instagram:hover,.afsana-social-facebook:hover,.afsana-social-tiktok:hover,.afsana-social-youtube:hover,.afsana-social-pinterest:hover,.afsana-social-x:hover{filter:brightness(1.09)}
 
 /* AFSANA review preview is deliberately labelled as sample copy until real reviews are approved. */
+
+/* Keep note-card colour treatments on the cards themselves, not their header rows. */
+.afsana-product-page article.afsana-note-card.afsana-note-card-top{background:linear-gradient(145deg,#fffaf4,#f8f0e7)!important;border-color:#eadfce!important}
+.afsana-product-page article.afsana-note-card.afsana-note-card-heart{background:linear-gradient(145deg,#fffafd,#f4edf8)!important;border-color:#e7dced!important}
+.afsana-product-page article.afsana-note-card.afsana-note-card-base{background:linear-gradient(145deg,#fbfdfb,#edf4ef)!important;border-color:#dce8df!important}
+.afsana-product-page .afsana-note-card-top{background:transparent!important;border-color:transparent!important}
+.afsana-product-page article.afsana-note-card.afsana-note-card-top .afsana-note-card-top{color:#856342!important}
+.afsana-product-page article.afsana-note-card.afsana-note-card-heart .afsana-note-card-top{color:#78538f!important}
+.afsana-product-page article.afsana-note-card.afsana-note-card-base .afsana-note-card-top{color:#52765e!important}
