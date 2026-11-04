@@ -35,7 +35,7 @@ function Hero({copy={},assets={}}){const t=(key)=>copy[key];
       <Link to="/shop" className="group inline-flex items-center gap-3 bg-[#ffe500] px-7 py-4 text-xs font-semibold uppercase tracking-[.16em] text-[#080a07] hover:bg-white transition">{t('heroPrimaryButton')} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition"/></Link>
       <a href="#finderSection" className="inline-flex items-center gap-3 border border-white/25 px-7 py-4 text-xs uppercase tracking-[.16em] text-white hover:border-[#d6a84f] hover:text-[#ffe500] transition">{t('heroSecondaryButton')} <span>✦</span></a>
     </div>
-    <div className="mt-8 flex flex-wrap gap-3 text-[8px] uppercase tracking-[.25em] text-white/45"><span className="border border-white/10 bg-white/[.03] px-3 py-2"{t('heroBullet1')}</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">{t('heroBullet2')}</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">{t('heroBullet3')}</span></div>
+    <div className="mt-8 flex flex-wrap gap-3 text-[8px] uppercase tracking-[.25em] text-white/45"><span className="border border-white/10 bg-white/[.03] px-3 py-2">{t('heroBullet1')}</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">{t('heroBullet2')}</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">{t('heroBullet3')}</span></div>
    </div>
    <div className="hero-side hidden lg:block luxury-reveal">
     <div className="hero-card relative mx-auto hero-card-magical">
