@@ -41,6 +41,7 @@ export const PAGE_COPY_FIELDS = {
     ['newsletterEyebrow','Newsletter eyebrow','The private list'], ['newsletterTitle','Newsletter heading','Be the first'], ['newsletterTitleAccent','Newsletter heading accent','know.'], ['newsletterDescription','Newsletter description','Early access to new compositions, private drops, exclusive stories and fragrance events.'],
   ],
   collection_before: [
+    ['browserTitle','Browser tab title','Collection — AFSANA'], 
     ['eyebrow','Collection eyebrow','AFSANA / THE COMPLETE COLLECTION'],
     ['titleStart','Main heading','Find your'],
     ['titleAccent','Heading accent','forever note.'],
@@ -111,6 +112,7 @@ export const PAGE_COPY_FIELDS = {
     ['relatedKicker','Related products eyebrow','CURATED FOR YOU'], ['relatedHeading','Related products heading','Complete'], ['relatedHeadingAccent','Related products accent','the story.'],
   ],
   house: [
+    ['browserTitle','Browser tab title','The House of AFSANA'], 
     ['heroEyebrow','Hero eyebrow','The House of Afsana'], ['heroTitleLine1','Hero heading line 1','A HOUSE'], ['heroTitleLine2','Hero heading line 2','OF'], ['heroTitleAccent','Hero heading accent','MEMORIES.'],
     ['manifesto','Manifesto statement','We do not create perfumes. We create the moments people remember.'],
     ['story1','Story paragraph 1','Afsana was born from a simple belief: scent has the extraordinary ability to transform ordinary moments into permanent memories.'],
@@ -122,12 +124,14 @@ export const PAGE_COPY_FIELDS = {
     ['craftButton','Craft button','Explore the collection'],
   ],
   journal: [
+    ['browserTitle','Browser tab title','Afsana Journal'], 
     ['heroEyebrow','Journal eyebrow','Afsana Journal'], ['titleStart','Journal heading','Notes on'], ['titleAccent','Journal heading accent','fragrance.'],
     ['post1Category','Story 1 category','Guide / Fragrance'], ['post1Title','Story 1 title','Finding your signature'], ['post1Description','Story 1 description','A practical guide to discovering what really suits your personality.'], ['post1Button','Story 1 link label','Discover'],
     ['post2Category','Story 2 category','Ingredient / Oud'], ['post2Title','Story 2 title','Why oud feels timeless'], ['post2Description','Story 2 description','The history and mystery of one of perfumery’s most fascinating materials.'], ['post2Button','Story 2 link label','Discover'],
     ['post3Category','Story 3 category','Ritual / Lifestyle'], ['post3Title','Story 3 title','The art of layering'], ['post3Description','Story 3 description','Turn one fragrance into a completely personal scent wardrobe.'], ['post3Button','Story 3 link label','Discover'],
   ],
   gifting: [
+    ['browserTitle','Browser tab title','Afsana Gifting'], 
     ['heroEyebrow','Gifting hero eyebrow','Afsana Gifting'], ['heroTitleStart','Gifting hero heading','GIVE A'], ['heroTitleAccent','Gifting hero accent','MEMORY.'],
     ['storyEyebrow','Story eyebrow','Curated gifting'], ['storyTitleStart','Story heading','Beautifully'], ['storyTitleAccent','Story heading accent','considered.'],
     ['storyBody','Gifting description','From intimate gestures to unforgettable celebrations, Afsana gifting is designed to make the moment feel as beautiful as the gift itself.'],
@@ -135,6 +139,7 @@ export const PAGE_COPY_FIELDS = {
     ['finalTitleStart','Final section heading','Give something'], ['finalTitleAccent','Final section accent','remembered.'],
   ],
   cart_before: [
+    ['browserTitle','Browser tab title','Your cart — AFSANA'], 
     ['title','Cart page title','Your cart'], ['subtitle','Cart page subtitle','Review your fragrances before you checkout.'],
     ['emptyCart','Empty cart message','Your cart is empty.'], ['browsePerfumes','Browse button','Browse perfumes'],
     ['drawerHeading','Mini cart heading','Your bag'], ['closeBag','Close mini cart accessibility label','Close shopping bag'], ['fragranceSingular','Cart count singular','fragrance'], ['fragrancePlural','Cart count plural','fragrances'],
@@ -151,6 +156,7 @@ export const PAGE_COPY_FIELDS = {
     ['unavailable','Unavailable line message','No longer available.'], ['soldOut','Sold out line message','Sold out.'], ['only','Limited stock prefix','Only'], ['left','Limited stock suffix','left.'], ['setTo','Set quantity action','Set to'], ['remove','Remove action','Remove'],
   ],
   checkout_before: [
+    ['browserTitle','Browser tab title','Checkout — AFSANA'], 
     ['title','Checkout title','Checkout'], ['subtitle','Checkout subtitle','Securely complete your fragrance order.'],
     ['emptyCart','Empty cart message','Your cart is empty.'], ['browsePerfumes','Browse button','Browse perfumes'],
     ['fixItems','Cart warning','Some items in your cart need attention.'], ['reviewCart','Review cart link','Review your cart'],
@@ -168,6 +174,7 @@ export const PAGE_COPY_FIELDS = {
     ['validationError','Validation error','Please fix the highlighted fields.'], ['rateLimitError','Rate limit error','Too many attempts. Please wait a few minutes.'],
   ],
   track_before: [
+    ['browserTitle','Browser tab title','Track your order — AFSANA'], 
     ['title','Track order title','Track your order'], ['subtitle','Track order subtitle','Enter your order number and the phone number you used at checkout.'],
     ['orderNumber','Order number label','Order number'], ['orderPlaceholder','Order number placeholder','AFS-000123'],
     ['phoneNumber','Phone number label','Phone number'], ['phonePlaceholder','Phone placeholder','0300 1234567'],
@@ -176,12 +183,14 @@ export const PAGE_COPY_FIELDS = {
     ['shipmentDeliveryLabel','Shipment delivery label','Delivery:'], ['shipmentCourierLabel','Shipment courier label','Courier:'], ['shipmentTrackingLabel','Shipment tracking label','Tracking number:'], ['trackCourierLink','Track courier link','Track with courier'],
   ],
   order_success: [
+    ['browserTitle','Browser tab title','Order placed — AFSANA'], 
     ['title','Success title','Thank you for your order'], ['description','Success description','Your order number is'],
     ['keepToTrack','Tracking helper','Keep it to track your parcel.'], ['total','Total label','Total'], ['payment','Payment label','Payment'],
     ['trackOrder','Track order button','Track this order'], ['continueShopping','Continue shopping button','Continue shopping'],
     ['createAccount','Create account link','Create an account'], ['accountBenefit','Account helper','to check out faster next time.'],
   ],
   customer_login: [
+    ['browserTitle','Browser tab title','Customer login — AFSANA'], 
     ['title','Login page title','Welcome back'], ['subtitle','Login page subtitle','Sign in to track orders and check out faster.'],
     ['footerPrompt','Login footer prompt','New here?'], ['registerLink','Create account link','Create an account'],
     ['identifier','Email or phone label','Email or phone number'], ['identifierPlaceholder','Phone placeholder','0300 1234567'], ['password','Password label','Password'],
@@ -189,6 +198,7 @@ export const PAGE_COPY_FIELDS = {
     ['rateLimit','Login rate limit message','Too many attempts. Please wait a few minutes and try again.'],
   ],
   customer_register: [
+    ['browserTitle','Browser tab title','Create account — AFSANA'], 
     ['title','Registration title','Create your account'], ['subtitle','Registration subtitle','Save your details for faster checkout.'],
     ['footerPrompt','Registration footer prompt','Already have an account?'], ['loginLink','Sign in link','Sign in'],
     ['name','Full name label','Full name'], ['phone','Phone label','Phone number'], ['phoneHint','Phone helper text','Used for delivery and order updates'],
@@ -198,12 +208,14 @@ export const PAGE_COPY_FIELDS = {
     ['submit','Create account button','Create account'], ['busy','Create account loading label','Creating…'],
   ],
   customer_forgot_password: [
+    ['browserTitle','Browser tab title','Reset password — AFSANA'], 
     ['title','Forgot password title','Reset your password'], ['backLink','Back to sign in link','Back to sign in'],
     ['identifier','Email or phone label','Email or phone number'], ['submit','Reset link button','Send reset link'], ['busy','Sending state label','Sending…'],
     ['success','Password reset sent message',"If an account exists with a saved email, we've sent a link to reset the password. It expires in 30 minutes. If you signed up without an email, please contact us."],
     ['rateLimit','Rate limit message','Too many requests. Please try again later.'],
   ],
   customer_reset_password: [
+    ['browserTitle','Browser tab title','Choose a new password — AFSANA'], 
     ['title','Reset password title','Choose a new password'], ['backLink','Back to sign in link','Back to sign in'],
     ['invalidLink','Invalid link message','This reset link is incomplete. Please request a new one.'],
     ['success','Password changed message','Your password has been changed.'], ['signIn','Sign in link','Sign in'],
