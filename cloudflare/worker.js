@@ -34,7 +34,7 @@ function cacheable(pathname, method) {
 
 function enforceMediaRange(request, response, pathname) {
   if (request.method !== "GET" || response.status !== 200 ||
-      !/^\/api\/media\/[0-9a-f]{24}$/i.test(pathname)) return response;
+      !pathname.startsWith("/api/media/")) return response;
   const range = request.headers.get("Range");
   if (!range) return response;
   const total = Number(response.headers.get("Content-Length") || response.headers.get("X-Afsana-Media-Size"));
@@ -88,7 +88,7 @@ function enforceMediaRange(request, response, pathname) {
 
 async function handleApi(request, env, ctx) {
   const incoming = new URL(request.url);
-  const isRangedMedia = /^\/api\/media\/[0-9a-f]{24}$/i.test(incoming.pathname) && request.headers.has("Range");
+  const isRangedMedia = incoming.pathname.startsWith("/api/media/") && request.headers.has("Range");
   const canCache = cacheable(incoming.pathname, request.method) && !isRangedMedia;
   const cacheKey = new Request(
     new URL(incoming.pathname + incoming.search, SITE_ORIGIN).toString(),
@@ -112,13 +112,17 @@ async function handleApi(request, env, ctx) {
   const id = env.MONGODB_CONNECTION.idFromName(API_OBJECT_NAME);
   const stub = env.MONGODB_CONNECTION.get(id);
   let rawApiResponse = await stub.fetch(request);
+  let rangeHeadDiagnostics = "not-needed";
   if (isRangedMedia && rawApiResponse.status === 200 &&
       !(Number(rawApiResponse.headers.get("Content-Length") || rawApiResponse.headers.get("X-Afsana-Media-Size")) > 0)) {
     const headHeaders = new Headers(request.headers);
     headHeaders.delete("Range");
     headHeaders.delete("If-Range");
     const headResponse = await stub.fetch(new Request(request.url, { method: "HEAD", headers: headHeaders }));
-    const mediaSize = Number(headResponse.headers.get("Content-Length") || headResponse.headers.get("X-Afsana-Media-Size"));
+    const headLength = headResponse.headers.get("Content-Length") || "missing";
+    const headSize = headResponse.headers.get("X-Afsana-Media-Size") || "missing";
+    rangeHeadDiagnostics = "head=" + headResponse.status + ";length=" + headLength + ";size=" + headSize;
+    const mediaSize = Number(headLength !== "missing" ? headLength : headSize);
     if (Number.isSafeInteger(mediaSize) && mediaSize > 0) {
       const enrichedHeaders = new Headers(rawApiResponse.headers);
       enrichedHeaders.set("X-Afsana-Media-Size", String(mediaSize));
