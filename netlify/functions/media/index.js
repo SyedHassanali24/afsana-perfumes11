@@ -60,7 +60,7 @@ exports.handler = async (event) => {
       let statusCode = 200;
 
       if (rangeHeader) {
-        const match = String(rangeHeader).trim().match(/^bytes=(\\d*)-(\\d*)$/i);
+        const match = String(rangeHeader).trim().match(/^bytes=(\d*)-(\d*)$/i);
         if (!match || (!match[1] && !match[2])) {
           headers['Content-Range'] = `bytes */${bytes.length}`;
           headers['Content-Length'] = '0';
