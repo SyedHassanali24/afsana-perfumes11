@@ -534,3 +534,198 @@
 @media(prefers-reduced-motion:reduce){
   .afsana-ref-offer-banner:before{animation:none}
 }
+
+
+/* Offer stamp: a clear gold tag with a large live digital clock. */
+.afsana-ref-offer-stamp{
+  width:min(100%,340px);
+  min-height:282px;
+  padding:24px 20px 22px;
+  justify-self:end;
+  border:1px solid rgba(255,239,192,.9);
+  border-radius:24px 24px 24px 8px;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.62),transparent 34%),
+    linear-gradient(145deg,#fff0bb 0%,#e5bd69 23%,#c9953f 55%,#f4d994 100%);
+  box-shadow:0 28px 72px rgba(0,0,0,.32),0 0 0 7px rgba(226,185,101,.14),0 0 44px rgba(255,207,116,.24),inset 0 1px 0 rgba(255,255,255,.86),inset 0 -12px 30px rgba(112,66,10,.15);
+  color:#2a1740;
+  transform:rotate(1.3deg);
+}
+.afsana-ref-offer-stamp:before{
+  inset:12px;
+  border:1px solid rgba(91,55,17,.22);
+  border-radius:17px 17px 17px 5px;
+}
+.afsana-ref-offer-stamp:after{
+  right:-42px;top:-52px;
+  border-color:rgba(255,255,255,.45);
+  box-shadow:0 0 0 18px rgba(255,255,255,.14),0 0 0 38px rgba(255,255,255,.08);
+}
+.afsana-offer-stamp-copy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.afsana-offer-stamp-copy b{display:block;margin:0 0 3px;color:#7246a6;font:400 30px/1 'Playfair Display',Georgia,serif;text-shadow:0 2px 0 rgba(255,255,255,.34)}
+.afsana-offer-stamp-copy span{color:#60411b;font:800 9px/1.4 ui-monospace,monospace;letter-spacing:.32em;text-transform:uppercase}
+.afsana-offer-stamp-copy strong{display:block;margin-top:5px;color:#231039;font:800 17px/1.15 ui-monospace,monospace;letter-spacing:.16em;text-shadow:0 1px rgba(255,255,255,.35)}
+.afsana-ref-offer-stamp .cms-timer.afsana-digital-countdown{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-items:center;
+  gap:5px;
+  width:100%;
+  margin-top:18px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  color:#2c1745;
+  font:inherit;
+  letter-spacing:normal;
+  backdrop-filter:none;
+}
+.afsana-digital-countdown .cms-timer-unit{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:10px 4px 8px;
+  border:1px solid rgba(79,48,17,.2);
+  border-radius:10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.66),rgba(255,247,225,.34));
+  box-shadow:inset 0 1px rgba(255,255,255,.72),0 5px 12px rgba(90,53,13,.09);
+}
+.afsana-digital-countdown .cms-timer-unit b{
+  color:#231039;
+  font:800 clamp(24px,2.6vw,36px)/.95 ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.07em;
+  text-shadow:0 1px 0 rgba(255,255,255,.5);
+}
+.afsana-digital-countdown .cms-timer-unit small{
+  color:#715224;
+  font:800 7px/1 ui-monospace,monospace;
+  letter-spacing:.16em;
+}
+.afsana-digital-countdown>i{
+  display:none;
+}
+
+/* Result panel: white product-led card showing the exact live catalogue match. */
+.afsana-ref-finder-result{
+  background:
+    radial-gradient(ellipse at 8% 20%,rgba(145,105,255,.17),transparent 30%),
+    radial-gradient(ellipse at 92% 80%,rgba(255,184,113,.18),transparent 28%),
+    linear-gradient(125deg,#fff 0%,#faf8ff 52%,#fff9f1 100%)!important;
+  color:#19132a!important;
+}
+.afsana-ref-finder-result:after{color:rgba(100,73,160,.045)}
+.afsana-ref-finder-result .afsana-ref-eyebrow{color:#7650c8}
+.afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child h2{color:#211333}
+.afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child h2 em{color:#9c58cc}
+.afsana-ref-finder-result .afsana-ref-finder-grid>div:first-child>p:not(.afsana-ref-eyebrow){color:#71677f}
+.afsana-ref-finder-result .afsana-ref-finder-box{
+  border:1px solid rgba(123,94,163,.18);
+  border-radius:30px;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 28px 75px rgba(67,43,104,.13),inset 0 1px #fff;
+  color:#21152f;
+  backdrop-filter:blur(16px);
+}
+.afsana-ref-finder-result .afsana-ref-finder-progress{background:#eee8f5}
+.afsana-ref-finder-result .afsana-ref-finder-progress span{background:linear-gradient(90deg,#8562e8,#d18ac7,#e4b867)}
+.afsana-ref-finder-result .afsana-ref-finder-step{color:#8a62bf}
+.afsana-ref-finder-result .afsana-ref-finder-box h3{color:#261536}
+.afsana-ref-finder-result .afsana-ref-match{
+  display:grid;
+  grid-template-columns:minmax(145px,.72fr) minmax(0,1.28fr);
+  align-items:stretch;
+  gap:clamp(17px,2.4vw,28px);
+  margin-top:25px;
+  padding:17px;
+  border:1px solid rgba(133,96,177,.19);
+  border-radius:22px;
+  background:linear-gradient(135deg,#fff 0%,#f8f3ff 55%,#fff8ef 100%);
+  box-shadow:0 16px 38px rgba(75,48,112,.09),inset 0 1px #fff;
+  color:#241632;
+}
+.afsana-ref-match-image{
+  position:relative;
+  display:grid;
+  min-height:240px;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid rgba(133,96,177,.12);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(200,178,255,.28),transparent 51%),
+    linear-gradient(145deg,#f4efff,#fffaf2);
+}
+.afsana-ref-match-image:after{
+  content:"AFSANA / OBJECT";
+  position:absolute;
+  left:12px;bottom:10px;
+  color:rgba(76,51,101,.42);
+  font:700 7px ui-monospace,monospace;
+  letter-spacing:.17em;
+}
+.afsana-ref-match-image img{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:240px;
+  max-height:310px;
+  object-fit:contain;
+  padding:14px;
+  filter:drop-shadow(0 18px 18px rgba(45,29,67,.16));
+  transition:transform .6s cubic-bezier(.2,.8,.2,1);
+}
+.afsana-ref-match:hover .afsana-ref-match-image img{transform:scale(1.035)}
+.afsana-ref-match-image-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+  min-height:240px;color:#8667ad;text-align:center
+}
+.afsana-ref-match-image-empty span{font:500 29px 'Playfair Display',Georgia,serif;letter-spacing:.12em}
+.afsana-ref-match-image-empty small{font:700 7px ui-monospace,monospace;letter-spacing:.13em;color:#8c8199}
+.afsana-ref-match-copy{min-width:0;align-self:center;padding:7px 5px 7px 0}
+.afsana-ref-finder-result .afsana-ref-match-copy>p:first-child{
+  position:relative;z-index:1;color:#8c63bd;font:800 8px ui-monospace,monospace;letter-spacing:.16em;line-height:1.6
+}
+.afsana-ref-finder-result .afsana-ref-match-copy h4{
+  position:relative;z-index:1;margin:12px 0 9px;color:#241632;
+  font:500 clamp(34px,4vw,50px)/.98 'Playfair Display',Georgia,serif;letter-spacing:-.045em
+}
+.afsana-ref-finder-result .afsana-ref-match-copy>span{
+  position:relative;z-index:1;display:inline-flex;padding:7px 11px;border:1px solid rgba(147,104,208,.24);
+  border-radius:999px;background:linear-gradient(90deg,#f1eaff,#fff2fa);color:#7a50b6;
+  font:800 8px ui-monospace,monospace;letter-spacing:.16em
+}
+.afsana-ref-finder-result .afsana-ref-match-copy>p:not(:first-child){
+  position:relative;z-index:1;max-width:520px;margin:16px 0;color:#746981;font-size:12px;line-height:1.8
+}
+.afsana-ref-finder-result .afsana-ref-match-copy strong{
+  position:relative;z-index:1;display:inline-flex;margin-top:3px;padding:10px 14px;border:1px solid rgba(190,150,88,.35);
+  border-radius:10px;background:linear-gradient(135deg,#fff3d9,#f4dfb9);color:#563915;
+  font:800 14px ui-monospace,monospace;letter-spacing:.015em
+}
+.afsana-ref-finder-result .afsana-ref-finder-footer button{
+  border-color:rgba(116,84,160,.28);color:#7557a0;background:#fff
+}
+.afsana-ref-finder-result .afsana-ref-finder-footer button:last-child{
+  border-color:#7652bd;background:linear-gradient(110deg,#835de0,#b56cbf);color:#fff;
+  box-shadow:0 12px 26px rgba(126,83,191,.22)
+}
+@media(max-width:700px){
+  .afsana-ref-offer-stamp{justify-self:start;width:min(100%,330px);min-height:0;padding:22px 17px 18px;transform:rotate(.6deg)}
+  .afsana-ref-offer-stamp .cms-timer.afsana-digital-countdown{gap:4px;margin-top:15px}
+  .afsana-digital-countdown .cms-timer-unit{padding:9px 2px 7px}
+  .afsana-digital-countdown .cms-timer-unit b{font-size:27px}
+  .afsana-digital-countdown .cms-timer-unit small{font-size:6px}
+  .afsana-ref-finder-result{padding:54px 0 60px}
+  .afsana-ref-finder-result .afsana-ref-finder-box{padding:21px}
+  .afsana-ref-finder-result .afsana-ref-match{grid-template-columns:1fr;padding:13px;gap:15px}
+  .afsana-ref-match-image{min-height:230px}
+  .afsana-ref-match-image img{min-height:230px;max-height:270px}
+  .afsana-ref-match-copy{padding:7px 5px 10px}
+  .afsana-ref-finder-result .afsana-ref-match-copy h4{font-size:39px}
+}
