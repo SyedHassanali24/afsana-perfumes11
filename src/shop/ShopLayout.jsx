@@ -8,6 +8,7 @@ import { Container } from './ui';
 import useApi from '../hooks/useApi';
 import { cmsPublicApi } from '../services';
 import useShopSettings from './useShopSettings';
+import { resolvePageCopy } from './cmsCopy';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
@@ -58,6 +59,8 @@ export default function ShopLayout(){
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
+ const navCopy=resolvePageCopy(cmsData,'site_navigation');
+ const footerCopy=resolvePageCopy(cmsData,'site_footer');
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
  const cmsWhatsapp = (cmsData?.pageSections?.site_footer_before || []).some((section) => section?.type === 'whatsapp_float' && section?.isEnabled !== false);
@@ -67,7 +70,7 @@ export default function ShopLayout(){
  try { if (isPreviewRequested) previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null'); } catch {}
  const isCmsPreview = isPreviewRequested && !!previewLayout;
  const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer);
- const hasManagedFooter = footerPreview || (cmsData?.managedPageKeys || []).includes('site_footer');
+ const hasManagedFooter = footerPreview || (cmsData?.pageSections?.site_footer || []).some((section) => section?.type !== 'page_copy');
  let navigationSections = cmsData?.pageSections?.site_navigation || [];
  if (isCmsPreview) {
    if (Array.isArray(previewLayout?.layouts?.site_navigation)) navigationSections = previewLayout.layouts.site_navigation;
@@ -145,12 +148,12 @@ export default function ShopLayout(){
         </div>
       </div>
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] py-14">
-        <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#d9ff55]">Customer care ↗</Link></div>
-        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link></div></div>
-        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">Track order</Link><Link className="block hover:text-white transition" to="/account">Account</Link><Link className="block hover:text-white transition" to="/shop">Fragrance care</Link><Link className="block hover:text-white transition" to="/gifting">Gift guide</Link></div></div>
-        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2">{socialLinks.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] hover:border-[#d9ff55] hover:bg-white/10 transition">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</span>)}</div><p className="mt-2 text-[9px] text-white/35">Official links can be connected in the Footer settings in CMS.</p></div>
+        <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">{footerCopy.contactLabel}</div><p className="mt-5 text-sm leading-7 text-white/55">{footerCopy.contactDescription}</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#d9ff55]">{footerCopy.customerCare} ↗</Link></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">{footerCopy.exploreHeading}</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">{footerCopy.collectionLink}</Link><Link className="block hover:text-white transition" to="/about">{footerCopy.houseLink}</Link><Link className="block hover:text-white transition" to="/journal">{footerCopy.journalLink}</Link><Link className="block hover:text-white transition" to="/gifting">{footerCopy.giftingLink}</Link></div></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">{footerCopy.customerHeading}</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">{footerCopy.trackLink}</Link><Link className="block hover:text-white transition" to="/account">{footerCopy.accountLink}</Link><Link className="block hover:text-white transition" to="/shop">{footerCopy.fragranceCareLink}</Link><Link className="block hover:text-white transition" to="/gifting">{footerCopy.giftGuideLink}</Link></div></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">{footerCopy.socialHeading}</h4><div className="mt-5 flex flex-wrap gap-2">{socialLinks.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] hover:border-[#d9ff55] hover:bg-white/10 transition">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</span>)}</div><p className="mt-2 text-[9px] text-white/35">{footerCopy.socialHelp}</p></div>
       </div>
-      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
+      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>{footerCopy.copyright}</span><span>{footerCopy.legalLine}</span><span>{footerCopy.footerTagline}</span></div>
     </Container>
    </div>
   </footer>}
@@ -158,22 +161,22 @@ export default function ShopLayout(){
   {search&&<div className="fixed inset-0 z-[65] bg-[#100d24]/98 backdrop-blur-xl text-white overflow-y-auto">
     <Container className="container-xl min-h-full py-8 md:py-12">
       <div className="flex items-center justify-between border-b border-white/10 pb-5">
-        <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">The Afsana search</div><h2 className="font-display text-4xl md:text-6xl mt-3">Search Afsana</h2></div>
-        <button className="icon-btn" onClick={()=>setSearch(false)} aria-label="Close search" autoFocus><X/></button>
+        <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{navCopy.searchEyebrow}</div><h2 className="font-display text-4xl md:text-6xl mt-3">{navCopy.searchTitle}</h2></div>
+        <button className="icon-btn" onClick={()=>setSearch(false)} aria-label={navCopy.searchButton} autoFocus><X/></button>
       </div>
       <form onSubmit={submit} className="mt-14 border-b border-white/25 flex items-center">
         <Search className="w-5 h-5 text-[#d9ff55]"/>
-        <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search fragrances..." className="w-full bg-transparent px-5 py-6 font-display text-4xl md:text-6xl outline-none placeholder:text-white/20"/>
-        <button className="text-[9px] uppercase tracking-[.25em] text-[#d9ff55]" type="submit">Search</button>
+        <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder={navCopy.searchPlaceholder} className="w-full bg-transparent px-5 py-6 font-display text-4xl md:text-6xl outline-none placeholder:text-white/20"/>
+        <button className="text-[9px] uppercase tracking-[.25em] text-[#d9ff55]" type="submit">{navCopy.searchButton}</button>
       </form>
       <div className="mt-14 grid gap-10 md:grid-cols-3">
-        <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">Popular paths</div><div className="mt-5 space-y-3">
-          {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#d9ff55]">{x}</button>)}
+        <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{navCopy.popularPathsTitle}</div><div className="mt-5 space-y-3">
+          {[navCopy.popularSignature,navCopy.popularOud,navCopy.popularFloral,navCopy.popularFresh].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#d9ff55]">{x}</button>)}
         </div></div>
         <div className="md:col-span-2 border-l border-white/10 md:pl-10">
-          <div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">Find your ritual</div>
+          <div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{navCopy.ritualTitle}</div>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {['Discover your signature','Choose a gift','Explore the collection'].map((x,i)=><button key={x} type="button" onClick={()=>{setSearch(false);navigate(i===0?'/discover':i===1?'/gifting':'/shop')}} className="border border-white/10 p-5 text-left hover:border-[#d9ff55] transition"><span className="text-[9px] uppercase tracking-[.18em] text-[#d9ff55]">0{i+1}</span><span className="block mt-8 font-display text-2xl">{x}</span></button>)}
+            {[navCopy.discoverCard,navCopy.giftingCard,navCopy.collectionCard].map((x,i)=><button key={x} type="button" onClick={()=>{setSearch(false);navigate(i===0?'/discover':i===1?'/gifting':'/shop')}} className="border border-white/10 p-5 text-left hover:border-[#d9ff55] transition"><span className="text-[9px] uppercase tracking-[.18em] text-[#d9ff55]">0{i+1}</span><span className="block mt-8 font-display text-2xl">{x}</span></button>)}
           </div>
         </div>
       </div>
