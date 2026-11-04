@@ -196,7 +196,7 @@ export const PAGE_COPY_FIELDS = {
     ['empty','Wishlist empty message','Nothing saved yet. Tap the heart on any perfume.'], ['browse','Browse perfumes button','Browse perfumes'],
   ],
   account: [
-    ['titlePrefix','Account welcome prefix','Hello,'], ['titleFallback','Account welcome fallback','there'], ['subtitle','Account subtitle','Your orders, addresses and details.'],
+    ['pageTitle','Account browser title','My account'], ['titlePrefix','Account welcome prefix','Hello,'], ['titleFallback','Account welcome fallback','there'], ['subtitle','Account subtitle','Your orders, addresses and details.'],
     ['signOut','Sign out button','Sign out'], ['ordersTab','Orders tab','Orders'], ['returnsTab','Returns tab','Returns'],
     ['addressesTab','Addresses tab','Addresses'], ['profileTab','Profile tab','Profile'], ['wishlistLink','Wishlist link','Wishlist'],
     ['ordersEmpty','No orders message','You have not placed an order with this account yet.'], ['orderItemSingular','Order item singular','item'], ['orderItemPlural','Order item plural','items'],
