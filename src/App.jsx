@@ -27,6 +27,7 @@ const RegisterPage = lazy(() => import('./customer/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./customer/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./customer/ResetPasswordPage'));
 import ShopLayout from './shop/ShopLayout';
+import { trackStorefrontPageView } from './shop/trafficTracking';
 const HomePage = lazy(() => import('./shop/pages/HomePage'));
 const ShopPage = lazy(() => import('./shop/pages/ShopPage'));
 const ProductPage = lazy(() => import('./shop/pages/ProductPage'));
