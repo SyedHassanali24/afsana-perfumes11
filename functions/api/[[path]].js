@@ -72,7 +72,12 @@ async function netlifyEvent(request, path) {
 
 export async function onRequest(context) {
   const { request, params, env } = context;
-  const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
+  // The Pages wildcard param shape differs between the Pages runtime and the Durable Object
+  // adapter. Derive API segments from the original URL so both runtimes resolve identical routes.
+  const pathname = new URL(request.url).pathname;
+  const pathParts = pathname.startsWith("/api/")
+    ? pathname.slice("/api/".length).split("/").filter(Boolean)
+    : (Array.isArray(params.path) ? params.path : [params.path].filter(Boolean));
   const group = pathParts[0];
   const functionPath = "/api/" + pathParts.join("/");
   const handler = await getHandler(group);
