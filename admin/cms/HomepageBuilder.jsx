@@ -359,7 +359,7 @@ export default function HomepageBuilder() {
     </div>}
     <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
-        <Field label="Place this section on"><Select disabled={form.type === 'nav_menu' || form.type === 'custom_footer'} value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
+        <Field label="Place this section on"><Select disabled={form.type === 'nav_menu' || form.type === 'custom_footer'} value={form.pageKey || pageKey} onChange={(e) => { const nextPage=e.target.value; setForm((state) => ({ ...state, pageKey: nextPage, config: state.type === 'page_copy' ? { ...state.config, copy: { ...pageCopyDefaults(nextPage), ...(state.config.copy || {}) } } : state.config })); }}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
         <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value, s.pageKey) }))}>{formPageTypes.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
 
@@ -411,6 +411,7 @@ export default function HomepageBuilder() {
           <Field label="3D model poster / fallback image"><Input value={form.config.product3dPosterUrl || ''} onChange={(e) => setConfig('product3dPosterUrl', e.target.value)} /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload 3D poster" onUploaded={(url) => setConfig('product3dPosterUrl', url)} /></Field>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
+              ['homeHeroImageUrl','Homepage hero background'],['homeSignatureImageUrl','Homepage hero product image'],['homeWorldSignatureImageUrl','Homepage signature card image'],['homeWorldOudImageUrl','Homepage oud card image'],['homeWorldFloralImageUrl','Homepage floral card image'],['homeWorldGiftingImageUrl','Homepage gifting card image'],['homeStoryImageUrl','Homepage House story image'],['homePrivateImageUrl','Homepage private collection image'],['homeFilmPosterImageUrl','Homepage film wall poster fallback'],
               ['worldDarkImageUrl','Dark & magnetic world'],['worldSoftImageUrl','Soft & luminous world'],['worldBoldImageUrl','Bright & bold world'],
               ['filmAtmosphereImageUrl','Film 01 — Atmosphere'],['filmBotanicalImageUrl','Film 02 — Botanical'],['filmCraftImageUrl','Film 03 — Craft'],['filmEmotionImageUrl','Film 04 — Emotion'],
               ['journalHeroImageUrl','Journal page hero'],['journalImage1Url','Journal image 01'],['journalImage2Url','Journal image 02'],['journalImage3Url','Journal image 03'],
