@@ -11,7 +11,7 @@ import useShopSettings from './useShopSettings';
 import { resolvePageCopy } from './cmsCopy';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
-const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
+const defaultNav=(copy)=>[['/',copy.homeLink],['/shop',copy.collectionLinkNav],['/discover',copy.discoverLink],['/journal',copy.journalLinkNav],['/about',copy.houseLinkNav],['/gifting',copy.giftingLinkNav]];
 
 function CmsBannerCarousel({ banners = [] }) {
  const items = Array.isArray(banners) ? banners.filter((banner) =>
@@ -80,7 +80,7 @@ export default function ShopLayout(){
  const navigation = navConfig.items;
  const nav = Array.isArray(navigation) && navigation.length
    ? navigation.map((item) => [item.text || '/', item.title || '']).filter(([to,label]) => to.startsWith('/') && label)
-   : defaultNav;
+   : defaultNav(navCopy);
  const logoUrl = String(navConfig.logoUrl || '').trim();
  const brandName = navConfig.brandName || 'AFSANA';
  const brandTagline = navConfig.tagline || 'THE ART OF SCENT';
@@ -97,7 +97,7 @@ export default function ShopLayout(){
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
   <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]">
-    <div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || navCopy.announcementDefault,navCopy.marqueeDiscover,navCopy.marqueeCrafted,navCopy.marqueeCollection]).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div>
+    <div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || navCopy.announcementDefault,navCopy.marqueeDiscover,navCopy.marqueeCrafted,navCopy.marqueeCollection]).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">{navCopy.announcementBrand} <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div>
   </div>
 
   <header className="sticky top-0 z-40 text-[#100d24]">
