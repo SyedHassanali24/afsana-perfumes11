@@ -5,9 +5,11 @@ import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
 import { useCmsPageCopy } from "../shop/cmsCopy";
+import useTitle from "../shop/useTitle";
 
 export default function RegisterPage() {
   const copy = useCmsPageCopy("customer_register");
+  useTitle(copy.browserTitle);
   const {status,register}=useCustomer(); const navigate=useNavigate(); const [f,setF]=useState({name:"",phone:"",email:"",password:""}); const [errors,setErrors]=useState({}); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
   if(status==="authed") return <Navigate to="/account" replace />; const set=k=>e=>setF({...f,[k]:e.target.value});
   const submit=async e=>{e.preventDefault();setError("");setErrors({});const er={};if(f.name.trim().length<2)er.name=copy.nameError;if(f.password.length<8||!/[A-Za-z]/.test(f.password)||!/\d/.test(f.password))er.password=copy.passwordHint;if(Object.keys(er).length)return setErrors(er);setBusy(true);try{await register({name:f.name.trim(),phone:f.phone.trim(),email:f.email.trim(),password:f.password});navigate("/account",{replace:true})}catch(err){const fe={};(err.details||[]).forEach(d=>{fe[d.path]=d.message});setErrors(fe);setError(err.code==="VALIDATION_ERROR"?copy.validationError:err.status===429?copy.rateLimit:err.message)}finally{setBusy(false)}};
