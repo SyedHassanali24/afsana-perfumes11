@@ -3,6 +3,7 @@
 const { json } = require('../../../middleware/http');
 const { connectDB } = require('../../../database/connection');
 const { diagnoseDbError } = require('../../../services/healthDiagnose');
+const { emailProviderReadiness } = require('../../../services/emailReadiness');
 
 // Describes the connection string without revealing it.
 function inspectUri(uri) {
@@ -31,26 +32,25 @@ exports.handler = async () => {
   const env = process.env;
   const production = env.NODE_ENV === 'production' || env.CONTEXT === 'production';
   const jwt = !env.JWT_SECRET ? 'missing' : env.JWT_SECRET.length < 32 ? 'too_short' : 'ok';
-  const emailJsConfigured = Boolean(env.EMAILJS_SERVICE_ID && env.EMAILJS_TEMPLATE_ID && env.EMAILJS_PUBLIC_KEY && env.EMAILJS_PRIVATE_KEY);
-  const gmailConfigured = Boolean(env.GMAIL_CLIENT_ID && env.GMAIL_CLIENT_SECRET && env.GMAIL_REFRESH_TOKEN);
-  const resendConfigured = Boolean(env.RESEND_API_KEY && env.EMAIL_FROM);
-  const emailConfigured = emailJsConfigured || gmailConfigured || resendConfigured;
+  const emailProviders = emailProviderReadiness(env);
   const redisConfigured = Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN);
   const durableRateLimitConfigured = env.DURABLE_RATE_LIMIT_ENABLED === 'true';
   const checks = {
     MONGODB_URI: Boolean(env.MONGODB_URI),
     MONGODB_DB_NAME: Boolean(env.MONGODB_DB_NAME),
     JWT_SECRET: jwt === 'ok',
-    passwordResetEmail: !production || emailConfigured,
+    adminOtpEmail: !production || emailProviders.adminOtp,
+    passwordResetEmail: !production || emailProviders.customerPasswordReset,
     distributedRateLimit: !production || durableRateLimitConfigured || redisConfigured,
   };
   const out = {
-    success: true, version: 'health-v2',                      // if you do not see "health-v2", Netlify is still running OLD code
+    success: true, version: 'health-v3',
     runningOn: { site: env.SITE_NAME || null, context: env.CONTEXT || null },
-    env: checks, jwtSecret: jwt, uriShape: inspectUri(env.MONGODB_URI), database: { connected: false },
+    env: checks, emailProviders, jwtSecret: jwt, uriShape: inspectUri(env.MONGODB_URI), database: { connected: false },
   };
   const fixes = [];
-  if (production && !emailConfigured) fixes.push('Production mein EmailJS, Gmail OAuth, ya Resend email credentials required hain OTP/password reset ke liye.');
+  if (production && !emailProviders.adminOtp) fixes.push('Admin OTP ke liye EmailJS, Gmail OAuth, ya Resend credentials required hain.');
+  if (production && !emailProviders.customerPasswordReset) fixes.push('Customer password reset links ke liye Gmail OAuth, Resend, ya dedicated EmailJS password-reset template required hai.');
   if (production && !durableRateLimitConfigured && !redisConfigured) fixes.push('Production mein Durable Object SQLite ya Upstash distributed rate limiting required hai.');
   if (jwt !== 'ok') fixes.push(jwt === 'missing' ? 'JWT_SECRET khali hai ya Netlify ko mila hi nahi.' : 'JWT_SECRET 32 harf se chhota hai.');
   if (/[<>]/.test(env.MONGODB_URI || '')) fixes.push('MONGODB_URI mein < ya > hai: <db_password> ko asli password se badlein (brackets samet).');
