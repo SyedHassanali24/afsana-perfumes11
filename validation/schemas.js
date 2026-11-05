@@ -367,7 +367,25 @@ const affiliateCreateBody = z.object({
   if (v.commissionType === 'percentage' && v.commissionValue > 100) ctx.addIssue({ code:'custom', path:['commissionValue'], message:'Commission percent cannot exceed 100.' });
   if (v.startsAt && v.expiresAt && v.expiresAt <= v.startsAt) ctx.addIssue({ code:'custom', path:['expiresAt'], message:'Expiry must be after the start date.' });
 });
-const affiliatePatchBody = affiliateCreateBody.omit({ confirmPassword: true, type: true }).partial().extend({ confirmPassword });
+const affiliatePatchBody = z.object({
+  name: z.string().trim().min(2).max(100).optional(),
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9_-]{2,29}$/).optional(),
+  platform: z.string().trim().max(40).optional(), handle: z.string().trim().max(100).optional(),
+  email: z.string().trim().email().max(200).optional().or(z.literal('')),
+  phone: z.string().trim().max(30).optional(),
+  discountType: z.enum(['none','percentage','fixed','free_shipping']).optional(),
+  discountValue: z.number().min(0).max(10000000).optional(), maxDiscount: z.number().min(0).max(10000000).optional(),
+  minOrder: z.number().min(0).max(10000000).optional(),
+  commissionType: z.enum(['percentage','fixed']).optional(), commissionValue: z.number().min(0).max(10000000).optional(),
+  usageLimit: z.number().int().min(1).max(10000000).nullable().optional(),
+  perCustomerLimit: z.number().int().min(0).max(1000).optional(),
+  startsAt: z.coerce.date().nullable().optional(), expiresAt: z.coerce.date().nullable().optional(),
+  isActive: z.boolean().optional(), confirmPassword,
+}).superRefine((v, ctx) => {
+  if (v.discountType === 'percentage' && v.discountValue !== undefined && (v.discountValue < 1 || v.discountValue > 100)) ctx.addIssue({ code:'custom', path:['discountValue'], message:'Discount percent must be from 1 to 100.' });
+  if (v.commissionType === 'percentage' && v.commissionValue !== undefined && v.commissionValue > 100) ctx.addIssue({ code:'custom', path:['commissionValue'], message:'Commission percent cannot exceed 100.' });
+  if (v.startsAt && v.expiresAt && v.expiresAt <= v.startsAt) ctx.addIssue({ code:'custom', path:['expiresAt'], message:'Expiry must be after the start date.' });
+});
 const affiliatePayoutBody = z.object({ reference: z.string().trim().max(100).optional(), confirmPassword });
 const affiliateRetryBody = z.object({ confirmPassword });
 
