@@ -217,7 +217,7 @@ export default function GrowthPage() {
     {tab === "overview" && (isManager ? <>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={MousePointerClick} label="Referral visits" value={number(totals.visits)} detail="Unique first-touch sessions"/>
-        <Metric icon={ShoppingBag} label="Paid orders" value={number(totals.orders)} detail="Orders linked to partner codes"/>
+        <Metric icon={ShoppingBag} label="Paid orders" value={number(totals.orders)} detail={number(totals.linkOrders)} link · {number(totals.codeOrders)} promo-code orders/>
         <Metric icon={Wallet} label="Net attributed revenue" value={money(totals.revenue)} detail={"Refunded " + money(totals.refunded || 0)}/>
         <Metric icon={Users} label="Active partners" value={number(partnerRows.filter((x) => x.partner.isActive).length)} detail={number(partnerRows.length) + " total partner records"}/>
       </div>
@@ -249,7 +249,7 @@ export default function GrowthPage() {
     </> : <>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={MousePointerClick} label="Your referral visits" value={number(own.visits)} detail="Unique sessions through your link"/>
-        <Metric icon={ShoppingBag} label="Paid orders" value={number(own.orders)} detail={(own.conversionRate || 0) + "% visit-to-order conversion"}/>
+        <Metric icon={ShoppingBag} label="Paid orders" value={number(own.orders)} detail={number(own.linkOrders || 0) + " via link · " + number(own.codeOrders || 0) + " via promo code"}/>
         <Metric icon={Wallet} label="Net attributed revenue" value={money(own.revenue)} detail={"Refunded " + money(own.refunded || 0)}/>
         <Metric icon={Wallet} label="Your commission" value={money((own.commission?.pending||0)+(own.commission?.payable||0)+(own.commission?.paid||0))} detail={"Paid " + money(own.commission?.paid || 0)}/>
       </div>
