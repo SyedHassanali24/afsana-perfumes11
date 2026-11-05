@@ -2,8 +2,10 @@
 // NOT run by Claude (no real DB there) - you run it on your PC.
 //   Terminal 1:  npm run api            (wait until it says "Server now ready")
 //   Terminal 2:  npm run e2e            (or:  BASE=http://localhost:8888 node tools/e2e-smoke.cjs)
-// Optional admin checks: E2E_EMAIL + E2E_PASSWORD. Production Turnstile also needs a fresh E2E_TURNSTILE_TOKEN
-// for action staff_login. If Owner 2FA is requested, provide E2E_OTP + a fresh E2E_2FA_TURNSTILE_TOKEN.
+// Optional admin checks are two-stage because the OTP is created only after the first login request:
+//   E2E_PHASE=challenge E2E_EMAIL=... E2E_PASSWORD=... E2E_TURNSTILE_TOKEN=<fresh staff_login token> npm run e2e
+//   E2E_PHASE=verify E2E_EMAIL=... E2E_CHALLENGE_ID=<printed id> E2E_OTP=<email code>
+//     E2E_2FA_TURNSTILE_TOKEN=<fresh staff_2fa token> E2E_DEVICE_ID=<same device id> npm run e2e
 const BASE = (process.env.BASE || 'http://localhost:8888').replace(/\/$/, '');
 const api = (p) => `${BASE}/api${p}`;
 let pass = 0; let fail = 0; const failed = [];
@@ -42,46 +44,57 @@ async function call(method, p, { body, cookie } = {}) {
   const w = await call('GET', '/wishlist');
   ok('GET /wishlist refused without login', w.status === 401 || w.status === 403, `(got ${w.status})`);
 
-  const email = process.env.E2E_EMAIL; const password = process.env.E2E_PASSWORD;
-  if (email && password) {
-    console.log('4) Owner login + admin screens (read-only)');
-    const deviceId = process.env.E2E_DEVICE_ID || 'afsana-e2e-device-00000000000000000001';
-    const loginBody = {
-      email,
-      password,
-      deviceId,
-      ...(process.env.E2E_TURNSTILE_TOKEN ? { turnstileToken: process.env.E2E_TURNSTILE_TOKEN } : {}),
-    };
-    const login = await call('POST', '/auth/login', { body: loginBody });
-    let authResult = login;
-    if (login.status === 200 && login.data?.requiresTwoFactor) {
-      if (!process.env.E2E_OTP || !process.env.E2E_2FA_TURNSTILE_TOKEN) {
-        console.log('  SKIP  Owner admin screens: this device requires 2FA; provide E2E_OTP and a fresh E2E_2FA_TURNSTILE_TOKEN.');
-        authResult = null;
+  const email = process.env.E2E_EMAIL;
+  const password = process.env.E2E_PASSWORD;
+  const phase = process.env.E2E_PHASE || 'challenge';
+  const deviceId = process.env.E2E_DEVICE_ID || 'afsana-e2e-device-00000000000000000001';
+  let authResult = null;
+
+  if (email && phase === 'verify') {
+    const challengeId = process.env.E2E_CHALLENGE_ID;
+    const otp = process.env.E2E_OTP;
+    const token = process.env.E2E_2FA_TURNSTILE_TOKEN;
+    if (!challengeId || !otp || !token) {
+      console.log('4) Skipped 2FA verification (set E2E_CHALLENGE_ID, E2E_OTP and a fresh E2E_2FA_TURNSTILE_TOKEN).');
+    } else {
+      console.log('4) Verify the already-issued Owner 2FA challenge (read-only admin screens)');
+      authResult = await call('POST', '/auth/login/2fa/verify', {
+        body: { email, challengeId, otp, deviceId, turnstileToken: token }
+      });
+      ok('Owner 2FA verification works', authResult.status === 200, `(got ${authResult.status} ${authResult.data?.error?.message || ''})`);
+    }
+  } else if (email && password && phase === 'challenge') {
+    const token = process.env.E2E_TURNSTILE_TOKEN;
+    if (!token) {
+      console.log('4) Skipped Owner login (provide a fresh E2E_TURNSTILE_TOKEN for the staff_login action).');
+    } else {
+      console.log('4) Owner login challenge (read-only)');
+      const login = await call('POST', '/auth/login', {
+        body: { email, password, deviceId, turnstileToken: token }
+      });
+      if (login.status === 200 && login.data?.requiresTwoFactor) {
+        ok('Owner login accepted and 2FA challenge issued', true);
+        console.log('  NEXT  Check the owner inbox, then run again with:');
+        console.log(`  E2E_PHASE=verify E2E_EMAIL=${email} E2E_CHALLENGE_ID=${login.data.challengeId} E2E_OTP=<6-digit-code> E2E_DEVICE_ID=${deviceId} E2E_2FA_TURNSTILE_TOKEN=<fresh-token>`);
       } else {
-        authResult = await call('POST', '/auth/login/2fa/verify', {
-          body: {
-            email,
-            challengeId: login.data.challengeId,
-            otp: process.env.E2E_OTP,
-            deviceId,
-            turnstileToken: process.env.E2E_2FA_TURNSTILE_TOKEN,
-          }
-        });
+        authResult = login;
+        ok('Owner login works (trusted device or no 2FA challenge)', login.status === 200, `(got ${login.status} ${login.data?.error?.message || ''})`);
       }
     }
-    if (authResult) {
-      ok('Owner login / 2FA works', authResult.status === 200, `(got ${authResult.status} ${authResult.data?.error?.message || ''})`);
-      const cookie = (authResult.setCookie || []).map((c) => c.split(';')[0]).join('; ');
-      if (authResult.status === 200 && cookie) {
-        for (const p of ['/customers/admin', '/finance/admin/summary?period=month', '/reviews/admin', '/shipping/admin', '/notifications/admin', '/orders/admin/list', '/analytics/dashboard']) {
-          const r = await call('GET', p, { cookie });
-          ok(`GET ${p} answers 200 for Owner`, r.status === 200, `(got ${r.status} ${r.data && r.data.error ? r.data.error.message || '' : ''})`);
-        }
-      }
-    }
+  } else if (!email) {
+    console.log('4) Skipped admin checks (set E2E_EMAIL to run the Owner test).');
   } else {
-    console.log('4) Skipped admin checks (set E2E_EMAIL and E2E_PASSWORD to run them)');
+    console.log('4) Skipped admin checks (challenge phase requires E2E_EMAIL + E2E_PASSWORD; verify phase requires E2E_PHASE=verify).');
+  }
+
+  if (authResult && authResult.status === 200) {
+    const cookie = (authResult.setCookie || []).map((c) => c.split(';')[0]).join('; ');
+    if (cookie) {
+      for (const p of ['/customers/admin', '/finance/admin/summary?period=month', '/reviews/admin', '/shipping/admin', '/notifications/admin', '/orders/admin/list', '/analytics/dashboard']) {
+        const r = await call('GET', p, { cookie });
+        ok(`GET ${p} answers 200 for Owner`, r.status === 200, `(got ${r.status} ${r.data && r.data.error ? r.data.error.message || '' : ''})`);
+      }
+    }
   }
 
   console.log(`\n${pass} passed, ${fail} failed`);
