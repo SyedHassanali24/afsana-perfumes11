@@ -72,7 +72,7 @@ async function partnerMetrics(partner) {
       { $match: { storeId: 'main', 'referral.partnerId': partner._id, paymentStatus: { $in: ['Paid', 'Partially Refunded', 'Refunded'] } } },
       { $lookup: { from: 'refunds', let: { oid: '$_id' }, pipeline: [{ $match: { $expr: { $eq: ['$orderId', '$$oid'] } } }, { $group: { _id: null, total: { $sum: '$amount' } } }], as: 'refunds' } },
       { $addFields: { refunded: { $ifNull: [{ $first: '$refunds.total' }, 0] } } },
-      { $group: { _id: null, orders: { $sum: 1 }, grossRevenue: { $sum: '$total' }, refunded: { $sum: '$refunded' }, revenue: { $sum: { $max: [0, { $subtract: ['$total', '$refunded'] }] } } } },
+      { $group: { _id: null, orders: { $sum: 1 }, linkOrders: { $sum: { $cond: [{ $eq: ['$referral.source', 'referral_link'] }, 1, 0] } }, codeOrders: { $sum: { $cond: [{ $eq: ['$referral.source', 'promo_code'] }, 1, 0] } }, grossRevenue: { $sum: '$total' }, refunded: { $sum: '$refunded' }, revenue: { $sum: { $max: [0, { $subtract: ['$total', '$refunded'] }] } } } },
     ]),
     AffiliateCommission.aggregate([{ $match: { storeId: 'main', partnerId: partner._id } }, { $group: {
       _id: '$status', rows: { $sum: 1 }, amount: { $sum: '$amount' }, clawback: { $sum: '$clawbackAmount' },
@@ -84,7 +84,7 @@ async function partnerMetrics(partner) {
       { $sort: { visits: -1 } },
     ]),
   ]);
-  const order = orders[0] || { orders: 0, grossRevenue: 0, refunded: 0, revenue: 0 };
+  const order = orders[0] || { orders: 0, linkOrders: 0, codeOrders: 0, grossRevenue: 0, refunded: 0, revenue: 0 };
   const sourceBreakdown = (trafficRows || []).map((row) => ({ source: String(row._id || 'other'), visits: Number(row.visits) || 0 }));
   const visits = sourceBreakdown.reduce((sum, row) => sum + row.visits, 0);
   const money = { pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 };
@@ -92,7 +92,7 @@ async function partnerMetrics(partner) {
     if (money[row._id] !== undefined) money[row._id] = row.amount || 0;
     if (row._id === 'clawback_due') money.clawback += row.clawback || 0;
   }
-  return { visits, sourceBreakdown, orders: order.orders || 0, grossRevenue: order.grossRevenue || 0, refunded: order.refunded || 0, revenue: order.revenue || 0, conversionRate: visits ? Math.round((order.orders / visits) * 1000) / 10 : 0, commission: money };
+  return { visits, sourceBreakdown, orders: order.orders || 0, linkOrders: order.linkOrders || 0, codeOrders: order.codeOrders || 0, grossRevenue: order.grossRevenue || 0, refunded: order.refunded || 0, revenue: order.revenue || 0, conversionRate: visits ? Math.round(((order.linkOrders || 0) / visits) * 1000) / 10 : 0, commission: money };
 }
 
 async function adminDashboard() {
@@ -107,10 +107,10 @@ async function adminDashboard() {
   const sourceBreakdown = [...sourceTotals.entries()].map(([source, visits]) => ({ source, visits })).sort((a, b) => b.visits - a.visits);
   const totals = rows.reduce((out, row) => {
     const m = row.metrics;
-    for (const key of ['visits','orders','grossRevenue','refunded','revenue']) out[key] += m[key] || 0;
+    for (const key of ['visits','orders','linkOrders','codeOrders','grossRevenue','refunded','revenue']) out[key] += m[key] || 0;
     for (const key of ['pending','payable','paid','reversed','clawback_due','clawback']) out[key] += m.commission[key] || 0;
     return out;
-  }, { visits: 0, orders: 0, grossRevenue: 0, refunded: 0, revenue: 0, pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 });
+  }, { visits: 0, orders: 0, linkOrders: 0, codeOrders: 0, grossRevenue: 0, refunded: 0, revenue: 0, pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 });
   return { totals, partners: rows, sourceBreakdown };
 }
 
@@ -120,7 +120,7 @@ async function myDashboard(ctx) {
     const staff = await Staff.findOne({ userId: ctx.user._id, isDeleted: false }).lean();
     if (staff) p = (await ensureStaffPartner(staff)).toObject();
   }
-  if (!p) return { partner: null, metrics: { visits: 0, sourceBreakdown: [], orders: 0, grossRevenue: 0, refunded: 0, revenue: 0, commission: { pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 } } };
+  if (!p) return { partner: null, metrics: { visits: 0, sourceBreakdown: [], orders: 0, linkOrders: 0, codeOrders: 0, grossRevenue: 0, refunded: 0, revenue: 0, commission: { pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 } } };
   return { partner: cleanPartner(p), metrics: await partnerMetrics(p) };
 }
 
