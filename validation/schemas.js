@@ -86,6 +86,8 @@ const checkoutBody = z.object({
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
   couponCode: z.string().trim().max(40).optional(),
+  referralCode: z.string().trim().max(40).optional(),
+  whatsappMarketingOptIn: z.boolean().default(false),
 });
 const trackQuery = z.object({ phone });
 const ordersQuery = z.object({
@@ -342,6 +344,7 @@ const settingsBank = z.object({ enabled: z.boolean(), bankName: sText(80), accou
   .superRefine((v, ctx) => { if (v.enabled && (!v.accountTitle || !(v.accountNumber || v.iban))) ctx.addIssue({ code: 'custom', path: ['accountTitle'], message: 'To show bank details, fill the account title and the account number or IBAN.' }); });
 const settingsShipping = z.object({ flatRate: z.number().int().min(0).max(10000), freeAbove: z.number().int().min(0).max(1000000), confirmPassword });
 const settingsReturns = z.object({ windowDays: z.number().int().min(1).max(90), confirmPassword });
+const settingsGrowth = z.object({ welcomeRewardEnabled: z.boolean(), welcomeDiscountPercent: z.number().int().min(1).max(100), welcomeMaxDiscount: z.number().int().min(0).max(10000000), welcomeMinOrder: z.number().int().min(0).max(10000000), welcomeValidityDays: z.number().int().min(1).max(180), commissionHoldDays: z.number().int().min(1).max(90), whatsappTemplateName: z.string().trim().regex(/^[a-z0-9_]{3,512}$/), whatsappLanguage: z.string().trim().min(2).max(10), confirmPassword });
 
 // ---------- backup (owner export) ----------
 const backupOverview = z.object({ confirmPassword });
@@ -349,7 +352,7 @@ const backupData = z.object({ name: z.string().trim().max(40), after: z.string()
 const backupPictures = z.object({ after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
 
 module.exports = {
-  settingsStore, settingsBank, settingsShipping, settingsReturns,
+  settingsStore, settingsBank, settingsShipping, settingsReturns, settingsGrowth,
   backupOverview, backupData, backupPictures,
   uploadBody, chunkedUploadBody,
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch, homepageExperiencePublishBody,
