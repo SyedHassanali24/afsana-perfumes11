@@ -140,14 +140,56 @@ async function requestPasswordReset(email) {
 }
 async function verifyPasswordResetOtp(email, otp) {
   const normalized = String(email || '').trim().toLowerCase();
+  const now = new Date();
   const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+resetOtpHash');
-  if (!user || !user.resetOtpHash || !user.resetOtpExpires || user.resetOtpExpires < new Date()) throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.');
+  if (!user || !user.resetOtpHash || !user.resetOtpExpires || user.resetOtpExpires < now) throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.');
   if ((user.resetOtpAttempts || 0) >= OTP_MAX_ATTEMPTS) throw new ApiError(429, 'OTP_LOCKED', 'Too many OTP attempts. Request a new code.');
-  if (otpDigest(String(otp)) !== user.resetOtpHash) { user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1; await user.save(); throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.'); }
+
+  const candidateHash = otpDigest(String(otp));
+  if (candidateHash !== user.resetOtpHash) {
+    // Atomic increment prevents parallel wrong-code requests from racing below the cap.
+    const attempts = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        resetOtpHash: user.resetOtpHash,
+        resetOtpExpires: { $gt: now },
+        $or: [{ resetOtpAttempts: { $exists: false } }, { resetOtpAttempts: { $lt: OTP_MAX_ATTEMPTS } }],
+      },
+      { $inc: { resetOtpAttempts: 1 } },
+      { new: true },
+    ).select('resetOtpAttempts');
+    if (!attempts) throw new ApiError(429, 'OTP_LOCKED', 'Too many OTP attempts. Request a new code.');
+    if (attempts.resetOtpAttempts >= OTP_MAX_ATTEMPTS) {
+      await User.updateOne(
+        { _id: user._id, resetOtpHash: user.resetOtpHash, resetOtpAttempts: { $gte: OTP_MAX_ATTEMPTS } },
+        { $unset: { resetOtpHash: '', resetOtpExpires: '' } },
+      );
+      throw new ApiError(429, 'OTP_LOCKED', 'Too many OTP attempts. Request a new code.');
+    }
+    throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.');
+  }
+
   const resetToken = crypto.randomBytes(32).toString('hex');
-  user.resetOtpVerifiedHash = sha256(resetToken); user.resetOtpVerifiedExpires = new Date(Date.now() + RESET_TTL_MS);
-  user.resetOtpHash = undefined; user.resetOtpExpires = undefined; user.resetOtpAttempts = 0;
-  await user.save();
+  // The correct OTP is consumed atomically; two simultaneous verifications cannot
+  // create separate reset tokens from the same six-digit code.
+  const verified = await User.findOneAndUpdate(
+    {
+      _id: user._id,
+      resetOtpHash: candidateHash,
+      resetOtpExpires: { $gt: now },
+      $or: [{ resetOtpAttempts: { $exists: false } }, { resetOtpAttempts: { $lt: OTP_MAX_ATTEMPTS } }],
+    },
+    {
+      $set: {
+        resetOtpVerifiedHash: sha256(resetToken),
+        resetOtpVerifiedExpires: new Date(now.getTime() + RESET_TTL_MS),
+        resetOtpAttempts: 0,
+      },
+      $unset: { resetOtpHash: '', resetOtpExpires: '' },
+    },
+    { new: true },
+  ).select('_id');
+  if (!verified) throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.');
   return { resetToken };
 }
 async function resetPasswordWithToken(email, resetToken, newPassword) {
@@ -309,34 +351,78 @@ async function login({ email, password, ip, userAgent, deviceId }) {
 
 async function verifyAdminLoginOtp({ email, challengeId, otp, deviceId, ip, userAgent }) {
   const normalized = String(email || '').trim().toLowerCase();
+  const now = new Date();
   const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' })
     .select('+loginOtpChallengeHash +loginOtpHash +loginOtpDeviceHash');
-  if (!user || !user.loginOtpChallengeHash || !user.loginOtpHash || !user.loginOtpExpires || user.loginOtpExpires < new Date() ||
+  if (!user || !user.loginOtpChallengeHash || !user.loginOtpHash || !user.loginOtpExpires || user.loginOtpExpires < now ||
       sha256(String(challengeId || '')) !== user.loginOtpChallengeHash ||
       sha256(String(deviceId || '')) !== user.loginOtpDeviceHash) {
     throw new ApiError(400, 'INVALID_OTP', 'This verification request is invalid or expired. Sign in again.');
   }
   if ((user.loginOtpAttempts || 0) >= OTP_MAX_ATTEMPTS) {
-    clearLoginChallenge(user); await user.save();
+    await User.updateOne(
+      { _id: user._id, loginOtpChallengeHash: user.loginOtpChallengeHash },
+      { $unset: { loginOtpChallengeHash: '', loginOtpHash: '', loginOtpDeviceHash: '', loginOtpExpires: '' }, $set: { loginOtpAttempts: 0 } },
+    );
     throw new ApiError(429, 'OTP_LOCKED', 'Too many verification attempts. Sign in again.');
   }
-  if (otpDigest(String(otp || '')) !== user.loginOtpHash) {
-    user.loginOtpAttempts = (user.loginOtpAttempts || 0) + 1;
-    if (user.loginOtpAttempts >= OTP_MAX_ATTEMPTS) clearLoginChallenge(user);
-    await user.save();
+
+  const candidateHash = otpDigest(String(otp || ''));
+  if (candidateHash !== user.loginOtpHash) {
+    const attempts = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        loginOtpChallengeHash: user.loginOtpChallengeHash,
+        loginOtpHash: user.loginOtpHash,
+        loginOtpExpires: { $gt: now },
+        $or: [{ loginOtpAttempts: { $exists: false } }, { loginOtpAttempts: { $lt: OTP_MAX_ATTEMPTS } }],
+      },
+      { $inc: { loginOtpAttempts: 1 } },
+      { new: true },
+    ).select('loginOtpAttempts');
+    if (!attempts) throw new ApiError(429, 'OTP_LOCKED', 'Too many verification attempts. Sign in again.');
+    if (attempts.loginOtpAttempts >= OTP_MAX_ATTEMPTS) {
+      await User.updateOne(
+        { _id: user._id, loginOtpChallengeHash: user.loginOtpChallengeHash, loginOtpAttempts: { $gte: OTP_MAX_ATTEMPTS } },
+        { $unset: { loginOtpChallengeHash: '', loginOtpHash: '', loginOtpDeviceHash: '', loginOtpExpires: '' }, $set: { loginOtpAttempts: 0 } },
+      );
+      throw new ApiError(429, 'OTP_LOCKED', 'Too many verification attempts. Sign in again.');
+    }
     throw new ApiError(400, 'INVALID_OTP', 'Incorrect verification code.');
   }
 
   const staff = await Staff.findOne({ userId: user._id, isDeleted: false, status: 'Active' });
   const role = staff ? await Role.findById(staff.roleId) : null;
   if (!staff || !role || !isPrivilegedRole(role)) throw E.forbidden('This account is not active.');
-  const now = new Date();
-  user.trustedDevices = (user.trustedDevices || []).filter((d) => d.expiresAt && d.expiresAt > now && d.tokenHash !== user.loginOtpDeviceHash);
-  user.trustedDevices.push({ tokenHash: user.loginOtpDeviceHash, label: String(userAgent || 'Trusted browser').slice(0, 120), lastUsedAt: now, expiresAt: new Date(now.getTime() + TRUSTED_DEVICE_DAYS * 86400000) });
-  user.trustedDevices = user.trustedDevices.slice(-15);
-  clearLoginChallenge(user);
-  await user.save();
-  return createStaffSession(user, staff, { ip, userAgent });
+
+  const trustedDevices = (user.trustedDevices || [])
+    .filter((d) => d.expiresAt && d.expiresAt > now && d.tokenHash !== user.loginOtpDeviceHash);
+  trustedDevices.push({
+    tokenHash: user.loginOtpDeviceHash,
+    label: String(userAgent || 'Trusted browser').slice(0, 120),
+    lastUsedAt: now,
+    expiresAt: new Date(now.getTime() + TRUSTED_DEVICE_DAYS * 86400000),
+  });
+
+  // Consume the challenge atomically. A replay or a parallel submit cannot create
+  // another session from the same one-time admin login code.
+  const verified = await User.findOneAndUpdate(
+    {
+      _id: user._id,
+      loginOtpChallengeHash: sha256(String(challengeId || '')),
+      loginOtpHash: candidateHash,
+      loginOtpDeviceHash: sha256(String(deviceId || '')),
+      loginOtpExpires: { $gt: now },
+      $or: [{ loginOtpAttempts: { $exists: false } }, { loginOtpAttempts: { $lt: OTP_MAX_ATTEMPTS } }],
+    },
+    {
+      $set: { trustedDevices: trustedDevices.slice(-15), loginOtpAttempts: 0 },
+      $unset: { loginOtpChallengeHash: '', loginOtpHash: '', loginOtpDeviceHash: '', loginOtpExpires: '' },
+    },
+    { new: true },
+  );
+  if (!verified) throw new ApiError(400, 'INVALID_OTP', 'This verification request is invalid or expired. Sign in again.');
+  return createStaffSession(verified, staff, { ip, userAgent });
 }
 
 async function authenticate(req) {
