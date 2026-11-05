@@ -14,8 +14,8 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 
 ## GitHub release state
 - The working branch includes the latest CMS / store / security work.
-- Latest application/security commit deployed: `c9e3f6094f6563905efc444133f6637d121c5668`.
-- Latest verified Cloudflare Worker version: `064d312e-1bdc-4065-99e6-328ca6e9487f`, 100% traffic. GitHub Actions deploy run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42043838088 (attempt 3 successful).
+- Latest tested application commit deployed: `3fd66da4f9e84ff3a14707f6c6ccfa8a6afb5056` (OTP provider failover + customer email compatibility). Latest test-only commit: `a98df335f229840431f7dc81d242740cee495522` (WhatsApp outbox tests).
+- Latest verified Cloudflare Worker version: `bc746997-0969-455a-b453-757c32c41f60`, 100% traffic. Deployment run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42053629921 (attempt 2 successful; CI + live smoke passed).
 - PR #7 is still Draft, open, unmerged, and GitHub reports it as dirty / not mergeable. Do not force-merge it into `main`.
 - Deployments are triggered from the feature branch by `.github/workflows/cloudflare-worker.yml`.
 - Re-check branch head and latest GitHub Actions before claiming the very latest code is deployed.
@@ -48,7 +48,9 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 - Cloudflare Turnstile is required for staff login/2FA/password reset, customer register/login/password reset, and checkout. Siteverify validates success, action and hostname. Requests fail closed when production verification is unavailable.
 - Turnstile widget currently allows only `afsana-perfumes11.eastwala12.workers.dev`. When a custom domain is purchased, add apex/www hostnames to the Turnstile widget's allowed domains and update `SITE_URL`, `ALLOWED_ORIGINS`, canonical redirects and cookie behavior before launch.
 - Turnstile widget name: `AFSANA Production Website`. Public sitekey is in `src/components/TurnstileWidget.jsx` and `cloudflare/wrangler.toml`. Secret is stored as Cloudflare Worker secret `TURNSTILE_SECRET_KEY`; never print or ask user to paste it into chat.
-- Password reset email supports EmailJS, Gmail OAuth or Resend. Cloudflare secret names were verified as present, but actual delivery to the owner inbox still needs a real test.
+- Admin OTP delivery uses EmailJS -> Gmail OAuth -> Resend failover; partial EmailJS configuration no longer blocks the other configured providers. Customer password-reset email tries Gmail OAuth, Resend, then an optional dedicated EmailJS reset template. Provider outages return safe `503 EMAIL_UNAVAILABLE` / `503 SERVICE_UNAVAILABLE` responses.
+- Customer email identifiers are trimmed/lowercased; legacy mixed-case stored emails are queried using case-insensitive anchored exact match. Registration avoids case-only duplicate accounts.
+- Cloudflare secret names for EmailJS, Gmail OAuth, Owner mailbox and Turnstile are configured. Health-v3 reports admin OTP and customer password-reset readiness separately. This verifies configuration presence, not actual inbox delivery; a real inbox test still requires owner/customer participation.
 
 ## Backup and recovery
 - Admin data export is encrypted locally in browser with PBKDF2-SHA256 + AES-256-GCM and downloads an `.afsana` file.
@@ -67,18 +69,21 @@ The GitHub Cloudflare deploy workflow runs `tools/cloudflare-smoke.mjs`, which c
 - Missing / invalid Turnstile challenges are rejected and Siteverify is wired.
 - Products API and public CMS API.
 - Protected analytics/auth endpoints return expected unauthenticated status.
+- All 10 staff/customer/checkout write and authentication entrypoints reject missing Turnstile before DB access; invalid-token requests are rejected by Siteverify.
+- Products and CMS endpoints return expected responses; unauthenticated staff/analytics routes remain protected.
 - Existing public media supports MP4 byte-range playback.
-Latest verified on application commit `c9e3f6094f6563905efc444133f6637d121c5668` / Worker version `064d312e-1bdc-4065-99e6-328ca6e9487f`: MongoDB connected; health readiness OK; CORS/security headers passed; Turnstile CSP and Siteverify invalid-token checks passed; products=2; CMS=200; 5 uploaded images and 2 MP4s returned byte-range HTTP 206; staff auth route returned expected 401 without a cookie. Re-check the latest run before relying on these results for any later branch head.
+- WhatsApp outbox unit tests cover consent gating, Pakistan phone formatting, setup-required state, accepted status, single-send idempotency and template payload. Tests use fake providers; no message is sent.
+Latest deployment run on application commit `3fd66da4f9e84ff3a14707f6c6ccfa8a6afb5056` / Worker version `bc746997-0969-455a-b453-757c32c41f60`: MongoDB connected; health readiness OK including admin OTP + customer reset provider configuration; CORS/security headers passed; 10 Turnstile guards passed; Siteverify invalid-token check passed; products=2; CMS=200; 5 images and 2 MP4s returned byte-range HTTP 206; staff auth route returned expected 401 without a cookie. Re-check latest run before relying on results for a later branch head.
 
 ## Launch blockers that need external setup / real verification
 1. **Domain:** No custom domain is currently attached. User has not bought one. After purchase, attach the domain/zone to Cloudflare, preserve MX/SPF/DKIM/DMARC records, connect Worker hostname, update Turnstile allowlist, allowed origins and canonical URLs, and test SSL + admin cookies.
-2. **WhatsApp:** Meta Developer account confirmation stalled. `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` are not configured. Do not mark messages as sent. Once Meta is verified, add these as Cloudflare Worker secrets (never in chat). The template `afsana_first_purchase_reward` also requires Meta approval.
+2. **WhatsApp:** Outbox + first-paid-purchase reward flow is implemented and unit-tested. It only queues a reward when customer WhatsApp marketing consent is recorded, deduplicates per customer, and reports `setup_required` instead of Sent without credentials. Meta Developer/Business verification is not complete; Worker secrets `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` are absent. The template `afsana_first_purchase_reward` requires Meta approval and a real opted-in test recipient before any live send. The storefront floating WhatsApp link points to +92 3132956206.
 3. **Payment gateway:** No payment provider/account/credentials have been supplied. Current checkout supports COD and bank/manual payment modes. Do not claim card/wallet gateway integration or verified settlement/webhook.
 4. **Email:** EmailJS/Gmail credentials exist as Worker secrets, but actual OTP delivery and receipt delivery still need a real inbox verification.
 5. **Commerce E2E:** No real staged purchase has been completed. Verify guest + registered checkout, COD/manual bank workflow, shipping/discount, duplicate idempotency, concurrent inventory, email, order tracking, returns/refunds and admin order processing in a dedicated test database. Never use live production inventory as a destructive test bed.
-6. **Recovery:** Encrypted export is implemented and unit-tested, but automatic offsite backups and full restore drill against a separate staging DB remain.
+6. **Recovery:** Encrypted `.afsana` export/restore implementation is unit-tested, including cross-runtime decryption and tamper/wrong-passphrase handling. Automatic offsite backups and a full restore drill against a separate staging DB remain; no paid R2 or external backup target has been configured.
 7. **WAF:** Managed WAF/zone rules cannot be claimed as configured while the project has only workers.dev and no zone/custom domain. Configure managed rules and bot protections after domain attachment.
-8. **Security assessment:** External penetration test and valid-token browser challenge pass have not been performed. Live smoke verifies invalid-token rejection and CSP, not a successful human challenge.
+8. **Security assessment:** External penetration test and valid-token human browser challenge pass have not been performed. Live smoke verifies missing/invalid-token rejection and CSP, not a successful human challenge.
 
 ## Safe working rules
 - Do not modify production data to test.
