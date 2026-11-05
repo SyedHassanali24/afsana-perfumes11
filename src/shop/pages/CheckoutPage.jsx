@@ -12,6 +12,7 @@ import { Totals } from './CartPage';
 import { money, PAYMENT_LABEL, BANK_NOTE } from '../format';
 import useTitle from '../useTitle';
 import useShopSettings from '../useShopSettings';
+import { getReferralCode } from '../trafficTracking';
 
 const blank = { name: '', phone: '', email: '', line1: '', line2: '', city: '', postalCode: '' };
 
@@ -30,6 +31,7 @@ export default function CheckoutPage() {
   const [f, setF] = useState(blank);
   const { data: q, loading, error, reload } = useQuote(items, couponCode, f.city);
   const [pay, setPay] = useState('COD');
+  const [whatsappMarketingOptIn, setWhatsappMarketingOptIn] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -54,7 +56,7 @@ export default function CheckoutPage() {
     if (busy || !q?.canCheckout) return;
     setErrors({}); setFormError('');
     const checkoutPayload = {
-      items, couponCode: couponCode || undefined, paymentMethod: pay,
+      items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,\n      whatsappMarketingOptIn, paymentMethod: pay,
       customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
       shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
     };
@@ -93,6 +95,10 @@ export default function CheckoutPage() {
                   <Field label="Phone" error={errors['customer.phone']} hint="We call or message this number about your order."><Input required inputMode="tel" autoComplete="tel" value={f.phone} onChange={set('phone')} placeholder="0300 1234567" error={errors['customer.phone']} /></Field>
                   <Field label="Email" error={errors['customer.email']}><Input required type="email" autoComplete="email" value={f.email} onChange={set('email')} placeholder="you@example.com" error={errors['customer.email']} /></Field>
                 </div>
+                <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
+                  <input type="checkbox" checked={whatsappMarketingOptIn} onChange={(e) => setWhatsappMarketingOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
+                  <span><strong className="font-medium text-[#263e0e]">Send my Afsana first-purchase reward on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. You agree to receive your welcome coupon and occasional Afsana offers on this number. You can opt out later.</span></span>
+                </label>
               </section>
               <section className="space-y-4 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
                 <h2 className="font-display text-xl">Delivery address</h2>
