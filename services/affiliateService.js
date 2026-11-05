@@ -118,6 +118,7 @@ async function myDashboard(ctx) {
 }
 
 async function listCommissions(query = {}) {
+  await AffiliateCommission.updateMany({ storeId: 'main', status: 'pending', holdUntil: { $lte: new Date() } }, { $set: { status: 'payable' } });
   const filter = { storeId: 'main', ...(query.status ? { status: query.status } : {}) };
   const rows = await AffiliateCommission.find(filter).sort({ createdAt: -1 }).limit(200).lean();
   return { commissions: rows.map((c) => ({
