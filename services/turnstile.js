@@ -40,6 +40,10 @@ async function verifyTurnstile({ token, action, hostname, remoteIp, secret = pro
     throw error;
   }
 
+  const errorCodes = Array.isArray(result?.['error-codes']) ? result['error-codes'] : [];
+  if (errorCodes.includes('invalid-input-secret') || errorCodes.includes('missing-input-secret')) {
+    throw new ApiError(503, 'TURNSTILE_CONFIG_INVALID', 'Security verification is misconfigured. Please contact support.');
+  }
   const validHost = String(hostname || '').toLowerCase().replace(/\.$/, '');
   const returnedHost = String(result?.hostname || '').toLowerCase().replace(/\.$/, '');
   const validAction = !action || result?.action === action;
