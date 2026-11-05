@@ -52,20 +52,20 @@ export function AuthProvider({ children }) {
     return () => { window.removeEventListener('afsana:unauthorized', onUnauthorized); window.removeEventListener('afsana:must-change-password', onMustChange); };
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, turnstileToken) => {
     if (DEMO_ADMIN && email.toLowerCase() === DEMO_USER.email && password === 'AfsanaDemo123!') {
       localStorage.setItem(DEMO_SESSION_KEY, '1');
       setState({ status: 'authed', user: DEMO_USER, permissions: DEMO_PERMISSIONS, mustChangePassword: false });
       return { demo: true };
     }
-    const result = await authApi.login(email, password, getStaffDeviceId());
+    const result = await authApi.login(email, password, getStaffDeviceId(), turnstileToken);
     if (result?.requiresTwoFactor) return result;
     await refresh();
     return result;
   }, [refresh]);
 
-  const completeTwoFactor = useCallback(async (email, challengeId, otp) => {
-    await authApi.verifyLoginOtp(email, challengeId, otp, getStaffDeviceId());
+  const completeTwoFactor = useCallback(async (email, challengeId, otp, turnstileToken) => {
+    await authApi.verifyLoginOtp(email, challengeId, otp, getStaffDeviceId(), turnstileToken);
     await refresh();
   }, [refresh]);
 
