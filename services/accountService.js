@@ -5,6 +5,7 @@ const { E, ApiError } = require('../middleware/errors');
 const { startSession, verifyLogin } = require('../middleware/customerAuth');
 const { sha256 } = require('../middleware/auth');
 const { normalizePhone } = require('./phone');
+const { normalizeEmail } = require('./emailRules');
 const { withTx } = require('./tx');
 const { sendPasswordReset } = require('./mailer');
 const { MAX_ADDRESSES, normalizeDefaults } = require('./addressRules');
@@ -20,12 +21,13 @@ const shape = (c) => ({
 // NOTE: no automatic merge with guest customers who ordered with the same phone: the phone is not verified yet,
 // so linking would let anyone claim someone else's order history. Do this after OTP/email verification exists.
 async function register(body, meta) {
-  const or = [{ phone: body.phone }, ...(body.email ? [{ email: body.email.toLowerCase() }] : [])];
+  const email = normalizeEmail(body.email);
+  const or = [{ phone: body.phone }, ...(email ? [{ email }] : [])];
   if (await User.exists({ $or: or })) throw E.conflict('An account with this phone number or email already exists. Try signing in.');
   const passwordHash = await hash(body.password);
   const user = await withTx(async (session) => {
-    const [u] = await User.create([{ kind: 'customer', phone: body.phone, email: body.email, passwordHash, passwordChangedAt: new Date() }], { session });
-    await Customer.create([{ userId: u._id, name: body.name, phone: body.phone, email: body.email }], { session });
+    const [u] = await User.create([{ kind: 'customer', phone: body.phone, email, passwordHash, passwordChangedAt: new Date() }], { session });
+    await Customer.create([{ userId: u._id, name: body.name, phone: body.phone, email }], { session });
     return u;
   });
   const customer = await Customer.findOne({ userId: user._id });
@@ -33,7 +35,8 @@ async function register(body, meta) {
 }
 
 async function login(body, meta) {
-  const identifier = body.identifier.includes('@') ? body.identifier : normalizePhone(body.identifier);
+  const normalizedIdentifier = normalizeEmail(body.identifier);
+  const identifier = normalizedIdentifier && normalizedIdentifier.includes('@') ? normalizedIdentifier : normalizePhone(body.identifier);
   const user = await verifyLogin({ identifier, password: body.password });
   const customer = await Customer.findOne({ userId: user._id, isDeleted: false });
   if (!customer) throw E.forbidden('This account is not active.');
@@ -43,7 +46,7 @@ async function login(body, meta) {
 async function updateProfile(ctx, patch) {
   const clean = { ...patch };
   if (clean.email !== undefined) {
-    const email = clean.email ? clean.email.toLowerCase() : undefined;
+    const email = normalizeEmail(clean.email);
     if (email) {
       const exists = await User.findOne({ kind: 'customer', email, _id: { $ne: ctx.user._id } });
       if (exists) throw E.conflict('That email is already linked to another account.');
@@ -80,8 +83,9 @@ async function changePassword(ctx, { currentPassword, newPassword }) {
 
 // Always answers the same way so it cannot be used to discover which emails/phones have accounts.
 async function forgotPassword({ identifier }) {
-  const isEmail = identifier.includes('@');
-  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email: identifier.toLowerCase() } : { phone: normalizePhone(identifier) }) });
+  const email = normalizeEmail(identifier);
+  const isEmail = !!email && email.includes('@');
+  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email } : { phone: normalizePhone(identifier) }) });
   if (user && user.email && user.status === 'Active') {
     const token = crypto.randomBytes(32).toString('hex');
     await User.updateOne({ _id: user._id }, { $set: { resetTokenHash: sha256(token), resetTokenExpires: new Date(Date.now() + RESET_MINUTES * 60000) } });
