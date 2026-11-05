@@ -15,7 +15,7 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 ## GitHub release state
 - The working branch includes the latest CMS / store / security work.
 - Latest application/security commit deployed: `c9e3f6094f6563905efc444133f6637d121c5668`.
-- Latest verified Cloudflare Worker version: `5a8430bf-e07b-431d-b5e1-537d6250bccd`, 100% traffic. GitHub Actions deploy run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42043838088 (attempt 2 successful).
+- Latest verified Cloudflare Worker version: `064d312e-1bdc-4065-99e6-328ca6e9487f`, 100% traffic. GitHub Actions deploy run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42043838088 (attempt 3 successful).
 - PR #7 is still Draft, open, unmerged, and GitHub reports it as dirty / not mergeable. Do not force-merge it into `main`.
 - Deployments are triggered from the feature branch by `.github/workflows/cloudflare-worker.yml`.
 - Re-check branch head and latest GitHub Actions before claiming the very latest code is deployed.
@@ -68,7 +68,7 @@ The GitHub Cloudflare deploy workflow runs `tools/cloudflare-smoke.mjs`, which c
 - Products API and public CMS API.
 - Protected analytics/auth endpoints return expected unauthenticated status.
 - Existing public media supports MP4 byte-range playback.
-Latest verified on application commit `c9e3f6094f6563905efc444133f6637d121c5668` / Worker version `5a8430bf-e07b-431d-b5e1-537d6250bccd`: MongoDB connected; health readiness OK; CORS/security headers passed; Turnstile CSP and Siteverify invalid-token checks passed; products=2; CMS=200; 5 uploaded images and 2 MP4s returned byte-range HTTP 206; staff auth route returned expected 401 without a cookie. Re-check the latest run before relying on these results for any later branch head.
+Latest verified on application commit `c9e3f6094f6563905efc444133f6637d121c5668` / Worker version `064d312e-1bdc-4065-99e6-328ca6e9487f`: MongoDB connected; health readiness OK; CORS/security headers passed; Turnstile CSP and Siteverify invalid-token checks passed; products=2; CMS=200; 5 uploaded images and 2 MP4s returned byte-range HTTP 206; staff auth route returned expected 401 without a cookie. Re-check the latest run before relying on these results for any later branch head.
 
 ## Launch blockers that need external setup / real verification
 1. **Domain:** No custom domain is currently attached. User has not bought one. After purchase, attach the domain/zone to Cloudflare, preserve MX/SPF/DKIM/DMARC records, connect Worker hostname, update Turnstile allowlist, allowed origins and canonical URLs, and test SSL + admin cookies.
