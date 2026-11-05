@@ -17,7 +17,6 @@ const digits = (value) => {
 };
 
 async function issueFirstPurchaseReward(order, session) {
-  await ensureGrowthIndexes();
   if (!order || !order.customerId) return null;
   const customer = await Customer.findById(order.customerId).session(session).lean();
   if (!customer || !customer.whatsappMarketingConsent) return null;
