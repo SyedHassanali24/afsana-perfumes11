@@ -20,7 +20,7 @@ const timelineSchema = new Schema({
 const orderSchema = new Schema({
   orderNumber: { type: String, required: true, unique: true },
   customerId: { type: ObjectId, ref: 'Customer', index: true }, // null allowed for guest checkout
-  customer: { name: String, phone: String, email: String },       // snapshot at purchase time
+  customer: { name: String, phone: String, email: String, whatsappMarketingOptIn: Boolean },       // snapshot at purchase time
   shippingAddress: { fullName: String, phone: String, line1: String, line2: String, city: String, postalCode: String },
   subtotal: Number, shipping: { type: Number, default: 0 }, discount: { type: Number, default: 0 }, total: Number,
   couponCode: String,
