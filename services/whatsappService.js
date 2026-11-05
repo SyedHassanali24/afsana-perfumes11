@@ -52,7 +52,7 @@ async function issueFirstPurchaseReward(order, session) {
   ];
   const [message] = await WhatsAppOutbox.create([{
     dedupeKey, kind: 'first_purchase_reward', customerId: customer._id, orderId: order._id,
-    couponId: coupon._id, to: digits(customer.phone || order.customer?.phone),
+    couponId: coupon._id, to: digits(order.customer?.phone || customer.phone),
     templateName, language, parameters: outboxParams, status: 'queued',
   }], { session });
   return message._id;
