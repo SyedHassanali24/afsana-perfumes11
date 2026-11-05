@@ -35,7 +35,10 @@ const health = await getJson("/api/health");
 if (health.data.database?.connected !== true) {
   throw new Error(`Application API could not connect to MongoDB (HTTP ${health.response.status})`);
 }
-console.log(`Application API: connected; database setup=${health.data.database.setupDone ? "ready" : "needs initialization"}`);
+if (health.data.ok !== true) {
+  throw new Error(`Application health readiness is not green: ${JSON.stringify({ env: health.data.env, jwtSecret: health.data.jwtSecret, database: health.data.database, fix: health.data.fix })}`);
+}
+console.log(`Application API: connected; database setup=${health.data.database.setupDone ? "ready" : "needs initialization"}; health readiness=OK`);
 
 // Production security regression checks: trusted CORS only + common browser hardening headers.
 const siteOrigin = new URL(base).origin;
