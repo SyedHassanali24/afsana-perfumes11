@@ -41,7 +41,13 @@ async function shippingSettings() {
 // ---------------- checkout ----------------
 // `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
 async function placeOrder(input, cust, idempotencyKey) {
-  if (input.referralCode || input.couponCode) await ensureGrowthIndexes();
+  if (input.referralCode) await ensureGrowthIndexes();
+  else if (input.couponCode) {
+    const partnerCode = AR.normalizeCode(input.couponCode);
+    if (AR.CODE_RE.test(partnerCode) && await AffiliatePartner.exists({ code: partnerCode, storeId: 'main', isDeleted: false })) {
+      await ensureGrowthIndexes();
+    }
+  }
   const key = String(idempotencyKey || '').trim();
   if (key && !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw E.badRequest('Invalid Idempotency-Key.');
   // 1. merge duplicate lines, load real data from DB
@@ -301,9 +307,14 @@ async function sendRewardMessage(outboxId) {
 }
 
 async function changeStatus(ctx, id, status, note, scopes) {
-  if (status === 'Delivered') await ensureGrowthIndexes();
-  const scoped = await Order.exists({ _id: id, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) });
-  if (!scoped) throw E.notFound('Order not found.');
+  const orderScope = { _id: id, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) };
+  const preview = await Order.findOne(orderScope).select('paymentMethod paymentStatus referral customer.whatsappMarketingOptIn').lean();
+  if (!preview) throw E.notFound('Order not found.');
+  const needsGrowthIndexes = status === 'Delivered' && (
+    !!preview.referral?.partnerId ||
+    (preview.paymentMethod === 'COD' && preview.paymentStatus !== 'Paid' && !!preview.customer?.whatsappMarketingOptIn)
+  );
+  if (needsGrowthIndexes) await ensureGrowthIndexes();
   let outboxId = null;
   const updated = await withTx(async (session) => {
     const order = await Order.findById(id).session(session);
@@ -345,7 +356,7 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
   if (!o) throw E.notFound('Order not found.');
   const old = o.paymentStatus;
   if (!R.canSetPayment(old, paymentStatus)) throw E.conflict(`Payment status cannot change from ${old} to ${paymentStatus}.`);
-  if (paymentStatus === 'Paid') await ensureGrowthIndexes();
+  if (paymentStatus === 'Paid' && (o.referral?.partnerId || o.customer?.whatsappMarketingOptIn)) await ensureGrowthIndexes();
   let outboxId = null;
   await withTx(async (session) => {
     const locked = await Order.findOneAndUpdate(
