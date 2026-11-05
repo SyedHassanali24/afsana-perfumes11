@@ -42,6 +42,7 @@ analyticsEventSchema.index({ event: 1, at: -1 });
 analyticsEventSchema.index({ storeId: 1, event: 1, at: -1 });
 analyticsEventSchema.index({ storeId: 1, sessionRef: 1, at: -1 });
 analyticsEventSchema.index({ storeId: 1, source: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, affiliateCode: 1, event: 1, at: -1 });
 analyticsEventSchema.index({ productId: 1, event: 1 });
 
 // Append-only. Updates/deletes are blocked at the model layer.
