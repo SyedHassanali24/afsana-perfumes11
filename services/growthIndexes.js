@@ -1,12 +1,13 @@
 // Production runs with mongoose autoIndex:false. This migration is additive only:
 // createIndexes adds missing indexes and never drops existing ones (unlike syncIndexes).
-const { AffiliatePartner, AffiliateCommission, WhatsAppOutbox, AnalyticsEvent } = require('../database/models');
+const { AffiliatePartner, AffiliateCommission, WhatsAppOutbox, AnalyticsEvent, Order } = require('../database/models');
 
 let ready;
 async function ensureGrowthIndexes() {
   if (!ready) {
     ready = Promise.all([
       AffiliatePartner.createIndexes(),
+      Order.createIndexes(),
       AffiliateCommission.createIndexes(),
       WhatsAppOutbox.createIndexes(),
       AnalyticsEvent.createIndexes(),
