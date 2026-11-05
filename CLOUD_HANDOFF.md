@@ -14,8 +14,8 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 
 ## GitHub release state
 - The working branch includes the latest CMS / store / security work.
-- Latest tested application commit deployed: `3fd66da4f9e84ff3a14707f6c6ccfa8a6afb5056` (OTP provider failover + customer email compatibility). Latest test-only commit: `a98df335f229840431f7dc81d242740cee495522` (WhatsApp outbox tests).
-- Latest verified Cloudflare Worker version: `bc746997-0969-455a-b453-757c32c41f60`, 100% traffic. Deployment run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42053629921 (attempt 2 successful; CI + live smoke passed).
+- Latest tested application commit deployed: `3fd66da4f9e84ff3a14707f6c6ccfa8a6afb5056` (OTP provider failover + customer email compatibility). Latest WhatsApp regression-test commit: `a98df335f229840431f7dc81d242740cee495522`.
+- Latest verified Cloudflare Worker version: `bc746997-0969-455a-b453-757c32c41f60`, 100% traffic. Deployment run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42053629921 (attempt 2 successful; CI + live smoke passed). WhatsApp tests passed separately in CI; they do not change Worker runtime.
 - PR #7 is still Draft, open, unmerged, and GitHub reports it as dirty / not mergeable. Do not force-merge it into `main`.
 - Deployments are triggered from the feature branch by `.github/workflows/cloudflare-worker.yml`.
 - Re-check branch head and latest GitHub Actions before claiming the very latest code is deployed.
@@ -45,12 +45,23 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 - Password reset tokens are consumed atomically and single-use.
 - Staff and customer sessions have an `authVersion`; credential changes invalidate stale sessions even if a bulk session-revocation write fails.
 - Password changes clear trusted devices / pending challenges as applicable.
-- Cloudflare Turnstile is required for staff login/2FA/password reset, customer register/login/password reset, and checkout. Siteverify validates success, action and hostname. Requests fail closed when production verification is unavailable.
+- Cloudflare Turnstile is required for staff login/2FA/password reset, customer register/login/password reset, and checkout. Siteverify validates success, action and hostname. Requests fail closed when production verification is unavailable. Live smoke checks 10 guarded routes for missing-token rejection, plus a separate invalid-token Siteverify rejection.
 - Turnstile widget currently allows only `afsana-perfumes11.eastwala12.workers.dev`. When a custom domain is purchased, add apex/www hostnames to the Turnstile widget's allowed domains and update `SITE_URL`, `ALLOWED_ORIGINS`, canonical redirects and cookie behavior before launch.
 - Turnstile widget name: `AFSANA Production Website`. Public sitekey is in `src/components/TurnstileWidget.jsx` and `cloudflare/wrangler.toml`. Secret is stored as Cloudflare Worker secret `TURNSTILE_SECRET_KEY`; never print or ask user to paste it into chat.
 - Admin OTP delivery uses EmailJS -> Gmail OAuth -> Resend failover; partial EmailJS configuration no longer blocks the other configured providers. Customer password-reset email tries Gmail OAuth, Resend, then an optional dedicated EmailJS reset template. Provider outages return safe `503 EMAIL_UNAVAILABLE` / `503 SERVICE_UNAVAILABLE` responses.
 - Customer email identifiers are trimmed/lowercased; legacy mixed-case stored emails are queried using case-insensitive anchored exact match. Registration avoids case-only duplicate accounts.
 - Cloudflare secret names for EmailJS, Gmail OAuth, Owner mailbox and Turnstile are configured. Health-v3 reports admin OTP and customer password-reset readiness separately. This verifies configuration presence, not actual inbox delivery; a real inbox test still requires owner/customer participation.
+
+
+## WhatsApp integration
+
+- Storefront fallback floating WhatsApp link is present and points to `+92 3132956206`; when a CMS `whatsapp_float` widget is active, the duplicate fallback is hidden.
+- First-purchase reward flow requires the customer's recorded WhatsApp marketing consent, a confirmed Paid payment (or COD order marked Paid at Delivered), and the growth reward setting enabled.
+- Coupon + WhatsApp outbox record are created in the payment/status transaction. The dedupe key is one per customer. Admin can inspect masked recipients and retry failed/setup-required outbox entries after password confirmation.
+- A successful Graph API response is labelled `accepted`, not `delivered`; delivery receipts/webhooks are not represented as confirmed delivery.
+- Meta Graph API path defaults to `v26.0`, and `WHATSAPP_GRAPH_VERSION` can override it. Meta's v26.0 changelog lists it as the latest Graph API version, released July 29, 2026.
+- WhatsApp tests cover Pakistan phone normalization, no-consent behavior, one-per-customer deduplication, missing credentials (`setup_required`), accepted provider requests, and accepted-message no-resend. Tests use mocked providers only.
+- Live Meta send remains blocked until `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, Meta app/business verification, and approval of `afsana_first_purchase_reward` are completed by the owner.
 
 ## Backup and recovery
 - Admin data export is encrypted locally in browser with PBKDF2-SHA256 + AES-256-GCM and downloads an `.afsana` file.
