@@ -63,7 +63,11 @@ async function updatePartner(ctx, id, body) {
 }
 
 async function partnerMetrics(partner) {
-  const [orders, commission, visits] = await Promise.all([
+  await AffiliateCommission.updateMany(
+    { partnerId: partner._id, status: 'pending', holdUntil: { $lte: new Date() } },
+    { $set: { status: 'payable' } },
+  );
+  const [orders, commission, trafficRows] = await Promise.all([
     Order.aggregate([
       { $match: { storeId: 'main', 'referral.partnerId': partner._id, paymentStatus: { $in: ['Paid', 'Partially Refunded', 'Refunded'] } } },
       { $lookup: { from: 'refunds', let: { oid: '$_id' }, pipeline: [{ $match: { $expr: { $eq: ['$orderId', '$$oid'] } } }, { $group: { _id: null, total: { $sum: '$amount' } } }], as: 'refunds' } },
@@ -73,15 +77,22 @@ async function partnerMetrics(partner) {
     AffiliateCommission.aggregate([{ $match: { storeId: 'main', partnerId: partner._id } }, { $group: {
       _id: '$status', rows: { $sum: 1 }, amount: { $sum: '$amount' }, clawback: { $sum: '$clawbackAmount' },
     } }]),
-    AnalyticsEvent.countDocuments({ storeId: 'main', affiliateCode: partner.code, event: 'page_view' }),
+    AnalyticsEvent.aggregate([
+      { $match: { storeId: 'main', affiliateCode: partner.code, event: 'page_view' } },
+      { $group: { _id: { source: { $ifNull: ['$source', 'direct'] }, sessionRef: '$sessionRef' } } },
+      { $group: { _id: '$_id.source', visits: { $sum: 1 } } },
+      { $sort: { visits: -1 } },
+    ]),
   ]);
   const order = orders[0] || { orders: 0, grossRevenue: 0, refunded: 0, revenue: 0 };
+  const sourceBreakdown = (trafficRows || []).map((row) => ({ source: String(row._id || 'other'), visits: Number(row.visits) || 0 }));
+  const visits = sourceBreakdown.reduce((sum, row) => sum + row.visits, 0);
   const money = { pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 };
   for (const row of commission) {
     if (money[row._id] !== undefined) money[row._id] = row.amount || 0;
     if (row._id === 'clawback_due') money.clawback += row.clawback || 0;
   }
-  return { visits, orders: order.orders || 0, grossRevenue: order.grossRevenue || 0, refunded: order.refunded || 0, revenue: order.revenue || 0, commission: money };
+  return { visits, sourceBreakdown, orders: order.orders || 0, grossRevenue: order.grossRevenue || 0, refunded: order.refunded || 0, revenue: order.revenue || 0, conversionRate: visits ? Math.round((order.orders / visits) * 1000) / 10 : 0, commission: money };
 }
 
 async function adminDashboard() {
