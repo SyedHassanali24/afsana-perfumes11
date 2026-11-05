@@ -30,7 +30,7 @@ async function ownerEmail() {
   return String(owner.email).trim().toLowerCase();
 }
 
-async function sendOtpEmail(to, subject, purpose, otp) {
+async function sendOtpEmailImpl(to, subject, purpose, otp) {
   const text = `Your AFSANA ${purpose} code is ${otp}. It expires in ${purpose === 'admin login verification' ? '5' : '10'} minutes. If you did not request this code, ignore this email.`;
   const html = `<div style="font-family:Arial,sans-serif;color:#24183e;max-width:520px;margin:auto;padding:28px"><p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold">AFSANA · THE ART OF SCENT</p><h2 style="font-size:24px">Security verification</h2><p>Your ${purpose} code is:</p><div style="font-size:32px;letter-spacing:9px;font-weight:bold;background:#f3efff;padding:18px;text-align:center;border-radius:12px">${otp}</div><p style="color:#746b83;font-size:13px">${text}</p></div>`;
 
@@ -86,10 +86,26 @@ async function sendOtpEmail(to, subject, purpose, otp) {
   throw new Error('Email OTP is not configured. Add EmailJS, Gmail OAuth, or Resend credentials to the Cloudflare Worker.');
 }
 
+async function sendOtpEmail(to, subject, purpose, otp) {
+  try {
+    return await sendOtpEmailImpl(to, subject, purpose, otp);
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    console.error('[auth] OTP email delivery unavailable:', String(error?.message || 'provider failure').slice(0, 180));
+    throw new ApiError(503, 'EMAIL_UNAVAILABLE', 'Email delivery is temporarily unavailable. Please try again later.');
+  }
+}
+
 async function sendOwnerOtp(otp, purpose) {
-  const to = await ownerEmail();
-  const subject = purpose === 'admin login verification' ? 'AFSANA admin login verification' : 'AFSANA staff password reset OTP';
-  await sendOtpEmail(to, subject, purpose, otp);
+  try {
+    const to = await ownerEmail();
+    const subject = purpose === 'admin login verification' ? 'AFSANA admin login verification' : 'AFSANA staff password reset OTP';
+    await sendOtpEmail(to, subject, purpose, otp);
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    console.error('[auth] owner email destination unavailable:', String(error?.message || 'owner mailbox unavailable').slice(0, 180));
+    throw new ApiError(503, 'EMAIL_UNAVAILABLE', 'Email delivery is temporarily unavailable. Please try again later.');
+  }
 }
 
 async function requestPasswordReset(email) {
