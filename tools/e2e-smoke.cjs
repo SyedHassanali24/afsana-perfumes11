@@ -2,7 +2,8 @@
 // NOT run by Claude (no real DB there) - you run it on your PC.
 //   Terminal 1:  npm run api            (wait until it says "Server now ready")
 //   Terminal 2:  npm run e2e            (or:  BASE=http://localhost:8888 node tools/e2e-smoke.cjs)
-// Optional admin checks:  E2E_EMAIL=you@x.com E2E_PASSWORD=secret npm run e2e   (use the Owner account)
+// Optional admin checks: E2E_EMAIL + E2E_PASSWORD. Production Turnstile also needs a fresh E2E_TURNSTILE_TOKEN
+// for action staff_login. If Owner 2FA is requested, provide E2E_OTP + a fresh E2E_2FA_TURNSTILE_TOKEN.
 const BASE = (process.env.BASE || 'http://localhost:8888').replace(/\/$/, '');
 const api = (p) => `${BASE}/api${p}`;
 let pass = 0; let fail = 0; const failed = [];
@@ -44,13 +45,39 @@ async function call(method, p, { body, cookie } = {}) {
   const email = process.env.E2E_EMAIL; const password = process.env.E2E_PASSWORD;
   if (email && password) {
     console.log('4) Owner login + admin screens (read-only)');
-    const login = await call('POST', '/auth/login', { body: { email, password } });
-    ok('login works', login.status === 200, `(got ${login.status})`);
-    const cookie = (login.setCookie || []).map((c) => c.split(';')[0]).join('; ');
-    if (login.status === 200 && cookie) {
-      for (const p of ['/customers/admin', '/finance/admin/summary?period=month', '/reviews/admin', '/shipping/admin', '/notifications/admin', '/orders/admin/list', '/analytics/dashboard']) {
-        const r = await call('GET', p, { cookie });
-        ok(`GET ${p} answers 200 for Owner`, r.status === 200, `(got ${r.status} ${r.data && r.data.error ? r.data.error.message || '' : ''})`);
+    const deviceId = process.env.E2E_DEVICE_ID || 'afsana-e2e-device-00000000000000000001';
+    const loginBody = {
+      email,
+      password,
+      deviceId,
+      ...(process.env.E2E_TURNSTILE_TOKEN ? { turnstileToken: process.env.E2E_TURNSTILE_TOKEN } : {}),
+    };
+    const login = await call('POST', '/auth/login', { body: loginBody });
+    let authResult = login;
+    if (login.status === 200 && login.data?.requiresTwoFactor) {
+      if (!process.env.E2E_OTP || !process.env.E2E_2FA_TURNSTILE_TOKEN) {
+        console.log('  SKIP  Owner admin screens: this device requires 2FA; provide E2E_OTP and a fresh E2E_2FA_TURNSTILE_TOKEN.');
+        authResult = null;
+      } else {
+        authResult = await call('POST', '/auth/login/2fa/verify', {
+          body: {
+            email,
+            challengeId: login.data.challengeId,
+            otp: process.env.E2E_OTP,
+            deviceId,
+            turnstileToken: process.env.E2E_2FA_TURNSTILE_TOKEN,
+          }
+        });
+      }
+    }
+    if (authResult) {
+      ok('Owner login / 2FA works', authResult.status === 200, `(got ${authResult.status} ${authResult.data?.error?.message || ''})`);
+      const cookie = (authResult.setCookie || []).map((c) => c.split(';')[0]).join('; ');
+      if (authResult.status === 200 && cookie) {
+        for (const p of ['/customers/admin', '/finance/admin/summary?period=month', '/reviews/admin', '/shipping/admin', '/notifications/admin', '/orders/admin/list', '/analytics/dashboard']) {
+          const r = await call('GET', p, { cookie });
+          ok(`GET ${p} answers 200 for Owner`, r.status === 200, `(got ${r.status} ${r.data && r.data.error ? r.data.error.message || '' : ''})`);
+        }
       }
     }
   } else {
