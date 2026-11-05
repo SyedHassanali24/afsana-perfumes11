@@ -6,6 +6,8 @@ compatibility_date = "2026-10-31"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
+SITE_URL = "https://afsana-perfumes11.eastwala12.workers.dev"
+ALLOWED_ORIGINS = "https://afsana-perfumes11.eastwala12.workers.dev"
 EMAILJS_SERVICE_ID = "service_jx5mizj"
 EMAILJS_TEMPLATE_ID = "template_36spa09"
 
