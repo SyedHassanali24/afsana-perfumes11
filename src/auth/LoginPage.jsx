@@ -242,7 +242,7 @@ export default function LoginPage() {
                               <button type="button" onClick={() => { setError(''); setReset(v => ({ ...v, open: true, step: 1, email: form.email, otp: '', resetToken: '', password: '', confirm: '', msg: '' })); }} className="text-xs font-semibold text-[#7654c9] transition hover:text-[#4e329d] hover:underline">Forgot password?</button>
                             </div>
               
-                            <TurnstileWidget action="staff_login" onToken={setTurnstileToken} resetKey={turnstileResetKey} />
+                            {!reset.open && <TurnstileWidget action="staff_login" onToken={setTurnstileToken} resetKey={turnstileResetKey} />}
                             {error && !reset.open && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
               
                             <button type="submit" disabled={busy || !turnstileToken} className="group relative mt-1 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold tracking-wide text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_17px_34px_rgba(80,55,145,.30)] disabled:cursor-wait disabled:opacity-60">
