@@ -1,61 +1,101 @@
-# AFSANA EmailJS OTP setup
+# AFSANA email delivery and OTP setup
 
-This integration sends staff password-reset and privileged admin sign-in OTPs from the Cloudflare Worker through EmailJS. One email template handles both message types. The EmailJS private key stays on the server.
+AFSANA sends administrator login/password-reset OTPs and customer password-reset links through configured Worker-side email providers. Provider credentials remain in Cloudflare secrets; never add them to frontend code or chat.
 
-## 1. Connect the sending Gmail account
+## Provider behavior
 
-1. Create or sign in to an EmailJS account: https://www.emailjs.com/
-2. Open Email Services and add Gmail.
-3. Connect the AFSANA owner inbox (the address configured as OWNER_EMAIL in Cloudflare).
-4. Send the dashboard test email and confirm it arrives before continuing.
+**Administrator OTPs** use this fallback order:
+1. EmailJS, when all four EmailJS values are present.
+2. Gmail OAuth, when its client ID, client secret and refresh token are present.
+3. Resend, when both its API key and sender address are present.
 
-EmailJS currently advertises 200 requests/month and 2 templates on its Free plan, and documents a one-request-per-second API limit. Check the pricing page for current terms before depending on the quota.
+A partial or failing EmailJS setup does not block a separately configured Gmail or Resend provider. If every configured provider fails, the API returns a safe \`503 EMAIL_UNAVAILABLE\` response; it must not claim that an OTP was sent.
 
-## 2. Create one security template
+**Customer password-reset links** use:
+1. Gmail OAuth.
+2. Resend.
+3. EmailJS only when a dedicated \`EMAILJS_PASSWORD_RESET_TEMPLATE_ID\` is configured.
 
-In Email Templates, create a single template that both OTP flows will use.
+The Worker health response (\`/api/health\`) reports \`emailProviders.adminOtp\` and \`emailProviders.customerPasswordReset\` separately. A green configuration check means the required provider credentials exist; it does not prove that a real message reached the recipient inbox.
 
-- To Email: {{to_email}}
-- From Name: AFSANA Security
-- Subject: {{subject}}
-- Content:
+## 1. EmailJS administrator OTP template
+
+1. Create/sign in to EmailJS: https://www.emailjs.com/
+2. Open Email Services and connect the AFSANA sender Gmail account.
+3. Create an Email Template for OTP messages.
+4. Set **To Email** to exactly \`{{to_email}}\` (do not hard-code an address).
+5. Set **From Name** to \`AFSANA Security\`.
+6. Set **Subject** to \`{{subject}}\`.
+7. Use this content:
 
 AFSANA · THE ART OF SCENT
 
 Security verification
 
-Your {{purpose}} code is:
+Your \`{{purpose}}\` code is:
 
-{{otp}}
+\`{{otp}}\`
 
-This code expires in {{expiry_minutes}} minutes.
-If you did not request this code, ignore this email.
+This code expires in \`{{expiry_minutes}}\` minutes. If you did not request it, ignore this message.
 
-Save the template. Do not hard-code a recipient in To Email. It must be exactly {{to_email}} so the Worker can address each message to the configured owner inbox.
+The code expires in 5 minutes for new-device administrator login verification and 10 minutes for staff password-reset verification.
 
-## 3. Copy the four EmailJS identifiers and keys
+## 2. EmailJS customer password-reset template (optional)
 
-From the EmailJS dashboard, note the Service ID from Email Services, the Template ID from the new template, and the Public Key plus Private Key from Account → General / API Keys.
+Customer reset does not use the OTP template. Create a separate template only if you want EmailJS to deliver customer reset links and Gmail/Resend are unavailable or not preferred.
 
-Do not send these keys in ChatGPT. Add them directly to Cloudflare.
+Suggested fields:
+- **To Email:** \`{{to_email}}\`
+- **Subject:** \`{{subject}}\`
+- **Reset button/link:** \`{{reset_url}}\`
+- Optional text: \`{{message}}\`
+- Expiry label: \`{{expiry_minutes}}\` (30 minutes)
+- Brand label: \`{{app_name}}\`
 
-## 4. Add Cloudflare Worker secrets
+Add its template ID as the Worker secret \`EMAILJS_PASSWORD_RESET_TEMPLATE_ID\`. The link must remain exactly as provided by the Worker; it is an HTTPS, single-use reset URL.
 
-Open Cloudflare → Workers & Pages → afsana-perfumes11 → Settings → Variables and Secrets. Add each value as a Secret:
+## 3. Cloudflare Worker variables and secrets
 
-| Secret name | Value |
+Open Cloudflare → Workers & Pages → \`afsana-perfumes11\` → Settings → Variables and Secrets.
+
+EmailJS values (all four are needed for its OTP provider):
+| Name | Type |
 | --- | --- |
-| EMAILJS_SERVICE_ID | EmailJS Service ID |
-| EMAILJS_TEMPLATE_ID | EmailJS Template ID |
-| EMAILJS_PUBLIC_KEY | EmailJS Public Key |
-| EMAILJS_PRIVATE_KEY | EmailJS Private Key |
+| \`EMAILJS_SERVICE_ID\` | Secret |
+| \`EMAILJS_TEMPLATE_ID\` | Secret |
+| \`EMAILJS_PUBLIC_KEY\` | Secret |
+| \`EMAILJS_PRIVATE_KEY\` | Secret |
 
-Keep existing Gmail OAuth and Resend secrets in place for now. When all four EmailJS secrets exist, the Worker selects EmailJS first. If none are configured, existing provider selection remains unchanged. A partial EmailJS configuration fails clearly instead of silently falling back.
+Optional EmailJS reset template:
+| Name | Type |
+| --- | --- |
+| \`EMAILJS_PASSWORD_RESET_TEMPLATE_ID\` | Secret |
 
-## 5. Verify both OTP flows
+Gmail OAuth values (used for OTP fallback and customer password resets):
+| Name | Type |
+| --- | --- |
+| \`GMAIL_CLIENT_ID\` | Secret |
+| \`GMAIL_CLIENT_SECRET\` | Secret |
+| \`GMAIL_REFRESH_TOKEN\` | Secret |
+| \`GMAIL_SENDER_EMAIL\` | Secret, optional |
 
-1. Open a private browser window and sign in to AFSANA Admin from an untrusted device. The six-digit login verification code should reach the owner inbox and expires in 5 minutes.
-2. Use a dedicated test staff account to request a password reset. The reset OTP should reach the same owner inbox and expires in 10 minutes.
-3. Do not trigger three incorrect passwords on the real owner account; that activates the 3-minute lockout.
+The configured \`OWNER_EMAIL\` is used as the fallback sender address when \`GMAIL_SENDER_EMAIL\` is absent. Resend can also be configured with \`RESEND_API_KEY\` and \`EMAIL_FROM\`.
 
-EmailJS API rate limit is one send request per second. Use it for low-volume security notifications, not bulk campaigns.
+Do not paste credentials into ChatGPT or commit them to Git.
+
+## 4. Real delivery verification
+
+The automated tests mock the provider network and verify:
+- EmailJS-to-Gmail fallback for administrator OTPs.
+- Partial EmailJS configuration does not block a separately configured provider.
+- Gmail OAuth customer reset delivery formatting and safe 503 handling on provider outage.
+- Customer email lookup is case-insensitive and exact.
+- Missing customer reset provider is reported as unavailable rather than silently logging a fake send.
+
+A real inbox check is still required:
+1. In a private browser/device, start a new-device administrator login and confirm the OTP arrives in the configured owner inbox.
+2. Use a dedicated test customer account with a saved email to request a password-reset link and confirm it arrives.
+3. Complete the reset with the single-use link and sign in with the new password.
+4. Do not intentionally enter three wrong passwords on the real Owner account; its lockout is 3 minutes.
+
+EmailJS documents a one-request-per-second API limit. Use it for low-volume security messages, not bulk campaigns. Check the provider's current pricing/quota before planning campaign email.
