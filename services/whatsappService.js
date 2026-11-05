@@ -1,6 +1,5 @@
 const crypto = require('crypto');
 const { Order, Customer, Coupon, Setting, WhatsAppOutbox } = require('../database/models');
-const { ensureGrowthIndexes } = require('./growthIndexes');
 
 const pkrDate = (date) => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', year: 'numeric' }).format(date);
 function endOfPakistanDateAfter(days, now = new Date()) {
