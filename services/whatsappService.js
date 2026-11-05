@@ -2,6 +2,12 @@ const crypto = require('crypto');
 const { Order, Customer, Coupon, Setting, WhatsAppOutbox } = require('../database/models');
 
 const pkrDate = (date) => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+function endOfPakistanDateAfter(days, now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Karachi', year: 'numeric', month: 'numeric', day: 'numeric' }).formatToParts(now);
+  const get = (key) => Number(parts.find((part) => part.type === key)?.value || 0);
+  const nextDayUtc = Date.UTC(get('year'), get('month') - 1, get('day') + Math.max(1, days) + 1);
+  return new Date(nextDayUtc - (5 * 60 * 60 * 1000) - 1);
+}
 const digits = (value) => {
   let d = String(value || '').replace(/\D/g, '');
   if (d.startsWith('0')) d = '92' + d.slice(1);
@@ -25,7 +31,7 @@ async function issueFirstPurchaseReward(order, session) {
   if (cfg.welcomeRewardEnabled !== true) return null;
   const days = Math.max(1, Math.min(180, Number(cfg.welcomeValidityDays) || 30));
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + days * 86400000);
+  const expiresAt = endOfPakistanDateAfter(days, now);
   const code = 'AFS-WELCOME-' + crypto.randomBytes(4).toString('hex').toUpperCase();
   const percent = Math.max(1, Math.min(100, Number(cfg.welcomeDiscountPercent) || 15));
   const maxDiscount = Math.max(0, Number(cfg.welcomeMaxDiscount) || 0);
