@@ -91,7 +91,10 @@ async function createStaff(ctx, body) {
     return staff._id;
   });
   const staffRecord = await Staff.findById(staffId).lean();
-  if (staffRecord) await ensureStaffPartner(staffRecord);
+  if (staffRecord) {
+    try { await ensureStaffPartner(staffRecord); }
+    catch (error) { console.error('[afsana-staff-referral-provisioning]', error?.message || error); }
+  }
   return { ...(await getStaff(staffId)), tempPassword: generated }; // shown once by the UI
 }
 
