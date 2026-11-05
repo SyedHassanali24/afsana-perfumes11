@@ -41,7 +41,7 @@ async function createInfluencer(ctx, body) {
 }
 
 async function updatePartner(ctx, id, body) {
-  const p = await AffiliatePartner.findOne({ _id: id, type: 'influencer', isDeleted: false });
+  const p = await AffiliatePartner.findOne({ _id: id, isDeleted: false });
   if (!p) throw E.notFound('Referral partner not found.');
   const before = { name: p.name, code: p.code, isActive: p.isActive, commissionType: p.commissionType, commissionValue: p.commissionValue, discountType: p.discountType, discountValue: p.discountValue };
   if (body.code !== undefined) {
@@ -106,6 +106,17 @@ async function myDashboard(ctx) {
   return { partner: cleanPartner(p), metrics: await partnerMetrics(p) };
 }
 
+async function listCommissions(query = {}) {
+  const filter = { storeId: 'main', ...(query.status ? { status: query.status } : {}) };
+  const rows = await AffiliateCommission.find(filter).sort({ createdAt: -1 }).limit(200).lean();
+  return { commissions: rows.map((c) => ({
+    id: c._id, partnerId: c.partnerId, partnerName: c.partnerName, partnerType: c.partnerType,
+    code: c.code, orderNumber: c.orderNumber, baseAmount: c.baseAmount, amount: c.amount,
+    originalAmount: c.originalAmount, refundedAmount: c.refundedAmount, clawbackAmount: c.clawbackAmount,
+    status: c.status, holdUntil: c.holdUntil, paidAt: c.paidAt, payoutReference: c.payoutReference,
+    createdAt: c.createdAt,
+  })) };
+}
 async function payCommission(ctx, id, body) {
   const c = await AffiliateCommission.findOne({ _id: id, storeId: 'main' });
   if (!c) throw E.notFound('Commission record not found.');
@@ -162,4 +173,4 @@ async function adjustForRefund(order, totalRefunded, session) {
   await c.save({ session });
 }
 
-module.exports = { cleanPartner, createInfluencer, updatePartner, adminDashboard, myDashboard, payCommission, markPaidOrder, markOrderDelivered, adjustForRefund, partnerMetrics };
+module.exports = { cleanPartner, createInfluencer, updatePartner, adminDashboard, myDashboard, listCommissions, payCommission, markPaidOrder, markOrderDelivered, adjustForRefund, partnerMetrics };
