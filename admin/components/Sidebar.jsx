@@ -3,13 +3,13 @@ import { useAuth } from "../../src/auth/AuthContext";
 import {
   LayoutDashboard, BarChart3, Package, Warehouse, Tags, ShoppingBag, Truck, RotateCcw,
   Users, Star, Megaphone, LayoutTemplate, Landmark, ShieldCheck, Settings, DatabaseBackup,
-  ChevronsLeft, ChevronsRight, Menu, X,
+  ChevronsLeft, ChevronsRight, Menu, X, Target,
 } from "lucide-react";
 
 const NAV_GROUPS = [
   { label: "Overview", items: [
     { label: "Dashboard", icon: LayoutDashboard, href: "/admin", permission: "dashboard.view" },
-    { label: "Analytics", icon: BarChart3, href: "/admin/analytics", permission: "dashboard.view" },
+    { label: "Analytics", icon: BarChart3, href: "/admin/analytics", permission: "analytics.view" },
   ]},
   { label: "Catalog", items: [
     { label: "Products", icon: Package, href: "/admin/products", permission: "products.view" },
