@@ -7,6 +7,7 @@ const { User, Session, Customer } = require('../database/models');
 const { E, ApiError } = require('./errors');
 const { parseCookies, serializeCookie } = require('./http');
 const { sha256, secret, secure } = require('./auth');
+const { isSessionCurrent } = require('./sessionVersion');
 
 const COOKIE = 'afsana_customer';
 const SESSION_DAYS = 30;
@@ -18,7 +19,7 @@ const clearCustomerCookie = () => serializeCookie(COOKIE, '', { maxAge: 0, secur
 
 async function startSession(user, { ip, userAgent }) {
   const jti = crypto.randomBytes(24).toString('hex');
-  const session = await Session.create({ userId: user._id, tokenHash: sha256(jti), device: { userAgent, ip }, expiresAt: new Date(Date.now() + SESSION_DAYS * 86400000) });
+  const session = await Session.create({ userId: user._id, tokenHash: sha256(jti), authVersion: Number(user.authVersion || 0), device: { userAgent, ip }, expiresAt: new Date(Date.now() + SESSION_DAYS * 86400000) });
   return cookie(jwt.sign({ sid: String(session._id), jti }, secret(), { expiresIn: `${SESSION_DAYS}d` }));
 }
 
@@ -61,6 +62,7 @@ async function authenticateCustomer(req) {
   if (!session || session.revokedAt || session.expiresAt < new Date() || session.tokenHash !== sha256(payload.jti)) throw E.unauthorized();
   const user = await User.findById(session.userId);
   if (!user || user.kind !== 'customer' || user.status !== 'Active') throw E.unauthorized();
+  if (!isSessionCurrent(session, user)) throw E.unauthorized();
   const customer = await Customer.findOne({ userId: user._id, isDeleted: false });
   if (!customer) throw E.unauthorized();
   if (Date.now() - session.lastActiveAt.getTime() > 60000) await Session.updateOne({ _id: session._id }, { lastActiveAt: new Date() });
