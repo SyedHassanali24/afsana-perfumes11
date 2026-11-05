@@ -24,6 +24,7 @@ const NAV_GROUPS = [
     { label: "Reviews", icon: Star, href: "/admin/reviews", permission: "reviews.view" },
   ]},
   { label: "Growth", items: [
+    { label: "Growth & referrals", icon: Target, href: "/admin/growth", permission: "dashboard.view" },
     { label: "Marketing", icon: Megaphone, href: "/admin/marketing", permission: "coupons.view" },
     { label: "CMS", icon: LayoutTemplate, href: "/admin/cms", permission: "homepage.view" },
   ]},
