@@ -129,19 +129,25 @@ async function sendPasswordReset({ to, url }, { env = process.env, fetchImpl = g
     '<p><a href="' + escapeHtml(safeUrl) + '" style="display:inline-block;padding:12px 20px;background:#5b3da7;color:#fff;text-decoration:none;border-radius:8px">Reset password</a></p>' +
     '<p style="font-size:12px;color:#746b83">If you did not request this change, ignore this email.</p></div>';
 
-  const gmailConfigured = Boolean(env.GMAIL_CLIENT_ID && env.GMAIL_CLIENT_SECRET && env.GMAIL_REFRESH_TOKEN);
-  if (gmailConfigured) return sendGmailPasswordReset({ to: recipient, subject, text, html }, env, fetchImpl);
+  try {
+    const gmailConfigured = Boolean(env.GMAIL_CLIENT_ID && env.GMAIL_CLIENT_SECRET && env.GMAIL_REFRESH_TOKEN);
+    if (gmailConfigured) return await sendGmailPasswordReset({ to: recipient, subject, text, html }, env, fetchImpl);
 
-  if (env.RESEND_API_KEY && env.EMAIL_FROM) {
-    return sendResendPasswordReset({ to: recipient, subject, text, html }, env, fetchImpl);
+    if (env.RESEND_API_KEY && env.EMAIL_FROM) {
+      return await sendResendPasswordReset({ to: recipient, subject, text, html }, env, fetchImpl);
+    }
+
+    const emailJsConfig = getEmailJsConfig(env);
+    if (emailJsConfig && env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID) {
+      return await sendEmailJsPasswordReset({ to: recipient, subject, text, url: safeUrl }, env, fetchImpl, emailJsConfig);
+    }
+
+    throw E.serviceUnavailable('Password reset email is temporarily unavailable. Please contact support.');
+  } catch (error) {
+    if (error?.status === 503) throw error;
+    console.error('[mailer] customer password-reset provider unavailable:', String(error?.message || 'provider failure').slice(0, 180));
+    throw E.serviceUnavailable('Password reset email is temporarily unavailable. Please try again later.');
   }
-
-  const emailJsConfig = getEmailJsConfig(env);
-  if (emailJsConfig && env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID) {
-    return sendEmailJsPasswordReset({ to: recipient, subject, text, url: safeUrl }, env, fetchImpl, emailJsConfig);
-  }
-
-  throw E.serviceUnavailable('Password reset email is temporarily unavailable. Please contact support.');
 }
 
 module.exports = { sendPasswordReset, sendGmailPasswordReset, sendResendPasswordReset };
