@@ -2,8 +2,8 @@ import { api, uploadChunkedMedia } from './api';
 export { api, ApiError } from './api';
 
 export const authApi = {
-  login: (email, password, deviceId) => api('/auth/login', { method: 'POST', body: { email, password, deviceId } }),
-  verifyLoginOtp: (email, challengeId, otp, deviceId) => api('/auth/login/2fa/verify', { method: 'POST', body: { email, challengeId, otp, deviceId } }),
+  login: (email, password, deviceId, turnstileToken) => api('/auth/login', { method: 'POST', body: { email, password, deviceId, turnstileToken } }),
+  verifyLoginOtp: (email, challengeId, otp, deviceId, turnstileToken) => api('/auth/login/2fa/verify', { method: 'POST', body: { email, challengeId, otp, deviceId, turnstileToken } }),
   logout: () => api('/auth/logout', { method: 'POST' }),
   logoutAll: () => api('/auth/logout-all', { method: 'POST' }),
   me: () => api('/auth/me'),
@@ -149,14 +149,14 @@ export const auditApi = { list: (query) => api('/audit', { query }) };
 
 // ---- Storefront customer accounts (separate cookie from staff) ----
 export const accountApi = {
-  register: (body) => api('/account/register', { method: 'POST', body }),
-  login: (identifier, password) => api('/account/login', { method: 'POST', body: { identifier, password } }),
+  register: (body, turnstileToken) => api('/account/register', { method: 'POST', body: { ...body, turnstileToken } }),
+  login: (identifier, password, turnstileToken) => api('/account/login', { method: 'POST', body: { identifier, password, turnstileToken } }),
   logout: () => api('/account/logout', { method: 'POST' }),
   me: () => api('/account/me'),
   updateProfile: (body) => api('/account/me', { method: 'PATCH', body }),
   changePassword: (currentPassword, newPassword) => api('/account/change-password', { method: 'POST', body: { currentPassword, newPassword } }),
-  forgotPassword: (identifier) => api('/account/forgot-password', { method: 'POST', body: { identifier } }),
-  resetPassword: (token, newPassword) => api('/account/reset-password', { method: 'POST', body: { token, newPassword } }),
+  forgotPassword: (identifier, turnstileToken) => api('/account/forgot-password', { method: 'POST', body: { identifier, turnstileToken } }),
+  resetPassword: (token, newPassword, turnstileToken) => api('/account/reset-password', { method: 'POST', body: { token, newPassword, turnstileToken } }),
   // Phase 6
   orders: (query) => api('/account/orders', { query }),
   order: (orderNumber) => api(`/account/orders/${encodeURIComponent(orderNumber)}`),
