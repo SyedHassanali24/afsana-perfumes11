@@ -93,7 +93,7 @@ export async function onRequest(context) {
   process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
   process.env.ALLOWED_ORIGIN = env.ALLOWED_ORIGIN || new URL(request.url).origin;
-  process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
+  process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "false";
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (env.RESEND_API_KEY) process.env.RESEND_API_KEY = env.RESEND_API_KEY;
   if (env.EMAIL_FROM) process.env.EMAIL_FROM = env.EMAIL_FROM;
