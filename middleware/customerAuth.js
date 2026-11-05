@@ -8,6 +8,7 @@ const { E, ApiError } = require('./errors');
 const { parseCookies, serializeCookie } = require('./http');
 const { sha256, secret, secure } = require('./auth');
 const { isSessionCurrent } = require('./sessionVersion');
+const { emailExactQuery } = require('../services/emailRules');
 
 const COOKIE = 'afsana_customer';
 const SESSION_DAYS = 30;
@@ -28,7 +29,7 @@ let dummyHash;
 async function verifyLogin({ identifier, password }) {
   const generic = new ApiError(401, 'INVALID_CREDENTIALS', 'Invalid email/phone or password.');
   const isEmail = identifier.includes('@');
-  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email: identifier.toLowerCase() } : { phone: identifier }) }).select('+passwordHash');
+  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email: emailExactQuery(identifier) } : { phone: identifier }) }).select('+passwordHash');
   if (!user) { dummyHash = dummyHash || bcrypt.hashSync('not-a-real-password', 12); await bcrypt.compare(password, dummyHash); throw generic; }
   if (user.lockedUntil && user.lockedUntil > new Date()) throw E.tooMany('Too many failed attempts. Try again later.');
   if (!(await bcrypt.compare(password, user.passwordHash))) {
