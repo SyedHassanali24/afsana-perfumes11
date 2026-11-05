@@ -1,11 +1,10 @@
 import { DurableObject } from "cloudflare:workers";
 import { dbHealth } from "./mongodb.js";
 import { onRequest as dispatchApi } from "../functions/api/[[path]].js";
+import { MEDIA_CHUNK_BYTES, MEDIA_MAX_BYTES, MEDIA_UPLOAD_TTL_SECONDS, mediaChunkCount, expectedMediaChunkBytes, isValidChunkedMediaSignature } from "../shared/mediaLimits.mjs";
 
 const JWT_SECRET_KEY = "afsana:jwt-secret:v1";
-const MEDIA_CHUNK_BYTES = 4 * 1024 * 1024;
-const MEDIA_MAX_BYTES = 250 * 1024 * 1024;
-const MEDIA_UPLOAD_TTL = 24 * 60 * 60;
+const MEDIA_UPLOAD_TTL = MEDIA_UPLOAD_TTL_SECONDS;
 function mediaJson(data, status = 200, headers = {}) {
   return Response.json(data, { status, headers: { "Cache-Control": "no-store", ...headers } });
 }
@@ -116,7 +115,7 @@ export class MongoDBConnection extends DurableObject {
       if (!authResponse.ok) return authResponse;
       const uploadId = hexId();
       const expiresAt = Date.now() + MEDIA_UPLOAD_TTL * 1000;
-      const chunkCount = Math.ceil(size / MEDIA_CHUNK_BYTES);
+      const chunkCount = mediaChunkCount(size, MEDIA_CHUNK_BYTES);
       const meta = {
         id: uploadId,
         filename: safeMediaName(filename),
@@ -154,15 +153,12 @@ export class MongoDBConnection extends DurableObject {
         return mediaJson({ success: false, error: { message: "Invalid upload chunk." } }, 400);
       }
       const bytes = await request.arrayBuffer();
-      if (index === 0) {
-        const signature = new Uint8Array(bytes);
-        const isMp4 = meta.contentType === "video/mp4" && signature.length >= 12 &&
-          String.fromCharCode(...signature.slice(4, 8)) === "ftyp";
-        const isWebm = meta.contentType === "video/webm" && signature.length >= 4 &&
-          signature[0] === 0x1a && signature[1] === 0x45 && signature[2] === 0xdf && signature[3] === 0xa3;
-        if (!isMp4 && !isWebm) return mediaJson({ success: false, error: { message: "The selected file is not a valid MP4/WebM video." } }, 400);
+      if (index === 0 && !isValidChunkedMediaSignature(new Uint8Array(bytes), meta.contentType)) {
+        return mediaJson({ success: false, error: { message: "The selected file is not a valid MP4/WebM video." } }, 400);
       }
-      const expected = Math.min(meta.chunkSize, meta.size - index * meta.chunkSize);
+      let expected;
+      try { expected = expectedMediaChunkBytes(meta.size, index, meta.chunkSize); }
+      catch { return mediaJson({ success: false, error: { message: "Invalid video upload metadata." } }, 400); }
       if (bytes.byteLength !== expected) return mediaJson({ success: false, error: { message: "The uploaded chunk size does not match." } }, 400);
       await bucket.put("media:" + uploadId + ":chunk:" + index, bytes);
       return mediaJson({ success: true, index, receivedBytes: bytes.byteLength });
