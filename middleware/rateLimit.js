@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const buckets = new Map();
 const REDIS_URL = String(process.env.UPSTASH_REDIS_REST_URL || '').replace(/\/$/, '');
 const REDIS_TOKEN = String(process.env.UPSTASH_REDIS_REST_TOKEN || '');
-let durableTableReady = false;
 let lastCleanupMinute = 0;
 
 function localHit(key, limit, windowMs, now = Date.now()) {
@@ -19,16 +18,15 @@ function durableSqlHit(storage, key, limit, windowMs, now = Date.now()) {
   const sql = storage?.sql;
   if (!sql || typeof sql.exec !== 'function') return null;
   try {
-    if (!durableTableReady) {
-      sql.exec(`
-        CREATE TABLE IF NOT EXISTS afsana_rate_limits (
-          bucket_key TEXT PRIMARY KEY,
-          hit_count INTEGER NOT NULL,
-          reset_at INTEGER NOT NULL
-        )
-      `);
-      durableTableReady = true;
-    }
+    // Ensure each Durable Object instance has its own SQLite table; module globals
+    // can be shared by multiple objects in an isolate, while their storage is not.
+    sql.exec(`
+      CREATE TABLE IF NOT EXISTS afsana_rate_limits (
+        bucket_key TEXT PRIMARY KEY,
+        hit_count INTEGER NOT NULL,
+        reset_at INTEGER NOT NULL
+      )
+    `);
 
     // Store only a one-way digest of the endpoint/IP key, never a raw IP address.
     const bucketKey = crypto.createHash('sha256').update(String(key)).digest('hex');
