@@ -1,3 +1,5 @@
+import { MEDIA_CHUNK_BYTES, MEDIA_MAX_BYTES, MEDIA_MAX_CHUNK_BYTES, mediaChunkCount } from '../../shared/mediaLimits.mjs';
+
 // Single fetch wrapper for the whole frontend. Cookies carry the session (HTTP-only), never tokens in JS.
 export class ApiError extends Error {
   constructor(status, code, message, details) { super(message); this.status = status; this.code = code; this.details = details; }
@@ -110,13 +112,10 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
 }
 
 export async function uploadChunkedMedia(file, onProgress) {
-  const CHUNK_BYTES = 4 * 1024 * 1024;
-  const MAX_CHUNK_BYTES = 25 * 1024 * 1024;
-  const MAX_BYTES = 250 * 1024 * 1024;
   const MAX_CHUNK_RETRIES = 3;
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  if (!file || !Number.isSafeInteger(file.size) || file.size < 1 || file.size > MAX_BYTES) {
+  if (!file || !Number.isSafeInteger(file.size) || file.size < 1 || file.size > MEDIA_MAX_BYTES) {
     throw new ApiError(400, 'MEDIA_TOO_LARGE', 'Choose a video up to 250 MB.');
   }
 
@@ -161,11 +160,11 @@ export async function uploadChunkedMedia(file, onProgress) {
     throw new ApiError(502, 'UPLOAD_SESSION_INVALID', 'The upload session could not be started. Please try again.');
   }
 
-  const chunkSize = Number(session.chunkSize) || CHUNK_BYTES;
-  if (!Number.isSafeInteger(chunkSize) || chunkSize < 1 || chunkSize > MAX_CHUNK_BYTES) {
+  const chunkSize = Number(session.chunkSize) || MEDIA_CHUNK_BYTES;
+  if (!Number.isSafeInteger(chunkSize) || chunkSize < 1 || chunkSize > MEDIA_MAX_CHUNK_BYTES) {
     throw new ApiError(502, 'UPLOAD_CHUNK_INVALID', 'The server returned an invalid upload chunk size.');
   }
-  const totalChunks = Math.ceil(file.size / chunkSize);
+  const totalChunks = mediaChunkCount(file.size, chunkSize);
 
   for (let index = 0; index < totalChunks; index += 1) {
     const start = index * chunkSize;
