@@ -7,6 +7,7 @@ const { connectDB } = require('../database/connection');
 const { authenticate } = require('./auth');
 const { authenticateCustomer } = require('./customerAuth');
 const { cacheHeaders, invalidateForGroup } = require('./cache');
+const { verifyTurnstile } = require('../services/turnstile');
 
 const configuredOrigins = () => String(process.env.ALLOWED_ORIGINS || '').split(',').map((x) => x.trim()).filter(Boolean);
 
@@ -43,6 +44,18 @@ function createHandler(group, routes) {
       const rl = route.rateLimit || { limit: 120, windowMs: 60000 };
       if (!await hit(`${group}:${route.method}:${route.path}:${ip}`, rl.limit, rl.windowMs, Date.now(), context?.ctx?.storage)) throw E.tooMany();
       if (!['GET', 'HEAD'].includes(method) && headers['x-requested-with'] !== 'afsana') throw E.forbidden('Invalid request.');
+      // Parse once before database access so oversized or malformed requests are rejected early.
+      const rawBody = parseBody(req);
+      if (route.turnstileAction) {
+        const siteUrl = process.env.SITE_URL || context?.site?.url;
+        const hostname = siteUrl ? new URL(siteUrl).hostname : (headers.host || '').split(':')[0];
+        await verifyTurnstile({
+          token: rawBody?.turnstileToken,
+          action: route.turnstileAction,
+          hostname,
+          remoteIp: ip,
+        });
+      }
       await connectDB();
       let ctx = null; let scopes = null;
       if (route.public && route.optionalCustomer) {
@@ -56,7 +69,6 @@ function createHandler(group, routes) {
           if (!scopes) throw E.forbidden();
         }
       }
-      const rawBody = parseBody(req);
       const rawQuery = event.queryStringParameters || {};
       const query = route.query ? route.query.parse(rawQuery) : rawQuery;
       const body = route.body ? route.body.parse(rawBody === undefined ? {} : rawBody) : rawBody;
