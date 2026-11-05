@@ -3,6 +3,7 @@ import { Upload, CheckCircle2 } from 'lucide-react';
 import Button from './Button';
 import { mediaApi } from '../../src/services';
 import shrinkImage from '../../src/lib/shrinkImage';
+import { MEDIA_MAX_BYTES } from '../../shared/mediaLimits.mjs';
 
 const TYPE_BY_EXTENSION = {
   glb: 'model/gltf-binary',
@@ -50,6 +51,9 @@ export default function MediaUploadButton({ onUploaded, accept='image/*,video/mp
         if (!['video/mp4', 'video/webm'].includes(originalType)) {
           throw new Error('Please select an MP4 or WebM video. Other video formats are not supported yet.');
         }
+        if (!Number.isSafeInteger(file.size) || file.size < 1 || file.size > MEDIA_MAX_BYTES) {
+          throw new Error('Video must be smaller than 250 MiB. The original file is uploaded in chunks; manual compression is not required below this limit.');
+        }
         setProgress('Uploading original video… 0%');
         const uploadedMedia = await mediaApi.uploadVideo(file, (percent) => {
           setProgress('Uploading original video… ' + percent + '%');
@@ -68,7 +72,7 @@ export default function MediaUploadButton({ onUploaded, accept='image/*,video/mp
       setUploaded(true);
       setProgress('');
     } catch (e) {
-      setError(e.message || 'Upload failed. Please try an MP4/WebM video or a smaller clip.');
+      setError(e.message || 'Upload failed. Please try a valid MP4/WebM video under 250 MiB.');
       setProgress('');
     } finally { setBusy(false); }
   };
