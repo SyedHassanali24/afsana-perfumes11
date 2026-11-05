@@ -1,7 +1,10 @@
 // Secure image/video/3D upload rules. Types are verified from file signatures; filename and browser MIME alone are not trusted.
 const { MEDIA_CONTENT_TYPES } = require('../database/constants');
 const MAX_BYTES = 700 * 1024; // compressed image limit
-const MAX_ASSET_BYTES = 4 * 1024 * 1024; // safe ceiling for short MP4/WebM clips and optimized GLB models
+// This 4 MiB ceiling applies only to the legacy base64 /api/media/admin route.
+// Original MP4/WebM video uploads use the Cloudflare Durable Object + KV chunked route,
+// whose shared limit is 250 MiB (4 MiB chunks); do not lower that path to this value.
+const MAX_ASSET_BYTES = 4 * 1024 * 1024; // legacy direct upload / optimized GLB ceiling
 const TYPES = MEDIA_CONTENT_TYPES;
 const MEDIA_URL = /^\/api\/media\/[0-9a-f]{24}$/;
 
