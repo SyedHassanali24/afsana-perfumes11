@@ -99,16 +99,40 @@ async function requestPasswordReset(email) {
   if (!staff) return { sent: true };
 
   const otp = String(crypto.randomInt(100000, 1000000));
-  user.resetOtpHash = sha256(otp);
-  user.resetOtpExpires = new Date(Date.now() + OTP_TTL_MS);
-  user.resetOtpVerifiedHash = undefined; user.resetOtpVerifiedExpires = undefined;
-  user.resetOtpAttempts = 0; user.resetOtpRequestedAt = new Date();
-  await user.save();
+  const now = new Date();
+  const otpHash = sha256(otp);
+  // Atomic per-staff cooldown prevents simultaneous requests from flooding the owner inbox.
+  const claimed = await User.findOneAndUpdate(
+    {
+      _id: user._id,
+      $or: [
+        { resetOtpRequestedAt: { $exists: false } },
+        { resetOtpRequestedAt: { $lte: new Date(now.getTime() - 60000) } },
+      ],
+    },
+    {
+      $set: {
+        resetOtpHash: otpHash,
+        resetOtpExpires: new Date(now.getTime() + OTP_TTL_MS),
+        resetOtpAttempts: 0,
+        resetOtpRequestedAt: now,
+      },
+      $unset: {
+        resetOtpVerifiedHash: '',
+        resetOtpVerifiedExpires: '',
+      },
+    },
+    { new: true },
+  );
+  if (!claimed) return { sent: true };
+
   try {
     await sendOwnerOtp(otp, 'staff password reset');
   } catch (error) {
-    user.resetOtpHash = undefined; user.resetOtpExpires = undefined;
-    await user.save();
+    await User.updateOne(
+      { _id: user._id, resetOtpHash: otpHash },
+      { $unset: { resetOtpHash: '', resetOtpExpires: '' } },
+    );
     throw error;
   }
   return { sent: true };
