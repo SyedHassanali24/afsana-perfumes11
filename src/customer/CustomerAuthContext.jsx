@@ -14,8 +14,8 @@ export function CustomerAuthProvider({ children }) {
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
 
-  const login = useCallback(async (identifier, password) => { const { customer } = await accountApi.login(identifier, password); setState({ status: "authed", customer }); }, []);
-  const register = useCallback(async (body) => { const { customer } = await accountApi.register(body); setState({ status: "authed", customer }); }, []);
+  const login = useCallback(async (identifier, password, turnstileToken) => { const { customer } = await accountApi.login(identifier, password, turnstileToken); setState({ status: "authed", customer }); }, []);
+  const register = useCallback(async (body, turnstileToken) => { const { customer } = await accountApi.register(body, turnstileToken); setState({ status: "authed", customer }); }, []);
   const logout = useCallback(async () => { try { await accountApi.logout(); } catch { /* already signed out */ } setState({ status: "guest", customer: null }); }, []);
 
   const value = useMemo(() => ({ ...state, login, register, logout, refresh }), [state, login, register, logout, refresh]);
