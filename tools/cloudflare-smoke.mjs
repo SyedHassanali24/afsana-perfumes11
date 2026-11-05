@@ -76,6 +76,44 @@ if (rejectedPreflight.status !== 403 || rejectedPreflight.headers.has("access-co
 }
 console.log("Security headers: present; CORS: trusted origin allowed and untrusted origin rejected");
 
+const homeResponse = await fetch(base, { signal: AbortSignal.timeout(20000) });
+const csp = homeResponse.headers.get("content-security-policy") || "";
+if (!csp.includes("https://challenges.cloudflare.com") || !csp.includes("frame-src")) {
+  throw new Error("Content Security Policy does not permit the configured Cloudflare Turnstile widget.");
+}
+console.log("Turnstile browser resources: allowed by the live Content Security Policy");
+
+// Verify the real Worker has its Turnstile secret wired and Siteverify is reachable.
+// These deliberately invalid tokens are rejected before authentication/DB work; no account is touched.
+async function turnstileProbe(turnstileToken) {
+  const response = await fetch(new URL("/api/auth/login", base), {
+    method: "POST",
+    headers: {
+      Origin: siteOrigin,
+      "Content-Type": "application/json",
+      "X-Requested-With": "afsana"
+    },
+    body: JSON.stringify({
+      email: "turnstile-smoke.invalid@example.invalid",
+      password: "not-a-real-password",
+      deviceId: "smoke-test-device-00000000000000000000",
+      ...(turnstileToken ? { turnstileToken } : {})
+    }),
+    signal: AbortSignal.timeout(20000)
+  });
+  const body = await response.json().catch(() => ({}));
+  return { status: response.status, code: body?.error?.code };
+}
+const missingChallenge = await turnstileProbe("");
+if (missingChallenge.status !== 403 || missingChallenge.code !== "TURNSTILE_REQUIRED") {
+  throw new Error(`Turnstile missing-token guard failed (HTTP ${missingChallenge.status}, code=${missingChallenge.code || "unknown"}).`);
+}
+const invalidChallenge = await turnstileProbe("afsana-invalid-deployment-smoke-token");
+if (invalidChallenge.status !== 403 || invalidChallenge.code !== "TURNSTILE_FAILED") {
+  throw new Error(`Turnstile Siteverify is not correctly wired (HTTP ${invalidChallenge.status}, code=${invalidChallenge.code || "unknown"}).`);
+}
+console.log("Turnstile backend: missing tokens blocked; invalid tokens rejected by Siteverify");
+
 const products = await getJson("/api/products?sort=popular&limit=12");
 if (!products.response.ok || products.data.success !== true) {
   throw new Error(`Products API failed (HTTP ${products.response.status})`);
