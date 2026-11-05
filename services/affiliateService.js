@@ -182,7 +182,7 @@ async function adjustForRefund(order, totalRefunded, session) {
   const nextAmount = Math.floor(c.originalAmount * ratio);
   const reduction = Math.max(0, c.originalAmount - nextAmount);
   c.refundedAmount = Number(totalRefunded || 0);
-  if (c.status === 'paid' && reduction > 0) {
+  if (['paid', 'clawback_due'].includes(c.status) && reduction > 0) {
     c.clawbackAmount = Math.max(0, reduction);
     c.status = reduction >= c.originalAmount ? 'reversed' : 'clawback_due';
   } else {
