@@ -5,7 +5,7 @@ const { User, Session, Staff, Role } = require('../database/models');
 const { E, ApiError } = require('./errors');
 const { parseCookies, serializeCookie } = require('./http');
 const { resolve, withinWorkingHours } = require('./permissions');
-const { getEmailJsConfig, sendEmailJsOtp } = require('../services/emailjs');
+const { sendOtpWithFallback } = require('../services/otpMailer');
 const { isSessionCurrent } = require('./sessionVersion');
 
 const COOKIE = 'afsana_staff';
@@ -30,65 +30,10 @@ async function ownerEmail() {
   return String(owner.email).trim().toLowerCase();
 }
 
-async function sendOtpEmailImpl(to, subject, purpose, otp) {
-  const text = `Your AFSANA ${purpose} code is ${otp}. It expires in ${purpose === 'admin login verification' ? '5' : '10'} minutes. If you did not request this code, ignore this email.`;
-  const html = `<div style="font-family:Arial,sans-serif;color:#24183e;max-width:520px;margin:auto;padding:28px"><p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold">AFSANA · THE ART OF SCENT</p><h2 style="font-size:24px">Security verification</h2><p>Your ${purpose} code is:</p><div style="font-size:32px;letter-spacing:9px;font-weight:bold;background:#f3efff;padding:18px;text-align:center;border-radius:12px">${otp}</div><p style="color:#746b83;font-size:13px">${text}</p></div>`;
-
-  // Prefer EmailJS when fully configured. The private key remains server-side.
-  const emailJsConfig = getEmailJsConfig();
-  if (emailJsConfig) {
-    await sendEmailJsOtp({ to, subject, purpose, otp }, { config: emailJsConfig });
-    return;
-  }
-
-  const clientId = process.env.GMAIL_CLIENT_ID;
-  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
-  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
-  if (clientId && clientSecret && refreshToken) {
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: 'refresh_token' }),
-    });
-    const tokenData = await tokenResponse.json().catch(() => ({}));
-    if (!tokenResponse.ok || !tokenData.access_token) throw new Error('Gmail authorization could not be refreshed.');
-    const sender = String(process.env.GMAIL_SENDER_EMAIL || process.env.OWNER_EMAIL || process.env.ADMIN_EMAIL || process.env.EASTWALA_EMAIL || to).trim();
-    const mime = [
-      `From: AFSANA Security <${sender}>`,
-      `To: ${to}`,
-      `Subject: ${subject}`,
-      'MIME-Version: 1.0',
-      'Content-Type: text/html; charset=UTF-8',
-      '',
-      html,
-    ].join(String.fromCharCode(13, 10));
-    const raw = Buffer.from(mime, 'utf8').toString('base64url');
-    const sent = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${tokenData.access_token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ raw }),
-    });
-    if (!sent.ok) throw new Error('Gmail could not deliver the security email.');
-    return;
-  }
-
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (apiKey && from) {
-    const sent = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from, to: [to], subject, html, text }),
-    });
-    if (!sent.ok) throw new Error('Email provider could not deliver the security email.');
-    return;
-  }
-  throw new Error('Email OTP is not configured. Add EmailJS, Gmail OAuth, or Resend credentials to the Cloudflare Worker.');
-}
 
 async function sendOtpEmail(to, subject, purpose, otp) {
   try {
-    return await sendOtpEmailImpl(to, subject, purpose, otp);
+    return await sendOtpWithFallback({ to, subject, purpose, otp });
   } catch (error) {
     if (error instanceof ApiError) throw error;
     console.error('[auth] OTP email delivery unavailable:', String(error?.message || 'provider failure').slice(0, 180));
