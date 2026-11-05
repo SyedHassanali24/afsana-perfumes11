@@ -66,7 +66,8 @@ function pageViewEvent(input = {}) {
   const landingPath = safePath(input.landingPath || input.path);
   const utmSource = cleanText(input.utmSource, 100);
   const medium = cleanText(input.utmMedium, 80);
-  const campaign = cleanText(input.utmCampaign, 100);\n  const affiliateCode = cleanText(input.affiliateCode, 30).toUpperCase();
+  const campaign = cleanText(input.utmCampaign, 100);
+  const affiliateCode = cleanText(input.affiliateCode, 30).toUpperCase();
   const referrerHost = safeHost(input.referrerHost);
   const source = classifySource(utmSource, medium, referrerHost);
   return {
@@ -74,7 +75,8 @@ function pageViewEvent(input = {}) {
     sessionRef,
     source,
     medium: medium || null,
-    campaign: campaign || null,\n    affiliateCode: /^[A-Z0-9][A-Z0-9_-]{2,29}$/.test(affiliateCode) ? affiliateCode : null,
+    campaign: campaign || null,
+    affiliateCode: /^[A-Z0-9][A-Z0-9_-]{2,29}$/.test(affiliateCode) ? affiliateCode : null,
     referrerHost: referrerHost || null,
     path,
     landingPath,
