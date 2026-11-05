@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Order, OrderItem, Payment, Customer, Coupon, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
+const { Order, OrderItem, Payment, Customer, Coupon, AffiliatePartner, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { samePhone } = require('./phone');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
@@ -11,6 +11,9 @@ const { publicShipment, staffShipment } = require('./shippingService');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const R = require('./orderRules');
+const AR = require('./affiliateRules');
+const Affiliates = require('./affiliateService');
+const WhatsApp = require('./whatsappService');
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
 
@@ -83,7 +86,7 @@ async function placeOrder(input, cust, idempotencyKey) {
   }
 
   // 3. Reserve stock + re-read coupon rules inside the transaction so checkout uses one consistent snapshot.
-  let coupon = null; let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
+  let coupon = null; let referralPartner = null; let partnerPromo = false;\n  let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
   const orderNumber = await nextNumber('order', 'AFS');
 
   // 4. atomic: reserve stock + write order. If any unit is gone the whole thing rolls back.
@@ -102,11 +105,25 @@ async function placeOrder(input, cust, idempotencyKey) {
 
     if (input.couponCode) {
       coupon = await Coupon.findOne({ code: input.couponCode.toUpperCase(), isDeleted: false }).session(session);
-      const customerUses = coupon ? (coupon.usage || []).filter((u) => String(u.customerId) === String(txCustomer._id)).length : 0;
-      validateCoupon(coupon, { subtotal, customerId: txCustomer._id, customerUses, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
-      ({ discount, shippingDiscount } = calcDiscount(coupon, lines, shippingFee));
+      if (coupon) {
+        const customerUses = (coupon.usage || []).filter((u) => String(u.customerId) === String(txCustomer._id)).length;
+        validateCoupon(coupon, { subtotal, customerId: txCustomer._id, customerUses, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
+        ({ discount, shippingDiscount } = calcDiscount(coupon, lines, shippingFee));
+      } else {
+        referralPartner = await AffiliatePartner.findOne({ code: input.couponCode.toUpperCase(), isDeleted: false, storeId: 'main' }).session(session).lean();
+        const problem = AR.validatePartner(referralPartner, { subtotal, customerId: txCustomer._id });
+        if (problem) throw E.badRequest(problem);
+        partnerPromo = true;
+        ({ discount, shippingDiscount } = AR.discountFor(referralPartner, subtotal, shippingFee));
+      }
       shipping = shippingFee - shippingDiscount;
       total = subtotal - discount + shipping;
+    }
+    // A share link attributes the first-touch referral when a separate ordinary coupon is used.
+    // An explicitly entered partner code takes precedence over a different link code.
+    if (!referralPartner && input.referralCode) {
+      const code = AR.normalizeCode(input.referralCode);
+      if (AR.CODE_RE.test(code)) referralPartner = await AffiliatePartner.findOne({ code, isActive: true, isDeleted: false, storeId: 'main' }).session(session).lean();
     }
 
     if (coupon) {
@@ -127,9 +144,37 @@ async function placeOrder(input, cust, idempotencyKey) {
         { $inc: { usedCount: 1 } }, { new: true, session });
       if (!used) throw E.badRequest('This coupon has reached its usage limit.');
     }
+    if (partnerPromo && referralPartner) {
+      const usedPartner = await AffiliatePartner.findOneAndUpdate(
+        { _id: referralPartner._id, isActive: true, $expr: { $and: [
+          { $or: [{ $not: ['$usageLimit'] }, { $lt: ['$usedCount', '$usageLimit'] }] },
+          { $or: [
+            { $eq: [{ $ifNull: ['$perCustomerLimit', 0] }, 0] },
+            { $lt: [
+              { $size: { $filter: {
+                input: { $ifNull: ['$redemptions', []] }, as: 'r',
+                cond: { $eq: ['$r.customerId', txCustomer._id] },
+              } } },
+              '$perCustomerLimit',
+            ] },
+          ] },
+        ] } },
+        { $inc: { usedCount: 1 }, $push: { redemptions: { customerId: txCustomer._id, at: new Date() } } },
+        { new: true, session });
+      if (!usedPartner) throw E.badRequest('This referral code has reached its usage limit.');
+    }
+    const referral = referralPartner ? {
+      partnerId: referralPartner._id, partnerType: referralPartner.type, partnerName: referralPartner.name,
+      code: referralPartner.code, commissionType: referralPartner.commissionType,
+      commissionValue: referralPartner.commissionValue, attributedAt: new Date(),
+    } : undefined;
     const [o] = await Order.create([{
-      orderNumber, customerId: customer._id, customer: input.customer, shippingAddress: input.shippingAddress,
-      subtotal, shipping, discount, total, couponCode: coupon ? coupon.code : undefined,
+      orderNumber, customerId: customer._id,
+      customer: { ...input.customer, whatsappMarketingOptIn: !!input.whatsappMarketingOptIn },
+      shippingAddress: input.shippingAddress,
+      subtotal, shipping, discount, total,
+      couponCode: coupon ? coupon.code : (partnerPromo && referralPartner ? referralPartner.code : undefined),
+      ...(referral ? { referral } : {}),
       paymentMethod: input.paymentMethod, status: 'New', paymentStatus: 'Pending',
       timeline: [{ event: 'Order Placed', status: 'New' }],
       ...(key ? { idempotencyKey: key, idempotencyHash: requestHash } : {}),
@@ -137,7 +182,11 @@ async function placeOrder(input, cust, idempotencyKey) {
     await OrderItem.insertMany(lines.map(({ categoryId, ...l }) => ({ ...l, orderId: o._id, lineTotal: l.lineTotal })), { session });
     if (coupon) await Coupon.updateOne({ _id: coupon._id }, { $push: { usage: { customerId: txCustomer._id, orderId: o._id, at: new Date() } } }, { session });
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
-    await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
+    await Customer.updateOne({ _id: customer._id }, {
+      $inc: { 'stats.ordersCount': 1 },
+      $set: { 'stats.lastOrderAt': new Date(), whatsappMarketingConsent: !!input.whatsappMarketingOptIn, ...(input.whatsappMarketingOptIn ? { whatsappMarketingConsentAt: new Date() } : {}) },
+      ...(!input.whatsappMarketingOptIn ? { $unset: { whatsappMarketingConsentAt: 1 } } : {}),
+    }, { session });
     return o;
     });
   } catch (err) {
@@ -231,30 +280,51 @@ async function getOrder(id, scopes, uid) {
   return { order: { ...order, items, payments, shipment } };
 }
 
+async function paidOrderEffects(orderId, session) {
+  const paidOrder = await Order.findById(orderId).session(session).lean();
+  if (!paidOrder || paidOrder.paymentStatus !== 'Paid') return null;
+  await Affiliates.markPaidOrder(paidOrder, session);
+  return WhatsApp.issueFirstPurchaseReward(paidOrder, session);
+}
+async function sendRewardMessage(outboxId) {
+  if (!outboxId) return;
+  try { await WhatsApp.sendOutbox(outboxId); }
+  catch (error) { console.error('[afsana-whatsapp-outbox]', error?.message || error); }
+}
+
 async function changeStatus(ctx, id, status, note, scopes) {
   const scoped = await Order.exists({ _id: id, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) });
   if (!scoped) throw E.notFound('Order not found.');
-  return withTx(async (session) => {
+  let outboxId = null;
+  const updated = await withTx(async (session) => {
     const order = await Order.findById(id).session(session);
     if (!(TRANSITIONS[order.status] || []).includes(status)) throw E.badRequest(`Cannot change status from "${order.status}" to "${status}".`);
-    // compare-and-set so two staff clicking at once cannot both apply effects
-    const updated = await Order.findOneAndUpdate({ _id: id, status: order.status },
+    const result = await Order.findOneAndUpdate({ _id: id, status: order.status },
       { $set: { status, ...(status === 'Cancelled' && note ? { cancelledReason: note } : {}) }, $push: { timeline: { event: EVENT_NAME[status] || status, status, note, by: ctx.user._id } } }, { new: true, session });
-    if (!updated) throw E.conflict('This order was just updated by someone else. Please refresh.');
+    if (!result) throw E.conflict('This order was just updated by someone else. Please refresh.');
     const items = await OrderItem.find({ orderId: id }).session(session).lean();
 
-    if (status === 'Shipped' && !order.stockCommitted) { await commitItems(items, order, ctx, session); await Order.updateOne({ _id: id }, { $set: { stockCommitted: true } }, { session }); }
-    const effect = R.stockEffect(status, order.stockCommitted); // Cancelled -> restock/release; Returned (parcel came back) -> restock
+    if (status === 'Shipped' && !order.stockCommitted) { await commitItems(items, order, ctx, session); await Order.updateOne({ _id: id }, { $set: { stockCommitted: true }, { session }); }
+    const effect = R.stockEffect(status, order.stockCommitted);
     if (effect === 'restock') await restockItems(items, order, ctx, session);
     else if (effect === 'restock_return') await restockItems(items, order, ctx, session, 'return');
     else if (effect === 'release') await releaseItems(items, session);
     if (status === 'Delivered') {
-      if (order.paymentMethod === 'COD') { await Payment.updateMany({ orderId: id }, { $set: { status: 'Paid', receivedBy: ctx.user._id, receivedAt: new Date() } }, { session }); await Order.updateOne({ _id: id }, { $set: { paymentStatus: 'Paid' } }, { session }); }
+      if (order.paymentMethod === 'COD' && order.paymentStatus !== 'Paid') {
+        await Payment.updateMany({ orderId: id }, { $set: { status: 'Paid', receivedBy: ctx.user._id, receivedAt: new Date() } }, { session });
+        await Order.updateOne({ _id: id }, { $set: { paymentStatus: 'Paid' } }, { session });
+        outboxId = await paidOrderEffects(id, session);
+      } else if (order.paymentStatus === 'Paid') {
+        await Affiliates.markPaidOrder(order, session);
+      }
+      await Affiliates.markOrderDelivered(id, session);
       if (order.customerId && order.status !== 'Return Requested') await Customer.updateOne({ _id: order.customerId }, { $inc: { 'stats.totalSpent': order.total } }, { session });
     }
     await audit(ctx, { action: 'order.status_changed', module: 'orders', recordId: id, oldValue: order.status, newValue: status }, session);
-    return updated;
+    return result;
   });
+  await sendRewardMessage(outboxId);
+  return updated;
 }
 async function addNote(ctx, id, text, scopes) {
   const o = await Order.findOneAndUpdate({ _id: id, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }, { $push: { internalNotes: { text, by: ctx.user._id } } }, { new: true });
@@ -266,8 +336,8 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
   if (!o) throw E.notFound('Order not found.');
   const old = o.paymentStatus;
   if (!R.canSetPayment(old, paymentStatus)) throw E.conflict(`Payment status cannot change from ${old} to ${paymentStatus}.`);
+  let outboxId = null;
   await withTx(async (session) => {
-    // compare-and-set against the exact status observed above: concurrent payment edits cannot overwrite each other.
     const locked = await Order.findOneAndUpdate(
       { _id: id, paymentStatus: old },
       { $set: { paymentStatus } },
@@ -275,7 +345,9 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
     );
     if (!locked) throw E.conflict('This order payment was just updated. Refresh and try again.');
     await Payment.updateMany({ orderId: id }, { $set: { status: paymentStatus, reference, ...(paymentStatus === 'Paid' ? { receivedBy: ctx.user._id, receivedAt: new Date() } : {}) } }, { session });
+    if (paymentStatus === 'Paid') outboxId = await paidOrderEffects(id, session);
     await audit(ctx, { action: 'payment.status_changed', module: 'payments', recordId: id, oldValue: old, newValue: paymentStatus }, session);
   });
+  await sendRewardMessage(outboxId);
 }
-module.exports = { SCOPE_MAP, TRANSITIONS, shippingSettings, placeOrder, trackOrder, listMine, getMine, cancelMine, listOrders, getOrder, changeStatus, addNote, setPayment };
+
