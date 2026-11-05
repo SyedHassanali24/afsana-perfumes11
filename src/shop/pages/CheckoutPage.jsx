@@ -56,7 +56,8 @@ export default function CheckoutPage() {
     if (busy || !q?.canCheckout) return;
     setErrors({}); setFormError('');
     const checkoutPayload = {
-      items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,\n      whatsappMarketingOptIn, paymentMethod: pay,
+      items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,
+      whatsappMarketingOptIn, paymentMethod: pay,
       customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
       shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
     };
