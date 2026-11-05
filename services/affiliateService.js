@@ -148,7 +148,7 @@ async function markOrderDelivered(orderId, session) {
 async function adjustForRefund(order, totalRefunded, session) {
   const c = await AffiliateCommission.findOne({ orderId: order._id }).session(session);
   if (!c) return;
-  const ratio = Math.max(0, Math.min(1, 1 - (Number(totalRefunded || 0) / Math.max(1, Number(order.total || 0))));
+  const ratio = Math.max(0, Math.min(1, 1 - (Number(totalRefunded || 0) / Math.max(1, Number(order.total || 0)))));
   const nextAmount = Math.floor(c.originalAmount * ratio);
   const reduction = Math.max(0, c.originalAmount - nextAmount);
   c.refundedAmount = Number(totalRefunded || 0);
