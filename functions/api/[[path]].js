@@ -11,6 +11,7 @@ const handlerLoaders = {
   coupons: () => import("../../netlify/functions/coupons/index.js"),
   customers: () => import("../../netlify/functions/customers/index.js"),
   finance: () => import("../../netlify/functions/finance/index.js"),
+  growth: () => import("../../netlify/functions/growth/index.js"),
   health: () => import("../../netlify/functions/health/index.js"),
   inventory: () => import("../../netlify/functions/inventory/index.js"),
   media: () => import("../../netlify/functions/media/index.js"),
