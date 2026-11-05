@@ -34,7 +34,7 @@ const analyticsEventSchema = new Schema({
   productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed,
   // Anonymous acquisition attribution. Store only the host and path (never the full referrer URL or query string).
   source: { type: String, enum: ['instagram', 'tiktok', 'youtube', 'facebook', 'whatsapp', 'search', 'direct', 'email', 'other_social', 'referral', 'other'] },
-  medium: String, campaign: String, referrerHost: String, path: String, landingPath: String,
+  medium: String, campaign: String, referrerHost: String, path: String, landingPath: String, affiliateCode: String,
   at: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 180 },
 });
 storeScoped(analyticsEventSchema);
