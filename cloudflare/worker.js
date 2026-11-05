@@ -3,7 +3,7 @@ import { SECURITY_HEADERS, isAllowedOrigin, corsHeaders } from "./security.js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_OBJECT_NAME = "afsana-api-v1";
-const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
+const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com https://challenges.cloudflare.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
 function json(data, status, headers = {}) {
   return Response.json(data, { status, headers });
