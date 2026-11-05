@@ -1,5 +1,7 @@
 'use strict';
 
+const { ApiError } = require('../middleware/errors');
+
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 async function verifyTurnstile({ token, action, hostname, remoteIp, secret = process.env.TURNSTILE_SECRET_KEY, fetchImpl = globalThis.fetch } = {}) {
@@ -7,25 +9,16 @@ async function verifyTurnstile({ token, action, hostname, remoteIp, secret = pro
   if (!configured) {
     const local = String(process.env.NETLIFY_DEV || '').toLowerCase() === 'true' || process.env.NODE_ENV === 'development';
     if (local) return { skipped: true };
-    const error = new Error('Security verification is not configured.');
-    error.status = 503;
-    error.code = 'TURNSTILE_NOT_CONFIGURED';
-    throw error;
+    throw new ApiError(503, 'TURNSTILE_NOT_CONFIGURED', 'Security verification is not configured.');
   }
 
   const responseToken = String(token || '').trim();
   if (!responseToken || responseToken.length > 2048) {
-    const error = new Error('Please complete the security check and try again.');
-    error.status = 403;
-    error.code = 'TURNSTILE_REQUIRED';
-    throw error;
+    throw new ApiError(403, 'TURNSTILE_REQUIRED', 'Please complete the security check and try again.');
   }
 
   if (typeof fetchImpl !== 'function') {
-    const error = new Error('Security verification is temporarily unavailable.');
-    error.status = 503;
-    error.code = 'TURNSTILE_UNAVAILABLE';
-    throw error;
+    throw new ApiError(503, 'TURNSTILE_UNAVAILABLE', 'Security verification is temporarily unavailable.');
   }
 
   const payload = new URLSearchParams({ secret: configured, response: responseToken });
@@ -42,9 +35,7 @@ async function verifyTurnstile({ token, action, hostname, remoteIp, secret = pro
     if (!res.ok) throw new Error('Siteverify returned HTTP ' + res.status);
     result = await res.json();
   } catch (cause) {
-    const error = new Error('Security verification is temporarily unavailable. Please try again.');
-    error.status = 503;
-    error.code = 'TURNSTILE_UNAVAILABLE';
+    const error = new ApiError(503, 'TURNSTILE_UNAVAILABLE', 'Security verification is temporarily unavailable. Please try again.');
     error.cause = cause;
     throw error;
   }
@@ -55,10 +46,7 @@ async function verifyTurnstile({ token, action, hostname, remoteIp, secret = pro
   const hostMatches = !validHost || returnedHost === validHost;
 
   if (result?.success !== true || !validAction || !hostMatches) {
-    const error = new Error('Security check failed or expired. Please try again.');
-    error.status = 403;
-    error.code = 'TURNSTILE_FAILED';
-    throw error;
+    throw new ApiError(403, 'TURNSTILE_FAILED', 'Security check failed or expired. Please try again.');
   }
   return { success: true, action: result.action, hostname: result.hostname };
 }
