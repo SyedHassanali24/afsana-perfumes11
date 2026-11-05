@@ -6,6 +6,7 @@ const { E, ApiError } = require('./errors');
 const { parseCookies, serializeCookie } = require('./http');
 const { resolve, withinWorkingHours } = require('./permissions');
 const { getEmailJsConfig, sendEmailJsOtp } = require('../services/emailjs');
+const { isSessionCurrent } = require('./sessionVersion');
 
 const COOKIE = 'afsana_staff';
 const SESSION_DAYS = 7;
@@ -349,7 +350,7 @@ async function authenticate(req) {
   if (!user || user.kind !== 'staff' || user.status !== 'Active') throw E.unauthorized();
   // Credential changes increment authVersion. Any old session becomes invalid even
   // if a separate session-revocation write fails during a partial outage.
-  if (Number(session.authVersion || 0) !== Number(user.authVersion || 0)) throw E.unauthorized();
+  if (!isSessionCurrent(session, user)) throw E.unauthorized();
   const staff = await Staff.findOne({ userId: user._id, isDeleted: false });
   if (!staff || staff.status !== 'Active') throw E.forbidden('This account is not active.');
   const role = await Role.findById(staff.roleId);
