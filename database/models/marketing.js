@@ -49,8 +49,61 @@ const loyaltyTxSchema = new Schema({
   points: { type: Number, required: true }, orderId: ObjectId, reason: String, by: { type: ObjectId, ref: 'User' },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
+
+// Affiliate / staff referral partners. A partner owns exactly one shareable code.
+const affiliatePartnerSchema = new Schema({
+  name: { type: String, required: true, trim: true },
+  code: { type: String, required: true, uppercase: true, trim: true },
+  type: { type: String, enum: ['influencer', 'staff'], required: true, index: true },
+  userId: { type: ObjectId, ref: 'User', index: true },
+  staffId: { type: ObjectId, ref: 'Staff', index: true },
+  platform: String, handle: String, email: String, phone: String,
+  discountType: { type: String, enum: ['none', 'percentage', 'fixed', 'free_shipping'], default: 'none' },
+  discountValue: { type: Number, default: 0 }, maxDiscount: Number, minOrder: { type: Number, default: 0 },
+  commissionType: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' },
+  commissionValue: { type: Number, default: 0 },
+  usageLimit: Number, perCustomerLimit: { type: Number, default: 0 }, usedCount: { type: Number, default: 0 },
+  redemptions: [{ customerId: ObjectId, orderId: ObjectId, at: { type: Date, default: Date.now } }],
+  startsAt: Date, expiresAt: Date, isActive: { type: Boolean, default: true },
+  createdBy: { type: ObjectId, ref: 'User' },
+}, { timestamps: true });
+affiliatePartnerSchema.index({ code: 1, storeId: 1 }, { unique: true });
+affiliatePartnerSchema.index({ userId: 1, isActive: 1 });
+storeScoped(affiliatePartnerSchema); softDelete(affiliatePartnerSchema);
+
+const affiliateCommissionSchema = new Schema({
+  orderId: { type: ObjectId, ref: 'Order', required: true, unique: true, index: true },
+  partnerId: { type: ObjectId, ref: 'AffiliatePartner', required: true, index: true },
+  partnerType: { type: String, enum: ['influencer', 'staff'], required: true },
+  partnerName: String, code: String, orderNumber: String,
+  baseAmount: { type: Number, default: 0 }, originalAmount: { type: Number, default: 0 },
+  amount: { type: Number, default: 0 }, refundedAmount: { type: Number, default: 0 },
+  rateType: { type: String, enum: ['percentage', 'fixed'] }, rateValue: Number,
+  status: { type: String, enum: ['pending', 'payable', 'paid', 'reversed', 'clawback_due'], default: 'pending', index: true },
+  holdUntil: Date, paidAt: Date, paidBy: { type: ObjectId, ref: 'User' }, payoutReference: String,
+  clawbackAmount: { type: Number, default: 0 },
+}, { timestamps: true });
+affiliateCommissionSchema.index({ storeId: 1, partnerId: 1, status: 1, createdAt: -1 });
+storeScoped(affiliateCommissionSchema);
+
+const whatsappOutboxSchema = new Schema({
+  dedupeKey: { type: String, required: true, unique: true },
+  kind: { type: String, enum: ['first_purchase_reward'], required: true },
+  customerId: { type: ObjectId, ref: 'Customer', required: true, index: true },
+  orderId: { type: ObjectId, ref: 'Order', required: true, index: true },
+  couponId: { type: ObjectId, ref: 'Coupon', required: true },
+  to: { type: String, required: true },
+  templateName: { type: String, required: true },
+  language: { type: String, default: 'en' },
+  parameters: [{ type: String }],
+  status: { type: String, enum: ['queued', 'setup_required', 'accepted', 'failed'], default: 'queued', index: true },
+  attempts: { type: Number, default: 0 }, providerMessageId: String, lastError: String, lastAttemptAt: Date, acceptedAt: Date,
+}, { timestamps: true });
+whatsappOutboxSchema.index({ status: 1, createdAt: 1 });
+storeScoped(whatsappOutboxSchema);
+
 module.exports = {
-  Coupon: model('Coupon', couponSchema), FlashSale: model('FlashSale', flashSaleSchema),
+  Coupon: model('Coupon', couponSchema), AffiliatePartner: model('AffiliatePartner', affiliatePartnerSchema), AffiliateCommission: model('AffiliateCommission', affiliateCommissionSchema), WhatsAppOutbox: model('WhatsAppOutbox', whatsappOutboxSchema), FlashSale: model('FlashSale', flashSaleSchema),
   Campaign: model('Campaign', campaignSchema), GiftCard: model('GiftCard', giftCardSchema),
   LoyaltyTransaction: model('LoyaltyTransaction', loyaltyTxSchema),
 };

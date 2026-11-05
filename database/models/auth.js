@@ -152,6 +152,8 @@ const customerSchema = new Schema({
     lastOrderAt: Date,
   },
   loyaltyPoints: { type: Number, default: 0 },
+  whatsappMarketingConsent: { type: Boolean, default: false },
+  whatsappMarketingConsentAt: Date,
   notes: String, // staff-only
 }, { timestamps: true });
 customerSchema.index({ phone: 1, storeId: 1 }, { unique: true, sparse: true });

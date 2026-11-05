@@ -6,6 +6,7 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const { notifyAdmin } = require('./notificationService');
 const R = require('./accessRules');
+const { ensureStaffPartner } = require('./staffReferral');
 
 const hash = (pw) => bcrypt.hash(pw, 12);
 const revokeSessions = (userId, reason, session, exceptId) => Session.updateMany(
@@ -89,6 +90,11 @@ async function createStaff(ctx, body) {
     await audit(ctx, { action: 'staff.created', module: 'staff', recordId: staff._id, newValue: { email, name: body.name, role: role.key } }, session);
     return staff._id;
   });
+  const staffRecord = await Staff.findById(staffId).lean();
+  if (staffRecord) {
+    try { await ensureStaffPartner(staffRecord); }
+    catch (error) { console.error('[afsana-staff-referral-provisioning]', error?.message || error); }
+  }
   return { ...(await getStaff(staffId)), tempPassword: generated }; // shown once by the UI
 }
 

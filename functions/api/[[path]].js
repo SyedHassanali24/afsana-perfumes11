@@ -11,6 +11,7 @@ const handlerLoaders = {
   coupons: () => import("../../netlify/functions/coupons/index.js"),
   customers: () => import("../../netlify/functions/customers/index.js"),
   finance: () => import("../../netlify/functions/finance/index.js"),
+  growth: () => import("../../netlify/functions/growth/index.js"),
   health: () => import("../../netlify/functions/health/index.js"),
   inventory: () => import("../../netlify/functions/inventory/index.js"),
   media: () => import("../../netlify/functions/media/index.js"),
@@ -109,6 +110,10 @@ export async function onRequest(context) {
   if (env.EMAILJS_TEMPLATE_ID) process.env.EMAILJS_TEMPLATE_ID = env.EMAILJS_TEMPLATE_ID;
   if (env.EMAILJS_PUBLIC_KEY) process.env.EMAILJS_PUBLIC_KEY = env.EMAILJS_PUBLIC_KEY;
   if (env.EMAILJS_PRIVATE_KEY) process.env.EMAILJS_PRIVATE_KEY = env.EMAILJS_PRIVATE_KEY;
+  if (env.WHATSAPP_ACCESS_TOKEN) process.env.WHATSAPP_ACCESS_TOKEN = env.WHATSAPP_ACCESS_TOKEN;
+  if (env.WHATSAPP_PHONE_NUMBER_ID) process.env.WHATSAPP_PHONE_NUMBER_ID = env.WHATSAPP_PHONE_NUMBER_ID;
+  if (env.WHATSAPP_GRAPH_VERSION) process.env.WHATSAPP_GRAPH_VERSION = env.WHATSAPP_GRAPH_VERSION;
+
 
   const event = await netlifyEvent(request, functionPath);
   try {

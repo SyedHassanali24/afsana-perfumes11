@@ -50,6 +50,18 @@ export const ordersApi = {
   setPayment: (id, paymentStatus, reference) => api(`/orders/admin/${id}/payment`, { method: 'PATCH', body: { paymentStatus, reference } }),
 };
 
+export const growthApi = {
+  me: () => api('/growth/me'),
+  dashboard: () => api('/growth/admin/dashboard'),
+  createPartner: (body) => api('/growth/admin/partners', { method: 'POST', body }),
+  updatePartner: (id, body) => api('/growth/admin/partners/' + id, { method: 'PATCH', body }),
+  commissions: (query) => api('/growth/admin/commissions', { query }),
+  payCommission: (id, body) => api('/growth/admin/commissions/' + id + '/payout', { method: 'POST', body }),
+  whatsapp: () => api('/growth/admin/whatsapp'),
+  retryWhatsapp: (id, confirmPassword) => api('/growth/admin/whatsapp/' + id + '/retry', { method: 'POST', body: { confirmPassword } }),
+  config: () => api('/growth/admin/config'),
+  saveConfig: (body) => api('/growth/admin/config', { method: 'PUT', body }),
+};
 export const analyticsApi = {
   dashboard: () => api('/analytics/dashboard', { cacheTtl: 60000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }; a section is null when the role may not see it
   traffic: (days = 30) => api('/analytics/traffic', { query: { days } }), // anonymous acquisition: visits, page views, sources and landing pages
