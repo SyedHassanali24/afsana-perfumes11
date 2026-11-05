@@ -153,7 +153,13 @@ async function resetPasswordWithToken(email, resetToken, newPassword) {
   const normalized = String(email || '').trim().toLowerCase();
   const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+resetOtpVerifiedHash');
   if (!user || !user.resetOtpVerifiedHash || !user.resetOtpVerifiedExpires || user.resetOtpVerifiedExpires < new Date() || sha256(String(resetToken)) !== user.resetOtpVerifiedHash) throw new ApiError(400, 'INVALID_RESET', 'Reset session is invalid or expired.');
-  user.passwordHash = await bcrypt.hash(String(newPassword), 12); user.passwordChangedAt = new Date(); user.mustChangePassword = false;
+  user.passwordHash = await bcrypt.hash(String(newPassword), 12);
+  user.passwordChangedAt = new Date();
+  user.mustChangePassword = false;
+  user.failedLoginCount = 0;
+  user.lockedUntil = undefined;
+  user.trustedDevices = [];
+  clearLoginChallenge(user);
   user.resetOtpVerifiedHash = undefined; user.resetOtpVerifiedExpires = undefined; user.resetOtpHash = undefined; user.resetOtpExpires = undefined; user.resetOtpAttempts = 0;
   await user.save();
   await Session.updateMany({ userId: user._id, revokedAt: { $exists: false } }, { revokedAt: new Date(), revokedReason: 'password_reset' });
@@ -244,6 +250,9 @@ async function login({ email, password, ip, userAgent, deviceId }) {
       trusted.lastUsedAt = now;
       await user.save();
     } else {
+      if (user.loginOtpExpires && user.loginOtpExpires > now) {
+        throw E.tooMany('A verification code is already active. Use the latest email code or wait for it to expire.');
+      }
       const otp = String(crypto.randomInt(100000, 1000000));
       const challengeId = crypto.randomBytes(32).toString('hex');
       user.loginOtpChallengeHash = sha256(challengeId);
