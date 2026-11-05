@@ -171,7 +171,7 @@ async function placeOrder(input, cust, idempotencyKey) {
     const referral = referralPartner ? {
       partnerId: referralPartner._id, partnerType: referralPartner.type, partnerName: referralPartner.name,
       code: referralPartner.code, commissionType: referralPartner.commissionType,
-      commissionValue: referralPartner.commissionValue, attributedAt: new Date(),
+      commissionValue: referralPartner.commissionValue, source: partnerPromo ? 'promo_code' : 'referral_link', attributedAt: new Date(),
     } : undefined;
     const [o] = await Order.create([{
       orderNumber, customerId: customer._id,
