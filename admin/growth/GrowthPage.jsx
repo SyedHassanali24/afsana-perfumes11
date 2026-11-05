@@ -232,6 +232,10 @@ export default function GrowthPage() {
           </div>
         </Card>
         <Card>
+          <h2 className="font-display text-lg text-[#182308]">Traffic sources by partner link</h2>
+          <div className="mt-4"><SourceList rows={dashboard?.sourceBreakdown || []}/></div>
+        </Card>
+        <Card>
           <h2 className="font-display text-lg text-[#182308]">Partner performance</h2>
           <div className="mt-3 space-y-3">
             {[...partnerRows].sort((a,b)=>(b.metrics.revenue||0)-(a.metrics.revenue||0)).slice(0,5).map((row) => <div key={row.partner.id} className="flex items-center justify-between gap-3 border-b border-[#1e1b4b]/5 pb-3 last:border-0">
@@ -249,6 +253,10 @@ export default function GrowthPage() {
         <Metric icon={Wallet} label="Net attributed revenue" value={money(own.revenue)} detail={"Refunded " + money(own.refunded || 0)}/>
         <Metric icon={Wallet} label="Your commission" value={money((own.commission?.pending||0)+(own.commission?.payable||0)+(own.commission?.paid||0))} detail={"Paid " + money(own.commission?.paid || 0)}/>
       </div>
+      <Card>
+        <h2 className="font-display text-lg text-[#182308]">Your referral traffic sources</h2>
+        <div className="mt-4"><SourceList rows={own.sourceBreakdown || []}/></div>
+      </Card>
       {selfPartner ? <Card>
         <h2 className="font-display text-lg text-[#182308]">Your referral identity</h2>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
