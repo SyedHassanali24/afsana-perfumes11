@@ -4,7 +4,7 @@ const MODULES = [
   'orders','shipping','payments','returns','refunds','customers','carts','wishlists','abandonedCarts','reviews',
   'coupons','flashSales','giftBoxes','giftCards','loyalty','campaigns','homepage','navigation','banners','pages',
   'faq','announcements','finance','expenses','profit','reports','staff','roles','permissions','accessScope',
-  'temporaryAccess','sessions','notifications','email','whatsapp','seo','tracking','auditLogs','security','backup','settings',
+  'temporaryAccess','sessions','notifications','email','whatsapp','seo','tracking','auditLogs','security','backup','settings','referrals','commissions',
 ];
 const ACTIONS = [
   'view','create','edit','delete','restore','export','import','approve','reject','publish','archive',
