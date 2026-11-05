@@ -156,7 +156,6 @@ async function payCommission(ctx, id, body) {
 }
 
 async function markPaidOrder(order, session) {
-  await ensureGrowthIndexes();
   if (!order || !order.referral || !order.referral.partnerId) return null;
   const existing = await AffiliateCommission.findOne({ orderId: order._id }).session(session).lean();
   if (existing) return null;
@@ -182,7 +181,6 @@ async function markOrderDelivered(orderId, session) {
 }
 
 async function adjustForRefund(order, totalRefunded, session) {
-  await ensureGrowthIndexes();
   const c = await AffiliateCommission.findOne({ orderId: order._id }).session(session);
   if (!c) return;
   const ratio = Math.max(0, Math.min(1, 1 - (Number(totalRefunded || 0) / Math.max(1, Number(order.total || 0)))));
