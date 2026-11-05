@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import TurnstileWidget from '../components/TurnstileWidget';
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -16,7 +17,7 @@ import {
 
 const inputClass = 'mt-2 block w-full rounded-xl border border-[#e6e1f0] bg-[#fbfaff] px-4 py-3.5 text-sm text-[#21183b] placeholder:text-[#aaa2b8] outline-none transition duration-200 focus:border-[#7958df] focus:bg-white focus:ring-4 focus:ring-[#7958df]/10';
 
-function ResetPasswordDialog({ reset, setReset, error, busy, onForgot, onVerify, onReset }) {
+function ResetPasswordDialog({ reset, setReset, error, setError, busy, onForgot, onVerify, onReset, turnstileToken, onTurnstileToken, turnstileResetKey }) {
   if (!reset.open) return null;
 
   return (
@@ -65,10 +66,12 @@ function ResetPasswordDialog({ reset, setReset, error, busy, onForgot, onVerify,
           </div>
         )}
 
+        <div className="mt-5"><TurnstileWidget action={reset.step === 1 ? 'staff_password_reset_request' : reset.step === 2 ? 'staff_password_reset_verify' : 'staff_password_reset_complete'} onToken={onTurnstileToken} resetKey={turnstileResetKey} /></div>
+
         {reset.msg && <p role="status" className="mt-4 flex items-start gap-2 rounded-xl bg-[#f1edff] px-3.5 py-3 text-xs leading-5 text-[#6548b5]"><CheckCircle2 size={15} className="mt-0.5 shrink-0" />{reset.msg}</p>}
         {error && <p role="alert" className="mt-4 rounded-xl border border-red-100 bg-red-50 px-3.5 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
 
-        <button type={reset.step === 2 ? 'button' : 'submit'} onClick={reset.step === 2 ? onVerify : undefined} disabled={busy} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#3a2675] to-[#7552d2] px-5 py-3.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(91,62,170,.22)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(91,62,170,.28)] disabled:cursor-wait disabled:opacity-60">
+        <button type={reset.step === 2 ? 'button' : 'submit'} onClick={reset.step === 2 ? onVerify : undefined} disabled={busy || !turnstileToken} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#3a2675] to-[#7552d2] px-5 py-3.5 text-sm font-bold text-white shadow-[0_10px_24px_rgba(91,62,170,.22)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(91,62,170,.28)] disabled:cursor-wait disabled:opacity-60">
           {busy ? 'Please wait…' : reset.step === 1 ? 'Send verification code' : reset.step === 2 ? 'Verify code' : 'Set new password'}
           {!busy && <ArrowUpRight size={16} />}
         </button>
@@ -86,6 +89,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const [twoFactor, setTwoFactor] = useState(null);
   const [reset, setReset] = useState({ open: false, step: 1, email: '', otp: '', resetToken: '', password: '', confirm: '', msg: '' });
 
@@ -94,23 +99,23 @@ export default function LoginPage() {
   const forgot = async (e) => {
     e.preventDefault(); setError(''); setBusy(true);
     try {
-      const r = await fetch('/api/auth/forgot-password/request', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, body: JSON.stringify({ email: reset.email.trim() }) });
+      const r = await fetch('/api/auth/forgot-password/request', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, body: JSON.stringify({ email: reset.email.trim(), turnstileToken }) });
       const d = await r.json();
       if (!r.ok || !d.success) throw new Error(d?.error?.message || 'Unable to send OTP.');
       setReset(v => ({ ...v, step: 2, msg: 'A verification code has been sent to your administrator email.' }));
     } catch (e) { setError(e.message); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setTurnstileToken(''); setTurnstileResetKey(v => v + 1); }
   };
 
   const verifyOtp = async () => {
     setError(''); setBusy(true);
     try {
-      const r = await fetch('/api/auth/forgot-password/verify', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, body: JSON.stringify({ email: reset.email.trim(), otp: reset.otp.trim() }) });
+      const r = await fetch('/api/auth/forgot-password/verify', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, body: JSON.stringify({ email: reset.email.trim(), otp: reset.otp.trim(), turnstileToken }) });
       const d = await r.json();
       if (!r.ok || !d.success) throw new Error(d?.error?.message || 'Invalid verification code.');
       setReset(v => ({ ...v, step: 3, resetToken: d.resetToken, msg: 'Email verified. You can now create a new password.' }));
     } catch (e) { setError(e.message); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setTurnstileToken(''); setTurnstileResetKey(v => v + 1); }
   };
 
   const doReset = async (e) => {
@@ -119,20 +124,20 @@ export default function LoginPage() {
     if (reset.password !== reset.confirm) { setError('Passwords do not match.'); return; }
     setError(''); setBusy(true);
     try {
-      const r = await fetch('/api/auth/forgot-password/reset', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, body: JSON.stringify({ email: reset.email.trim(), resetToken: reset.resetToken, password: reset.password }) });
+      const r = await fetch('/api/auth/forgot-password/reset', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana' }, body: JSON.stringify({ email: reset.email.trim(), resetToken: reset.resetToken, password: reset.password, turnstileToken }) });
       const d = await r.json();
       if (!r.ok || !d.success) throw new Error(d?.error?.message || 'Unable to reset password.');
       setReset({ open: false, step: 1, email: '', otp: '', resetToken: '', password: '', confirm: '', msg: '' });
       setError('');
     } catch (e) { setError(e.message); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setTurnstileToken(''); setTurnstileResetKey(v => v + 1); }
   };
 
   const submit = async (e) => {
     e.preventDefault();
     setError(''); setBusy(true);
     try {
-      const result = await login(form.email.trim(), form.password);
+      const result = await login(form.email.trim(), form.password, turnstileToken);
       if (result?.requiresTwoFactor) {
         setTwoFactor({ email: form.email.trim(), challengeId: result.challengeId, otp: '' });
         return;
@@ -140,7 +145,7 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.status === 429 ? 'Too many attempts. Your account may be locked for 3 minutes.' : err.message);
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setTurnstileToken(''); setTurnstileResetKey(v => v + 1); }
   };
 
   const verifyAdminOtp = async (e) => {
@@ -148,11 +153,11 @@ export default function LoginPage() {
     if (!twoFactor) return;
     setError(''); setBusy(true);
     try {
-      await completeTwoFactor(twoFactor.email, twoFactor.challengeId, twoFactor.otp.trim());
+      await completeTwoFactor(twoFactor.email, twoFactor.challengeId, twoFactor.otp.trim(), turnstileToken);
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.status === 429 ? 'Too many incorrect codes. Please sign in again.' : err.message);
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setTurnstileToken(''); setTurnstileResetKey(v => v + 1); }
   };
 
   return (
@@ -237,9 +242,10 @@ export default function LoginPage() {
                               <button type="button" onClick={() => { setError(''); setReset(v => ({ ...v, open: true, step: 1, email: form.email, otp: '', resetToken: '', password: '', confirm: '', msg: '' })); }} className="text-xs font-semibold text-[#7654c9] transition hover:text-[#4e329d] hover:underline">Forgot password?</button>
                             </div>
               
+                            <TurnstileWidget action="staff_login" onToken={setTurnstileToken} resetKey={turnstileResetKey} />
                             {error && !reset.open && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
               
-                            <button type="submit" disabled={busy} className="group relative mt-1 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold tracking-wide text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_17px_34px_rgba(80,55,145,.30)] disabled:cursor-wait disabled:opacity-60">
+                            <button type="submit" disabled={busy || !turnstileToken} className="group relative mt-1 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold tracking-wide text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_17px_34px_rgba(80,55,145,.30)] disabled:cursor-wait disabled:opacity-60">
                               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                               <span className="relative">{busy ? 'Signing in…' : 'Sign in'}</span>
                               {!busy && <ArrowUpRight className="relative transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" size={17} />}
@@ -269,8 +275,9 @@ export default function LoginPage() {
                     placeholder="••••••"
                   />
                 </label>
+                <TurnstileWidget action="staff_2fa" onToken={setTurnstileToken} resetKey={turnstileResetKey} />
                 {error && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-[#a33c51]">{error}</p>}
-                <button type="submit" disabled={busy || twoFactor.otp.length !== 6} className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60">
+                <button type="submit" disabled={busy || twoFactor.otp.length !== 6 || !turnstileToken} className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#38236f] via-[#583ca5] to-[#7554d0] px-5 py-4 text-sm font-bold text-white shadow-[0_12px_28px_rgba(80,55,145,.22)] transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60">
                   {busy ? 'Verifying…' : 'Verify and continue'}
                   {!busy && <ArrowUpRight size={17} />}
                 </button>
@@ -300,7 +307,7 @@ export default function LoginPage() {
         </section>
       </div>
 
-      <ResetPasswordDialog reset={reset} setReset={setReset} error={error} setError={setError} busy={busy} onForgot={forgot} onVerify={verifyOtp} onReset={doReset} />
+      <ResetPasswordDialog reset={reset} setReset={setReset} error={error} setError={setError} busy={busy} onForgot={forgot} onVerify={verifyOtp} onReset={doReset} turnstileToken={turnstileToken} onTurnstileToken={setTurnstileToken} turnstileResetKey={turnstileResetKey} />
     </main>
   );
 }
