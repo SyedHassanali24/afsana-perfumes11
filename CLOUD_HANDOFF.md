@@ -14,8 +14,9 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 
 ## GitHub release state
 - The working branch includes the latest CMS / store / security work.
-- Latest tested application commit deployed: `3fd66da4f9e84ff3a14707f6c6ccfa8a6afb5056` (OTP provider failover + customer email compatibility). Latest WhatsApp regression-test commit: `a98df335f229840431f7dc81d242740cee495522`.
-- Latest verified Cloudflare Worker version: `bc746997-0969-455a-b453-757c32c41f60`, 100% traffic. Deployment run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42053629921 (attempt 2 successful; CI + live smoke passed). WhatsApp tests passed separately in CI; they do not change Worker runtime.
+- Latest tested application commit deployed: `9843191ecf1818668e4e72390e1ba2fa14ddb716` (shared 250 MiB chunked video limits, CMS upload UX and legacy-route clarification).
+- Latest verified Cloudflare Worker version: `30807b02-b95f-4012-ae1a-1b06a5f69cba`, 100% traffic. Deployment run: https://github.com/SyedHassanali24/afsana-perfumes11/actions/runs/42056292786 (successful; live smoke passed).
+- Latest release branch head including test/docs changes: `ff1599b2262d482b8e0e74c406acf696aa97d01a`; branch CI passed. New regression tests cover WhatsApp outbox and 250 MiB video chunk boundaries. These later changes after app commit 984 are tests/docs only and do not alter Worker runtime.
 - PR #7 is still Draft, open, unmerged, and GitHub reports it as dirty / not mergeable. Do not force-merge it into `main`.
 - Deployments are triggered from the feature branch by `.github/workflows/cloudflare-worker.yml`.
 - Re-check branch head and latest GitHub Actions before claiming the very latest code is deployed.
@@ -31,7 +32,8 @@ Continue the AFSANA Perfumes project from this file when the user says **continu
 - The old base64 `/api/media/admin` route still has a separate 4 MiB asset ceiling; that legacy limit does not apply to the chunked video endpoint. Optimized GLB assets continue to use the legacy media upload path.
 - The video chunk size is 4 MiB, below Cloudflare KV's 25 MiB maximum value size. KV Free currently has 1 GB namespace storage, 1,000 writes/day and 100,000 reads/day. A maximum 250 MiB video consumes 63 chunk writes plus metadata/other operations; practical daily upload capacity is therefore limited by remaining account quota and existing media, not unlimited. See [Cloudflare KV limits](https://developers.cloudflare.com/kv/platform/limits/) and [KV pricing](https://developers.cloudflare.com/kv/platform/pricing/).
 - The Worker receives each video chunk as a separate request; Cloudflare Free's 100 MB per-request body ceiling does not cap the 250 MiB whole-file size because each request carries only one 4 MiB chunk. See [Cloudflare Workers request limits](https://developers.cloudflare.com/workers/platform/limits/).
-- Live smoke confirms byte-range playback for existing images/videos. A full live upload of a new 250 MiB file has not yet been performed; doing that safely requires a logged-in media-authorized admin and a dedicated test clip.
+- Live smoke confirms byte-range playback for existing images/videos. Unit tests verify 250 MiB boundary, 63-chunk plan, exact final 2 MiB chunk and MP4/WebM file signatures. A full live upload of a new large video has not yet been performed; doing that safely requires a logged-in media-authorized admin and a dedicated test clip.
+- Cloudflare KV Free limits currently documented by Cloudflare are 1 GB storage/namespace, 1,000 writes/day, 100,000 reads/day and 25 MiB per value. A 250 MiB video therefore fits the value-size limit via 4 MiB chunks, but uses about 63 chunk writes plus metadata. Roughly 4 maximum-size videos fit in 1 GB, and roughly 15 maximum-size uploads/day fit the 1,000-write budget before other KV activity. Existing media and other KV users reduce this headroom. This is not unlimited free storage.
 - Durable Object namespace: `MONGODB_CONNECTION`.
 - Media KV binding: `AFSANA_MEDIA_FREE`.
 - Smart Placement and Worker caching are configured.
@@ -89,7 +91,7 @@ The GitHub Cloudflare deploy workflow runs `tools/cloudflare-smoke.mjs`, which c
 - Products and CMS endpoints return expected responses; unauthenticated staff/analytics routes remain protected.
 - Existing public media supports MP4 byte-range playback.
 - WhatsApp outbox unit tests cover consent gating, Pakistan phone formatting, setup-required state, accepted status, single-send idempotency and template payload. Tests use fake providers; no message is sent.
-Latest deployment run on application commit `3fd66da4f9e84ff3a14707f6c6ccfa8a6afb5056` / Worker version `bc746997-0969-455a-b453-757c32c41f60`: MongoDB connected; health readiness OK including admin OTP + customer reset provider configuration; CORS/security headers passed; 10 Turnstile guards passed; Siteverify invalid-token check passed; products=2; CMS=200; 5 images and 2 MP4s returned byte-range HTTP 206; staff auth route returned expected 401 without a cookie. Re-check latest run before relying on results for a later branch head.
+Latest deployment run on application commit `9843191ecf1818668e4e72390e1ba2fa14ddb716` / Worker version `30807b02-b95f-4012-ae1a-1b06a5f69cba`: MongoDB connected; health readiness OK including admin OTP + customer reset provider configuration; CORS/security headers passed; 10 Turnstile guards passed; Siteverify invalid-token check passed; products=2; CMS=200; 5 images and 2 MP4s returned byte-range HTTP 206; staff auth route returned expected 401 without a cookie. Re-check latest run before relying on results for a later branch head.
 
 ## Launch blockers that need external setup / real verification
 1. **Domain:** No custom domain is currently attached. User has not bought one. After purchase, attach the domain/zone to Cloudflare, preserve MX/SPF/DKIM/DMARC records, connect Worker hostname, update Turnstile allowlist, allowed origins and canonical URLs, and test SSL + admin cookies.
