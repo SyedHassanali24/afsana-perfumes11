@@ -1,4 +1,4 @@
-const SECURITY_HEADERS = Object.freeze({
+export const SECURITY_HEADERS = Object.freeze({
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -6,7 +6,7 @@ const SECURITY_HEADERS = Object.freeze({
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
 });
 
-function normalizeOrigin(value) {
+export function normalizeOrigin(value) {
   if (!value || typeof value !== "string" || value === "null") return null;
   try {
     const url = new URL(value);
@@ -19,7 +19,7 @@ function normalizeOrigin(value) {
   }
 }
 
-function allowedOrigins(env = {}, requestUrl) {
+export function allowedOrigins(env = {}, requestUrl) {
   const values = [
     ...String(env.ALLOWED_ORIGINS || "").split(","),
     env.SITE_URL,
@@ -28,12 +28,12 @@ function allowedOrigins(env = {}, requestUrl) {
   return new Set(values.map(normalizeOrigin).filter(Boolean));
 }
 
-function isAllowedOrigin(origin, env = {}, requestUrl) {
+export function isAllowedOrigin(origin, env = {}, requestUrl) {
   const normalized = normalizeOrigin(origin);
   return !!normalized && allowedOrigins(env, requestUrl).has(normalized);
 }
 
-function corsHeaders(origin, env = {}, requestUrl) {
+export function corsHeaders(origin, env = {}, requestUrl) {
   const headers = { "Vary": "Origin" };
   const normalized = normalizeOrigin(origin);
   if (!normalized || !isAllowedOrigin(normalized, env, requestUrl)) return headers;
@@ -46,4 +46,3 @@ function corsHeaders(origin, env = {}, requestUrl) {
   };
 }
 
-module.exports = { SECURITY_HEADERS, normalizeOrigin, allowedOrigins, isAllowedOrigin, corsHeaders };
