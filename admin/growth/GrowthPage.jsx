@@ -217,7 +217,7 @@ export default function GrowthPage() {
     {tab === "overview" && (isManager ? <>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={MousePointerClick} label="Referral visits" value={number(totals.visits)} detail="Unique first-touch sessions"/>
-        <Metric icon={ShoppingBag} label="Paid orders" value={number(totals.orders)} detail={number(totals.linkOrders)} link · {number(totals.codeOrders)} promo-code orders/>
+        <Metric icon={ShoppingBag} label="Paid orders" value={number(totals.orders)} detail={number(totals.linkOrders) + " link · " + number(totals.codeOrders) + " promo-code orders"}/>
         <Metric icon={Wallet} label="Net attributed revenue" value={money(totals.revenue)} detail={"Refunded " + money(totals.refunded || 0)}/>
         <Metric icon={Users} label="Active partners" value={number(partnerRows.filter((x) => x.partner.isActive).length)} detail={number(partnerRows.length) + " total partner records"}/>
       </div>
