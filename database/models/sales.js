@@ -24,7 +24,7 @@ const orderSchema = new Schema({
   shippingAddress: { fullName: String, phone: String, line1: String, line2: String, city: String, postalCode: String },
   subtotal: Number, shipping: { type: Number, default: 0 }, discount: { type: Number, default: 0 }, total: Number,
   couponCode: String,
-  referral: { partnerId: { type: ObjectId, ref: 'AffiliatePartner' }, partnerType: { type: String, enum: ['influencer', 'staff'] }, partnerName: String, code: String, commissionType: { type: String, enum: ['percentage', 'fixed'] }, commissionValue: Number, attributedAt: Date },
+  referral: { partnerId: { type: ObjectId, ref: 'AffiliatePartner' }, partnerType: { type: String, enum: ['influencer', 'staff'] }, partnerName: String, code: String, source: { type: String, enum: ['promo_code', 'referral_link'] }, commissionType: { type: String, enum: ['percentage', 'fixed'] }, commissionValue: Number, attributedAt: Date },
   paymentMethod: { type: String, enum: C.PAYMENT_METHODS, required: true },
   paymentStatus: { type: String, enum: C.PAYMENT_STATUSES, default: 'Pending', index: true },
   status: { type: String, enum: C.ORDER_STATUSES, default: 'New' },
