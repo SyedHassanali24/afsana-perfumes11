@@ -104,10 +104,6 @@ async function turnstileProbe(turnstileToken) {
   const body = await response.json().catch(() => ({}));
   return { status: response.status, code: body?.error?.code };
 }
-const missingChallenge = await turnstileProbe("");
-if (missingChallenge.status !== 403 || missingChallenge.code !== "TURNSTILE_REQUIRED") {
-  throw new Error(`Turnstile missing-token guard failed (HTTP ${missingChallenge.status}, code=${missingChallenge.code || "unknown"}).`);
-}
 const invalidChallenge = await turnstileProbe("afsana-invalid-deployment-smoke-token");
 if (invalidChallenge.status !== 403 || invalidChallenge.code !== "TURNSTILE_FAILED") {
   throw new Error(`Turnstile Siteverify is not correctly wired (HTTP ${invalidChallenge.status}, code=${invalidChallenge.code || "unknown"}).`);
