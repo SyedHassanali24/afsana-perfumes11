@@ -37,6 +37,45 @@ if (health.data.database?.connected !== true) {
 }
 console.log(`Application API: connected; database setup=${health.data.database.setupDone ? "ready" : "needs initialization"}`);
 
+// Production security regression checks: trusted CORS only + common browser hardening headers.
+const siteOrigin = new URL(base).origin;
+for (const [header, expected] of [
+  ["strict-transport-security", "max-age="],
+  ["x-content-type-options", "nosniff"],
+  ["x-frame-options", "DENY"],
+  ["referrer-policy", "strict-origin-when-cross-origin"],
+]) {
+  const value = health.response.headers.get(header) || "";
+  if (!value.toLowerCase().includes(expected.toLowerCase())) {
+    throw new Error(`Security header ${header} is missing or incorrect.`);
+  }
+}
+const allowedPreflight = await fetch(new URL("/api/auth/login", base), {
+  method: "OPTIONS",
+  headers: {
+    Origin: siteOrigin,
+    "Access-Control-Request-Method": "POST",
+    "Access-Control-Request-Headers": "content-type,x-requested-with"
+  },
+  signal: AbortSignal.timeout(20000)
+});
+if (allowedPreflight.status !== 204 || allowedPreflight.headers.get("access-control-allow-origin") !== siteOrigin) {
+  throw new Error(`Trusted-origin CORS preflight failed (HTTP ${allowedPreflight.status}).`);
+}
+const rejectedPreflight = await fetch(new URL("/api/auth/login", base), {
+  method: "OPTIONS",
+  headers: {
+    Origin: "https://untrusted-afsana-test.workers.dev",
+    "Access-Control-Request-Method": "POST",
+    "Access-Control-Request-Headers": "content-type,x-requested-with"
+  },
+  signal: AbortSignal.timeout(20000)
+});
+if (rejectedPreflight.status !== 403 || rejectedPreflight.headers.has("access-control-allow-origin")) {
+  throw new Error(`Untrusted-origin CORS was not rejected (HTTP ${rejectedPreflight.status}).`);
+}
+console.log("Security headers: present; CORS: trusted origin allowed and untrusted origin rejected");
+
 const products = await getJson("/api/products?sort=popular&limit=12");
 if (!products.response.ok || products.data.success !== true) {
   throw new Error(`Products API failed (HTTP ${products.response.status})`);
