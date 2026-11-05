@@ -124,7 +124,11 @@ async function placeOrder(input, cust, idempotencyKey) {
     // An explicitly entered partner code takes precedence over a different link code.
     if (!referralPartner && input.referralCode) {
       const code = AR.normalizeCode(input.referralCode);
-      if (AR.CODE_RE.test(code)) referralPartner = await AffiliatePartner.findOne({ code, isActive: true, isDeleted: false, storeId: 'main' }).session(session).lean();
+      if (AR.CODE_RE.test(code)) {
+        const candidate = await AffiliatePartner.findOne({ code, isActive: true, isDeleted: false, storeId: 'main' }).session(session).lean();
+        const now = new Date();
+        if (candidate && (!candidate.startsAt || candidate.startsAt <= now) && (!candidate.expiresAt || candidate.expiresAt >= now)) referralPartner = candidate;
+      }
     }
 
     if (coupon) {
