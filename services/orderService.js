@@ -86,7 +86,8 @@ async function placeOrder(input, cust, idempotencyKey) {
   }
 
   // 3. Reserve stock + re-read coupon rules inside the transaction so checkout uses one consistent snapshot.
-  let coupon = null; let referralPartner = null; let partnerPromo = false;\n  let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
+  let coupon = null; let referralPartner = null; let partnerPromo = false;
+  let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
   const orderNumber = await nextNumber('order', 'AFS');
 
   // 4. atomic: reserve stock + write order. If any unit is gone the whole thing rolls back.
