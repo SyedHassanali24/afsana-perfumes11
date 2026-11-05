@@ -52,7 +52,7 @@ async function sendOtpEmail(to, subject, purpose, otp) {
     });
     const tokenData = await tokenResponse.json().catch(() => ({}));
     if (!tokenResponse.ok || !tokenData.access_token) throw new Error('Gmail authorization could not be refreshed.');
-    const sender = String(process.env.GMAIL_SENDER_EMAIL || to).trim();
+    const sender = String(process.env.GMAIL_SENDER_EMAIL || process.env.OWNER_EMAIL || process.env.ADMIN_EMAIL || process.env.EASTWALA_EMAIL || to).trim();
     const mime = [
       `From: AFSANA Security <${sender}>`,
       `To: ${to}`,
