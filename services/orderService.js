@@ -14,6 +14,7 @@ const R = require('./orderRules');
 const AR = require('./affiliateRules');
 const Affiliates = require('./affiliateService');
 const WhatsApp = require('./whatsappService');
+const { ensureGrowthIndexes } = require('./growthIndexes');
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
 
@@ -40,6 +41,7 @@ async function shippingSettings() {
 // ---------------- checkout ----------------
 // `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
 async function placeOrder(input, cust, idempotencyKey) {
+  if (input.referralCode || input.couponCode) await ensureGrowthIndexes();
   const key = String(idempotencyKey || '').trim();
   if (key && !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw E.badRequest('Invalid Idempotency-Key.');
   // 1. merge duplicate lines, load real data from DB
@@ -299,6 +301,7 @@ async function sendRewardMessage(outboxId) {
 }
 
 async function changeStatus(ctx, id, status, note, scopes) {
+  if (status === 'Delivered') await ensureGrowthIndexes();
   const scoped = await Order.exists({ _id: id, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) });
   if (!scoped) throw E.notFound('Order not found.');
   let outboxId = null;
@@ -342,6 +345,7 @@ async function setPayment(ctx, id, { paymentStatus, reference }, scopes) {
   if (!o) throw E.notFound('Order not found.');
   const old = o.paymentStatus;
   if (!R.canSetPayment(old, paymentStatus)) throw E.conflict(`Payment status cannot change from ${old} to ${paymentStatus}.`);
+  if (paymentStatus === 'Paid') await ensureGrowthIndexes();
   let outboxId = null;
   await withTx(async (session) => {
     const locked = await Order.findOneAndUpdate(
