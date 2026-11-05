@@ -122,3 +122,33 @@ test('email normalization: trims and lowercases customer email identifiers', () 
   assert.equal(isEmailIdentifier('customer@example.com'), true);
   assert.equal(isEmailIdentifier('03001234567'), false);
 });
+
+test('email lookup: case-insensitive matching remains exact and escapes regex metacharacters', () => {
+  const { emailExactQuery } = require('../services/emailRules');
+  for (const value of ['Customer.Name+Shop@Example.COM', 'a[b]@example.com', 'user+tag@example.com']) {
+    const query = emailExactQuery(value);
+    const matcher = new RegExp(query.$regex, query.$options);
+    assert.equal(matcher.test(value.trim()), true);
+    assert.equal(matcher.test(value.trim().toUpperCase()), true);
+    assert.equal(matcher.test(value.trim() + '.attacker'), false);
+  }
+  assert.equal(emailExactQuery('  '), undefined);
+});
+
+test('customer password reset: maps Gmail network failures to safe 503 responses', async () => {
+  await assert.rejects(
+    () => sendPasswordReset(
+      { to: 'customer@example.com', url: 'https://afsana-perfumes11.eastwala12.workers.dev/reset-password?token=x' },
+      {
+        env: {
+          NODE_ENV: 'production',
+          GMAIL_CLIENT_ID: 'client',
+          GMAIL_CLIENT_SECRET: 'secret',
+          GMAIL_REFRESH_TOKEN: 'refresh',
+        },
+        fetchImpl: async () => { throw new Error('socket reset with private transport details'); }
+      }
+    ),
+    (error) => error.status === 503 && error.code === 'SERVICE_UNAVAILABLE' && !error.message.includes('socket reset')
+  );
+});
