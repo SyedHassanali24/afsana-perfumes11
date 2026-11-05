@@ -243,7 +243,7 @@ async function issueRefund(ctx, id, { amount, method, reference, reason }, scope
     const [refund] = await Refund.create([{ orderId: order._id, orderNumber: order.orderNumber, returnId: id, customerId: order.customerId, amount, reason, method, reference: reference || undefined, approvedBy: ctx.user._id }], { session });
     const payStatus = R.paymentStatusAfterRefund(order.total, already + amount, order.paymentStatus);
     await Order.updateOne({ _id: order._id }, { $set: { paymentStatus: payStatus } }, { session });
-    await Payment.updateMany({ orderId: order._id }, { $set: { status: payStatus } }, { session });
+    await Payment.updateMany({ orderId: order._id }, { $set: { status: payStatus } }, { session });\n    await require('./affiliateService').adjustForRefund(order, already + amount, session);
     if (order.customerId) await Customer.updateOne({ _id: order.customerId }, [{ $set: { 'stats.totalSpent': { $max: [0, { $subtract: [{ $ifNull: ['$stats.totalSpent', 0] }, amount] }] } } }], { session });
     const orderItems = await OrderItem.find({ orderId: order._id }).session(session).lean();
     const returns = await Return.find({ orderId: order._id }).session(session).lean();
