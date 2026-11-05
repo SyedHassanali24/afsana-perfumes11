@@ -171,6 +171,7 @@ async function resetPasswordWithToken(email, resetToken, newPassword) {
         failedLoginCount: 0,
         trustedDevices: [],
       },
+      $inc: { authVersion: 1 },
       $unset: {
         lockedUntil: '',
         resetOtpVerifiedHash: '',
@@ -215,7 +216,7 @@ function isPrivilegedRole(role) {
 async function createStaffSession(user, staff, { ip, userAgent }) {
   const jti = crypto.randomBytes(24).toString('hex');
   const session = await Session.create({
-    userId: user._id, tokenHash: sha256(jti), device: { userAgent, ip },
+    userId: user._id, tokenHash: sha256(jti), authVersion: Number(user.authVersion || 0), device: { userAgent, ip },
     expiresAt: new Date(Date.now() + SESSION_DAYS * 86400000),
   });
   user.failedLoginCount = 0;
@@ -346,8 +347,9 @@ async function authenticate(req) {
   if (!session || session.revokedAt || session.expiresAt < new Date() || session.tokenHash !== sha256(payload.jti)) throw E.unauthorized();
   const user = await User.findById(session.userId);
   if (!user || user.kind !== 'staff' || user.status !== 'Active') throw E.unauthorized();
-  // Enforce password rotation even if a session-revocation write failed.
-  if (user.passwordChangedAt && session.createdAt && session.createdAt < user.passwordChangedAt) throw E.unauthorized();
+  // Credential changes increment authVersion. Any old session becomes invalid even
+  // if a separate session-revocation write fails during a partial outage.
+  if (Number(session.authVersion || 0) !== Number(user.authVersion || 0)) throw E.unauthorized();
   const staff = await Staff.findOne({ userId: user._id, isDeleted: false });
   if (!staff || staff.status !== 'Active') throw E.forbidden('This account is not active.');
   const role = await Role.findById(staff.roleId);
