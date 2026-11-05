@@ -98,7 +98,7 @@ export default function CheckoutPage() {
                 </div>
                 <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
                   <input type="checkbox" checked={whatsappMarketingOptIn} onChange={(e) => setWhatsappMarketingOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
-                  <span><strong className="font-medium text-[#263e0e]">Send my Afsana first-purchase reward on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. You agree to receive your welcome coupon and occasional Afsana offers on this number. You can opt out later.</span></span>
+                  <span><strong className="font-medium text-[#263e0e]">Send my Afsana first-purchase reward on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. You agree to receive your welcome coupon and occasional Afsana offers on this number. Contact Afsana support to withdraw consent.</span></span>
                 </label>
               </section>
               <section className="space-y-4 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
