@@ -87,6 +87,10 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
   }
 
+  // Cloudflare is the production runtime; do not let Netlify development defaults
+  // silently turn customer password-reset emails into log-only development output.
+  process.env.NODE_ENV = "production";
+  process.env.CONTEXT = "production";
   process.env.MONGODB_URI = env.MONGODB_URI || "";
   process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
   process.env.JWT_SECRET = env.JWT_SECRET || "";
@@ -111,6 +115,8 @@ export async function onRequest(context) {
   if (env.EMAILJS_TEMPLATE_ID) process.env.EMAILJS_TEMPLATE_ID = env.EMAILJS_TEMPLATE_ID;
   if (env.EMAILJS_PUBLIC_KEY) process.env.EMAILJS_PUBLIC_KEY = env.EMAILJS_PUBLIC_KEY;
   if (env.EMAILJS_PRIVATE_KEY) process.env.EMAILJS_PRIVATE_KEY = env.EMAILJS_PRIVATE_KEY;
+  if (env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID) process.env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID = env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID;
+  if (env.GMAIL_SENDER_EMAIL) process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL;
   if (env.TURNSTILE_SECRET_KEY) process.env.TURNSTILE_SECRET_KEY = env.TURNSTILE_SECRET_KEY;
   if (env.WHATSAPP_ACCESS_TOKEN) process.env.WHATSAPP_ACCESS_TOKEN = env.WHATSAPP_ACCESS_TOKEN;
   if (env.WHATSAPP_PHONE_NUMBER_ID) process.env.WHATSAPP_PHONE_NUMBER_ID = env.WHATSAPP_PHONE_NUMBER_ID;
