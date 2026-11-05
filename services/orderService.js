@@ -285,6 +285,7 @@ async function paidOrderEffects(orderId, session) {
   const paidOrder = await Order.findById(orderId).session(session).lean();
   if (!paidOrder || paidOrder.paymentStatus !== 'Paid') return null;
   await Affiliates.markPaidOrder(paidOrder, session);
+  if (paidOrder.status === 'Delivered') await Affiliates.markOrderDelivered(paidOrder._id, session);
   return WhatsApp.issueFirstPurchaseReward(paidOrder, session);
 }
 async function sendRewardMessage(outboxId) {
