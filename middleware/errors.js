@@ -8,6 +8,7 @@ const E = {
   notFound: (m = 'Not found.') => new ApiError(404, 'NOT_FOUND', m),
   conflict: (m, d, code = 'CONFLICT') => new ApiError(409, code, m, d),
   tooMany: (m = 'Too many requests. Please try again shortly.') => new ApiError(429, 'RATE_LIMITED', m),
+  serviceUnavailable: (m = 'Service is temporarily unavailable. Please try again later.') => new ApiError(503, 'SERVICE_UNAVAILABLE', m),
 };
 
 // Centralised: never leak stack traces or raw MongoDB errors to the client.
