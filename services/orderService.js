@@ -304,7 +304,7 @@ async function changeStatus(ctx, id, status, note, scopes) {
     if (!result) throw E.conflict('This order was just updated by someone else. Please refresh.');
     const items = await OrderItem.find({ orderId: id }).session(session).lean();
 
-    if (status === 'Shipped' && !order.stockCommitted) { await commitItems(items, order, ctx, session); await Order.updateOne({ _id: id }, { $set: { stockCommitted: true }, { session }); }
+    if (status === 'Shipped' && !order.stockCommitted) { await commitItems(items, order, ctx, session); await Order.updateOne({ _id: id }, { $set: { stockCommitted: true } }, { session }); }
     const effect = R.stockEffect(status, order.stockCommitted);
     if (effect === 'restock') await restockItems(items, order, ctx, session);
     else if (effect === 'restock_return') await restockItems(items, order, ctx, session, 'return');
