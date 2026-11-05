@@ -16,6 +16,7 @@ const userSchema = new Schema({
   lockedUntil: Date,
   lastLoginAt: Date,
   passwordChangedAt: Date,
+  authVersion: { type: Number, default: 0 },
   mustChangePassword: { type: Boolean, default: false },
   resetTokenHash: { type: String, select: false },
   resetTokenExpires: Date,
@@ -45,6 +46,7 @@ storeScoped(userSchema);
 const sessionSchema = new Schema({
   userId: { type: ObjectId, ref: 'User', required: true, index: true },
   tokenHash: { type: String, required: true, unique: true },
+  authVersion: { type: Number, default: 0 },
   device: { userAgent: String, ip: String, label: String },
   lastActiveAt: { type: Date, default: Date.now },
   expiresAt: { type: Date, required: true },
