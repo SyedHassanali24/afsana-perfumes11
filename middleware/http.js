@@ -5,7 +5,8 @@ const json = (status, body, headers = {}) => ({
 });
 const res = (status, data = {}, headers = {}) => ({ __res: true, status, data, headers });
 const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-const clientIp = (h) => h['x-nf-client-connection-ip'] || h['cf-connecting-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+// Cloudflare's edge-controlled CF-Connecting-IP takes precedence; never trust a client-supplied Netlify-style header when CF is present.
+const clientIp = (h) => h['cf-connecting-ip'] || h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
 function parseCookies(header = '') {
   const out = {};
