@@ -5,7 +5,7 @@ const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const { notifyAdmin } = require('./notificationService');
-const R = require('./accessRules');
+const R = require('./accessRules');\nconst { ensureStaffPartner } = require('./staffReferral');
 
 const hash = (pw) => bcrypt.hash(pw, 12);
 const revokeSessions = (userId, reason, session, exceptId) => Session.updateMany(
@@ -89,7 +89,7 @@ async function createStaff(ctx, body) {
     await audit(ctx, { action: 'staff.created', module: 'staff', recordId: staff._id, newValue: { email, name: body.name, role: role.key } }, session);
     return staff._id;
   });
-  return { ...(await getStaff(staffId)), tempPassword: generated }; // shown once by the UI
+  const staffRecord = await Staff.findById(staffId).lean();\n  if (staffRecord) await ensureStaffPartner(staffRecord);\n  return { ...(await getStaff(staffId)), tempPassword: generated }; // shown once by the UI
 }
 
 async function updateStaff(ctx, id, body) {
