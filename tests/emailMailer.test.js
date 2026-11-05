@@ -152,3 +152,83 @@ test('customer password reset: maps Gmail network failures to safe 503 responses
     (error) => error.status === 503 && error.code === 'SERVICE_UNAVAILABLE' && !error.message.includes('socket reset')
   );
 });
+
+test('staff OTP mailer: falls back from a rejected EmailJS provider to Gmail OAuth', async () => {
+  const { sendOtpWithFallback } = require('../services/otpMailer');
+  const calls = [];
+  const result = await sendOtpWithFallback({
+    to: 'owner@example.com',
+    subject: 'AFSANA admin login verification',
+    purpose: 'admin login verification',
+    otp: '123456',
+    env: {
+      EMAILJS_SERVICE_ID: 'service',
+      EMAILJS_TEMPLATE_ID: 'otp-template',
+      EMAILJS_PUBLIC_KEY: 'public',
+      EMAILJS_PRIVATE_KEY: 'private',
+      GMAIL_CLIENT_ID: 'client',
+      GMAIL_CLIENT_SECRET: 'secret',
+      GMAIL_REFRESH_TOKEN: 'refresh',
+      OWNER_EMAIL: 'owner@example.com',
+    },
+    fetchImpl: async (url, options) => {
+      calls.push(url);
+      if (url === 'https://api.emailjs.com/api/v1.0/email/send') return { ok: false, status: 500, text: async () => 'provider error' };
+      if (url === 'https://oauth2.googleapis.com/token') return { ok: true, json: async () => ({ access_token: 'temporary-access-token' }) };
+      if (url === 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send') {
+        const mime = Buffer.from(JSON.parse(options.body).raw, 'base64url').toString('utf8');
+        assert.match(mime, /123456/);
+        assert.match(mime, /owner@example.com/);
+        return { ok: true, json: async () => ({ id: 'gmail-message-id' }) };
+      }
+      throw new Error('Unexpected provider request: ' + url);
+    }
+  });
+
+  assert.deepEqual(result, { sent: true, provider: 'gmail' });
+  assert.deepEqual(calls, [
+    'https://api.emailjs.com/api/v1.0/email/send',
+    'https://oauth2.googleapis.com/token',
+    'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+  ]);
+});
+
+test('staff OTP mailer: partial EmailJS credentials do not block Gmail fallback', async () => {
+  const { sendOtpWithFallback } = require('../services/otpMailer');
+  const calls = [];
+  const result = await sendOtpWithFallback({
+    to: 'owner@example.com',
+    subject: 'AFSANA admin login verification',
+    purpose: 'admin login verification',
+    otp: '654321',
+    env: {
+      EMAILJS_SERVICE_ID: 'service',
+      GMAIL_CLIENT_ID: 'client',
+      GMAIL_CLIENT_SECRET: 'secret',
+      GMAIL_REFRESH_TOKEN: 'refresh',
+    },
+    fetchImpl: async (url, options) => {
+      calls.push(url);
+      if (url === 'https://oauth2.googleapis.com/token') return { ok: true, json: async () => ({ access_token: 'temporary-access-token' }) };
+      if (url === 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send') return { ok: true, json: async () => ({ id: 'gmail-message-id' }) };
+      throw new Error('Unexpected provider request: ' + url);
+    }
+  });
+  assert.deepEqual(result, { sent: true, provider: 'gmail' });
+  assert.equal(calls.length, 2);
+});
+
+test('staff OTP mailer: reports unconfigured delivery without exposing an OTP', async () => {
+  const { sendOtpWithFallback } = require('../services/otpMailer');
+  await assert.rejects(
+    () => sendOtpWithFallback({
+      to: 'owner@example.com',
+      subject: 'AFSANA admin login verification',
+      purpose: 'admin login verification',
+      otp: '111222',
+      env: {},
+      fetchImpl: async () => { throw new Error('No provider should be called'); }
+    }),
+    (error) => error.message.includes('not configured') && !error.message.includes('111222')
+  );
+});
