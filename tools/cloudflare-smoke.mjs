@@ -89,33 +89,59 @@ if (!csp.toLowerCase().includes("https://challenges.cloudflare.com") || !csp.toL
 }
 console.log("Turnstile browser resources: allowed by the live Content Security Policy");
 
-// Verify the real Worker has its Turnstile secret wired and Siteverify is reachable.
-// These deliberately invalid tokens are rejected before authentication/DB work; no account is touched.
-async function turnstileProbe(turnstileToken) {
-  const response = await fetch(new URL("/api/auth/login", base), {
+// Verify every public write/auth entrypoint is guarded before DB access.
+const turnstileActions = [
+  ["/api/auth/login", { email: "smoke.invalid@example.invalid", password: "not-a-real-password", deviceId: "smoke-test-device-00000000000000000000" }, "staff_login"],
+  ["/api/auth/login/2fa/verify", { email: "smoke.invalid@example.invalid", challengeId: "a".repeat(64), otp: "000000", deviceId: "smoke-test-device-00000000000000000000" }, "staff_2fa"],
+  ["/api/auth/forgot-password/request", { email: "smoke.invalid@example.invalid" }, "staff_password_reset_request"],
+  ["/api/auth/forgot-password/verify", { email: "smoke.invalid@example.invalid", otp: "000000" }, "staff_password_reset_verify"],
+  ["/api/auth/forgot-password/reset", { email: "smoke.invalid@example.invalid", resetToken: "a".repeat(64), password: "NotARealPassword123" }, "staff_password_reset_complete"],
+  ["/api/account/register", { name: "Smoke Test", phone: "+923001234567", email: "smoke.invalid@example.invalid", password: "NotARealPassword123" }, "customer_register"],
+  ["/api/account/login", { identifier: "smoke.invalid@example.invalid", password: "NotARealPassword123" }, "customer_login"],
+  ["/api/account/forgot-password", { identifier: "smoke.invalid@example.invalid" }, "customer_password_reset_request"],
+  ["/api/account/reset-password", { token: "a".repeat(64), newPassword: "NotARealPassword123" }, "customer_password_reset_complete"],
+  ["/api/orders", { items: [], customer: {}, shippingAddress: {}, paymentMethod: "COD" }, "checkout"],
+];
+
+for (const [path, payload, action] of turnstileActions) {
+  const response = await fetch(new URL(path, base), {
     method: "POST",
     headers: {
       Origin: siteOrigin,
       "Content-Type": "application/json",
       "X-Requested-With": "afsana"
     },
-    body: JSON.stringify({
-      email: "turnstile-smoke.invalid@example.invalid",
-      password: "not-a-real-password",
-      deviceId: "smoke-test-device-00000000000000000000",
-      ...(turnstileToken ? { turnstileToken } : {})
-    }),
+    body: JSON.stringify(payload),
     signal: AbortSignal.timeout(20000)
   });
   const body = await response.json().catch(() => ({}));
-  return { status: response.status, code: body?.error?.code };
+  if (response.status !== 403 || body?.error?.code !== "TURNSTILE_REQUIRED") {
+    throw new Error(`Turnstile guard failed for ${action} (HTTP ${response.status}, code=${body?.error?.code || "unknown"}).`);
+  }
 }
-const invalidChallenge = await turnstileProbe("afsana-invalid-deployment-smoke-token");
-if (invalidChallenge.status !== 403 || invalidChallenge.code !== "TURNSTILE_FAILED") {
-  throw new Error(`Turnstile Siteverify is not correctly wired (HTTP ${invalidChallenge.status}, code=${invalidChallenge.code || "unknown"}).`);
-}
-console.log("Turnstile backend: missing tokens blocked; invalid tokens rejected by Siteverify");
+console.log(`Turnstile pre-DB guard: ${turnstileActions.length} staff/customer/checkout entrypoints reject missing tokens`);
 
+// A deliberately invalid token proves Siteverify is reachable and validates real tokens server-side.
+const invalidResponse = await fetch(new URL("/api/auth/login", base), {
+  method: "POST",
+  headers: {
+    Origin: siteOrigin,
+    "Content-Type": "application/json",
+    "X-Requested-With": "afsana"
+  },
+  body: JSON.stringify({
+    email: "turnstile-smoke.invalid@example.invalid",
+    password: "not-a-real-password",
+    deviceId: "smoke-test-device-00000000000000000000",
+    turnstileToken: "afsana-invalid-deployment-smoke-token"
+  }),
+  signal: AbortSignal.timeout(20000)
+});
+const invalidBody = await invalidResponse.json().catch(() => ({}));
+if (invalidResponse.status !== 403 || invalidBody?.error?.code !== "TURNSTILE_FAILED") {
+  throw new Error(`Turnstile Siteverify is not correctly wired (HTTP ${invalidResponse.status}, code=${invalidBody?.error?.code || "unknown"}).`);
+}
+console.log("Turnstile backend: invalid tokens rejected by Siteverify");
 const products = await getJson("/api/products?sort=popular&limit=12");
 if (!products.response.ok || products.data.success !== true) {
   throw new Error(`Products API failed (HTTP ${products.response.status})`);
