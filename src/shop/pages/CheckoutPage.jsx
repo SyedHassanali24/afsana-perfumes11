@@ -13,6 +13,7 @@ import { money, PAYMENT_LABEL, BANK_NOTE } from '../format';
 import useTitle from '../useTitle';
 import useShopSettings from '../useShopSettings';
 import { getReferralCode } from '../trafficTracking';
+import TurnstileWidget from '../../components/TurnstileWidget';
 
 const blank = { name: '', phone: '', email: '', line1: '', line2: '', city: '', postalCode: '' };
 
@@ -35,6 +36,8 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const addressPrefilled = useRef(false);
   const checkoutAttempt = useRef({ signature: '', key: '' });
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
@@ -57,7 +60,7 @@ export default function CheckoutPage() {
     setErrors({}); setFormError('');
     const checkoutPayload = {
       items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,
-      whatsappMarketingOptIn, paymentMethod: pay,
+      whatsappMarketingOptIn, paymentMethod: pay, turnstileToken,
       customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
       shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
     };
@@ -74,7 +77,7 @@ export default function CheckoutPage() {
       setErrors(fe);
       if (err.code === 'OUT_OF_STOCK' || err.code === 'ITEM_UNAVAILABLE') { setFormError(`${err.message} Please review your cart.`); reload(); }
       else setFormError(err.code === 'VALIDATION_ERROR' ? 'Please fix the highlighted fields.' : err.status === 429 ? 'Too many attempts. Please wait a few minutes.' : err.message);
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setTurnstileToken(''); setTurnstileResetKey(v => v + 1); }
   };
 
   if (items.length === 0) return <Container><div className="py-16 text-center space-y-4"><p className="afsana-checkout-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div></Container>;
@@ -126,7 +129,8 @@ export default function CheckoutPage() {
               <ul className="space-y-2 text-sm">{q.lines.map((l) => <li key={l.variantId} className="flex justify-between gap-3"><span className="afsana-checkout-muted">{l.name} {l.label} × {l.quantity}</span><span className="tabular-nums">{l.status === 'unavailable' ? '—' : money(l.lineTotal)}</span></li>)}</ul>
               <Totals q={q} />
               {formError && <p role="alert" className="afsana-checkout-error text-sm">{formError}</p>}
-              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || !q.canCheckout}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
+              <TurnstileWidget action="checkout" onToken={setTurnstileToken} resetKey={turnstileResetKey} />
+              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || !q.canCheckout || !turnstileToken}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
               <p className="afsana-checkout-note text-xs">Final price and stock are confirmed by our server when you place the order.</p>
             </aside>
           </form>
