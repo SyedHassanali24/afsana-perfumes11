@@ -13,6 +13,7 @@ const routes = [
   { method: 'GET', path: '/me', handler: ({ ctx }) => G.myDashboard(ctx) },
   { method: 'GET', path: '/admin/dashboard', permission: ['referrals', 'view'], handler: () => G.adminDashboard() },
   { method: 'GET', path: '/admin/partners', permission: ['referrals', 'view'], handler: () => G.adminDashboard() },
+  { method: 'GET', path: '/admin/commissions', permission: ['commissions', 'view'], handler: ({ query }) => G.listCommissions(query) },
   { method: 'POST', path: '/admin/partners', permission: ['referrals', 'create'], body: createBody, reauth: true,
     handler: async ({ ctx, body }) => res(201, await G.createInfluencer(ctx, body)) },
   { method: 'PATCH', path: '/admin/partners/:id', permission: ['referrals', 'edit'], body: patchBody, reauth: true,
