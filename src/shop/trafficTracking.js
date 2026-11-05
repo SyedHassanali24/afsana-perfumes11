@@ -1,6 +1,6 @@
 // Anonymous, in-memory storefront session attribution. No browser storage or personal identifiers are used.
 let activeSession = null;
-let lastTrackedLocation = '';
+let lastTrackedLocation = '';\nconst REF_KEY = 'afsana_referral_code_v1';
 
 function createSessionRef() {
   try {
@@ -36,7 +36,7 @@ export function trackStorefrontPageView(pathname, search = '') {
       utmSource: params.get('utm_source') || '',
       utmMedium: params.get('utm_medium') || '',
       utmCampaign: params.get('utm_campaign') || '',
-      referrerHost: hostOnly(document.referrer),
+      referrerHost: hostOnly(document.referrer),\n      affiliateCode: (() => { try { return sessionStorage.getItem(REF_KEY) || ''; } catch { return ''; } })(),
     };
   }
 
@@ -57,3 +57,4 @@ export function trackStorefrontPageView(pathname, search = '') {
     // Analytics is optional and must never interrupt shopping or checkout.
   }
 }
+\nexport function getReferralCode() {\n  try { return String(sessionStorage.getItem(REF_KEY) || '').toUpperCase(); } catch { return ''; }\n}\n
