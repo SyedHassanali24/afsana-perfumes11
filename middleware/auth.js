@@ -100,7 +100,7 @@ async function requestPasswordReset(email) {
 
   const otp = String(crypto.randomInt(100000, 1000000));
   const now = new Date();
-  const otpHash = sha256(otp);
+  const otpHash = otpDigest(otp);
   // Atomic per-staff cooldown prevents simultaneous requests from flooding the owner inbox.
   const claimed = await User.findOneAndUpdate(
     {
@@ -142,7 +142,7 @@ async function verifyPasswordResetOtp(email, otp) {
   const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+resetOtpHash');
   if (!user || !user.resetOtpHash || !user.resetOtpExpires || user.resetOtpExpires < new Date()) throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.');
   if ((user.resetOtpAttempts || 0) >= OTP_MAX_ATTEMPTS) throw new ApiError(429, 'OTP_LOCKED', 'Too many OTP attempts. Request a new code.');
-  if (sha256(String(otp)) !== user.resetOtpHash) { user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1; await user.save(); throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.'); }
+  if (otpDigest(String(otp)) !== user.resetOtpHash) { user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1; await user.save(); throw new ApiError(400, 'INVALID_OTP', 'Invalid or expired OTP.'); }
   const resetToken = crypto.randomBytes(32).toString('hex');
   user.resetOtpVerifiedHash = sha256(resetToken); user.resetOtpVerifiedExpires = new Date(Date.now() + RESET_TTL_MS);
   user.resetOtpHash = undefined; user.resetOtpExpires = undefined; user.resetOtpAttempts = 0;
@@ -151,22 +151,52 @@ async function verifyPasswordResetOtp(email, otp) {
 }
 async function resetPasswordWithToken(email, resetToken, newPassword) {
   const normalized = String(email || '').trim().toLowerCase();
-  const user = await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+resetOtpVerifiedHash');
-  if (!user || !user.resetOtpVerifiedHash || !user.resetOtpVerifiedExpires || user.resetOtpVerifiedExpires < new Date() || sha256(String(resetToken)) !== user.resetOtpVerifiedHash) throw new ApiError(400, 'INVALID_RESET', 'Reset session is invalid or expired.');
-  user.passwordHash = await bcrypt.hash(String(newPassword), 12);
-  user.passwordChangedAt = new Date();
-  user.mustChangePassword = false;
-  user.failedLoginCount = 0;
-  user.lockedUntil = undefined;
-  user.trustedDevices = [];
-  clearLoginChallenge(user);
-  user.resetOtpVerifiedHash = undefined; user.resetOtpVerifiedExpires = undefined; user.resetOtpHash = undefined; user.resetOtpExpires = undefined; user.resetOtpAttempts = 0;
-  await user.save();
-  await Session.updateMany({ userId: user._id, revokedAt: { $exists: false } }, { revokedAt: new Date(), revokedReason: 'password_reset' });
+  const now = new Date();
+  const passwordHash = await bcrypt.hash(String(newPassword), 12);
+  // Consume the reset token atomically: two concurrent requests cannot both reset
+  // the same staff account with the same single-use token.
+  const user = await User.findOneAndUpdate(
+    {
+      email: normalized,
+      kind: 'staff',
+      status: 'Active',
+      resetOtpVerifiedHash: sha256(String(resetToken)),
+      resetOtpVerifiedExpires: { $gt: now },
+    },
+    {
+      $set: {
+        passwordHash,
+        passwordChangedAt: now,
+        mustChangePassword: false,
+        failedLoginCount: 0,
+        trustedDevices: [],
+      },
+      $unset: {
+        lockedUntil: '',
+        resetOtpVerifiedHash: '',
+        resetOtpVerifiedExpires: '',
+        resetOtpHash: '',
+        resetOtpExpires: '',
+        loginOtpChallengeHash: '',
+        loginOtpHash: '',
+        loginOtpDeviceHash: '',
+        loginOtpExpires: '',
+      },
+    },
+    { new: true },
+  ).select('_id');
+  if (!user) throw new ApiError(400, 'INVALID_RESET', 'Reset session is invalid or expired.');
+  await Session.updateMany(
+    { userId: user._id, revokedAt: { $exists: false } },
+    { revokedAt: now, revokedReason: 'password_reset' },
+  );
   return { reset: true };
 }
 
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
+// Six-digit OTPs are easy to brute-force offline if stored as plain SHA-256.
+// Pepper their digests with the server JWT secret, while random reset tokens keep SHA-256.
+const otpDigest = (code) => crypto.createHmac('sha256', secret()).update(String(code)).digest('hex');
 const secret = () => {
   const s = process.env.JWT_SECRET;
   if (!s || s.length < 32) throw new Error('JWT_SECRET missing or shorter than 32 chars');
@@ -256,7 +286,7 @@ async function login({ email, password, ip, userAgent, deviceId }) {
       const otp = String(crypto.randomInt(100000, 1000000));
       const challengeId = crypto.randomBytes(32).toString('hex');
       user.loginOtpChallengeHash = sha256(challengeId);
-      user.loginOtpHash = sha256(otp);
+      user.loginOtpHash = otpDigest(otp);
       user.loginOtpDeviceHash = deviceHash;
       user.loginOtpExpires = new Date(now.getTime() + LOGIN_OTP_TTL_MS);
       user.loginOtpAttempts = 0;
@@ -288,7 +318,7 @@ async function verifyAdminLoginOtp({ email, challengeId, otp, deviceId, ip, user
     clearLoginChallenge(user); await user.save();
     throw new ApiError(429, 'OTP_LOCKED', 'Too many verification attempts. Sign in again.');
   }
-  if (sha256(String(otp || '')) !== user.loginOtpHash) {
+  if (otpDigest(String(otp || '')) !== user.loginOtpHash) {
     user.loginOtpAttempts = (user.loginOtpAttempts || 0) + 1;
     if (user.loginOtpAttempts >= OTP_MAX_ATTEMPTS) clearLoginChallenge(user);
     await user.save();
@@ -316,6 +346,8 @@ async function authenticate(req) {
   if (!session || session.revokedAt || session.expiresAt < new Date() || session.tokenHash !== sha256(payload.jti)) throw E.unauthorized();
   const user = await User.findById(session.userId);
   if (!user || user.kind !== 'staff' || user.status !== 'Active') throw E.unauthorized();
+  // Enforce password rotation even if a session-revocation write failed.
+  if (user.passwordChangedAt && session.createdAt && session.createdAt < user.passwordChangedAt) throw E.unauthorized();
   const staff = await Staff.findOne({ userId: user._id, isDeleted: false });
   if (!staff || staff.status !== 'Active') throw E.forbidden('This account is not active.');
   const role = await Role.findById(staff.roleId);
