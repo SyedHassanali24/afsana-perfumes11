@@ -5,7 +5,7 @@ const { E, ApiError } = require('../middleware/errors');
 const { startSession, verifyLogin } = require('../middleware/customerAuth');
 const { sha256 } = require('../middleware/auth');
 const { normalizePhone } = require('./phone');
-const { normalizeEmail } = require('./emailRules');
+const { normalizeEmail, emailExactQuery } = require('./emailRules');
 const { withTx } = require('./tx');
 const { sendPasswordReset } = require('./mailer');
 const { MAX_ADDRESSES, normalizeDefaults } = require('./addressRules');
@@ -22,7 +22,7 @@ const shape = (c) => ({
 // so linking would let anyone claim someone else's order history. Do this after OTP/email verification exists.
 async function register(body, meta) {
   const email = normalizeEmail(body.email);
-  const or = [{ phone: body.phone }, ...(email ? [{ email }] : [])];
+  const or = [{ phone: body.phone }, ...(email ? [{ email: emailExactQuery(email) }] : [])];
   if (await User.exists({ $or: or })) throw E.conflict('An account with this phone number or email already exists. Try signing in.');
   const passwordHash = await hash(body.password);
   const user = await withTx(async (session) => {
@@ -48,7 +48,7 @@ async function updateProfile(ctx, patch) {
   if (clean.email !== undefined) {
     const email = normalizeEmail(clean.email);
     if (email) {
-      const exists = await User.findOne({ kind: 'customer', email, _id: { $ne: ctx.user._id } });
+      const exists = await User.findOne({ kind: 'customer', email: emailExactQuery(email), _id: { $ne: ctx.user._id } });
       if (exists) throw E.conflict('That email is already linked to another account.');
     }
     await User.updateOne({ _id: ctx.user._id }, email ? { $set: { email } } : { $unset: { email: 1 } });
@@ -85,7 +85,7 @@ async function changePassword(ctx, { currentPassword, newPassword }) {
 async function forgotPassword({ identifier }) {
   const email = normalizeEmail(identifier);
   const isEmail = !!email && email.includes('@');
-  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email } : { phone: normalizePhone(identifier) }) });
+  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email: emailExactQuery(email) } : { phone: normalizePhone(identifier) }) });
   if (user && user.email && user.status === 'Active') {
     const token = crypto.randomBytes(32).toString('hex');
     await User.updateOne({ _id: user._id }, { $set: { resetTokenHash: sha256(token), resetTokenExpires: new Date(Date.now() + RESET_MINUTES * 60000) } });
