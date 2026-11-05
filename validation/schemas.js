@@ -346,13 +346,39 @@ const settingsShipping = z.object({ flatRate: z.number().int().min(0).max(10000)
 const settingsReturns = z.object({ windowDays: z.number().int().min(1).max(90), confirmPassword });
 const settingsGrowth = z.object({ welcomeRewardEnabled: z.boolean(), welcomeDiscountPercent: z.number().int().min(1).max(100), welcomeMaxDiscount: z.number().int().min(0).max(10000000), welcomeMinOrder: z.number().int().min(0).max(10000000), welcomeValidityDays: z.number().int().min(1).max(180), commissionHoldDays: z.number().int().min(1).max(90), whatsappTemplateName: z.string().trim().regex(/^[a-z0-9_]{3,512}$/), whatsappLanguage: z.string().trim().min(2).max(10), confirmPassword });
 
+const affiliateCreateBody = z.object({
+  name: z.string().trim().min(2).max(100),
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9_-]{2,29}$/),
+  platform: z.string().trim().max(40).optional(), handle: z.string().trim().max(100).optional(),
+  email: z.string().trim().email().max(200).optional().or(z.literal('')),
+  phone: z.string().trim().max(30).optional(),
+  discountType: z.enum(['none','percentage','fixed','free_shipping']).default('none'),
+  discountValue: z.number().min(0).max(10000000).default(0),
+  maxDiscount: z.number().min(0).max(10000000).optional(),
+  minOrder: z.number().min(0).max(10000000).default(0),
+  commissionType: z.enum(['percentage','fixed']).default('percentage'),
+  commissionValue: z.number().min(0).max(10000000).default(0),
+  usageLimit: z.number().int().min(1).max(10000000).optional(),
+  perCustomerLimit: z.number().int().min(0).max(1000).default(0),
+  startsAt: z.coerce.date().optional(), expiresAt: z.coerce.date().optional(),
+  isActive: z.boolean().optional(), confirmPassword,
+}).superRefine((v, ctx) => {
+  if (v.discountType === 'percentage' && (v.discountValue < 1 || v.discountValue > 100)) ctx.addIssue({ code:'custom', path:['discountValue'], message:'Discount percent must be from 1 to 100.' });
+  if (v.commissionType === 'percentage' && v.commissionValue > 100) ctx.addIssue({ code:'custom', path:['commissionValue'], message:'Commission percent cannot exceed 100.' });
+  if (v.startsAt && v.expiresAt && v.expiresAt <= v.startsAt) ctx.addIssue({ code:'custom', path:['expiresAt'], message:'Expiry must be after the start date.' });
+});
+const affiliatePatchBody = affiliateCreateBody.omit({ confirmPassword: true, type: true }).partial().extend({ confirmPassword });
+const affiliatePayoutBody = z.object({ reference: z.string().trim().max(100).optional(), confirmPassword });
+const affiliateRetryBody = z.object({ confirmPassword });
+
+
 // ---------- backup (owner export) ----------
 const backupOverview = z.object({ confirmPassword });
 const backupData = z.object({ name: z.string().trim().max(40), after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
 const backupPictures = z.object({ after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
 
 module.exports = {
-  settingsStore, settingsBank, settingsShipping, settingsReturns, settingsGrowth,
+  settingsStore, settingsBank, settingsShipping, settingsReturns, settingsGrowth, affiliateCreateBody, affiliatePatchBody, affiliatePayoutBody, affiliateRetryBody,
   backupOverview, backupData, backupPictures,
   uploadBody, chunkedUploadBody,
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch, homepageExperiencePublishBody,
