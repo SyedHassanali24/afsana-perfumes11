@@ -100,3 +100,19 @@ test('Turnstile: fails closed if the production secret is missing', async () => 
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = oldNodeEnv;
   }
 });
+
+test('Turnstile: reports an invalid secret as a server configuration error', async () => {
+  await assert.rejects(
+    () => verifyTurnstile({
+      token: 'valid-response-token',
+      action: 'checkout',
+      hostname: 'afsana-perfumes11.workers.dev',
+      secret: 'incorrect-secret',
+      fetchImpl: async () => ({
+        ok: true,
+        json: async () => ({ success: false, 'error-codes': ['invalid-input-secret'] })
+      })
+    }),
+    (error) => error.status === 503 && error.code === 'TURNSTILE_CONFIG_INVALID'
+  );
+});
