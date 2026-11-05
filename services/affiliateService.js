@@ -96,15 +96,22 @@ async function partnerMetrics(partner) {
 }
 
 async function adminDashboard() {
+  const staffRows = await Staff.find({ storeId: 'main', isDeleted: false, status: 'Active' }).populate('roleId', 'isUnrestricted').lean();
+  await Promise.all(staffRows.filter((staff) => !staff.roleId?.isUnrestricted).map((staff) => ensureStaffPartner(staff)));
   const partners = await AffiliatePartner.find({ storeId: 'main', isDeleted: false }).sort({ type: 1, name: 1 }).limit(300).lean();
   const rows = await Promise.all(partners.map(async (p) => ({ partner: cleanPartner(p), metrics: await partnerMetrics(p) })));
+  const sourceTotals = new Map();
+  for (const row of rows) for (const source of row.metrics.sourceBreakdown || []) {
+    sourceTotals.set(source.source, (sourceTotals.get(source.source) || 0) + source.visits);
+  }
+  const sourceBreakdown = [...sourceTotals.entries()].map(([source, visits]) => ({ source, visits })).sort((a, b) => b.visits - a.visits);
   const totals = rows.reduce((out, row) => {
     const m = row.metrics;
     for (const key of ['visits','orders','grossRevenue','refunded','revenue']) out[key] += m[key] || 0;
     for (const key of ['pending','payable','paid','reversed','clawback_due','clawback']) out[key] += m.commission[key] || 0;
     return out;
   }, { visits: 0, orders: 0, grossRevenue: 0, refunded: 0, revenue: 0, pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 });
-  return { totals, partners: rows };
+  return { totals, partners: rows, sourceBreakdown };
 }
 
 async function myDashboard(ctx) {
@@ -113,7 +120,7 @@ async function myDashboard(ctx) {
     const staff = await Staff.findOne({ userId: ctx.user._id, isDeleted: false }).lean();
     if (staff) p = (await ensureStaffPartner(staff)).toObject();
   }
-  if (!p) return { partner: null, metrics: { visits: 0, orders: 0, grossRevenue: 0, refunded: 0, revenue: 0, commission: { pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 } } };
+  if (!p) return { partner: null, metrics: { visits: 0, sourceBreakdown: [], orders: 0, grossRevenue: 0, refunded: 0, revenue: 0, commission: { pending: 0, payable: 0, paid: 0, reversed: 0, clawback_due: 0, clawback: 0 } } };
   return { partner: cleanPartner(p), metrics: await partnerMetrics(p) };
 }
 
