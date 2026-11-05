@@ -78,8 +78,8 @@ console.log("Security headers: present; CORS: trusted origin allowed and untrust
 
 const homeResponse = await fetch(base, { signal: AbortSignal.timeout(20000) });
 const csp = homeResponse.headers.get("content-security-policy") || "";
-if (!csp.includes("https://challenges.cloudflare.com") || !csp.includes("frame-src")) {
-  throw new Error("Content Security Policy does not permit the configured Cloudflare Turnstile widget.");
+if (!csp.toLowerCase().includes("https://challenges.cloudflare.com") || !csp.toLowerCase().includes("frame-src")) {
+  throw new Error(`Content Security Policy does not permit the configured Cloudflare Turnstile widget (HTTP ${homeResponse.status}, url=${homeResponse.url}, backend=${homeResponse.headers.get("x-afsana-backend") || "n/a"}, csp=${csp || "missing"}).`);
 }
 console.log("Turnstile browser resources: allowed by the live Content Security Policy");
 
