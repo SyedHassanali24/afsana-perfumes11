@@ -142,13 +142,13 @@ const auditQuery = z.object({
 const custPhone = z.string().trim().regex(/^[0-9+\-\s()]{10,18}$/, 'Enter a valid phone number').transform(normalizePhone);
 const registerBody = z.object({
   name: z.string().trim().min(2).max(100), phone: custPhone,
-  email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined),
+  email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v ? v.toLowerCase() : undefined),
   password: passwordRule(8),
 });
-const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(200), password: z.string().min(1).max(200) });
-const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined) }).partial();
+const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(200).transform((v) => v.includes('@') ? v.toLowerCase() : v), password: z.string().min(1).max(200) });
+const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v ? v.toLowerCase() : undefined) }).partial();
 const customerChangePassword = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordRule(8) });
-const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200) });
+const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200).transform((v) => v.includes('@') ? v.toLowerCase() : v) });
 const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid link'), newPassword: passwordRule(8) });
 
 // ---------- storefront: cart, wishlist, addresses, my orders ----------
