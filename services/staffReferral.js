@@ -1,7 +1,9 @@
 const { AffiliatePartner } = require('../database/models');
 const { slugCode } = require('./affiliateRules');
+const { ensureGrowthIndexes } = require('./growthIndexes');
 
 async function ensureStaffPartner(staff) {
+  await ensureGrowthIndexes();
   const existing = await AffiliatePartner.findOne({ userId: staff.userId, type: 'staff', isDeleted: false });
   if (existing) return existing;
   const base = slugCode(staff.name, 'STAFF').slice(0, 24);
