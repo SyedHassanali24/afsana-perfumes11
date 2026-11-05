@@ -57,11 +57,24 @@ async function updateProfile(ctx, patch) {
 
 async function changePassword(ctx, { currentPassword, newPassword }) {
   const u = await User.findById(ctx.user._id).select('+passwordHash');
-  if (!(await bcrypt.compare(currentPassword, u.passwordHash))) throw new ApiError(400, 'WRONG_PASSWORD', 'Current password is incorrect.');
+  if (!u || !(await bcrypt.compare(currentPassword, u.passwordHash))) throw new ApiError(400, 'WRONG_PASSWORD', 'Current password is incorrect.');
   if (currentPassword === newPassword) throw E.badRequest('Choose a password different from the current one.');
-  u.passwordHash = await hash(newPassword); u.passwordChangedAt = new Date();
-  await u.save();
-  await Session.updateMany({ userId: u._id, _id: { $ne: ctx.session._id }, revokedAt: { $exists: false } }, { $set: { revokedAt: new Date(), revokedReason: 'password_changed' } });
+  const now = new Date();
+  const changed = await User.findOneAndUpdate(
+    { _id: u._id, passwordHash: u.passwordHash, kind: 'customer', status: 'Active' },
+    {
+      $set: { passwordHash: await hash(newPassword), passwordChangedAt: now, failedLoginCount: 0 },
+      $inc: { authVersion: 1 },
+      $unset: { lockedUntil: '', resetTokenHash: '', resetTokenExpires: '' },
+    },
+    { new: true },
+  ).select('authVersion');
+  if (!changed) throw E.conflict('Your password changed in another request. Please sign in again.');
+  await Session.updateOne({ _id: ctx.session._id, userId: u._id }, { $set: { authVersion: Number(changed.authVersion || 0) } });
+  await Session.updateMany(
+    { userId: u._id, _id: { $ne: ctx.session._id }, revokedAt: { $exists: false } },
+    { $set: { revokedAt: now, revokedReason: 'password_changed' } },
+  );
   return {};
 }
 
@@ -80,13 +93,29 @@ async function forgotPassword({ identifier }) {
 
 async function resetPassword({ token, newPassword }) {
   const bad = new ApiError(400, 'INVALID_RESET_LINK', 'This reset link is invalid or has expired.');
-  const user = await User.findOne({ kind: 'customer', resetTokenHash: sha256(token), resetTokenExpires: { $gt: new Date() } }).select('+resetTokenHash');
-  if (!user) throw bad;
+  const now = new Date();
   const passwordHash = await hash(newPassword);
-  await withTx(async (session) => {
-    await User.updateOne({ _id: user._id }, { $set: { passwordHash, passwordChangedAt: new Date(), failedLoginCount: 0 }, $unset: { resetTokenHash: 1, resetTokenExpires: 1, lockedUntil: 1 } }, { session });
-    await Session.updateMany({ userId: user._id, revokedAt: { $exists: false } }, { $set: { revokedAt: new Date(), revokedReason: 'password_reset' } }, { session });
-  });
+  // Single-use reset token is consumed atomically, including under concurrent requests.
+  const user = await User.findOneAndUpdate(
+    {
+      kind: 'customer',
+      status: 'Active',
+      resetTokenHash: sha256(token),
+      resetTokenExpires: { $gt: now },
+    },
+    {
+      $set: { passwordHash, passwordChangedAt: now, failedLoginCount: 0 },
+      $inc: { authVersion: 1 },
+      $unset: { resetTokenHash: '', resetTokenExpires: '', lockedUntil: '' },
+    },
+    { new: true },
+  ).select('_id');
+  if (!user) throw bad;
+  // The new authVersion blocks every old customer session even if a bulk revoke fails.
+  await Session.updateMany(
+    { userId: user._id, revokedAt: { $exists: false } },
+    { $set: { revokedAt: now, revokedReason: 'password_reset' } },
+  );
   return {};
 }
 
