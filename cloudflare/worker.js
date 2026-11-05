@@ -1,19 +1,9 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
+import { SECURITY_HEADERS, isAllowedOrigin, corsHeaders } from "./security.js";
 
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_OBJECT_NAME = "afsana-api-v1";
 const SITE_CSP = "default-src 'self'; script-src 'self' https://ajax.googleapis.com 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https:; frame-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
-
-function cors(origin) {
-  const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
-  return {
-    "Access-Control-Allow-Origin": allowed ? origin : SITE_ORIGIN,
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Headers": "Content-Type, X-Requested-With, Idempotency-Key, Authorization",
-    "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Vary": "Origin"
-  };
-}
 
 function json(data, status, headers = {}) {
   return Response.json(data, { status, headers });
@@ -168,17 +158,24 @@ async function handleApi(request, env, ctx) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const origin = request.headers.get("Origin") || SITE_ORIGIN;
+    const requestOrigin = url.origin;
+    const headerOrigin = request.headers.get("Origin");
+    const origin = headerOrigin || requestOrigin;
+    const cors = corsHeaders(origin, env, request.url);
 
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: cors(origin) });
+      if (headerOrigin && !isAllowedOrigin(headerOrigin, env, request.url)) {
+        return new Response(null, { status: 403, headers: { "Vary": "Origin", ...SECURITY_HEADERS } });
+      }
+      return new Response(null, { status: 204, headers: { ...cors, ...SECURITY_HEADERS } });
     }
 
     if (url.pathname.startsWith("/api/")) {
       try {
         const response = await handleApi(request, env, ctx);
         const headers = new Headers(response.headers);
-        Object.entries(cors(origin)).forEach(([key, value]) => headers.set(key, value));
+        Object.entries(cors).forEach(([key, value]) => headers.set(key, value));
+        Object.entries(SECURITY_HEADERS).forEach(([key, value]) => headers.set(key, value));
         headers.set("X-Afsana-Backend", "cloudflare-api");
         if (url.pathname.startsWith("/api/media/") && response.body) {
           let mediaLength = Number(headers.get("Content-Length"));
@@ -208,7 +205,7 @@ export default {
         return json({
           success: false,
           error: { code: "INTERNAL", message: "Internal server error." }
-        }, 500, cors(origin));
+        }, 500, { ...cors, ...SECURITY_HEADERS });
       }
     }
 
@@ -220,7 +217,7 @@ export default {
       headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     }
     headers.set("Content-Security-Policy", SITE_CSP);
-    headers.set("X-Content-Type-Options", "nosniff");
+    Object.entries(SECURITY_HEADERS).forEach(([key, value]) => headers.set(key, value));
     headers.set("X-Afsana-Backend", "cloudflare-assets");
     return new Response(asset.body, { status: asset.status, headers });
   }
