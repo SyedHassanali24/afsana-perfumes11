@@ -36,9 +36,12 @@ if (health.data.database?.connected !== true) {
   throw new Error(`Application API could not connect to MongoDB (HTTP ${health.response.status})`);
 }
 if (health.data.ok !== true) {
-  throw new Error(`Application health readiness is not green: ${JSON.stringify({ env: health.data.env, jwtSecret: health.data.jwtSecret, database: health.data.database, fix: health.data.fix })}`);
+  throw new Error(`Application health readiness is not green: ${JSON.stringify({ env: health.data.env, emailProviders: health.data.emailProviders, jwtSecret: health.data.jwtSecret, database: health.data.database, fix: health.data.fix })}`);
 }
-console.log(`Application API: connected; database setup=${health.data.database.setupDone ? "ready" : "needs initialization"}; health readiness=OK`);
+if (health.data.emailProviders?.adminOtp !== true || health.data.emailProviders?.customerPasswordReset !== true) {
+  throw new Error(`Production email providers are not fully configured: ${JSON.stringify(health.data.emailProviders || {})}`);
+}
+console.log(`Application API: connected; database setup=${health.data.database.setupDone ? "ready" : "needs initialization"}; health readiness=OK; admin OTP + customer reset email are configured`);
 
 // Production security regression checks: trusted CORS only + common browser hardening headers.
 const siteOrigin = new URL(base).origin;
