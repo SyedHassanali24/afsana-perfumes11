@@ -4,6 +4,7 @@ const { audit } = require('./audit');
 const { scopeFilter } = require('../middleware/permissions');
 const { normalizeCode, CODE_RE } = require('./affiliateRules');
 const { ensureStaffPartner } = require('./staffReferral');
+const { ensureGrowthIndexes } = require('./growthIndexes');
 
 const ORDER_SCOPE = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
 
@@ -23,6 +24,7 @@ function cleanPartner(p) {
 const safeCode = (v) => normalizeCode(v);
 
 async function createInfluencer(ctx, body) {
+  await ensureGrowthIndexes();
   const code = safeCode(body.code);
   if (!CODE_RE.test(code)) throw E.badRequest('Use 3–30 letters, numbers, hyphens or underscores for the code.');
   if (await AffiliatePartner.exists({ code, storeId: 'main' }) || await Coupon.exists({ code, storeId: 'main', isDeleted: false })) throw E.conflict('This code is already in use.');
@@ -96,6 +98,7 @@ async function partnerMetrics(partner) {
 }
 
 async function adminDashboard() {
+  await ensureGrowthIndexes();
   const staffRows = await Staff.find({ storeId: 'main', isDeleted: false, status: 'Active' }).populate('roleId', 'isUnrestricted').lean();
   await Promise.all(staffRows.filter((staff) => !staff.roleId?.isUnrestricted).map((staff) => ensureStaffPartner(staff)));
   const partners = await AffiliatePartner.find({ storeId: 'main', isDeleted: false }).sort({ type: 1, name: 1 }).limit(300).lean();
@@ -115,6 +118,7 @@ async function adminDashboard() {
 }
 
 async function myDashboard(ctx) {
+  await ensureGrowthIndexes();
   let p = await AffiliatePartner.findOne({ userId: ctx.user._id, type: 'staff', isDeleted: false }).lean();
   if (!p) {
     const staff = await Staff.findOne({ userId: ctx.user._id, isDeleted: false }).lean();
@@ -125,6 +129,7 @@ async function myDashboard(ctx) {
 }
 
 async function listCommissions(query = {}) {
+  await ensureGrowthIndexes();
   await AffiliateCommission.updateMany({ storeId: 'main', status: 'pending', holdUntil: { $lte: new Date() } }, { $set: { status: 'payable' } });
   const filter = { storeId: 'main', ...(query.status ? { status: query.status } : {}) };
   const rows = await AffiliateCommission.find(filter).sort({ createdAt: -1 }).limit(200).lean();
@@ -151,6 +156,7 @@ async function payCommission(ctx, id, body) {
 }
 
 async function markPaidOrder(order, session) {
+  await ensureGrowthIndexes();
   if (!order || !order.referral || !order.referral.partnerId) return null;
   const existing = await AffiliateCommission.findOne({ orderId: order._id }).session(session).lean();
   if (existing) return null;
@@ -176,6 +182,7 @@ async function markOrderDelivered(orderId, session) {
 }
 
 async function adjustForRefund(order, totalRefunded, session) {
+  await ensureGrowthIndexes();
   const c = await AffiliateCommission.findOne({ orderId: order._id }).session(session);
   if (!c) return;
   const ratio = Math.max(0, Math.min(1, 1 - (Number(totalRefunded || 0) / Math.max(1, Number(order.total || 0)))));
