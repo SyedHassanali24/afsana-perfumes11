@@ -1,4 +1,5 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
+import { connectMongo } from "./mongodb.js";
 
 // deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
@@ -24,6 +25,20 @@ function cacheable(pathname, method) {
     /^\/api\/cms\/public\/?$/i.test(pathname) ||
     /^\/api\/reviews\/product\//i.test(pathname);
 }
+
+async function verifyMetaSignature(rawBody, signature, appSecret) {
+  if (!appSecret || !signature || !signature.startsWith("sha256=")) return false;
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(appSecret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const digest = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody)));
+  const expected = "sha256=" + Array.from(digest, b => b.toString(16).padStart(2, "0")).join("");
+  if (expected.length !== signature.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
+  return diff === 0;
+}
+
 async function health(env) {
   const id = env.MONGODB_CONNECTION.idFromName("afsana-mongodb");
   return env.MONGODB_CONNECTION.get(id, { locationHint: "me" }).health();
@@ -43,6 +58,42 @@ export default {
         return json({ success: false, service: "mongodb", connected: false }, 503,
           { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       }
+    }
+
+
+    // Meta WhatsApp Cloud API webhook: verification handshake and signed event intake.
+    if (u.pathname === "/api/whatsapp/webhook") {
+      if (request.method === "GET") {
+        const mode = u.searchParams.get("hub.mode");
+        const token = u.searchParams.get("hub.verify_token");
+        const challenge = u.searchParams.get("hub.challenge");
+        if (mode === "subscribe" && env.WHATSAPP_VERIFY_TOKEN && token === env.WHATSAPP_VERIFY_TOKEN && challenge) {
+          return new Response(challenge, { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+        }
+        return new Response("Forbidden", { status: 403 });
+      }
+      if (request.method === "POST") {
+        const rawBody = await request.text();
+        const signature = request.headers.get("X-Hub-Signature-256") || "";
+        if (!await verifyMetaSignature(rawBody, signature, env.META_APP_SECRET)) {
+          return json({ success: false, error: "INVALID_WEBHOOK_SIGNATURE" }, 401, { "Cache-Control": "no-store" });
+        }
+        let payload;
+        try { payload = JSON.parse(rawBody); }
+        catch { return json({ success: false, error: "INVALID_JSON" }, 400); }
+        try {
+          const db = await connectMongo(env);
+          await db.collection("whatsapp_webhook_events").insertOne({
+            payload,
+            receivedAt: new Date(),
+            signatureVerified: true
+          });
+          return json({ success: true, received: true }, 200, { "Cache-Control": "no-store" });
+        } catch {
+          return json({ success: false, error: "WEBHOOK_STORAGE_UNAVAILABLE" }, 503, { "Cache-Control": "no-store" });
+        }
+      }
+      return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, POST" } });
     }
 
     if (!u.pathname.startsWith("/api/")) {
