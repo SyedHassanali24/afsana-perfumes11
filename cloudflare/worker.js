@@ -2,12 +2,13 @@ import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
 
 // deploy-sync-2026-10-28
-const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
+const SITE_ORIGIN = "https://afsanaperfumes.store";
+const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 
 function cors(origin) {
-  const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
+  const allowed = origin === SITE_ORIGIN || origin === WORKER_ORIGIN || origin === "https://www.afsanaperfumes.store" || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
   return {
     "Access-Control-Allow-Origin": allowed ? origin : SITE_ORIGIN,
     "Access-Control-Allow-Credentials": "true",
