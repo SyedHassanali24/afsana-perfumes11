@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User, Session, Staff, Role } = require('../database/models');
+const { sendTransactionalEmail } = require('../services/mailer');
 const { E, ApiError } = require('./errors');
 const { parseCookies, serializeCookie } = require('./http');
 const { resolve, withinWorkingHours } = require('./permissions');
@@ -15,12 +16,14 @@ const RESET_TTL_MS = 10 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
 
 async function sendResetOtp(email, otp) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) throw new Error('Password reset email service is not configured.');
-  const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from, to: [email], subject: 'AFSANA staff password reset OTP', html: `<p>Your AFSANA password reset code is <strong>${otp}</strong>.</p><p>This code expires in 10 minutes. If you did not request it, ignore this email.</p>` }) });
-  if (!r.ok) throw new Error('Unable to send reset email.');
+  await sendTransactionalEmail({
+    to: email,
+    subject: 'AFSANA staff password reset OTP',
+    text: 'Your AFSANA password reset code is ' + otp + '. This code expires in 10 minutes. If you did not request it, ignore this email.',
+    html: '<p>Your AFSANA password reset code is <strong>' + otp + '</strong>.</p><p>This code expires in 10 minutes. If you did not request it, ignore this email.</p>'
+  });
 }
+
 async function requestPasswordReset(email) {
   const target = String(process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL || process.env.EASTWALA_EMAIL || '').trim().toLowerCase();
   const normalized = String(email || '').trim().toLowerCase();
