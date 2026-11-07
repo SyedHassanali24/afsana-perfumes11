@@ -1,31 +1,12 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
+import { corsHeaders, securityHeaders, isValidNewsletterEmail, newsletterRateLimitExceeded } from "./security.js";
 
 // deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 
-function cors(origin, env = {}, requestOrigin = SITE_ORIGIN) {
-  const configured = String(env.AFSANA_ALLOWED_ORIGINS || "").split(",").map(value => value.trim()).filter(Boolean);
-  const allowed = origin === SITE_ORIGIN || origin === requestOrigin || configured.includes(origin);
-  return {
-    "Access-Control-Allow-Origin": allowed ? origin : SITE_ORIGIN,
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Headers": "Content-Type, X-Requested-With, Idempotency-Key, Authorization",
-    "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Vary": "Origin"
-  };
-}
-function securityHeaders() {
-  return {
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Strict-Transport-Security": "max-age=31536000",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), usb=()"
-  };
-}
 function json(data, status, headers = {}) { return Response.json(data, { status, headers: { ...securityHeaders(), ...headers } }); }
 function cacheable(pathname, method) {
   if (method !== "GET" && method !== "HEAD") return false;
@@ -58,7 +39,7 @@ export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...securityHeaders(), ...cors(origin, env, u.origin) } });
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...securityHeaders(), ...corsHeaders(origin, env, u.origin) } });
 
     // Cloudflare-native newsletter capture: never stores addresses in browser localStorage.
     if (u.pathname === "/api/newsletter/subscribe" && request.method === "POST") {
@@ -93,7 +74,7 @@ export default {
           { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date(now.getTime() + 60 * 60 * 1000) } },
           { upsert: true, returnDocument: "after" }
         );
-        if (Number(rate?.count || 0) > 5) {
+        if (newsletterRateLimitExceeded(rate?.value || rate)) {
           return json({ success: false, error: { code: "RATE_LIMITED", message: "Too many attempts. Please try again later." } }, 429, headers);
         }
         const result = await collection.updateOne(
