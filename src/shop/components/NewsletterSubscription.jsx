@@ -97,7 +97,7 @@ export default function NewsletterSubscription() {
             </div>
             <label className="mt-4 flex items-start gap-2 text-left text-[11px] leading-5 text-[#5f654f]">
               <input type="checkbox" checked={consent} onChange={(event)=>setConsent(event.target.checked)} disabled={status==='loading'} className="mt-1 accent-[#263e0e]"/>
-              <span>I agree to receive AFSANA news and offers by email. I can request removal from the mailing list.</span>
+              <span>I agree to receive AFSANA news and offers by email.</span>
             </label>
             <div aria-hidden="true" className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden">
               <label>Leave this field empty<input tabIndex={-1} autoComplete="off" value={website} onChange={(event)=>setWebsite(event.target.value)}/></label>
