@@ -22,7 +22,7 @@ async function sendResetOtp(email, otp) {
   if (!r.ok) throw new Error('Unable to send reset email.');
 }
 async function requestPasswordReset(email) {
-  const target = String(process.env.ADMIN_EMAIL || process.env.EASTWALA_EMAIL || '').trim().toLowerCase();
+  const target = String(process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL || process.env.EASTWALA_EMAIL || '').trim().toLowerCase();
   const normalized = String(email || '').trim().toLowerCase();
   const user = target && normalized === target ? await User.findOne({ email: normalized, kind: 'staff', status: 'Active' }).select('+passwordHash') : null;
   if (!user) return { sent: true };
