@@ -226,7 +226,8 @@ function Faq({faqs,section}) {
 
 function InstagramBlock({section}) {
   const c=section.config||{};
-  return <section className="py-16 sm:py-20"><Container><div className="rounded-[2rem] border border-border bg-surface p-8 sm:p-14 text-center luxury-card"><Instagram className="mx-auto w-7 h-7 text-gold"/><p className="text-[10px] uppercase tracking-[.35em] text-primary mt-4">FOLLOW THE HOUSE</p><h2 className="font-display text-3xl sm:text-5xl mt-3">{section.title||'Afsana, beyond the bottle.'}</h2>{c.body&&<p className="mt-4 max-w-xl mx-auto text-sm text-ink-muted">{c.body}</p>}<SmartLink to={c.url||'https://instagram.com'} className="inline-flex mt-7 rounded-full bg-primary px-7 py-3.5 text-white text-sm font-semibold">{c.buttonText||'Follow Afsana'}</SmartLink></div></Container></section>;
+  const hasOfficialUrl=/^https:\/\//i.test(String(c.url||''));
+  return <section className="py-16 sm:py-20"><Container><div className="rounded-[2rem] border border-border bg-surface p-8 sm:p-14 text-center luxury-card"><Instagram className="mx-auto w-7 h-7 text-gold"/><p className="text-[10px] uppercase tracking-[.35em] text-primary mt-4">FOLLOW THE HOUSE</p><h2 className="font-display text-3xl sm:text-5xl mt-3">{section.title||'Afsana, beyond the bottle.'}</h2>{c.body&&<p className="mt-4 max-w-xl mx-auto text-sm text-ink-muted">{c.body}</p>}{hasOfficialUrl?<SmartLink to={c.url} className="inline-flex mt-7 rounded-full bg-primary px-7 py-3.5 text-white text-sm font-semibold">{c.buttonText||'Follow Afsana'}</SmartLink>:<p className="mt-6 text-xs text-ink-muted">Official AFSANA social profile link will be added here.</p>}</div></Container></section>;
 }
 
 export default function HomepageSections({sections,faqs}) {
