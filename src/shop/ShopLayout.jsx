@@ -6,7 +6,7 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
 import { Container } from './ui';
 import useApi from '../hooks/useApi';
-import { cmsPublicApi } from '../services';
+import { cmsPublicApi, productsApi } from '../services';
 import useShopSettings from './useShopSettings';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
@@ -54,7 +54,7 @@ function CmsBannerCarousel({ banners = [] }) {
 
 export default function ShopLayout(){
  const [showIntro,setShowIntro]=useState(false);
- const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
+ const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
@@ -85,6 +85,18 @@ export default function ShopLayout(){
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
  useEffect(()=>{let timer;try{if(!sessionStorage.getItem('afsana-reference-intro-v1')){sessionStorage.setItem('afsana-reference-intro-v1','seen');setShowIntro(true);timer=window.setTimeout(()=>setShowIntro(false),1650);}}catch{}return()=>{if(timer)window.clearTimeout(timer)};},[]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
+ useEffect(()=>{
+  const term=q.trim();
+  if(!search||term.length<2){setSuggestions([]);setSuggesting(false);return;}
+  let active=true;
+  const timer=window.setTimeout(async()=>{
+   setSuggesting(true);
+   try{const result=await productsApi.list({q:term,limit:5});if(active)setSuggestions(result?.products||[]);}
+   catch{if(active)setSuggestions([]);}
+   finally{if(active)setSuggesting(false);}
+  },250);
+  return()=>{active=false;window.clearTimeout(timer);};
+ },[q,search]);
 
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
@@ -168,6 +180,7 @@ export default function ShopLayout(){
         <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search fragrances..." className="w-full bg-transparent px-5 py-6 font-display text-4xl md:text-6xl outline-none placeholder:text-white/20"/>
         <button className="text-[9px] uppercase tracking-[.25em] text-[#d9ff55]" type="submit">Search</button>
       </form>
+      {q.trim().length>=2&&(suggesting||suggestions.length>0)&&<div className="mt-4 max-w-3xl border-b border-white/10 pb-5">{suggesting?<p className="text-xs text-white/50">Finding fragrances…</p>:suggestions.map(product=><Link key={product.id||product._id||product.slug} to={`/product/${product.slug}`} onClick={()=>setSearch(false)} className="flex items-center justify-between gap-4 border-b border-white/10 py-3 text-white/80 transition hover:text-[#d9ff55]"><span className="font-display text-xl">{product.name}</span><span className="text-xs text-white/50">View fragrance ↗</span></Link>)}</div>}
       <div className="mt-14 grid gap-10 md:grid-cols-3">
         <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">Popular paths</div><div className="mt-5 space-y-3">
           {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#d9ff55]">{x}</button>)}
