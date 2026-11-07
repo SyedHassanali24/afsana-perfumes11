@@ -6,8 +6,8 @@ compatibility_date = "2026-10-31"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-SITE_URL = "https://afsana-perfumes11.eastwala12.workers.dev"
-ALLOWED_ORIGINS = "https://afsana-perfumes11.eastwala12.workers.dev"
+SITE_URL = "https://afsanaperfumes.store"
+ALLOWED_ORIGINS = "https://afsanaperfumes.store,https://www.afsanaperfumes.store,https://afsana-perfumes11.eastwala12.workers.dev"
 TURNSTILE_SITE_KEY = "0x4AAAAAAF06iSkhZh8g9mEb"
 RATE_LIMIT_FAIL_OPEN = "false"
 EMAILJS_SERVICE_ID = "service_jx5mizj"
