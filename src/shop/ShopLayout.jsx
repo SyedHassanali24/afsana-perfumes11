@@ -6,15 +6,28 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
 import { Container } from './ui';
 import useApi from '../hooks/useApi';
-import { cmsPublicApi } from '../services';
+import { cmsPublicApi, productsApi } from '../services';
+import { money } from './format';
 import LuxuryExperienceLayer from './LuxuryExperienceLayer';
 
 const nav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
 export default function ShopLayout(){
- const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
+ const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
+ useEffect(()=>{
+  const term=q.trim();
+  if(!search||term.length<2){setSuggestions([]);setSuggesting(false);return}
+  let active=true;
+  const timer=window.setTimeout(async()=>{
+   setSuggesting(true);
+   try{const result=await productsApi.list({q:term,limit:5});if(active)setSuggestions(result?.products||[])}
+   catch{if(active)setSuggestions([])}
+   finally{if(active)setSuggesting(false)}
+  },220);
+  return()=>{active=false;window.clearTimeout(timer)};
+ },[q,search]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-white/85 hover:text-[#b4bf41] transition focus:outline-none';
@@ -73,6 +86,7 @@ export default function ShopLayout(){
         <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search fragrances..." className="w-full bg-transparent px-5 py-6 font-display text-4xl md:text-6xl outline-none placeholder:text-white/20"/>
         <button className="text-[9px] uppercase tracking-[.25em] text-[#b4bf41]" type="submit">Search</button>
       </form>
+      {(q.trim().length>=2)&&(suggesting||suggestions.length>0)&&<div className="mt-4 max-w-3xl border-b border-white/10 pb-5">{suggesting?<p className="text-xs text-white/50">Finding fragrances…</p>:suggestions.map(product=><Link key={product.id||product._id} to={`/product/${product.slug}`} onClick={()=>setSearch(false)} className="flex items-center justify-between gap-4 border-b border-white/10 py-3 text-white/80 hover:text-[#b4bf41]"><span className="font-display text-xl">{product.name}</span><span className="text-xs text-white/50">{product.priceFrom!=null?money(product.priceFrom):''} ↗</span></Link>)}</div>}
       <div className="mt-14 grid gap-10 md:grid-cols-3">
         <div><div className="eyebrow text-[#b4bf41]">Popular paths</div><div className="mt-5 space-y-3">
           {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#b4bf41]">{x}</button>)}
