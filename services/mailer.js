@@ -4,7 +4,7 @@ function encodeBase64Url(value) {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+  return btoa(binary).split('+').join('-').split('/').join('_').replaceAll('=', '');
 }
 
 async function sendWithGmail({ to, subject, text, html }) {
@@ -28,7 +28,7 @@ async function sendWithGmail({ to, subject, text, html }) {
     'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: 8bit', '', text,
     '--' + boundary, 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: 8bit', '',
     safeHtml, '--' + boundary + '--', ''
-  ].join('\\r\\n');
+  ].join(String.fromCharCode(13, 10));
   const bytes = new TextEncoder().encode(mime);
   let binary = ''; for (const byte of bytes) binary += String.fromCharCode(byte);
   const raw = btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
