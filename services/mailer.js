@@ -29,9 +29,7 @@ async function sendWithGmail({ to, subject, text, html }) {
     '--' + boundary, 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: 8bit', '',
     safeHtml, '--' + boundary + '--', ''
   ].join(String.fromCharCode(13, 10));
-  const bytes = new TextEncoder().encode(mime);
-  let binary = ''; for (const byte of bytes) binary += String.fromCharCode(byte);
-  const raw = btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+  const raw = encodeBase64Url(mime);
   const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
     method: 'POST', headers: { Authorization: 'Bearer ' + token.access_token, 'Content-Type': 'application/json' },
     body: JSON.stringify({ raw })
