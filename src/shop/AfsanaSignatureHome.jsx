@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, X, Instagram, Facebook, Youtube, Music2, Pin, Volume2, VolumeX } from 'lucide-react';
 import useApi from '../hooks/useApi';
-import { productsApi, cmsPublicApi } from '../services';
+import { productsApi, cmsPublicApi, reviewsApi } from '../services';
 import useShopSettings from './useShopSettings';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
@@ -93,7 +93,31 @@ function Ritual(){const items=[['01','Prepare','Apply to clean, moisturised skin
 function PrivateCollection(){return <section className="private-banner"><img src={img.hero} alt="" className="absolute inset-0 h-full w-full object-cover"/><div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,35,8,.97),rgba(24,35,8,.62),rgba(24,35,8,.35))]"/><Container className="relative flex min-h-[650px] items-center"><div className="max-w-xl"><Eyebrow light>The Private Collection</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">Some stories<br/>deserve to be <em className="text-[#b4bf41]">private.</em></h2><p className="mt-7 text-sm leading-7 text-white/60">Discover our most concentrated compositions, created for evenings that deserve to be remembered.</p><Link to="/shop" className="mt-8 inline-flex bg-[#b4bf41] px-7 py-4 text-xs font-semibold uppercase tracking-[.18em] text-[#263e0e]">Explore Private Collection <ArrowRight className="ml-2 w-4"/></Link></div></Container></section>;}
 function Trust(){const items=[['✦','Premium Oils','Carefully selected fragrance oils and sophisticated compositions.'],['◌','Long Lasting','Designed to evolve beautifully through the day rather than disappear quickly.'],['♢','Gift Ready','Every order is prepared with the experience of opening a luxury gift.'],['✓','Easy Exchange','A considered customer experience from discovery through delivery.']];return <section className="bg-[#f3f1e9] py-20 sm:py-28"><div className="container-xl"><Eyebrow>Why Afsana</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">Designed for<br/><em className="text-[#263e0e]">trust.</em></h2><div className="trust-grid trust-grid-premium">{items.map(([i,t,d])=><article key={t} className="border border-[#263e0e]/10 bg-white p-7 hover:-translate-y-1 transition"><span className="text-2xl text-[#748e40]">{i}</span><h3 className="mt-6 font-display text-2xl">{t}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{d}</p></article>)}</div></div></section>;}
 function Journal(){const posts=[['Guide / Fragrance','How to find your signature scent',img.floral],['Ingredient / Oud','The mysterious world of oud',img.woods],['Ritual / Lifestyle','The psychology of scent',img.gifting]];return <section className="bg-white py-20 sm:py-28"><Container><div className="flex items-end justify-between mb-12"><div><Eyebrow>From the journal</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">Stories worth<br/><em className="text-[#263e0e]">remembering.</em></h2></div><Link to="/journal" className="hidden sm:block text-[10px] uppercase tracking-[.2em]">Enter Journal</Link></div><div className="editorial-grid">{posts.map(([meta,title,src])=><article key={title} className="group"><div className="aspect-[1.05] overflow-hidden"><img src={src} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-105"/></div><div className="pt-5"><p className="text-[8px] uppercase tracking-[.25em] text-[#263e0e]">{meta}</p><h3 className="mt-3 font-display text-2xl">{title}</h3><p className="mt-3 text-sm leading-6 text-[#5f654f]">The art of choosing a fragrance that feels like an extension of yourself.</p></div></article>)}</div></Container></section>;}
-function Testimonials(){const q=[['The first spray got my attention. The dry-down made me buy another bottle.','Sara M.'],['It doesn’t smell like everyone else. That is exactly why I love it.','Hamza R.'],['The packaging, presentation and scent all feel incredibly premium.','Areeba K.']];return <section className="bg-[#263e0e] py-20 sm:py-28 text-white"><div className="container-xl"><Eyebrow light>The Afsana circle</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">Loved by<br/><em className="text-[#b4bf41]">the unforgettable.</em></h2><div className="testimonial-track testimonial-track-premium">{q.map(([quote,name])=><article key={name} className="border border-white/10 p-7 sm:p-9"><div className="text-[#b4bf41] tracking-[.3em]">★★★★★</div><blockquote className="mt-7 font-display text-2xl leading-tight">“{quote}”</blockquote><p className="mt-7 text-[9px] uppercase tracking-[.22em] text-white/40">— {name} / Verified Customer</p></article>)}</div></div></section>;}
+function Testimonials(){
+ const [reviews,setReviews]=useState([]);
+ const [loading,setLoading]=useState(true);
+ useEffect(()=>{
+  let active=true;
+  (async()=>{
+   try{
+    const catalog=await productsApi.list({sort:'popular',limit:8});
+    const products=(catalog?.products||[]).filter(p=>p?.slug).slice(0,8);
+    const groups=await Promise.all(products.map(async product=>{
+     try{
+      const response=await reviewsApi.list(product.slug,{page:1,limit:3});
+      return (response?.reviews||[]).map(review=>({...review,productName:product.name}));
+     }catch{return [];}
+    }));
+    const genuine=groups.flat().filter(review=>(review?.text||review?.title)&&Number(review?.rating)>0);
+    if(active)setReviews(genuine.slice(0,3));
+   }catch{if(active)setReviews([]);}
+   finally{if(active)setLoading(false);}
+  })();
+  return()=>{active=false;};
+ },[]);
+ if(loading||!reviews.length)return null;
+ return <section className="bg-[#263e0e] py-20 sm:py-28 text-white"><div className="container-xl"><Eyebrow light>Real customer feedback</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">Loved by<br/><em className="text-[#b4bf41]">the unforgettable.</em></h2><div className="testimonial-track testimonial-track-premium">{reviews.map((review,index)=><article key={review.id||review._id||index} className="border border-white/10 p-7 sm:p-9"><div className="text-[#b4bf41] tracking-[.3em]" aria-label={`${Number(review.rating)} out of 5 stars`}>{'★'.repeat(Math.max(0,Math.min(5,Number(review.rating)||0)))}</div><blockquote className="mt-7 font-display text-2xl leading-tight">“{review.text||review.title}”</blockquote><p className="mt-7 text-[9px] uppercase tracking-[.22em] text-white/40">— {review.customerName||'Afsana customer'} / {review.productName}</p></article>)}</div></div></section>;
+}
 function DefaultHome(){return <div className="bg-[#faf8f4] text-[#263e0e]"><Hero/><Philosophy/><Worlds/><BestSellers/><Finder/><Story/><Film/><Ritual/><PrivateCollection/><Trust/><Journal/><Testimonials/><CommunityPulse section={{type:'community_pulse',title:'A house people come back to.',config:{}}}/><PremiumFooterShowcase section={{type:'footer_showcase',title:'Leave the final impression.',config:{}}}/><section className="bg-[#263e0e] py-14 sm:py-20 text-white"><div className="container-xl"><div className="newsletter-grid"><div><Eyebrow light>The private list</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl">Be the first<br/>to <em className="text-[#b4bf41]">know.</em></h2><p className="mt-4 max-w-xl text-sm text-white/55">Early access to new compositions, private drops, exclusive stories and fragrance events.</p></div><NewsletterSubscription/></div></div></section></div>;}
 
 
