@@ -101,7 +101,7 @@ export default function ProductPage(){
   if(!script){
    script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';
    script.addEventListener('load',ready,{once:true});script.addEventListener('error',()=>{if(active)setModelViewerFailed(true)},{once:true});document.head.appendChild(script);
-  } else if(!isViewerDefined && script) {
+  } else if(!window.customElements.get('model-viewer') && script) {
    script.addEventListener('load',ready,{once:true});
    script.addEventListener('error',()=>{if(active)setModelViewerFailed(true)},{once:true});
    ready();
