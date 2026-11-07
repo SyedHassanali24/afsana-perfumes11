@@ -64,7 +64,16 @@ export default function PrivacyPolicyPage() {
       <div className="mt-10 border-t border-current/15 pt-6">
         <h2 className="font-display text-2xl">Contact Afsana</h2>
         <p className="mt-3 leading-7 text-current/75">
-          For privacy questions or requests, please use the contact options published on our website.
+          For privacy questions or requests, contact Afsana on WhatsApp at{" "}
+          <a
+            href="https://wa.me/923132956206"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-4 hover:text-current"
+          >
+            +92 313 2956206
+          </a>
+          . Please do not send passwords, payment-card details or other sensitive credentials in chat.
         </p>
         <Link to="/" className="mt-5 inline-flex underline underline-offset-4">Return to Afsana Perfumes</Link>
       </div>
