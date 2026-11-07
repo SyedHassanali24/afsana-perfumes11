@@ -1,0 +1,48 @@
+const { createHandler } = require('../../../middleware/withApi');
+const { login, clearCookie, sessionCookie, requestPasswordReset, verifyPasswordResetOtp, resetPasswordWithToken } = require('../../../middleware/auth');
+const { res } = require('../../../middleware/http');
+const { E } = require('../../../middleware/errors');
+const { Session } = require('../../../database/models');
+const S = require('../../../validation/schemas');
+const { changeOwnPassword, updateOwnProfile } = require('../../../services/staffService');
+
+const routes = [
+  { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 3, windowMs: 15 * 60000 }, async handler({ body }) { await requestPasswordReset(body.email); return { sent: true }; } },
+  { method: 'POST', path: '/forgot-password/verify', public: true, body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) { return verifyPasswordResetOtp(body.email, body.otp); } },
+  { method: 'POST', path: '/forgot-password/reset', public: true, body: S.forgotPasswordResetBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) { return resetPasswordWithToken(body.email, body.resetToken, body.password); } },
+  { method: 'POST', path: '/login', public: true, body: S.loginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
+    async handler({ body, ip, req }) {
+      const { cookie, user, staff } = await login({ ...body, ip, userAgent: req.headers['user-agent'] });
+      return res(200, { user: { id: user._id, email: user.email, name: staff.name }, mustChangePassword: !!user.mustChangePassword }, { 'Set-Cookie': cookie });
+    } },
+  { method: 'POST', path: '/logout', allowPasswordChange: true,
+    async handler({ ctx }) {
+      await Session.updateOne({ _id: ctx.session._id }, { revokedAt: new Date(), revokedReason: 'logout' });
+      return res(200, {}, { 'Set-Cookie': clearCookie() });
+    } },
+  { method: 'POST', path: '/logout-all', allowPasswordChange: true,
+    async handler({ ctx }) {
+      await Session.updateMany({ userId: ctx.user._id, revokedAt: { $exists: false } }, { revokedAt: new Date(), revokedReason: 'logout_all' });
+      return res(200, {}, { 'Set-Cookie': clearCookie() });
+    } },
+  { method: 'GET', path: '/me', allowPasswordChange: true,
+    async handler({ ctx }) {
+      return { user: { id: ctx.user._id, email: ctx.user.email, name: ctx.staff.name, avatarUrl: ctx.staff.avatarUrl, phone: ctx.user.phone, jobTitle: ctx.staff.jobTitle, department: ctx.staff.department, bio: ctx.staff.bio, address: ctx.staff.address, city: ctx.staff.city, country: ctx.staff.country, role: { key: ctx.role.key, name: ctx.role.name, level: ctx.role.level } }, permissions: ctx.perms.toClient(), mustChangePassword: !!ctx.user.mustChangePassword };
+    } },
+  { method: 'PATCH', path: '/profile', allowPasswordChange: true, body: S.staffProfile,
+    handler: ({ ctx, body }) => updateOwnProfile(ctx, body) },
+  { method: 'POST', path: '/change-password', allowPasswordChange: true, body: S.changePasswordBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
+    handler: ({ ctx, body }) => changeOwnPassword(ctx, body) },
+  { method: 'GET', path: '/sessions',
+    async handler({ ctx }) {
+      const rows = await Session.find({ userId: ctx.user._id, revokedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ lastActiveAt: -1 }).lean();
+      return { sessions: rows.map((s) => ({ id: s._id, device: s.device, lastActiveAt: s.lastActiveAt, createdAt: s.createdAt, current: String(s._id) === String(ctx.session._id) })) };
+    } },
+  { method: 'DELETE', path: '/sessions/:id',
+    async handler({ ctx, params }) {
+      const r = await Session.updateOne({ _id: params.id, userId: ctx.user._id, revokedAt: { $exists: false } }, { revokedAt: new Date(), revokedReason: 'revoked' });
+      if (!r.matchedCount) throw E.notFound('Session not found.');
+      return {};
+    } },
+];
+exports.handler = createHandler('auth', routes);

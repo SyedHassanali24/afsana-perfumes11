@@ -6,15 +6,28 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
 import { Container } from './ui';
 import useApi from '../hooks/useApi';
-import { cmsPublicApi } from '../services';
+import { cmsPublicApi, productsApi } from '../services';
+import { money } from './format';
 import LuxuryExperienceLayer from './LuxuryExperienceLayer';
 
 const nav=[['/','Home'],['/shop','Collection'],['/about','The House'],['/journal','Journal'],['/gifting','Gifting']];
 export default function ShopLayout(){
- const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState('');
+ const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
+ useEffect(()=>{
+  const term=q.trim();
+  if(!search||term.length<2){setSuggestions([]);setSuggesting(false);return}
+  let active=true;
+  const timer=window.setTimeout(async()=>{
+   setSuggesting(true);
+   try{const result=await productsApi.list({q:term,limit:5});if(active)setSuggestions(result?.products||[])}
+   catch{if(active)setSuggestions([])}
+   finally{if(active)setSuggesting(false)}
+  },220);
+  return()=>{active=false;window.clearTimeout(timer)};
+ },[q,search]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-white/85 hover:text-[#b4bf41] transition focus:outline-none';
@@ -56,9 +69,9 @@ export default function ShopLayout(){
         <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#b4bf41]">Customer care ↗</Link></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link></div></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">Track order</Link><Link className="block hover:text-white transition" to="/account">Account</Link><Link className="block hover:text-white transition" to="/shop">Fragrance care</Link><Link className="block hover:text-white transition" to="/gifting">Gift guide</Link></div></div>
-        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2"><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.tiktok.com/" target="_blank" rel="noreferrer">TikTok</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.pinterest.com/" target="_blank" rel="noreferrer">Pinterest</a><a className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook</a></div></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#b4bf41]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2">{[{label:'Instagram',url:footerCms.instagramUrl},{label:'TikTok',url:footerCms.tiktokUrl},{label:'Pinterest',url:footerCms.pinterestUrl},{label:'Facebook',url:footerCms.facebookUrl}].filter(item=>/^https:\/\//i.test(String(item.url||''))).map(item=><a key={item.label} className="rounded-full border border-white/10 px-4 py-2 text-[9px] uppercase tracking-[.18em] text-white/55 hover:border-[#b4bf41] hover:text-[#b4bf41] transition" href={item.url} target="_blank" rel="noreferrer">{item.label}</a>)}{![footerCms.instagramUrl,footerCms.tiktokUrl,footerCms.pinterestUrl,footerCms.facebookUrl].some(url=>/^https:\/\//i.test(String(url||'')))&&<span className="text-xs text-white/35">Official social links will appear here soon.</span>}</div></div>
       </div>
-      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><span>PRIVACY · TERMS · COOKIES</span><span>THE ART OF SCENT</span></div>
+      <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-[8px] uppercase tracking-[.22em] text-white/25"><span>© 2026 AFSANA PERFUMES</span><Link to="/privacy-policy" className="hover:text-[#b4bf41] transition">PRIVACY POLICY</Link><span>THE ART OF SCENT</span></div>
     </Container>
    </div>
   </footer>
@@ -73,6 +86,7 @@ export default function ShopLayout(){
         <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search fragrances..." className="w-full bg-transparent px-5 py-6 font-display text-4xl md:text-6xl outline-none placeholder:text-white/20"/>
         <button className="text-[9px] uppercase tracking-[.25em] text-[#b4bf41]" type="submit">Search</button>
       </form>
+      {(q.trim().length>=2)&&(suggesting||suggestions.length>0)&&<div className="mt-4 max-w-3xl border-b border-white/10 pb-5">{suggesting?<p className="text-xs text-white/50">Finding fragrances…</p>:suggestions.map(product=><Link key={product.id||product._id} to={`/product/${product.slug}`} onClick={()=>setSearch(false)} className="flex items-center justify-between gap-4 border-b border-white/10 py-3 text-white/80 hover:text-[#b4bf41]"><span className="font-display text-xl">{product.name}</span><span className="text-xs text-white/50">{product.priceFrom!=null?money(product.priceFrom):''} ↗</span></Link>)}</div>}
       <div className="mt-14 grid gap-10 md:grid-cols-3">
         <div><div className="eyebrow text-[#b4bf41]">Popular paths</div><div className="mt-5 space-y-3">
           {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#b4bf41]">{x}</button>)}
@@ -86,7 +100,9 @@ export default function ShopLayout(){
       </div>
     </Container>
   </div>}
+  <a href="https://wa.me/923132956206?text=Hello%20AFSANA%2C%20I%20need%20help%20with%20a%20fragrance%20or%20order." target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-[5.25rem] right-4 z-[56] md:hidden grid h-12 w-12 place-items-center rounded-full bg-[#25D366] text-white shadow-2xl ring-2 ring-white/80 transition-transform hover:scale-105"><span className="text-xl" aria-hidden="true">✆</span></a>
   <div className="fixed bottom-5 right-4 z-[55] md:hidden"><button type="button" aria-label="Open AI Concierge" onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-4 py-3 shadow-2xl text-[8px] uppercase tracking-[.18em] border border-[#263e0e]/10">AI Concierge ↗</button></div>
+  <a href="https://wa.me/923132956206?text=Hello%20AFSANA%2C%20I%20need%20help%20with%20a%20fragrance%20or%20order." target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-[5.25rem] right-6 z-[56] hidden md:grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-2xl ring-2 ring-white/80 transition-transform hover:scale-105"><span className="text-2xl" aria-hidden="true">✆</span></a>
   <div className="fixed bottom-6 right-6 z-[55] hidden md:block">
     <div className="group relative">
       <button onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-5 py-3 shadow-xl text-[9px] uppercase tracking-[.2em] hover:scale-105">AI Concierge</button>
