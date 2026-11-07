@@ -62,6 +62,12 @@ export default function ShopPage() {
         <Select aria-label="Sort products" value={get('sort') || 'newest'} onChange={(e)=>set({sort:e.target.value})} className="!w-auto min-w-[150px]">
           {SORTS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
         </Select>
+        <Select aria-label="Filter by fragrance style" value={get('gender')} onChange={(e)=>set({gender:e.target.value})} className="!w-auto min-w-[130px]">
+          <option value="">All styles</option><option value="Men">Men</option><option value="Women">Women</option><option value="Unisex">Unisex</option>
+        </Select>
+        <Select aria-label="Filter by maximum price" value={get('maxPrice')} onChange={(e)=>set({maxPrice:e.target.value})} className="!w-auto min-w-[145px]">
+          <option value="">Any price</option><option value="3000">Up to PKR 3,000</option><option value="5000">Up to PKR 5,000</option><option value="10000">Up to PKR 10,000</option><option value="20000">Up to PKR 20,000</option>
+        </Select>
       </div>
 
       {get('q') && <div className="mt-5 text-xs uppercase tracking-[.18em] text-[#5f654f]">Search results for “{get('q')}”</div>}
