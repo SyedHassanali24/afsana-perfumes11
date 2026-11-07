@@ -22,7 +22,7 @@ export function securityHeaders() {
 }
 
 export function isValidNewsletterEmail(email) {
-  return typeof email === 'string' && email.length <= 254 && /^[^\\s@]{1,64}@[a-z0-9.-]+\\.[a-z]{2,}$/i.test(email);
+  return typeof email === 'string' && email.length <= 254 && /^[^\s@]{1,64}@[a-z0-9.-]+\.[a-z]{2,}$/i.test(email);
 }
 
 export function newsletterRateLimitExceeded(rateDocument) {
