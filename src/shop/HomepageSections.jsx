@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { ArrowRight, Check, Instagram, Play, Quote, Sparkles } from 'lucide-react';
 import { Container } from './ui';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
 import useApi from '../hooks/useApi';
-import { productsApi, publicTaxonomyApi } from '../services';
+import { productsApi, publicTaxonomyApi, reviewsApi } from '../services';
 
 const itemsFrom = (v) => Array.isArray(v) ? v : String(v || '').split('\n').filter(Boolean).map((x) => {
   const [title, ...rest] = x.split('|'); return { title: title.trim(), text: rest.join('|').trim() };
@@ -192,9 +193,30 @@ function EditorialCards({section}) {
 }
 
 function Testimonials({section}) {
-  const items=itemsFrom(section.config?.items||'A perfume that feels incredibly polished from the first spray.|Verified customer\nThe packaging and scent both feel premium. Beautifully done.|Verified customer\nI finally found a signature fragrance that feels like me.|Verified customer');
-  return <section className="py-20 sm:py-28 luxury-dark-soft text-white"><Container><SectionIntro light eyebrow="THE AFSANA EXPERIENCE" title={section.title||'Loved, remembered, recommended.'}/>
-    <div className="grid md:grid-cols-3 gap-5">{items.slice(0,3).map((x,i)=><article key={i} className="rounded-[1.75rem] border border-white/10 bg-white/[.04] p-7 sm:p-8"><Quote className="w-7 h-7 text-gold"/><p className="font-display text-xl leading-8 mt-6">“{x.title}”</p><p className="mt-5 text-[10px] uppercase tracking-[.2em] text-white/45">{x.text||'Afsana customer'}</p></article>)}</div>
+  const [reviews,setReviews]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try {
+        const result=await productsApi.list({sort:'popular',limit:10});
+        const products=(result?.products||[]).filter(p=>p?.slug).slice(0,10);
+        const batches=await Promise.all(products.map(async product=>{
+          try {
+            const response=await reviewsApi.list(product.slug,{page:1,limit:4});
+            return (response?.reviews||[]).map(review=>({...review,productName:product.name,productSlug:product.slug}));
+          } catch { return []; }
+        }));
+        const genuine=batches.flat().filter(review=>review?.text||review?.title).sort((a,b)=>Number(b.featured)-Number(a.featured));
+        if(active)setReviews(genuine.slice(0,3));
+      } catch { if(active)setReviews([]); }
+      finally { if(active)setLoading(false); }
+    })();
+    return()=>{active=false};
+  },[]);
+  if(loading||!reviews.length)return null;
+  return <section className="py-20 sm:py-28 luxury-dark-soft text-white"><Container><SectionIntro light eyebrow="REAL CUSTOMER REVIEWS" title={section.title||'Loved, remembered, recommended.'}/>
+    <div className="grid md:grid-cols-3 gap-5">{reviews.map((review,index)=><article key={review.id||review._id||index} className="rounded-[1.75rem] border border-white/10 bg-white/[.04] p-7 sm:p-8"><Quote className="w-7 h-7 text-gold"/><p className="mt-5 text-gold tracking-[.2em]" aria-label={`${Number(review.rating)||0} out of 5 stars`}>{'★'.repeat(Math.max(0,Math.min(5,Number(review.rating)||0)))}</p><p className="font-display text-xl leading-8 mt-4">“{review.text||review.title}”</p><p className="mt-5 text-[10px] uppercase tracking-[.2em] text-white/45">{review.customerName||'Afsana customer'} · {review.productName}</p><Link to={`/product/${review.productSlug}#reviews`} className="mt-4 inline-flex text-[9px] uppercase tracking-[.18em] text-gold">View fragrance ↗</Link></article>)}</div>
   </Container></section>;
 }
 
