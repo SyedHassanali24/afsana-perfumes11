@@ -1,4 +1,5 @@
 # AFSANA Cloudflare production configuration
+# Hassan safe search suggestions release
 # Deploy trigger: activate free chunked video uploads via KV.
 name = "afsana-perfumes11"
 main = "worker.js"
