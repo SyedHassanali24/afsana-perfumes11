@@ -6,17 +6,38 @@ const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 
-function cors(origin) {
-  const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
+// Only the storefront origin is trusted by default. Add an exact comma-separated
+// origin allowlist through AFSANA_ALLOWED_ORIGINS if a verified custom domain is added.
+function cors(origin, env) {
+  const configured = String(env?.AFSANA_ALLOWED_ORIGINS || "")
+    .split(",").map(value => value.trim()).filter(Boolean);
+  const allowedOrigins = new Set([SITE_ORIGIN, ...configured]);
+  const headers = { "Vary": "Origin" };
+  if (!origin || !allowedOrigins.has(origin)) return headers;
   return {
-    "Access-Control-Allow-Origin": allowed ? origin : SITE_ORIGIN,
+    ...headers,
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Allow-Headers": "Content-Type, X-Requested-With, Idempotency-Key, Authorization",
-    "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Vary": "Origin"
+    "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS"
   };
 }
-function json(data, status, headers = {}) { return Response.json(data, { status, headers }); }
+
+// Security headers are applied at the Cloudflare edge because static assets are
+// served here (the legacy Netlify header configuration does not cover them).
+function securityHeaders(headers = {}) {
+  return {
+    ...headers,
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  };
+}
+function json(data, status, headers = {}) {
+  return Response.json(data, { status, headers: securityHeaders(headers) });
+}
 function cacheable(pathname, method) {
   if (method !== "GET" && method !== "HEAD") return false;
   return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
@@ -48,15 +69,15 @@ export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: securityHeaders(cors(origin, env)) });
 
     if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
       try {
         return json({ success: true, service: "mongodb", ...(await health(env)) }, 200,
-          { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
+          { ...cors(origin, env), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       } catch {
         return json({ success: false, service: "mongodb", connected: false }, 503,
-          { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
+          { ...cors(origin, env), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       }
     }
 
@@ -68,9 +89,9 @@ export default {
         const token = u.searchParams.get("hub.verify_token");
         const challenge = u.searchParams.get("hub.challenge");
         if (mode === "subscribe" && env.WHATSAPP_VERIFY_TOKEN && token === env.WHATSAPP_VERIFY_TOKEN && challenge) {
-          return new Response(challenge, { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+          return new Response(challenge, { status: 200, headers: securityHeaders({ "Content-Type": "text/plain", "Cache-Control": "no-store" }) });
         }
-        return new Response("Forbidden", { status: 403 });
+        return new Response("Forbidden", { status: 403, headers: securityHeaders() });
       }
       if (request.method === "POST") {
         const rawBody = await request.text();
@@ -93,7 +114,7 @@ export default {
           return json({ success: false, error: "WEBHOOK_STORAGE_UNAVAILABLE" }, 503, { "Cache-Control": "no-store" });
         }
       }
-      return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, POST" } });
+      return new Response("Method Not Allowed", { status: 405, headers: securityHeaders({ Allow: "GET, POST" }) });
     }
 
     if (!u.pathname.startsWith("/api/")) {
@@ -107,7 +128,7 @@ export default {
         headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
       }
       headers.set("X-Afsana-Backend", "cloudflare-assets");
-      return new Response(asset.body, { status: asset.status, headers });
+      return new Response(asset.body, { status: asset.status, headers: securityHeaders(headers) });
     }
 
     // Use the tested public Netlify /api rewrite instead of calling the
@@ -124,7 +145,8 @@ export default {
       const hit = await caches.default.match(key);
       if (hit) {
         const headers = new Headers(hit.headers);
-        Object.entries(cors(origin)).forEach(([k, v]) => headers.set(k, v));
+        for (const name of ["Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"]) headers.delete(name);
+        Object.entries(securityHeaders(cors(origin, env))).forEach(([k, v]) => headers.set(k, v));
         headers.set("X-Afsana-Cache", "HIT");
         return new Response(hit.body, { status: hit.status, headers });
       }
@@ -144,7 +166,7 @@ export default {
         redirect: "follow"
       }));
     } catch {
-      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin));
+      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin, env));
     }
 
     const outHeaders = new Headers(response.headers);
@@ -164,8 +186,9 @@ export default {
       outHeaders.delete("Cloudflare-CDN-Cache-Control");
     }
 
-    const out = new Response(response.body, { status: response.status, headers: outHeaders });
-    Object.entries(cors(origin)).forEach(([k, v]) => out.headers.set(k, v));
+    const out = new Response(response.body, { status: response.status, headers: securityHeaders(outHeaders) });
+    for (const name of ["Access-Control-Allow-Origin", "Access-Control-Allow-Credentials", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"]) out.headers.delete(name);
+    Object.entries(cors(origin, env)).forEach(([k, v]) => out.headers.set(k, v));
     out.headers.set("X-Afsana-Backend", "cloudflare-api");
     out.headers.set("X-Afsana-Cache", can ? "MISS" : "BYPASS");
     if (can && response.ok) ctx.waitUntil(caches.default.put(key, out.clone()));
