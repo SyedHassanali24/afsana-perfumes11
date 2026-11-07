@@ -22,6 +22,8 @@ async function redisCommand(command, args = []) {
 }
 
 async function hit(key, limit, windowMs, now = Date.now()) {
+  const durableLimiter = globalThis.__AFSANA_RATE_LIMITER__;
+  if (typeof durableLimiter === 'function') return durableLimiter(key, limit, windowMs, now);
   const production = process.env.NODE_ENV === 'production' || process.env.CONTEXT === 'production';
   if (!REDIS_URL || !REDIS_TOKEN) {
     // Production must use a shared limiter. A per-instance map is not a real global
