@@ -33,7 +33,7 @@ function Hero(){
       <Link to="/shop" className="group inline-flex items-center gap-3 bg-[#ffe500] px-7 py-4 text-xs font-semibold uppercase tracking-[.16em] text-[#080a07] hover:bg-white transition">Enter the Story <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition"/></Link>
       <a href="#finderSection" className="inline-flex items-center gap-3 border border-white/25 px-7 py-4 text-xs uppercase tracking-[.16em] text-white hover:border-[#d6a84f] hover:text-[#ffe500] transition">Find Your AFSANA <span>✦</span></a>
     </div>
-    <div className="mt-8 flex flex-wrap gap-3 text-[8px] uppercase tracking-[.25em] text-white/45"><span className="border border-white/10 bg-white/[.03] px-3 py-2">Premium Oils</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">Long Lasting</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">Gift Ready</span></div>
+    <div className="mt-8 flex flex-wrap gap-3 text-[8px] uppercase tracking-[.25em] text-white/45"><span className="border border-white/10 bg-white/[.03] px-3 py-2">Explore the collection</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">Scent Intelligence</span><span className="border border-white/10 bg-white/[.03] px-3 py-2">Customer support</span></div>
    </div>
    <div className="hero-side hidden lg:block luxury-reveal">
     <div className="hero-card relative mx-auto hero-card-magical">
@@ -230,10 +230,9 @@ function CommunityPulse({ section }) {
   const c = section.config || {};
   const items = cmsItems(c.items).slice(0, 6);
   const fallback = [
-    { title: 'Afsana Circle', text: 'Growing', link: '' },
-    { title: 'Verified Reviews', text: 'Real', link: '' },
-    { title: 'Signature Scents', text: 'Explore', link: '/shop' },
-    { title: 'Gift Moments', text: 'Made to give', link: '/gifting' },
+    { title: 'Explore AFSANA', text: 'Discover', link: '/shop' },
+    { title: 'Find Your Scent', text: 'Take the quiz', link: '#finderSection' },
+    { title: 'Customer Care', text: 'Get support', link: 'https://wa.me/923132956206' },
   ];
   const rows = items.length ? items : fallback;
   return <section className="relative overflow-hidden bg-[#0a0d08] text-white border-y border-[#b4bf41]/15">
