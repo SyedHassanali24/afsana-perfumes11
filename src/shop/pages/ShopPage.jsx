@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useApi from '../../hooks/useApi';
 import { productsApi } from '../../services';
 import { Select } from '../../../admin/components/FormFields';
@@ -29,6 +29,14 @@ export default function ShopPage() {
   const [compare,setCompare] = useState([]);
   const [showCompare,setShowCompare] = useState(false);
   const toggleCompare = (product) => setCompare(current => current.some(item => String(item.id||item._id)===String(product.id||product._id)) ? current.filter(item => String(item.id||item._id)!==String(product.id||product._id)) : current.length>=3 ? current : [...current,product]);
+  useEffect(()=>{
+    if(!showCompare)return;
+    const previous=document.body.style.overflow;
+    const closeOnEscape=(event)=>{if(event.key==='Escape')setShowCompare(false)};
+    document.body.style.overflow='hidden';
+    window.addEventListener('keydown',closeOnEscape);
+    return()=>{document.body.style.overflow=previous;window.removeEventListener('keydown',closeOnEscape)};
+  },[showCompare]);
 
   return (
     <div className="container-xl shop-page py-16 sm:py-24">
