@@ -50,6 +50,38 @@ export default {
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
 
+    // Cloudflare-native newsletter capture: never stores addresses in browser localStorage.
+    if (u.pathname === "/api/newsletter/subscribe" && request.method === "POST") {
+      const headers = { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" };
+      if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+        return json({ success: false, error: { code: "INVALID_CONTENT_TYPE", message: "Send JSON data." } }, 415, headers);
+      }
+      let body;
+      try { body = await request.json(); }
+      catch { return json({ success: false, error: { code: "INVALID_JSON", message: "Invalid request body." } }, 400, headers); }
+      const email = String(body?.email || "").trim().toLowerCase();
+      const consent = body?.consent === true;
+      const honeypot = String(body?.website || "").trim();
+      if (honeypot) return json({ success: true, received: true }, 202, headers);
+      if (!/^[^\s@]{1,64}@[a-z0-9.-]+\.[a-z]{2,}$/i.test(email) || email.length > 254 || !consent) {
+        return json({ success: false, error: { code: "INVALID_SUBSCRIPTION", message: "Enter a valid email and confirm your consent." } }, 400, headers);
+      }
+      try {
+        const db = await connectMongo(env);
+        const collection = db.collection("newsletter_subscribers");
+        await collection.createIndex({ email: 1 }, { unique: true });
+        const now = new Date();
+        const result = await collection.updateOne(
+          { email },
+          { $setOnInsert: { email, status: "subscribed", consentAt: now, source: "storefront", createdAt: now } },
+          { upsert: true }
+        );
+        return json({ success: true, subscribed: true, alreadySubscribed: result.matchedCount > 0 }, 200, headers);
+      } catch {
+        return json({ success: false, error: { code: "SUBSCRIPTION_UNAVAILABLE", message: "We could not save your request. Please try again later." } }, 503, headers);
+      }
+    }
+
     if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
       try {
         return json({ success: true, service: "mongodb", ...(await health(env)) }, 200,
