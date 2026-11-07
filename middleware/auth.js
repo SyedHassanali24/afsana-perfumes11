@@ -64,7 +64,7 @@ const secret = () => {
   if (!s || s.length < 32) throw new Error('JWT_SECRET missing or shorter than 32 chars');
   return s;
 };
-const secure = () => !process.env.NETLIFY_DEV;
+const secure = () => process.env.CLOUDFLARE_WORKER === 'true' || process.env.NODE_ENV === 'production';
 const sessionCookie = (token) => serializeCookie(COOKIE, token, { maxAge: SESSION_DAYS * 86400, secure: secure() });
 const clearCookie = () => serializeCookie(COOKIE, '', { maxAge: 0, secure: secure() });
 
