@@ -69,8 +69,23 @@ export default {
       try {
         const db = await connectMongo(env);
         const collection = db.collection("newsletter_subscribers");
-        await collection.createIndex({ email: 1 }, { unique: true });
+        const rateLimits = db.collection("newsletter_rate_limits");
+        await Promise.all([
+          collection.createIndex({ email: 1 }, { unique: true }),
+          rateLimits.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 })
+        ]);
         const now = new Date();
+        const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+        const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip)));
+        const rateKey = Array.from(digest, byte => byte.toString(16).padStart(2, "0")).join("");
+        const rate = await rateLimits.findOneAndUpdate(
+          { _id: rateKey },
+          { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date(now.getTime() + 60 * 60 * 1000) } },
+          { upsert: true, returnDocument: "after" }
+        );
+        if (Number(rate?.count || 0) > 5) {
+          return json({ success: false, error: { code: "RATE_LIMITED", message: "Too many attempts. Please try again later." } }, 429, headers);
+        }
         const result = await collection.updateOne(
           { email },
           { $setOnInsert: { email, status: "subscribed", consentAt: now, source: "storefront", createdAt: now } },
