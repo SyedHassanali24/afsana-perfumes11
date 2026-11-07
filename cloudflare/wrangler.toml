@@ -21,3 +21,11 @@ mode = "smart"
 
 [cache]
 enabled = true
+
+# Branch previews use isolated Durable Object storage, never the production namespace.
+[previews.placement]
+mode = "smart"
+
+[[previews.durable_objects.bindings]]
+name = "MONGODB_CONNECTION"
+class_name = "MongoDBConnection"
