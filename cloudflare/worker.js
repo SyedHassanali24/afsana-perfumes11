@@ -43,7 +43,7 @@ export default {
 
     // Cloudflare-native newsletter capture: never stores addresses in browser localStorage.
     if (u.pathname === "/api/newsletter/subscribe" && request.method === "POST") {
-      const headers = { ...cors(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" };
+      const headers = { ...corsHeaders(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" };
       if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
         return json({ success: false, error: { code: "INVALID_CONTENT_TYPE", message: "Send JSON data." } }, 415, headers);
       }
@@ -54,7 +54,7 @@ export default {
       const consent = body?.consent === true;
       const honeypot = String(body?.website || "").trim();
       if (honeypot) return json({ success: true, received: true }, 202, headers);
-      if (!/^[^\s@]{1,64}@[a-z0-9.-]+\.[a-z]{2,}$/i.test(email) || email.length > 254 || !consent) {
+      if (!isValidNewsletterEmail(email) || !consent) {
         return json({ success: false, error: { code: "INVALID_SUBSCRIPTION", message: "Enter a valid email and confirm your consent." } }, 400, headers);
       }
       try {
@@ -91,10 +91,10 @@ export default {
     if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
       try {
         return json({ success: true, service: "mongodb", ...(await health(env)) }, 200,
-          { ...cors(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
+          { ...corsHeaders(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       } catch {
         return json({ success: false, service: "mongodb", connected: false }, 503,
-          { ...cors(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
+          { ...corsHeaders(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       }
     }
 
@@ -164,7 +164,7 @@ export default {
       if (hit) {
         const headers = new Headers(hit.headers);
         Object.entries(securityHeaders()).forEach(([k, v]) => headers.set(k, v));
-        Object.entries(cors(origin, env, u.origin)).forEach(([k, v]) => headers.set(k, v));
+        Object.entries(corsHeaders(origin, env, u.origin)).forEach(([k, v]) => headers.set(k, v));
         headers.set("X-Afsana-Cache", "HIT");
         return new Response(hit.body, { status: hit.status, headers });
       }
@@ -184,7 +184,7 @@ export default {
         redirect: "follow"
       }));
     } catch {
-      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin, env, u.origin));
+      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, corsHeaders(origin, env, u.origin));
     }
 
     const outHeaders = new Headers(response.headers);
@@ -206,7 +206,7 @@ export default {
     }
 
     const out = new Response(response.body, { status: response.status, headers: outHeaders });
-    Object.entries(cors(origin, env, u.origin)).forEach(([k, v]) => out.headers.set(k, v));
+    Object.entries(corsHeaders(origin, env, u.origin)).forEach(([k, v]) => out.headers.set(k, v));
     out.headers.set("X-Afsana-Backend", "cloudflare-api");
     out.headers.set("X-Afsana-Cache", can ? "MISS" : "BYPASS");
     if (can && response.ok) ctx.waitUntil(caches.default.put(key, out.clone()));
