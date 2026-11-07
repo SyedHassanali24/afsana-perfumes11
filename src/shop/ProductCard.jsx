@@ -4,7 +4,7 @@ import { useWishlist } from './WishlistContext';
 import { Placeholder } from './ui';
 import { money, cardOf } from './format';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onCompare, isCompared = false }) {
   const p = cardOf(product);
   const { has, toggle } = useWishlist();
   const liked = has(p.id);
@@ -26,6 +26,7 @@ export default function ProductCard({ product }) {
         className="absolute right-3 top-3 rounded-full bg-[#faf8f4]/90 p-2 text-[#263e0e] shadow-sm transition-all hover:-translate-y-0.5 hover:text-[#748e40]">
         <Heart className="w-4 h-4" fill={liked ? 'currentColor' : 'none'} />
       </button>
+      {onCompare && <button type="button" onClick={() => onCompare(product)} aria-pressed={isCompared} className="mt-3 w-full border border-[#263e0e]/15 px-3 py-2 text-[9px] uppercase tracking-[.18em] text-[#263e0e] transition hover:border-[#263e0e] hover:bg-[#e7ead9]">{isCompared ? 'Remove from compare −' : 'Compare fragrance +'}</button>}
     </div>
   );
 }
