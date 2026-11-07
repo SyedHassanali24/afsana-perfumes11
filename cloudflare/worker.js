@@ -1,40 +1,12 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
+import { corsHeaders as cors, securityHeaders } from "./security.js";
 
 // deploy-sync-2026-10-28
 const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 
-// Only the storefront origin is trusted by default. Add an exact comma-separated
-// origin allowlist through AFSANA_ALLOWED_ORIGINS if a verified custom domain is added.
-function cors(origin, env) {
-  const configured = String(env?.AFSANA_ALLOWED_ORIGINS || "")
-    .split(",").map(value => value.trim()).filter(Boolean);
-  const allowedOrigins = new Set([SITE_ORIGIN, ...configured]);
-  const headers = { "Vary": "Origin" };
-  if (!origin || !allowedOrigins.has(origin)) return headers;
-  return {
-    ...headers,
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Headers": "Content-Type, X-Requested-With, Idempotency-Key, Authorization",
-    "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS"
-  };
-}
-
-// Security headers are applied at the Cloudflare edge because static assets are
-// served here (the legacy Netlify header configuration does not cover them).
-function securityHeaders(headers = {}) {
-  return {
-    ...headers,
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-  };
-}
 function json(data, status, headers = {}) {
   return Response.json(data, { status, headers: securityHeaders(headers) });
 }
