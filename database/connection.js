@@ -1,6 +1,6 @@
 if (process.env.CLOUDFLARE_WORKER !== 'true') require('dotenv').config({ quiet: true });
-// Cached connection: Netlify Functions reuse warm containers, so we must not reconnect per invocation.
-// The cache lives on the mongoose instance itself (not on global): some runtimes (e.g. netlify dev) reload
+// Cached connection: Cloudflare Workers reuse warm containers, so we must not reconnect per invocation.
+// The cache lives on the mongoose instance itself (not on global): some runtimes (e.g. local development) reload
 // modules on every request, which creates a NEW mongoose instance whose models would otherwise wait forever
 // on a connection that belongs to the old instance.
 const mongoose = require('mongoose');
