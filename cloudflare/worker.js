@@ -22,8 +22,8 @@ function securityHeaders() {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    "Strict-Transport-Security": "max-age=31536000",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), usb=()"
   };
 }
 function json(data, status, headers = {}) { return Response.json(data, { status, headers: { ...securityHeaders(), ...headers } }); }
@@ -125,9 +125,9 @@ export default {
         const token = u.searchParams.get("hub.verify_token");
         const challenge = u.searchParams.get("hub.challenge");
         if (mode === "subscribe" && env.WHATSAPP_VERIFY_TOKEN && token === env.WHATSAPP_VERIFY_TOKEN && challenge) {
-          return new Response(challenge, { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+          return new Response(challenge, { status: 200, headers: { ...securityHeaders(), "Content-Type": "text/plain", "Cache-Control": "no-store" } });
         }
-        return new Response("Forbidden", { status: 403 });
+        return new Response("Forbidden", { status: 403, headers: securityHeaders() });
       }
       if (request.method === "POST") {
         const rawBody = await request.text();
@@ -150,7 +150,7 @@ export default {
           return json({ success: false, error: "WEBHOOK_STORAGE_UNAVAILABLE" }, 503, { "Cache-Control": "no-store" });
         }
       }
-      return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, POST" } });
+      return new Response("Method Not Allowed", { status: 405, headers: { ...securityHeaders(), Allow: "GET, POST" } });
     }
 
     if (!u.pathname.startsWith("/api/")) {
