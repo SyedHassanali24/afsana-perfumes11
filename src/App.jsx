@@ -37,6 +37,7 @@ const TrackOrderPage = lazy(() => import('./shop/pages/TrackOrderPage'));
 const AboutPage = lazy(() => import('./shop/pages/AboutPage'));
 const JournalPage = lazy(() => import('./shop/pages/JournalPage'));
 const GiftingPage = lazy(() => import('./shop/pages/GiftingPage'));
+const PrivacyPolicyPage = lazy(() => import('./shop/pages/PrivacyPolicyPage'));
 const WishlistPage = lazy(() => import('./shop/account/WishlistPage'));
 const AccountPage = lazy(() => import('./shop/account/AccountPage'));
 const OrderDetailPage = lazy(() => import('./shop/account/OrderDetailPage'));
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/journal" element={<JournalPage />} />
             <Route path="/gifting" element={<GiftingPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/product/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
