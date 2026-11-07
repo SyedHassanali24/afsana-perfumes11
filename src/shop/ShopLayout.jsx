@@ -86,7 +86,9 @@ export default function ShopLayout(){
       </div>
     </Container>
   </div>}
+  <a href="https://wa.me/923132956206?text=Hello%20AFSANA%2C%20I%20need%20help%20with%20a%20fragrance%20or%20order." target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-[5.25rem] right-4 z-[56] md:hidden grid h-12 w-12 place-items-center rounded-full bg-[#25D366] text-white shadow-2xl ring-2 ring-white/80 transition-transform hover:scale-105"><span className="text-xl" aria-hidden="true">✆</span></a>
   <div className="fixed bottom-5 right-4 z-[55] md:hidden"><button type="button" aria-label="Open AI Concierge" onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-4 py-3 shadow-2xl text-[8px] uppercase tracking-[.18em] border border-[#263e0e]/10">AI Concierge ↗</button></div>
+  <a href="https://wa.me/923132956206?text=Hello%20AFSANA%2C%20I%20need%20help%20with%20a%20fragrance%20or%20order." target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" className="fixed bottom-[5.25rem] right-6 z-[56] hidden md:grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-2xl ring-2 ring-white/80 transition-transform hover:scale-105"><span className="text-2xl" aria-hidden="true">✆</span></a>
   <div className="fixed bottom-6 right-6 z-[55] hidden md:block">
     <div className="group relative">
       <button onClick={()=>navigate('/shop')} className="rounded-full bg-[#b4bf41] text-[#263e0e] px-5 py-3 shadow-xl text-[9px] uppercase tracking-[.2em] hover:scale-105">AI Concierge</button>
