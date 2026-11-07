@@ -6,8 +6,9 @@ const SITE_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 const API_ORIGIN = "https://afsanayaar.netlify.app";
 const API_PREFIX = "/api";
 
-function cors(origin) {
-  const allowed = origin === SITE_ORIGIN || /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
+function cors(origin, env = {}, requestOrigin = SITE_ORIGIN) {
+  const configured = String(env.AFSANA_ALLOWED_ORIGINS || "").split(",").map(value => value.trim()).filter(Boolean);
+  const allowed = origin === SITE_ORIGIN || origin === requestOrigin || configured.includes(origin);
   return {
     "Access-Control-Allow-Origin": allowed ? origin : SITE_ORIGIN,
     "Access-Control-Allow-Credentials": "true",
@@ -16,7 +17,16 @@ function cors(origin) {
     "Vary": "Origin"
   };
 }
-function json(data, status, headers = {}) { return Response.json(data, { status, headers }); }
+function securityHeaders() {
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  };
+}
+function json(data, status, headers = {}) { return Response.json(data, { status, headers: { ...securityHeaders(), ...headers } }); }
 function cacheable(pathname, method) {
   if (method !== "GET" && method !== "HEAD") return false;
   return /^\/api\/products(?:\/[^/]+)?\/?$/i.test(pathname) ||
@@ -48,11 +58,11 @@ export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...securityHeaders(), ...cors(origin, env, u.origin) } });
 
     // Cloudflare-native newsletter capture: never stores addresses in browser localStorage.
     if (u.pathname === "/api/newsletter/subscribe" && request.method === "POST") {
-      const headers = { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" };
+      const headers = { ...cors(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" };
       if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
         return json({ success: false, error: { code: "INVALID_CONTENT_TYPE", message: "Send JSON data." } }, 415, headers);
       }
@@ -100,10 +110,10 @@ export default {
     if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
       try {
         return json({ success: true, service: "mongodb", ...(await health(env)) }, 200,
-          { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
+          { ...cors(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       } catch {
         return json({ success: false, service: "mongodb", connected: false }, 503,
-          { ...cors(origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
+          { ...cors(origin, env, u.origin), "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-mongodb" });
       }
     }
 
@@ -146,6 +156,7 @@ export default {
     if (!u.pathname.startsWith("/api/")) {
       const asset = await env.ASSETS.fetch(request);
       const headers = new Headers(asset.headers);
+      Object.entries(securityHeaders()).forEach(([k, v]) => headers.set(k, v));
       // Vite asset filenames are content-hashed: keep them in browser + edge cache for a year.
       // The SPA shell is refreshed frequently so new releases become visible quickly.
       if (u.pathname.startsWith("/assets/")) {
@@ -171,7 +182,8 @@ export default {
       const hit = await caches.default.match(key);
       if (hit) {
         const headers = new Headers(hit.headers);
-        Object.entries(cors(origin)).forEach(([k, v]) => headers.set(k, v));
+        Object.entries(securityHeaders()).forEach(([k, v]) => headers.set(k, v));
+        Object.entries(cors(origin, env, u.origin)).forEach(([k, v]) => headers.set(k, v));
         headers.set("X-Afsana-Cache", "HIT");
         return new Response(hit.body, { status: hit.status, headers });
       }
@@ -191,10 +203,11 @@ export default {
         redirect: "follow"
       }));
     } catch {
-      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin));
+      return json({ success: false, error: { code: "UPSTREAM_UNAVAILABLE" } }, 502, cors(origin, env, u.origin));
     }
 
     const outHeaders = new Headers(response.headers);
+    Object.entries(securityHeaders()).forEach(([k, v]) => outHeaders.set(k, v));
     const setCookies = typeof response.headers.getSetCookie === "function"
       ? response.headers.getSetCookie()
       : (response.headers.get("set-cookie") ? [response.headers.get("set-cookie")] : []);
@@ -212,7 +225,7 @@ export default {
     }
 
     const out = new Response(response.body, { status: response.status, headers: outHeaders });
-    Object.entries(cors(origin)).forEach(([k, v]) => out.headers.set(k, v));
+    Object.entries(cors(origin, env, u.origin)).forEach(([k, v]) => out.headers.set(k, v));
     out.headers.set("X-Afsana-Backend", "cloudflare-api");
     out.headers.set("X-Afsana-Cache", can ? "MISS" : "BYPASS");
     if (can && response.ok) ctx.waitUntil(caches.default.put(key, out.clone()));
