@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
-import { productsApi, cmsPublicApi, publicTaxonomyApi } from '../../services';
+import { productsApi, cmsPublicApi } from '../../services';
 import { Select } from '../../../admin/components/FormFields';
 import { StateBox, CardsSkeleton, Pager } from '../ui';
 import ProductCard from '../ProductCard';
@@ -13,8 +13,6 @@ export default function ShopPage() {
   useTitle('Shop');
   const [sp, setSp] = useSearchParams();
   const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
-  const {data:categoryData}=useApi(()=>publicTaxonomyApi.list('categories'),[]);
-  const categories=categoryData?.items||[];
   const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
   const get = (k) => sp.get(k) || '';
   const set = (patch) => {
@@ -44,7 +42,7 @@ export default function ShopPage() {
 
       <div className="afsana-shop-toolbar mt-2 flex flex-col gap-4 border-y py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="filters flex-nowrap overflow-x-auto">
-          {[['','All fragrances'], ...categories.map((category)=>[category.slug,category.name])].map(([value,label]) => {
+          {[['','All fragrances'],['signature','Signature'],['fresh','Fresh'],['bold','Bold'],['warm','Warm']].map(([value,label]) => {
             const activeValue=get('category');
             const active=value ? activeValue===value : !activeValue;
             return <button key={label} type="button" className={'afsana-shop-filter whitespace-nowrap '+(active?'active':'')} aria-pressed={active} onClick={()=>applyFilter({category:value,page:''})}>{label}</button>;
