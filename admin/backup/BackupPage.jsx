@@ -4,6 +4,7 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import { Field, Input, Check } from "../components/FormFields";
 import { backupApi } from "../../src/services";
+import { encryptBackupBlob } from "./backupCrypto";
 
 // Route: /admin/backup (permission backup.export: Owner / Super Admin). The browser collects the data page by page and saves ONE file.
 const blobToBase64 = (blob) => new Promise((resolve, reject) => {
@@ -15,6 +16,8 @@ const blobToBase64 = (blob) => new Promise((resolve, reject) => {
 
 export default function BackupPage() {
   const [password, setPassword] = useState("");
+  const [backupPassphrase, setBackupPassphrase] = useState("");
+  const [confirmBackupPassphrase, setConfirmBackupPassphrase] = useState("");
   const [withPictures, setWithPictures] = useState(true);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
@@ -23,7 +26,9 @@ export default function BackupPage() {
 
   const run = async (e) => {
     e.preventDefault();
-    if (!password) { setError("Enter your password."); return; }
+    if (!password) { setError("Enter your account password."); return; }
+    if (backupPassphrase.length < 12) { setError("Choose a backup passphrase with at least 12 characters."); return; }
+    if (backupPassphrase !== confirmBackupPassphrase) { setError("Backup passphrases do not match."); return; }
     setBusy(true); setError(""); setDone(null); setProgress("Starting…");
     try {
       const ov = await backupApi.overview(password);               // checks the password and writes the audit-log row
@@ -58,13 +63,15 @@ export default function BackupPage() {
         } while (after);
       }
       parts.push("]}");
-      const blob = new Blob(parts, { type: "application/json" });
+      const plainBlob = new Blob(parts, { type: "application/json" });
+      setProgress("Encrypting backup on this device…");
+      const blob = await encryptBackupBlob(plainBlob, backupPassphrase);
       const a = document.createElement("a");
-      const name = `afsana-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      const name = `afsana-backup-${new Date().toISOString().slice(0, 10)}.afsana`;
       a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 60000);
       setDone({ name, records, pics, mb: (blob.size / 1048576).toFixed(1) });
-      setPassword("");
+      setPassword(""); setBackupPassphrase(""); setConfirmBackupPassphrase("");
     } catch (err) {
       setError(err.code === "REAUTH_FAILED" ? "Incorrect password." : err.message || "Backup failed. Please try again.");
     } finally { setBusy(false); setProgress(""); }
@@ -78,15 +85,17 @@ export default function BackupPage() {
       </div>
       <Card>
         <form onSubmit={run} className="space-y-4">
-          <Field label="Your password" hint="Needed every time, because the file contains your customers' details."><Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+          <Field label="Your account password" hint="Confirms that you are authorized to export customer and order data."><Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+          <Field label="Backup encryption passphrase" hint="At least 12 characters. You will need this passphrase to restore the file. AFSANA cannot recover it if lost."><Input type="password" autoComplete="new-password" value={backupPassphrase} onChange={(e) => setBackupPassphrase(e.target.value)} /></Field>
+          <Field label="Confirm backup passphrase"><Input type="password" autoComplete="new-password" value={confirmBackupPassphrase} onChange={(e) => setConfirmBackupPassphrase(e.target.value)} /></Field>
           <Check label="Include product pictures (bigger file)" checked={withPictures} onChange={setWithPictures} />
           {error && <p role="alert" className="text-sm text-[#9b3f3f] bg-[#f7e7e5] rounded-xl px-3 py-2">{error}</p>}
           {busy && <p role="status" className="text-sm text-[#182308]-muted">{progress || "Working…"} Please keep this page open.</p>}
-          {done && <p role="status" className="text-sm text-[#3d6b3d] bg-success-soft rounded-sm px-3 py-2">Saved {done.name}: {done.records} records, {done.pics} pictures, {done.mb} MB. Keep it somewhere safe (Google Drive, phone). It is not encrypted.</p>}
+          {done && <p role="status" className="text-sm text-[#3d6b3d] bg-success-soft rounded-sm px-3 py-2">Saved encrypted file {done.name}: {done.records} records, {done.pics} pictures, {done.mb} MB. Store the file and passphrase separately in safe places.</p>}
           <Button type="submit" icon={DatabaseBackup} disabled={busy}>{busy ? "Preparing…" : "Download backup"}</Button>
         </form>
       </Card>
-      <p className="text-xs text-[#182308]-muted">Not included: login accounts and passwords, and staff accounts. After a restore, staff are added again and shoppers use "Forgot password". Make a backup after every busy week.</p>
+      <p className="text-xs text-[#182308]-muted">This backup is encrypted locally with AES-256-GCM. Not included: login accounts, password hashes, sessions, and staff accounts. To restore, run npm run db:restore -- path-to-file.afsana and enter the passphrase. After a restore, staff are added again and shoppers use "Forgot password". Keep the passphrase separate from the backup file and make a new backup regularly.</p>
     </div>
   );
 }
