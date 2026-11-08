@@ -55,3 +55,36 @@
 .storefront-theme .hero:after{background:radial-gradient(circle at 82% 28%,rgba(199,169,210,.18),transparent 23%),radial-gradient(circle at 22% 74%,rgba(123,0,58,.18),transparent 24%),linear-gradient(135deg,transparent 35%,rgba(200,161,95,.06),transparent 65%)!important}
 .storefront-theme footer{background:radial-gradient(circle at 86% 18%,rgba(116,61,120,.24),transparent 25%),radial-gradient(circle at 15% 82%,rgba(200,161,95,.10),transparent 24%),#0d090f!important}
 .storefront-theme .product-card-stage,.storefront-theme .main-product-stage{background:radial-gradient(circle at 50% 22%,rgba(199,169,210,.18),transparent 30%),linear-gradient(145deg,#fbf8fc,#eee5f0)!important}
+
+
+/* Hassan admin dashboard restoration — isolated to admin UI, storefront unchanged. */
+.admin-shell{
+  background:
+    radial-gradient(900px 460px at 88% -10%,rgba(116,61,120,.14),transparent 62%),
+    radial-gradient(700px 420px at 10% 100%,rgba(200,161,95,.08),transparent 60%),
+    linear-gradient(135deg,#fbf8fc 0%,#f4edf5 52%,#fbf8fc 100%)!important;
+  color:#24152b!important;
+}
+.admin-shell:before{
+  background:radial-gradient(circle at 72% 24%,rgba(200,161,95,.10),transparent 35%)!important;
+}
+.admin-shell .admin-card{
+  background:rgba(255,253,253,.88)!important;
+  border-color:rgba(116,61,120,.16)!important;
+  box-shadow:0 2px 5px rgba(79,40,84,.035),0 16px 42px rgba(79,40,84,.08),inset 0 1px 0 rgba(255,255,255,.95)!important;
+}
+.admin-shell .admin-card:hover{border-color:rgba(116,61,120,.28)!important}
+.admin-shell .admin-glass-header{background:rgba(251,248,252,.76)!important;border-bottom-color:rgba(116,61,120,.12)!important}
+.admin-shell .admin-glass-control{border-color:rgba(116,61,120,.18)!important;color:#24152b!important}
+.admin-shell .admin-cache-control,.admin-shell .cache-clear,.admin-shell .admin-topbar-icon{color:#76677b!important}
+.admin-shell .admin-profile-name{color:#24152b!important}
+.admin-shell .admin-profile-role,.admin-shell .admin-profile-chevron{color:#76677b!important}
+.admin-shell .admin-topbar-icon:hover{background:rgba(116,61,120,.09)!important}
+:root[data-theme="dark"] .admin-shell{
+  background:
+    radial-gradient(900px 480px at 86% -8%,rgba(116,61,120,.24),transparent 60%),
+    linear-gradient(145deg,#160c19 0%,#24152b 52%,#160c19 100%)!important;
+  color:#fbf8fc!important;
+}
+:root[data-theme="dark"] .admin-shell .admin-card{background:linear-gradient(145deg,rgba(48,29,53,.94),rgba(28,16,32,.92))!important;border-color:rgba(200,161,95,.18)!important}
+:root[data-theme="dark"] .admin-shell .admin-glass-header{background:rgba(36,21,43,.82)!important;border-bottom-color:rgba(200,161,95,.15)!important}
