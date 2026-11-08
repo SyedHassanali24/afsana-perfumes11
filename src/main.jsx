@@ -9,7 +9,6 @@ import { WishlistProvider } from "./shop/WishlistContext";
 import "./index.css";
 import "./styles/tokens.css";
 import "./styles/luxury-v3.css";
-import "./styles/purple-restore.css";
 
 // HashRouter keeps every storefront/admin route working on GitHub Pages without server rewrites.
 const Router = import.meta.env.BASE_URL === "/" ? BrowserRouter : HashRouter;
@@ -29,3 +28,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </Router>
   </React.StrictMode>
 );
+
+// Cloudflare deploy refresh: rebuild the CMS frontend uploader bundle.
+// Cloudflare deploy refresh: include CMS custom-section visibility fix.
+// Cloudflare deploy refresh: cinematic background video CMS support.
+// Cloudflare deploy refresh: Instagram Reel embed support.

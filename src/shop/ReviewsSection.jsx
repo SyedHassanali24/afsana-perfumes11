@@ -10,7 +10,7 @@ import { useCustomer } from '../customer/CustomerAuthContext';
 
 export function Stars({ value, size = 'text-base' }) {
   const v = Math.round(Number(value) || 0);
-  return <span className={`${size} text-[#748e40]`} role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#5f654f]/40">{'★'.repeat(5 - v)}</span></span>;
+  return <span className={`${size} text-[#d4af37]`} role="img" aria-label={`${v} out of 5 stars`}>{'★'.repeat(v)}<span className="text-[#716b63]/40">{'★'.repeat(5 - v)}</span></span>;
 }
 const fmt = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
@@ -18,7 +18,7 @@ export default function ReviewsSection({ slug }) {
   const { status } = useCustomer();
   const [page, setPage] = useState(1);
   useEffect(() => { setPage(1); }, [slug]);
-  const list = useApi(() => reviewsApi.list(slug, { page, limit: 10 }), [slug, page]);
+  const list = useApi(() => reviewsApi.list(slug, { page, limit: 3 }), [slug, page]);
   const mine = useApi(() => (status === 'authed' ? reviewsApi.mine(slug) : Promise.resolve(null)), [slug, status]);
   const [form, setForm] = useState(null); // null = closed, otherwise { rating, title, text }
   const [busy, setBusy] = useState(false);
@@ -41,20 +41,20 @@ export default function ReviewsSection({ slug }) {
   };
 
   return (
-    <section className="mt-16 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-7 shadow-[0_18px_50px_rgba(24,35,8,.06)]" aria-labelledby="reviews-title">
+    <section className="afsana-reviews mt-12 rounded-2xl border border-[#e8e3da] bg-white p-5 sm:p-8 shadow-[0_14px_42px_rgba(24,24,24,.045)]" aria-labelledby="reviews-title">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
         <div>
-          <h2 id="reviews-title" className="font-display text-2xl">Customer reviews</h2>
+          <h2 id="reviews-title" className="font-display text-2xl text-[#222]">Customer reviews</h2>
           {s && s.count > 0 && <p className="text-sm text-[#5f654f] mt-1 flex items-center gap-2"><Stars value={s.avg} /> {s.avg} out of 5 · {s.count} {s.count === 1 ? 'review' : 'reviews'}</p>}
         </div>
         {status === 'authed' && canReview && !form && <Button variant="secondary" onClick={open}>{my ? 'Edit your review' : 'Write a review'}</Button>}
       </div>
 
       {notice && <p role="status" className="text-sm text-[#3d6b3d] mb-4">{notice}</p>}
-      {status === 'guest' && <p className="text-sm text-[#5f654f] mb-4"><Link to="/login" className="underline text-[#182308]">Sign in</Link> to review a perfume you have received.</p>}
+      {status === 'guest' && <p className="text-sm text-[#5f654f] mb-4"><Link to="/login" className="underline text-[#252525]">Sign in</Link> to review a perfume you have received.</p>}
       {status === 'authed' && mine.data && !canReview && !my && <p className="text-sm text-[#5f654f] mb-4">You can review this perfume after your order is delivered.</p>}
       {my && !form && (
-        <div className="rounded-xl border border-[#263e0e]/10 bg-[#faf8f4]-raised p-4 mb-6 text-sm space-y-1">
+        <div className="rounded-xl border border-[#eee9e1] bg-[#faf8f4]-raised p-4 mb-6 text-sm space-y-1">
           <p className="text-[#182308]">Your review <span className="text-[#5f654f]">({my.status === 'Pending' ? 'waiting for approval' : my.status === 'Rejected' ? 'not published' : 'published'})</span></p>
           <Stars value={my.rating} />{my.title && <p className="text-[#182308]">{my.title}</p>}{my.text && <p className="text-[#5f654f] whitespace-pre-wrap">{my.text}</p>}
           <button type="button" onClick={remove} className="text-xs text-[#9b3f3f] underline">Delete my review</button>
@@ -65,7 +65,7 @@ export default function ReviewsSection({ slug }) {
         <form onSubmit={save} className="rounded-xl border border-[#263e0e]/10 bg-[#faf8f4]-raised p-5 mb-6 space-y-4" noValidate>
           <div role="radiogroup" aria-label="Your rating" className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setForm({ ...form, rating: n })} className={`text-2xl ${n <= form.rating ? 'text-[#748e40]' : 'text-[#5f654f]/40'}`}>★</button>
+              <button key={n} type="button" role="radio" aria-checked={form.rating === n} aria-label={`${n} star${n > 1 ? 's' : ''}`} onClick={() => setForm({ ...form, rating: n })} className={`text-2xl ${n <= form.rating ? 'text-[#d4af37]' : 'text-[#5f654f]/40'}`}>★</button>
             ))}
           </div>
           <Field label="Title (optional)"><Input maxLength={80} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
@@ -90,6 +90,8 @@ export default function ReviewsSection({ slug }) {
             ))}
           </ul>
         )}
+
+
       {pg && pg.pages > 1 && (
         <div className="flex items-center gap-3 mt-6 text-sm">
           <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>

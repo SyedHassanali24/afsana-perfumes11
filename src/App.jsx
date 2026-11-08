@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import RequireAuth from './auth/RequireAuth';
 import LoginPage from './auth/LoginPage';
 import ChangePasswordPage from './auth/ChangePasswordPage';
@@ -27,6 +27,7 @@ const RegisterPage = lazy(() => import('./customer/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./customer/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./customer/ResetPasswordPage'));
 import ShopLayout from './shop/ShopLayout';
+import { trackStorefrontPageView } from './shop/trafficTracking';
 const HomePage = lazy(() => import('./shop/pages/HomePage'));
 const ShopPage = lazy(() => import('./shop/pages/ShopPage'));
 const ProductPage = lazy(() => import('./shop/pages/ProductPage'));
@@ -37,6 +38,9 @@ const TrackOrderPage = lazy(() => import('./shop/pages/TrackOrderPage'));
 const AboutPage = lazy(() => import('./shop/pages/AboutPage'));
 const JournalPage = lazy(() => import('./shop/pages/JournalPage'));
 const GiftingPage = lazy(() => import('./shop/pages/GiftingPage'));
+const PrivacyPolicyPage = lazy(() => import('./shop/pages/PrivacyPolicyPage'));
+const ManagedCmsPage = lazy(() => import('./shop/AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
+const ScentFinderPage = lazy(() => import('./shop/AfsanaSignatureHome').then((m) => ({ default: m.ScentFinderPage })));
 const WishlistPage = lazy(() => import('./shop/account/WishlistPage'));
 const AccountPage = lazy(() => import('./shop/account/AccountPage'));
 const OrderDetailPage = lazy(() => import('./shop/account/OrderDetailPage'));
@@ -70,9 +74,20 @@ function AfsanaLoader({ suspense = false }) {
   );
 }
 
+function TrafficTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    const isAdmin = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
+    const isPreview = new URLSearchParams(location.search).get('afsanaPreview') === '1';
+    if (!isAdmin && !isPreview) trackStorefrontPageView(location.pathname, location.search);
+  }, [location.pathname, location.search]);
+  return null;
+}
+
 export default function App() {
   return (
     <>
+      <TrafficTracker />
       {!window.location.pathname.startsWith("/admin/login") && <AfsanaLoader />}
       <Suspense fallback={window.location.pathname.startsWith("/admin") ? <AfsanaLoader suspense /> : <AfsanaLoader suspense />}>
         <Routes>
@@ -104,15 +119,17 @@ export default function App() {
 
           <Route element={<ShopLayout />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/shop" element={<ShopPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/journal" element={<JournalPage />} />
-            <Route path="/gifting" element={<GiftingPage />} />
-            <Route path="/product/:slug" element={<ProductPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/shop" element={<><ManagedCmsPage pageKey="collection_before" /><ShopPage /><ManagedCmsPage pageKey="collection_after" /></>} />
+            <Route path="/about" element={<ManagedCmsPage pageKey="house" fallback={<AboutPage />} />} />
+            <Route path="/journal" element={<ManagedCmsPage pageKey="journal" fallback={<JournalPage />} />} />
+            <Route path="/discover" element={<ManagedCmsPage pageKey="discover" fallback={<ScentFinderPage />} />} />
+            <Route path="/gifting" element={<ManagedCmsPage pageKey="gifting" fallback={<GiftingPage />} />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/product/:slug" element={<><ManagedCmsPage pageKey="product_before" /><ProductPage /><ManagedCmsPage pageKey="product_after" /></>} />
+            <Route path="/cart" element={<><ManagedCmsPage pageKey="cart_before" /><CartPage /><ManagedCmsPage pageKey="cart_after" /></>} />
+            <Route path="/checkout" element={<><ManagedCmsPage pageKey="checkout_before" /><CheckoutPage /><ManagedCmsPage pageKey="checkout_after" /></>} />
             <Route path="/order-success/:orderNumber" element={<OrderSuccessPage />} />
-            <Route path="/track" element={<TrackOrderPage />} />
+            <Route path="/track" element={<><ManagedCmsPage pageKey="track_before" /><TrackOrderPage /><ManagedCmsPage pageKey="track_after" /></>} />
             <Route path="/wishlist" element={mine(<WishlistPage />)} />
             <Route path="/account" element={mine(<AccountPage />)} />
             <Route path="/account/orders/:orderNumber" element={mine(<OrderDetailPage />)} />
