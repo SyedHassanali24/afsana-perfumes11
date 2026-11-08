@@ -56,7 +56,12 @@ async function netlifyEvent(request, path) {
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
     const bytes = new Uint8Array(await request.arrayBuffer());
-    body = btoa(String.fromCharCode(...bytes));
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    body = btoa(binary);
   }
   return {
     httpMethod: request.method,
@@ -85,6 +90,20 @@ function responseFromNetlify(result) {
 
 export async function onRequest(context) {
   const { request, params, env } = context;
+
+  // Populate Node-style environment before loading function modules. In production,
+  // use the local isolate limiter only when no shared Redis credentials are configured.
+  process.env.MONGODB_URI = env.MONGODB_URI || "";
+  process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
+  process.env.JWT_SECRET = env.JWT_SECRET || "";
+  process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
+  process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
+  process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
+  if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
+  }
+
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
   const group = pathParts[0];
   const functionPath = "/" + pathParts.join("/");
@@ -94,17 +113,12 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
   }
 
-  process.env.MONGODB_URI = env.MONGODB_URI || "";
-  process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
-  process.env.JWT_SECRET = env.JWT_SECRET || "";
-  process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
-  process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
-  if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
-
   const event = await netlifyEvent(request, functionPath);
   try {
-    return responseFromNetlify(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
-  } catch {
+    const response = await handler(event, { ...context, site: { url: new URL(request.url).origin } });
+    return responseFromNetlify(response);
+  } catch (error) {
+    console.error("[afsana-api-adapter]", error?.message || error);
     return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
   }
 }
