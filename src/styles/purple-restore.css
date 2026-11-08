@@ -1,20 +1,20 @@
 /* AFSANA Purple & Champagne restoration — visual-only override.
    Preserves the current CMS, storefront structure, routes and backend. */
 :root{
-  --bg:#F5F7FF;--surface:#FFFFFF;--surface-raised:#FAFBFF;--border:#E7EAF4;
-  --ink:#17204A;--ink-muted:#7280A2;--gold:#B4874B;--gold-soft:#F5EBDD;
-  --primary:#4F46E5;--primary-hover:#4338CA;--primary-soft:#EEF0FF;--primary-soft-border:#C9CDFF;
-  --table-head:#F8F9FF;--table-row-hover:#FAFBFF;--success:#18A875;--success-soft:#E4F8F0;
-  --danger:#E65364;--danger-soft:#FDEBED;--warning:#C98219;--warning-soft:#FFF3D9;
-  --nav:#3035AD;--nav-muted:#D8DCFF;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.15);
+  --bg:#fbf8fc;--surface:#fffdfd;--surface-raised:#fffafd;--border:#eaddea;
+  --ink:#24152b;--ink-muted:#76677b;--gold:#c8a15f;--gold-soft:#f7ecd9;
+  --primary:#743d78;--primary-hover:#5d2e62;--primary-soft:#f1e5f3;--primary-soft-border:#d9c0dc;
+  --table-head:#fbf3fc;--table-row-hover:#fdf8fe;--success:#18a875;--success-soft:#e4f8f0;
+  --danger:#e65364;--danger-soft:#fdebed;--warning:#c98219;--warning-soft:#fff3d9;
+  --nav:#24152b;--nav-muted:#e9ddec;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.15);
 }
 :root[data-theme="dark"]{
-  --bg:#0F1330;--surface:#171B3A;--surface-raised:#1D2245;--border:#2B3158;
-  --ink:#F5F7FF;--ink-muted:#A9B2D4;--gold:#D6AE73;--gold-soft:#2B2419;
-  --primary:#818CF8;--primary-hover:#A5B4FC;--primary-soft:#23284F;--primary-soft-border:#4B5390;
-  --table-head:#1D2245;--table-row-hover:#1A1F40;--success:#55D2A2;--success-soft:#17352B;
-  --danger:#FF8A98;--danger-soft:#3A2027;--warning:#F0C26B;--warning-soft:#3B2D17;
-  --nav:#20256F;--nav-muted:#C6CCF4;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.14);
+  --bg:#160c19;--surface:#24152b;--surface-raised:#302039;--border:#4f2854;
+  --ink:#fbf8fc;--ink-muted:#c7b6cb;--gold:#d9b477;--gold-soft:#382a20;
+  --primary:#b58ab8;--primary-hover:#d0acd2;--primary-soft:#38203d;--primary-soft-border:#68466d;
+  --table-head:#302039;--table-row-hover:#38203d;--success:#55d2a2;--success-soft:#17352b;
+  --danger:#ff8a98;--danger-soft:#3a2027;--warning:#f0c26b;--warning-soft:#3b2d17;
+  --nav:#160c19;--nav-muted:#e9ddec;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.14);
 }
 .storefront-theme{
   --bg:#fbf8fc;--surface:#fffdfd;--surface-raised:#fffafd;--border:#eaddea;
