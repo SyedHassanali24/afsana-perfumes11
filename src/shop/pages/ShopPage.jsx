@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
-import { productsApi } from '../../services';
+import { productsApi, publicTaxonomyApi } from '../../services';
 import { Select } from '../../../admin/components/FormFields';
 import { StateBox, CardsSkeleton, Pager } from '../ui';
 import ProductCard from '../ProductCard';
@@ -12,6 +12,8 @@ const KEYS = ['q', 'category', 'collection', 'brand', 'gender', 'sort', 'minPric
 export default function ShopPage() {
   useTitle('Shop');
   const [sp, setSp] = useSearchParams();
+  const { data: categoryData } = useApi(() => publicTaxonomyApi.list('categories'), []);
+  const categories = categoryData?.items || [];
   const get = (k) => sp.get(k) || '';
   const set = (patch) => {
     const n = new URLSearchParams(sp);
@@ -40,7 +42,7 @@ export default function ShopPage() {
 
       <div className="mt-10 flex flex-col gap-4 border-y border-[#263e0e]/10 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="filters flex-nowrap overflow-x-auto">
-          {[['','All'],['signature','Signature'],['oud','Oud'],['floral','Floral'],['fresh','Fresh']].map(([value,label]) => {
+          {[['','All fragrances'], ...categories.map((category) => [category.slug, category.name])].map(([value,label]) => {
             const activeValue=get('category');
             const active=value ? activeValue===value : !activeValue;
             return <button key={label} type="button" className={'filter whitespace-nowrap '+(active?'active':'')} onClick={()=>applyFilter({category:value,page:''})}>{label}</button>;
