@@ -1,12 +1,33 @@
+# AFSANA Cloudflare production configuration
+# Hassan safe search suggestions release
+# Real published reviews trust fix release
+# Deploy trigger: activate free chunked video uploads via KV.
 name = "afsana-perfumes11"
 main = "worker.js"
-compatibility_date = "2026-10-28"
+compatibility_date = "2026-10-31"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+SITE_URL = "https://afsanaperfumes.store"
+ALLOWED_ORIGINS = "https://afsanaperfumes.store,https://www.afsanaperfumes.store,https://afsana-perfumes11.eastwala12.workers.dev"
+TURNSTILE_SITE_KEY = "0x4AAAAAAF06iSkhZh8g9mEb"
+RATE_LIMIT_FAIL_OPEN = "false"
+EMAILJS_SERVICE_ID = "service_jx5mizj"
+EMAILJS_TEMPLATE_ID = "template_36spa09"
 
 [assets]
 directory = "../dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/*"]
+
+[cache]
+enabled = true
+
+[[kv_namespaces]]
+binding = "AFSANA_MEDIA_FREE"
+id = "c0168837510e4188bc655a7b4f25c0a4"
+preview_id = "9817ea33d7c149e6b41c1c31439d71f0"
 
 [[durable_objects.bindings]]
 name = "MONGODB_CONNECTION"
@@ -19,8 +40,14 @@ new_sqlite_classes = ["MongoDBConnection"]
 [placement]
 mode = "smart"
 
-[cache]
-enabled = true
-
 [previews.placement]
 mode = "smart"
+
+
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+invocation_logs = true
