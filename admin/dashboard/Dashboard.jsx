@@ -76,7 +76,7 @@ export default function Dashboard() {
     return (
       <div className="space-y-6">
         <Header />
-        <Card><p className="text-sm text-ink-muted py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
+        <Card><p className="text-sm text-[#76677b] py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
       </div>
     );
   }
@@ -94,12 +94,12 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <Card className="xl:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg text-ink">Revenue, last 30 days</h2>
+            <h2 className="font-display text-lg text-[#24152b]">Revenue, last 30 days</h2>
           </div>
           {!vm.series ? (
             <Hidden />
           ) : vm.seriesIsEmpty ? (
-            <p className="text-sm text-ink-muted py-16 text-center">No sales in the last 30 days yet.</p>
+            <p className="text-sm text-[#76677b] py-16 text-center">No sales in the last 30 days yet.</p>
           ) : (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -107,23 +107,23 @@ export default function Dashboard() {
                   <defs>
                     <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor=" #743d78" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="var(--gold)" stopOpacity={0} />
+                      <stop offset="100%" stopColor="#743d78" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke=" #eadfec" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fill: " #76677b", fontSize: 12 }} axisLine={{ stroke: "var(--border)" }} tickLine={false} minTickGap={24} />
+                  <XAxis dataKey="date" tick={{ fill: " #76677b", fontSize: 12 }} axisLine={{ stroke: "#eadfec" }} tickLine={false} minTickGap={24} />
                   <YAxis
-                    tick={{ fill: "var(--ink-muted)", fontSize: 12 }}
+                    tick={{ fill: "#76677b", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                     width={56}
                     tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)}
                   />
                   <Tooltip
-                    contentStyle={{ background: " #ffffff", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, color: " #24152b" }}
+                    contentStyle={{ background: " #ffffff", border: "1px solid #eadfec", borderRadius: 6, fontSize: 13, color: " #24152b" }}
                     formatter={(v) => [money(v), "Revenue"]}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="var(--gold)" strokeWidth={2} fill="url(#revenueFill)" />
+                  <Area type="monotone" dataKey="revenue" stroke="#743d78" strokeWidth={2} fill="url(#revenueFill)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -131,11 +131,11 @@ export default function Dashboard() {
         </Card>
 
         <Card>
-          <h2 className="font-display text-lg text-ink mb-4">Low stock products</h2>
+          <h2 className="font-display text-lg text-[#24152b] mb-4">Low stock products</h2>
           {!vm.lowStock ? (
             <Hidden />
           ) : vm.lowStock.items.length === 0 ? (
-            <p className="text-sm text-ink-muted">All products are well stocked.</p>
+            <p className="text-sm text-[#76677b]">All products are well stocked.</p>
           ) : (
             <>
               <ul className="space-y-3">
@@ -143,9 +143,9 @@ export default function Dashboard() {
                   <li key={p.id} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2 min-w-0">
                       <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span className="text-ink truncate">{p.name}</span>
+                      <span className="text-[#24152b] truncate">{p.name}</span>
                     </div>
-                    <span className="text-ink-muted shrink-0 ml-2">{p.stock} / {p.threshold}</span>
+                    <span className="text-[#76677b] shrink-0 ml-2">{p.stock} / {p.threshold}</span>
                   </li>
                 ))}
               </ul>
@@ -162,8 +162,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <Card className="xl:col-span-2" padded={false}>
           <div className="flex items-center justify-between px-5 pt-5 pb-1">
-            <h2 className="font-display text-lg text-ink">Recent orders</h2>
-            <Link to="/admin/orders" className="text-sm text-gold hover:underline">View all</Link>
+            <h2 className="font-display text-lg text-[#24152b]">Recent orders</h2>
+            <Link to="/admin/orders" className="text-sm text-[#743d78] hover:underline">View all</Link>
           </div>
           <div className="px-5 pb-5">
             {!vm.recentOrders ? (
@@ -176,8 +176,8 @@ export default function Dashboard() {
 
         <Card padded={false}>
           <div className="px-5 pt-5 pb-1">
-            <h2 className="font-display text-lg text-ink">Top products</h2>
-            <p className="text-xs text-ink-muted mt-0.5">Last {vm.topProducts ? vm.topProducts.days : 30} days, by units sold</p>
+            <h2 className="font-display text-lg text-[#24152b]">Top products</h2>
+            <p className="text-xs text-[#76677b] mt-0.5">Last {vm.topProducts ? vm.topProducts.days : 30} days, by units sold</p>
           </div>
           <div className="px-5 pb-5">
             {!vm.topProducts ? (
