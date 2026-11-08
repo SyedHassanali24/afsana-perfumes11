@@ -16,6 +16,7 @@ const userSchema = new Schema({
   lockedUntil: Date,
   lastLoginAt: Date,
   passwordChangedAt: Date,
+  authVersion: { type: Number, default: 0 },
   mustChangePassword: { type: Boolean, default: false },
   resetTokenHash: { type: String, select: false },
   resetTokenExpires: Date,
@@ -25,6 +26,17 @@ const userSchema = new Schema({
   resetOtpVerifiedExpires: Date,
   resetOtpAttempts: { type: Number, default: 0 },
   resetOtpRequestedAt: Date,
+  trustedDevices: [{
+    tokenHash: { type: String, required: true },
+    label: String,
+    lastUsedAt: Date,
+    expiresAt: Date,
+  }],
+  loginOtpChallengeHash: { type: String, select: false },
+  loginOtpHash: { type: String, select: false },
+  loginOtpDeviceHash: { type: String, select: false },
+  loginOtpExpires: Date,
+  loginOtpAttempts: { type: Number, default: 0 },
 }, { timestamps: true });
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ phone: 1 }, { unique: true, sparse: true });
@@ -34,6 +46,7 @@ storeScoped(userSchema);
 const sessionSchema = new Schema({
   userId: { type: ObjectId, ref: 'User', required: true, index: true },
   tokenHash: { type: String, required: true, unique: true },
+  authVersion: { type: Number, default: 0 },
   device: { userAgent: String, ip: String, label: String },
   lastActiveAt: { type: Date, default: Date.now },
   expiresAt: { type: Date, required: true },
@@ -141,6 +154,8 @@ const customerSchema = new Schema({
     lastOrderAt: Date,
   },
   loyaltyPoints: { type: Number, default: 0 },
+  whatsappMarketingConsent: { type: Boolean, default: false },
+  whatsappMarketingConsentAt: Date,
   notes: String, // staff-only
 }, { timestamps: true });
 customerSchema.index({ phone: 1, storeId: 1 }, { unique: true, sparse: true });
