@@ -1,6 +1,6 @@
 // GET /api/analytics/dashboard -> data for the admin Dashboard.
 // Database work only lives here; every rule/number-shaping step is in dashboardRules.js (pure, unit-tested).
-const { Order, OrderItem, Inventory, Product, ProductVariant } = require('../database/models');
+const { Order, OrderItem, Inventory, Product, ProductVariant, Customer } = require('../database/models');
 const { scopeFilter } = require('../middleware/permissions');
 const { SCOPE_MAP } = require('./orderService');
 const R = require('./dashboardRules');
@@ -107,14 +107,24 @@ async function stockSection(scopes, uid) {
   };
 }
 
-// access = R.sectionAccess(ctx.perms.can); a section the role may not see is returned as null (never partly filled).
+async function catalogSection(access, uid) {
+  const map = { stores: 'storeId' };
+  const [products, customers] = await Promise.all([
+    access.products ? Product.countDocuments({ ...scopeFilter(access.products, uid, map), isDeleted: false }) : null,
+    access.customers ? Customer.countDocuments({ ...scopeFilter(access.customers, uid, map), isDeleted: false }) : null,
+  ]);
+  return { products, customers };
+}
+
+// access sections are independently permission-scoped; no record data is exposed across roles.
 async function getDashboard({ access, uid, denied, now = new Date() }) {
   const key = cacheKey(access, uid, denied);
   const cached = dashboardCache.get(key);
   if (cached && cached.expiresAt > Date.now()) return cached.data;
-  const [orders, stock] = await Promise.all([
+  const [orders, stock, catalog] = await Promise.all([
     access.orders ? orderSections(access.orders, uid, now) : null,
     access.inventory ? stockSection(access.inventory, uid) : null,
+    catalogSection(access, uid),
   ]);
   const data = {
     generatedAt: now.toISOString(),
@@ -123,6 +133,7 @@ async function getDashboard({ access, uid, denied, now = new Date() }) {
     recentOrders: orders && orders.recentOrders,
     topProducts: orders && orders.topProducts,
     lowStock: stock,
+    catalog,
   };
   const result = R.applyFieldSecurity(data, denied);
   dashboardCache.set(key, { data: result, expiresAt: Date.now() + DASHBOARD_TTL_MS });
@@ -133,4 +144,4 @@ async function getDashboard({ access, uid, denied, now = new Date() }) {
   return result;
 }
 
-module.exports = { getDashboard };
+module.exports = { getDashboard, catalogSection };
