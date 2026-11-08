@@ -30,7 +30,8 @@ async function uniqueSlug(base, excludeId) {
   return slug;
 }
 async function stockByProduct(ids, scopes, uid) {
-  const invScope = scopeFilter(scopes, uid, SCOPE_MAP);
+  // Public storefront inventory is always read from the main store. Admin reads remain permission-scoped.
+  const invScope = scopes ? scopeFilter(scopes, uid, SCOPE_MAP) : { storeId: 'main' };
   const rows = await Inventory.aggregate([{ $match: { productId: { $in: ids }, ...invScope } }, { $group: { _id: '$productId', current: { $sum: '$current' }, reserved: { $sum: '$reserved' } } }]);
   return new Map(rows.map((r) => [String(r._id), { current: r.current, available: r.current - r.reserved }]));
 }
