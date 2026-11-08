@@ -106,7 +106,7 @@ export async function onRequest(context) {
 
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
   const group = pathParts[0];
-  const functionPath = "/" + pathParts.join("/");
+  const functionPath = "/api/" + pathParts.join("/");
   const handler = await getHandler(group);
 
   if (!handler) {
