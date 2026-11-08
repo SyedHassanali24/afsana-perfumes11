@@ -1,172 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import {
-  AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
-  PieChart, Pie, Cell,
-} from "recharts";
-import {
-  AlertTriangle, ArrowUpRight, BarChart3, Box, ChevronRight, CircleDollarSign,
-  Package, ShoppingBag, Sparkles, TrendingUp, Users, Zap,
-} from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { AlertTriangle, Users, ShieldCheck, Settings, Megaphone, ChevronRight } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import StatCard from "../components/StatCard";
+import DataTable from "../components/DataTable";
 import StatusPill from "../components/StatusPill";
 import useApi from "../../src/hooks/useApi";
 import { analyticsApi } from "../../src/services";
 import { toDashboard, money, HIDDEN } from "../../src/services/mappers/dashboard";
 
-const DASHBOARD_ORDER_KEY = "afsana-dashboard-stat-order-v1";
 const Hidden = () => <p className="text-sm text-[#76677b]">{HIDDEN} — your role cannot see this part.</p>;
-const STATUS_COLORS = ["#743d78", "#c8a15f", "#9a6ca0", "#4f2854", "#e65364", "#bda0c8"];
-const STATUS_LABELS = {
-  pending: "Pending",
-  processing: "Processing",
-  confirmed: "Confirmed",
-  shipped: "Shipped",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-  refunded: "Refunded",
-};
+const Pulse = ({ className = "" }) => <div className={`rounded-sm bg-[#eadfec] animate-pulse ${className}`} />;
 
-const STAT_STYLES = [
-  { icon: ShoppingBag, tone: "blue" },
-  { icon: CircleDollarSign, tone: "green" },
-  { icon: Users, tone: "purple" },
-  { icon: Package, tone: "orange" },
-  { icon: AlertTriangle, tone: "red" },
-  { icon: TrendingUp, tone: "indigo" },
+const ORDER_COLUMNS = [
+  { key: "id", header: "Order" },
+  { key: "customer", header: "Customer" },
+  { key: "total", header: "Total", align: "right" },
+  { key: "status", header: "Status", render: (row) => <StatusPill status={row.status} /> },
+  { key: "date", header: "Date", align: "right" },
 ];
-
-const Pulse = ({ className = "" }) => <div className={`rounded-xl bg-[#4f2854]/10 animate-pulse ${className}`} />;
-
-const toneClasses = {
-  blue: "bg-[#743d78]/10 text-[#743d78] ring-[#743d78]/10",
-  green: "bg-[#c8a15f]/15 text-[#9a6a2e] ring-[#c8a15f]/20",
-  purple: "bg-[#743d78]/10 text-[#743d78] ring-[#743d78]/10",
-  orange: "bg-[#9a6ca0]/15 text-[#743d78] ring-[#9a6ca0]/15",
-  red: "bg-[#fff1f2] text-[#e11d48] ring-[#e11d48]/10",
-  indigo: "bg-[#4f2854]/10 text-[#4f2854] ring-[#4f2854]/10",
-};
+const TOP_COLUMNS = [
+  { key: "name", header: "Product" },
+  { key: "units", header: "Units", align: "right" },
+  { key: "revenue", header: "Sales", align: "right" },
+  { key: "profit", header: "Profit", align: "right" },
+];
 
 function Header() {
   return (
-    <div className="flex flex-col gap-1">
-      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#743d78]">Store overview</p>
-      <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.04em] text-[#24152b]">Dashboard</h1>
-      <p className="text-sm text-[#76677b]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p><span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#9a6ca0]/35 bg-[#f1e5f3] px-2.5 py-1 text-[10px] font-semibold text-[#4f2854]"><Zap className="h-3 w-3" /> MongoDB live data · 10-second refresh</span>
+    <div>
+      <h1 className="font-display text-2xl text-[#24152b]">Dashboard</h1>
+      <p className="text-sm text-[#76677b] mt-1">Here's how the store is doing today.</p>
     </div>
-  );
-}
-
-function SectionTitle({ title, subtitle, href, action = "View all" }) {
-  return (
-    <div className="flex items-start justify-between gap-4 mb-5">
-      <div>
-        <h2 className="text-[16px] font-semibold text-[#24152b]">{title}</h2>
-        {subtitle && <p className="text-xs text-[#76677b] mt-1">{subtitle}</p>}
-      </div>
-      {href && <Link to={href} className="inline-flex items-center gap-1 text-xs font-semibold text-[#4f2854] hover:text-[#743d78]">{action}<ChevronRight className="w-3.5 h-3.5" /></Link>}
-    </div>
-  );
-}
-
-function StatCard({ card, index }) {
-  const style = STAT_STYLES[index % STAT_STYLES.length];
-  const Icon = style.icon;
-  const hasChange = typeof card.changePct === "number";
-  const isUp = hasChange && card.changePct >= 0;
-
-  return (
-    <div className="dashboard-stat-card rounded-2xl border border-[#4f2854]/10 bg-[#ffffff] p-4 sm:p-5 shadow-xl">
-      <div className="flex items-start justify-between gap-3">
-        <div className={`grid h-11 w-11 place-items-center rounded-xl ring-1 ${toneClasses[style.tone]}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-        {hasChange && (
-          <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 text-[10px] font-bold ${isUp ? "bg-[#16a34a]/10 text-[#16a34a]" : "bg-[#fff1f2] text-[#e11d48]"}`}>
-            <ArrowUpRight className="w-3 h-3" />
-            {Math.abs(card.changePct)}%
-          </span>
-        )}
-      </div>
-      <p className="mt-4 text-xs font-medium text-[#76677b]">{card.label}</p>
-      <p className="mt-1 text-[25px] leading-tight font-semibold tracking-[-0.035em] text-[#24152b]">{card.value}</p>
-      {card.changeLabel && <p className="mt-1 text-[11px] text-[#76677b]">{card.changeLabel}</p>}
-    </div>
-  );
-}
-
-function QuickLink({ href, icon: Icon, title, text, tone }) {
-  return (
-    <Link to={href} className="group flex items-center gap-3 min-w-0 rounded-xl px-3 py-2 transition-colors hover:bg-[#4f2854]/5">
-      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[tone]}`}><Icon className="w-4.5 h-4.5" /></span>
-      <span className="min-w-0">
-        <span className="block text-xs font-semibold text-[#24152b]">{title}</span>
-        <span className="block truncate text-[11px] text-[#76677b]">{text}</span>
-      </span>
-      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#76677b] group-hover:text-[#743d78]" />
-    </Link>
   );
 }
 
 export default function Dashboard() {
   const { data, loading, error, reload } = useApi(() => analyticsApi.dashboard(), []);
-  const [draggedCard, setDraggedCard] = useState(null);
-  const [cardOrder, setCardOrder] = useState(() => {
-    try {
-      const saved = window.localStorage.getItem(DASHBOARD_ORDER_KEY);
-      const parsed = saved ? JSON.parse(saved) : null;
-      return Array.isArray(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
-  });
   const vm = useMemo(() => (data ? toDashboard(data.dashboard) : null), [data]);
-  const orderedCards = useMemo(() => {
-    const cards = vm?.cards || [];
-    if (!cardOrder) return cards;
-    const byKey = new Map(cards.map((card) => [card.key, card]));
-    return cardOrder.map((key) => byKey.get(key)).filter(Boolean).concat(cards.filter((card) => !cardOrder.includes(card.key)));
-  }, [vm?.cards, cardOrder]);
-
-  useEffect(() => {
-    if (!cardOrder || !vm?.cards?.length) return;
-    const validKeys = new Set(vm.cards.map((card) => card.key));
-    const next = cardOrder.filter((key) => validKeys.has(key));
-    vm.cards.forEach((card) => {
-      if (!next.includes(card.key)) next.push(card.key);
-    });
-    if (next.length !== cardOrder.length || next.some((key, index) => key !== cardOrder[index])) {
-      setCardOrder(next);
-    }
-  }, [vm?.cards, cardOrder]);
-
-  useEffect(() => {
-    if (!cardOrder) return;
-    try {
-      window.localStorage.setItem(DASHBOARD_ORDER_KEY, JSON.stringify(cardOrder));
-    } catch {
-      // Storage may be unavailable in private/restricted browser contexts.
-    }
-  }, [cardOrder]);
-
-  const reorderCard = (fromKey, toKey) => {
-    if (!fromKey || !toKey || fromKey === toKey || !vm?.cards) return;
-    const current = orderedCards.map((card) => card.key);
-    const from = current.indexOf(fromKey);
-    const to = current.indexOf(toKey);
-    if (from < 0 || to < 0) return;
-    const next = [...current];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    setCardOrder(next);
-  };
-
-  const statusBreakdown = useMemo(() => {
-    const map = new Map();
-    (vm?.recentOrders || []).forEach((o) => map.set(o.status, (map.get(o.status) || 0) + 1));
-    return Array.from(map, ([key, value]) => ({ name: STATUS_LABELS[key] || key, value })).filter((x) => x.value);
-  }, [vm?.recentOrders]);
 
   if (error) {
     return (
@@ -174,7 +47,7 @@ export default function Dashboard() {
         <Header />
         <Card>
           <div className="py-10 text-center space-y-3">
-            <p className="text-sm text-[#e11d48]">{error.message || "Could not load the dashboard."}</p>
+            <p className="text-sm text-rose-600">{error.message || "Could not load the dashboard."}</p>
             <Button variant="secondary" onClick={reload}>Try again</Button>
           </div>
         </Card>
@@ -187,11 +60,13 @@ export default function Dashboard() {
       <div className="space-y-6">
         <Header />
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <Card key={i}><Pulse className="h-11 w-11" /><Pulse className="h-3 w-1/2 mt-5" /><Pulse className="h-7 w-3/4 mt-2" /></Card>)}
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}><Pulse className="h-3.5 w-1/2" /><Pulse className="h-8 w-3/4 mt-3" /></Card>
+          ))}
         </div>
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-          <Card className="xl:col-span-2"><Pulse className="h-[300px] w-full" /></Card>
-          <Card><Pulse className="h-[300px] w-full" /></Card>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <Card className="xl:col-span-2"><Pulse className="h-64 w-full" /></Card>
+          <Card><Pulse className="h-64 w-full" /></Card>
         </div>
       </div>
     );
@@ -201,108 +76,131 @@ export default function Dashboard() {
     return (
       <div className="space-y-6">
         <Header />
-        <Card><p className="text-sm text-[#76677b] py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
+        <Card><p className="text-sm text-ink-muted py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-6">
       <Header />
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        {orderedCards.map((card, index) => (
-          <div
-            key={card.key}
-            draggable
-            onDragStart={() => setDraggedCard(card.key)}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={() => { reorderCard(draggedCard, card.key); setDraggedCard(null); }}
-            onDragEnd={() => setDraggedCard(null)}
-            className={`cursor-grab active:cursor-grabbing transition-transform ${draggedCard === card.key ? "scale-[.98] opacity-60" : ""}`}
-            title="Drag to reorder"
-          >
-            <StatCard card={card} index={index} />
-          </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {vm.cards.map((c) => (
+          <StatCard key={c.key} label={c.label} value={c.value} changePct={c.changePct} changeLabel={c.changeLabel} />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <Card className="xl:col-span-2 rounded-2xl">
-          <SectionTitle title="Sales overview" subtitle="Revenue for the last 30 days" />
-          {!vm.series ? <Hidden /> : vm.seriesIsEmpty ? <p className="text-sm text-[#76677b] py-20 text-center">No sales in the last 30 days yet.</p> : (
-            <div className="h-[280px]">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Card className="xl:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-lg text-ink">Revenue, last 30 days</h2>
+          </div>
+          {!vm.series ? (
+            <Hidden />
+          ) : vm.seriesIsEmpty ? (
+            <p className="text-sm text-ink-muted py-16 text-center">No sales in the last 30 days yet.</p>
+          ) : (
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={vm.series} margin={{ left: -16, right: 8, top: 6, bottom: 0 }}>
-                  <defs><linearGradient id="revenueFillDashboard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#743d78" stopOpacity={0.24} /><stop offset="100%" stopColor="#743d78" stopOpacity={0} /></linearGradient></defs>
-                  <CartesianGrid stroke="#4f28541a" vertical={false} strokeDasharray="3 5" />
-                  <XAxis dataKey="date" tick={{ fill: "#76677b", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={24} />
-                  <YAxis tick={{ fill: "#76677b", fontSize: 11 }} axisLine={false} tickLine={false} width={54} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)} />
-                  <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #4f28541a", borderRadius: 12, fontSize: 12, color: "#24152b", boxShadow: "0 20px 50px rgba(24,35,8,.12)" }} formatter={(v) => [money(v), "Revenue"]} />
-                  <Area type="monotone" dataKey="revenue" stroke="#743d78" strokeWidth={3} fill="url(#revenueFillDashboard)" dot={false} activeDot={{ r: 5 }} />
+                <AreaChart data={vm.series} margin={{ left: -20, right: 8 }}>
+                  <defs>
+                    <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor=" #743d78" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="var(--gold)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke=" #eadfec" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fill: " #76677b", fontSize: 12 }} axisLine={{ stroke: "var(--border)" }} tickLine={false} minTickGap={24} />
+                  <YAxis
+                    tick={{ fill: "var(--ink-muted)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={56}
+                    tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)}
+                  />
+                  <Tooltip
+                    contentStyle={{ background: " #ffffff", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, color: " #24152b" }}
+                    formatter={(v) => [money(v), "Revenue"]}
+                  />
+                  <Area type="monotone" dataKey="revenue" stroke="var(--gold)" strokeWidth={2} fill="url(#revenueFill)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
         </Card>
 
-        <Card className="rounded-2xl bg-gradient-to-br from-[#f1e5f3] via-[#ffffff] to-[#f3f4f9]">
-          <SectionTitle title="Store snapshot" subtitle="Your latest activity at a glance" />
-          <div className="rounded-2xl border border-[#4f2854]/10 bg-[#ffffff]/80 p-5">
-            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#4f2854] to-[#743d78] text-white shadow-lg shadow-[#4f2854]/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#24152b]">Afsana Perfumes</p><p className="text-xs text-[#76677b]">Luxury in every scent</p></div></div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#76677b]">Recent orders</p><p className="mt-1 text-xl font-semibold text-[#24152b]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p></div>
-              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#76677b]">Low stock</p><p className="mt-1 text-xl font-semibold text-[#24152b]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p></div>
-            </div>
-            <Link to="/admin/products" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#4f2854] hover:text-[#743d78]">Manage products <ArrowUpRight className="w-3.5 h-3.5" /></Link>
+        <Card>
+          <h2 className="font-display text-lg text-ink mb-4">Low stock products</h2>
+          {!vm.lowStock ? (
+            <Hidden />
+          ) : vm.lowStock.items.length === 0 ? (
+            <p className="text-sm text-ink-muted">All products are well stocked.</p>
+          ) : (
+            <>
+              <ul className="space-y-3">
+                {vm.lowStock.items.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span className="text-ink truncate">{p.name}</span>
+                    </div>
+                    <span className="text-ink-muted shrink-0 ml-2">{p.stock} / {p.threshold}</span>
+                  </li>
+                ))}
+              </ul>
+              {vm.lowStock.count > vm.lowStock.items.length && (
+                <Link to="/admin/inventory" className="block mt-4 text-sm text-[#743d78] hover:underline">
+                  View all {vm.lowStock.count}{vm.lowStock.outOfStock ? ` (${vm.lowStock.outOfStock} out of stock)` : ""}
+                </Link>
+              )}
+            </>
+          )}
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Card className="xl:col-span-2" padded={false}>
+          <div className="flex items-center justify-between px-5 pt-5 pb-1">
+            <h2 className="font-display text-lg text-ink">Recent orders</h2>
+            <Link to="/admin/orders" className="text-sm text-gold hover:underline">View all</Link>
+          </div>
+          <div className="px-5 pb-5">
+            {!vm.recentOrders ? (
+              <div className="pt-3"><Hidden /></div>
+            ) : (
+              <DataTable columns={ORDER_COLUMNS} rows={vm.recentOrders} emptyMessage="No orders yet." />
+            )}
+          </div>
+        </Card>
+
+        <Card padded={false}>
+          <div className="px-5 pt-5 pb-1">
+            <h2 className="font-display text-lg text-ink">Top products</h2>
+            <p className="text-xs text-ink-muted mt-0.5">Last {vm.topProducts ? vm.topProducts.days : 30} days, by units sold</p>
+          </div>
+          <div className="px-5 pb-5">
+            {!vm.topProducts ? (
+              <div className="pt-3"><Hidden /></div>
+            ) : (
+              <DataTable columns={TOP_COLUMNS} rows={vm.topProducts.rows} emptyMessage="No sales yet." />
+            )}
           </div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <Card className="rounded-2xl">
-          <SectionTitle title="Orders overview" subtitle="Recent order status mix" />
-          {statusBreakdown.length ? (
-            <>
-              <div className="h-48 relative">
-                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #4f28541a", borderRadius: 10, fontSize: 12, color: "#24152b" }} /></PieChart></ResponsiveContainer>
-                <div className="absolute inset-0 grid place-items-center pointer-events-none"><div className="text-center"><p className="text-2xl font-semibold text-[#24152b]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#76677b]">Recent</p></div></div>
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">{statusBreakdown.map((s, i) => <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#76677b]"><i className="h-2 w-2 rounded-full" style={{ background: STATUS_COLORS[i % STATUS_COLORS.length] }} />{s.name}<b className="ml-auto text-[#24152b]">{s.value}</b></span>)}</div>
-            </>
-          ) : <p className="text-sm text-[#76677b] py-16 text-center">No recent orders yet.</p>}
-        </Card>
-
-        <Card className="xl:col-span-2 rounded-2xl" padded={false}>
-          <div className="px-5 pt-5"><SectionTitle title="Recent orders" subtitle="Latest customer activity" href="/admin/orders" /></div>
-          {!vm.recentOrders ? <div className="px-5 pb-5"><Hidden /></div> : vm.recentOrders.length === 0 ? <p className="px-5 pb-6 text-sm text-[#76677b]">No orders yet.</p> : (
-            <div className="divide-y divide-[#4f2854]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#4f2854]/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#4f2854]/10 text-[#4f2854]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#24152b] truncate">{order.id}</span><span className="block text-[11px] text-[#76677b] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#24152b]">{order.total}</span></Link>)}</div>
-          )}
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <Card className="xl:col-span-2 rounded-2xl">
-          <SectionTitle title="Top selling products" subtitle={`Last ${vm.topProducts ? vm.topProducts.days : 30} days, by units sold`} href="/admin/products" />
-          {!vm.topProducts ? <Hidden /> : vm.topProducts.rows.length === 0 ? <p className="text-sm text-[#76677b] py-8">No sales yet.</p> : (
-            <div className="grid sm:grid-cols-2 gap-3">{vm.topProducts.rows.slice(0, 6).map((product, index) => <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#4f2854]/10 bg-[#ffffff] p-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[STAT_STYLES[index % STAT_STYLES.length].tone]}`}><Box className="w-4.5 h-4.5" /></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-[#24152b]">{product.name}</p><p className="mt-0.5 text-[11px] text-[#76677b]">{product.units} units · {product.revenue}</p></div><span className="text-[11px] font-semibold text-[#24152b]">{product.profit === HIDDEN ? HIDDEN : product.profit}</span></div>)}</div>
-          )}
-        </Card>
-
-        <Card className="rounded-2xl">
-          <SectionTitle title="Low stock alert" subtitle="Products that need attention" href="/admin/inventory" />
-          {!vm.lowStock ? <Hidden /> : vm.lowStock.items.length === 0 ? <div className="rounded-xl bg-[#16a34a]/10 p-4 text-sm text-[#16a34a]">All products are well stocked.</div> : (
-            <div className="space-y-3">{vm.lowStock.items.slice(0, 5).map((product) => <div key={product.id} className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#9a6ca0]/15 text-[#743d78]"><AlertTriangle className="w-4 h-4" /></span><span className="min-w-0 flex-1 truncate text-xs font-medium text-[#24152b]">{product.name}</span><span className="shrink-0 text-[11px] font-semibold text-[#d97706]">{product.stock} / {product.threshold}</span></div>)}{vm.lowStock.count > 5 && <Link to="/admin/inventory" className="inline-flex items-center gap-1 text-xs font-semibold text-[#4f2854]">View all {vm.lowStock.count}<ChevronRight className="w-3 h-3" /></Link>}</div>
-          )}
-        </Card>
-      </div>
-
-      <Card className="rounded-2xl bg-gradient-to-r from-[#f1e5f3] via-[#ffffff] to-[#f3f4f9]">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
-          <QuickLink href="/admin/inventory" icon={Package} title="Inventory" text="Check low stock & incoming stock" tone="blue" />
-          <QuickLink href="/admin/orders" icon={ShoppingBag} title="Orders" text="Review and manage orders" tone="purple" />
-          <QuickLink href="/admin/products" icon={Box} title="Products" text="Manage your perfume catalog" tone="orange" />
-          <QuickLink href="/admin/analytics" icon={BarChart3} title="Analytics" text="Open detailed store reports" tone="green" />
+      <Card>
+        <h2 className="font-display text-lg text-[#24152b] mb-4">Store management</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          {[
+            { href: "/admin/marketing", icon: Megaphone, title: "Referrals & marketing", text: "Referral codes, campaigns and coupons" },
+            { href: "/admin/staff", icon: ShieldCheck, title: "Security & access", text: "Staff roles and permission controls" },
+            { href: "/admin/settings", icon: Settings, title: "Advanced settings", text: "Store configuration and preferences" },
+            { href: "/admin/customers", icon: Users, title: "Customers", text: "Customer records and activity" },
+          ].map((item) => {
+            const Icon = item.icon;
+            return <Link key={item.href} to={item.href} className="flex items-center gap-3 rounded-xl border border-[#eadfec] bg-white p-4 hover:border-[#9a6ca0] hover:bg-[#fbf7fc] transition-colors"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f1e5f3] text-[#743d78]"><Icon className="h-5 w-5" /></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-[#24152b]">{item.title}</span><span className="block text-xs text-[#76677b] mt-1">{item.text}</span></span><ChevronRight className="h-4 w-4 text-[#9a6ca0]" /></Link>;
+          })}
         </div>
       </Card>
     </div>
