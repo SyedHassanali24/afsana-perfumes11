@@ -16,8 +16,8 @@ import { analyticsApi } from "../../src/services";
 import { toDashboard, money, HIDDEN } from "../../src/services/mappers/dashboard";
 
 const DASHBOARD_ORDER_KEY = "afsana-dashboard-stat-order-v1";
-const Hidden = () => <p className="text-sm text-[#64748b]">{HIDDEN} — your role cannot see this part.</p>;
-const STATUS_COLORS = ["#4f46e5", "#16a34a", "#4f46e5", "#8b5cf6", "#e11d48", "#4f46e5"];
+const Hidden = () => <p className="text-sm text-[#76677b]">{HIDDEN} — your role cannot see this part.</p>;
+const STATUS_COLORS = ["#743d78", "#c8a15f", "#9a6ca0", "#4f2854", "#e65364", "#bda0c8"];
 const STATUS_LABELS = {
   pending: "Pending",
   processing: "Processing",
@@ -37,23 +37,23 @@ const STAT_STYLES = [
   { icon: TrendingUp, tone: "indigo" },
 ];
 
-const Pulse = ({ className = "" }) => <div className={`rounded-xl bg-[#1e1b4b]/10 animate-pulse ${className}`} />;
+const Pulse = ({ className = "" }) => <div className={`rounded-xl bg-[#4f2854]/10 animate-pulse ${className}`} />;
 
 const toneClasses = {
-  blue: "bg-[#4f46e5]/10 text-[#4f46e5] ring-[#4f46e5]/10",
-  green: "bg-[#16a34a]/10 text-[#16a34a] ring-[#16a34a]/10",
-  purple: "bg-[#4f46e5]/10 text-[#4f46e5] ring-[#4f46e5]/10",
-  orange: "bg-[#8b5cf6]/15 text-[#4f46e5] ring-[#8b5cf6]/15",
+  blue: "bg-[#743d78]/10 text-[#743d78] ring-[#743d78]/10",
+  green: "bg-[#c8a15f]/15 text-[#9a6a2e] ring-[#c8a15f]/20",
+  purple: "bg-[#743d78]/10 text-[#743d78] ring-[#743d78]/10",
+  orange: "bg-[#9a6ca0]/15 text-[#743d78] ring-[#9a6ca0]/15",
   red: "bg-[#fff1f2] text-[#e11d48] ring-[#e11d48]/10",
-  indigo: "bg-[#1e1b4b]/10 text-[#1e1b4b] ring-[#1e1b4b]/10",
+  indigo: "bg-[#4f2854]/10 text-[#4f2854] ring-[#4f2854]/10",
 };
 
 function Header() {
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4f46e5]">Store overview</p>
-      <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.04em] text-[#172033]">Dashboard</h1>
-      <p className="text-sm text-[#64748b]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p><span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#8b5cf6]/35 bg-[#eef2ff] px-2.5 py-1 text-[10px] font-semibold text-[#1e1b4b]"><Zap className="h-3 w-3" /> Fast mode · cached dashboard</span>
+      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#743d78]">Store overview</p>
+      <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.04em] text-[#24152b]">Dashboard</h1>
+      <p className="text-sm text-[#76677b]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p><span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#9a6ca0]/35 bg-[#f1e5f3] px-2.5 py-1 text-[10px] font-semibold text-[#4f2854]"><Zap className="h-3 w-3" /> MongoDB live data · 10-second refresh</span>
     </div>
   );
 }
@@ -62,10 +62,10 @@ function SectionTitle({ title, subtitle, href, action = "View all" }) {
   return (
     <div className="flex items-start justify-between gap-4 mb-5">
       <div>
-        <h2 className="text-[16px] font-semibold text-[#172033]">{title}</h2>
-        {subtitle && <p className="text-xs text-[#64748b] mt-1">{subtitle}</p>}
+        <h2 className="text-[16px] font-semibold text-[#24152b]">{title}</h2>
+        {subtitle && <p className="text-xs text-[#76677b] mt-1">{subtitle}</p>}
       </div>
-      {href && <Link to={href} className="inline-flex items-center gap-1 text-xs font-semibold text-[#1e1b4b] hover:text-[#4f46e5]">{action}<ChevronRight className="w-3.5 h-3.5" /></Link>}
+      {href && <Link to={href} className="inline-flex items-center gap-1 text-xs font-semibold text-[#4f2854] hover:text-[#743d78]">{action}<ChevronRight className="w-3.5 h-3.5" /></Link>}
     </div>
   );
 }
@@ -77,7 +77,7 @@ function StatCard({ card, index }) {
   const isUp = hasChange && card.changePct >= 0;
 
   return (
-    <div className="dashboard-stat-card rounded-2xl border border-[#1e1b4b]/10 bg-[#ffffff] p-4 sm:p-5 shadow-xl">
+    <div className="dashboard-stat-card rounded-2xl border border-[#4f2854]/10 bg-[#ffffff] p-4 sm:p-5 shadow-xl">
       <div className="flex items-start justify-between gap-3">
         <div className={`grid h-11 w-11 place-items-center rounded-xl ring-1 ${toneClasses[style.tone]}`}>
           <Icon className="w-5 h-5" />
@@ -89,22 +89,22 @@ function StatCard({ card, index }) {
           </span>
         )}
       </div>
-      <p className="mt-4 text-xs font-medium text-[#64748b]">{card.label}</p>
-      <p className="mt-1 text-[25px] leading-tight font-semibold tracking-[-0.035em] text-[#172033]">{card.value}</p>
-      {card.changeLabel && <p className="mt-1 text-[11px] text-[#64748b]">{card.changeLabel}</p>}
+      <p className="mt-4 text-xs font-medium text-[#76677b]">{card.label}</p>
+      <p className="mt-1 text-[25px] leading-tight font-semibold tracking-[-0.035em] text-[#24152b]">{card.value}</p>
+      {card.changeLabel && <p className="mt-1 text-[11px] text-[#76677b]">{card.changeLabel}</p>}
     </div>
   );
 }
 
 function QuickLink({ href, icon: Icon, title, text, tone }) {
   return (
-    <Link to={href} className="group flex items-center gap-3 min-w-0 rounded-xl px-3 py-2 transition-colors hover:bg-[#1e1b4b]/5">
+    <Link to={href} className="group flex items-center gap-3 min-w-0 rounded-xl px-3 py-2 transition-colors hover:bg-[#4f2854]/5">
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[tone]}`}><Icon className="w-4.5 h-4.5" /></span>
       <span className="min-w-0">
-        <span className="block text-xs font-semibold text-[#172033]">{title}</span>
-        <span className="block truncate text-[11px] text-[#64748b]">{text}</span>
+        <span className="block text-xs font-semibold text-[#24152b]">{title}</span>
+        <span className="block truncate text-[11px] text-[#76677b]">{text}</span>
       </span>
-      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#64748b] group-hover:text-[#4f46e5]" />
+      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#76677b] group-hover:text-[#743d78]" />
     </Link>
   );
 }
@@ -201,7 +201,7 @@ export default function Dashboard() {
     return (
       <div className="space-y-6">
         <Header />
-        <Card><p className="text-sm text-[#64748b] py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
+        <Card><p className="text-sm text-[#76677b] py-6 text-center">Your role does not include any dashboard data yet. Ask an admin for access to Orders or Inventory.</p></Card>
       </div>
     );
   }
@@ -230,31 +230,31 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Card className="xl:col-span-2 rounded-2xl">
           <SectionTitle title="Sales overview" subtitle="Revenue for the last 30 days" />
-          {!vm.series ? <Hidden /> : vm.seriesIsEmpty ? <p className="text-sm text-[#64748b] py-20 text-center">No sales in the last 30 days yet.</p> : (
+          {!vm.series ? <Hidden /> : vm.seriesIsEmpty ? <p className="text-sm text-[#76677b] py-20 text-center">No sales in the last 30 days yet.</p> : (
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={vm.series} margin={{ left: -16, right: 8, top: 6, bottom: 0 }}>
-                  <defs><linearGradient id="revenueFillDashboard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4f46e5" stopOpacity={0.24} /><stop offset="100%" stopColor="#4f46e5" stopOpacity={0} /></linearGradient></defs>
-                  <CartesianGrid stroke="#1e1b4b1a" vertical={false} strokeDasharray="3 5" />
-                  <XAxis dataKey="date" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={24} />
-                  <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} width={54} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)} />
-                  <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #1e1b4b1a", borderRadius: 12, fontSize: 12, color: "#172033", boxShadow: "0 20px 50px rgba(24,35,8,.12)" }} formatter={(v) => [money(v), "Revenue"]} />
-                  <Area type="monotone" dataKey="revenue" stroke="#4f46e5" strokeWidth={3} fill="url(#revenueFillDashboard)" dot={false} activeDot={{ r: 5 }} />
+                  <defs><linearGradient id="revenueFillDashboard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#743d78" stopOpacity={0.24} /><stop offset="100%" stopColor="#743d78" stopOpacity={0} /></linearGradient></defs>
+                  <CartesianGrid stroke="#4f28541a" vertical={false} strokeDasharray="3 5" />
+                  <XAxis dataKey="date" tick={{ fill: "#76677b", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={24} />
+                  <YAxis tick={{ fill: "#76677b", fontSize: 11 }} axisLine={false} tickLine={false} width={54} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)} />
+                  <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #4f28541a", borderRadius: 12, fontSize: 12, color: "#24152b", boxShadow: "0 20px 50px rgba(24,35,8,.12)" }} formatter={(v) => [money(v), "Revenue"]} />
+                  <Area type="monotone" dataKey="revenue" stroke="#743d78" strokeWidth={3} fill="url(#revenueFillDashboard)" dot={false} activeDot={{ r: 5 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
         </Card>
 
-        <Card className="rounded-2xl bg-gradient-to-br from-[#eef2ff] via-[#ffffff] to-[#f3f4f9]">
+        <Card className="rounded-2xl bg-gradient-to-br from-[#f1e5f3] via-[#ffffff] to-[#f3f4f9]">
           <SectionTitle title="Store snapshot" subtitle="Your latest activity at a glance" />
-          <div className="rounded-2xl border border-[#1e1b4b]/10 bg-[#ffffff]/80 p-5">
-            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#1e1b4b] to-[#4f46e5] text-white shadow-lg shadow-[#1e1b4b]/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#172033]">Afsana Perfumes</p><p className="text-xs text-[#64748b]">Luxury in every scent</p></div></div>
+          <div className="rounded-2xl border border-[#4f2854]/10 bg-[#ffffff]/80 p-5">
+            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#4f2854] to-[#743d78] text-white shadow-lg shadow-[#4f2854]/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#24152b]">Afsana Perfumes</p><p className="text-xs text-[#76677b]">Luxury in every scent</p></div></div>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#64748b]">Recent orders</p><p className="mt-1 text-xl font-semibold text-[#172033]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p></div>
-              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#64748b]">Low stock</p><p className="mt-1 text-xl font-semibold text-[#172033]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p></div>
+              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#76677b]">Recent orders</p><p className="mt-1 text-xl font-semibold text-[#24152b]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p></div>
+              <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#76677b]">Low stock</p><p className="mt-1 text-xl font-semibold text-[#24152b]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p></div>
             </div>
-            <Link to="/admin/products" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1e1b4b] hover:text-[#4f46e5]">Manage products <ArrowUpRight className="w-3.5 h-3.5" /></Link>
+            <Link to="/admin/products" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#4f2854] hover:text-[#743d78]">Manage products <ArrowUpRight className="w-3.5 h-3.5" /></Link>
           </div>
         </Card>
       </div>
@@ -265,18 +265,18 @@ export default function Dashboard() {
           {statusBreakdown.length ? (
             <>
               <div className="h-48 relative">
-                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #1e1b4b1a", borderRadius: 10, fontSize: 12, color: "#172033" }} /></PieChart></ResponsiveContainer>
-                <div className="absolute inset-0 grid place-items-center pointer-events-none"><div className="text-center"><p className="text-2xl font-semibold text-[#172033]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#64748b]">Recent</p></div></div>
+                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #4f28541a", borderRadius: 10, fontSize: 12, color: "#24152b" }} /></PieChart></ResponsiveContainer>
+                <div className="absolute inset-0 grid place-items-center pointer-events-none"><div className="text-center"><p className="text-2xl font-semibold text-[#24152b]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#76677b]">Recent</p></div></div>
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">{statusBreakdown.map((s, i) => <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#64748b]"><i className="h-2 w-2 rounded-full" style={{ background: STATUS_COLORS[i % STATUS_COLORS.length] }} />{s.name}<b className="ml-auto text-[#172033]">{s.value}</b></span>)}</div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">{statusBreakdown.map((s, i) => <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#76677b]"><i className="h-2 w-2 rounded-full" style={{ background: STATUS_COLORS[i % STATUS_COLORS.length] }} />{s.name}<b className="ml-auto text-[#24152b]">{s.value}</b></span>)}</div>
             </>
-          ) : <p className="text-sm text-[#64748b] py-16 text-center">No recent orders yet.</p>}
+          ) : <p className="text-sm text-[#76677b] py-16 text-center">No recent orders yet.</p>}
         </Card>
 
         <Card className="xl:col-span-2 rounded-2xl" padded={false}>
           <div className="px-5 pt-5"><SectionTitle title="Recent orders" subtitle="Latest customer activity" href="/admin/orders" /></div>
-          {!vm.recentOrders ? <div className="px-5 pb-5"><Hidden /></div> : vm.recentOrders.length === 0 ? <p className="px-5 pb-6 text-sm text-[#64748b]">No orders yet.</p> : (
-            <div className="divide-y divide-[#1e1b4b]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#1e1b4b]/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#1e1b4b]/10 text-[#1e1b4b]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#172033] truncate">{order.id}</span><span className="block text-[11px] text-[#64748b] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#172033]">{order.total}</span></Link>)}</div>
+          {!vm.recentOrders ? <div className="px-5 pb-5"><Hidden /></div> : vm.recentOrders.length === 0 ? <p className="px-5 pb-6 text-sm text-[#76677b]">No orders yet.</p> : (
+            <div className="divide-y divide-[#4f2854]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#4f2854]/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#4f2854]/10 text-[#4f2854]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#24152b] truncate">{order.id}</span><span className="block text-[11px] text-[#76677b] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#24152b]">{order.total}</span></Link>)}</div>
           )}
         </Card>
       </div>
@@ -284,20 +284,20 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Card className="xl:col-span-2 rounded-2xl">
           <SectionTitle title="Top selling products" subtitle={`Last ${vm.topProducts ? vm.topProducts.days : 30} days, by units sold`} href="/admin/products" />
-          {!vm.topProducts ? <Hidden /> : vm.topProducts.rows.length === 0 ? <p className="text-sm text-[#64748b] py-8">No sales yet.</p> : (
-            <div className="grid sm:grid-cols-2 gap-3">{vm.topProducts.rows.slice(0, 6).map((product, index) => <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#1e1b4b]/10 bg-[#ffffff] p-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[STAT_STYLES[index % STAT_STYLES.length].tone]}`}><Box className="w-4.5 h-4.5" /></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-[#172033]">{product.name}</p><p className="mt-0.5 text-[11px] text-[#64748b]">{product.units} units · {product.revenue}</p></div><span className="text-[11px] font-semibold text-[#172033]">{product.profit === HIDDEN ? HIDDEN : product.profit}</span></div>)}</div>
+          {!vm.topProducts ? <Hidden /> : vm.topProducts.rows.length === 0 ? <p className="text-sm text-[#76677b] py-8">No sales yet.</p> : (
+            <div className="grid sm:grid-cols-2 gap-3">{vm.topProducts.rows.slice(0, 6).map((product, index) => <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#4f2854]/10 bg-[#ffffff] p-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[STAT_STYLES[index % STAT_STYLES.length].tone]}`}><Box className="w-4.5 h-4.5" /></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-[#24152b]">{product.name}</p><p className="mt-0.5 text-[11px] text-[#76677b]">{product.units} units · {product.revenue}</p></div><span className="text-[11px] font-semibold text-[#24152b]">{product.profit === HIDDEN ? HIDDEN : product.profit}</span></div>)}</div>
           )}
         </Card>
 
         <Card className="rounded-2xl">
           <SectionTitle title="Low stock alert" subtitle="Products that need attention" href="/admin/inventory" />
           {!vm.lowStock ? <Hidden /> : vm.lowStock.items.length === 0 ? <div className="rounded-xl bg-[#16a34a]/10 p-4 text-sm text-[#16a34a]">All products are well stocked.</div> : (
-            <div className="space-y-3">{vm.lowStock.items.slice(0, 5).map((product) => <div key={product.id} className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#8b5cf6]/15 text-[#4f46e5]"><AlertTriangle className="w-4 h-4" /></span><span className="min-w-0 flex-1 truncate text-xs font-medium text-[#172033]">{product.name}</span><span className="shrink-0 text-[11px] font-semibold text-[#d97706]">{product.stock} / {product.threshold}</span></div>)}{vm.lowStock.count > 5 && <Link to="/admin/inventory" className="inline-flex items-center gap-1 text-xs font-semibold text-[#1e1b4b]">View all {vm.lowStock.count}<ChevronRight className="w-3 h-3" /></Link>}</div>
+            <div className="space-y-3">{vm.lowStock.items.slice(0, 5).map((product) => <div key={product.id} className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#9a6ca0]/15 text-[#743d78]"><AlertTriangle className="w-4 h-4" /></span><span className="min-w-0 flex-1 truncate text-xs font-medium text-[#24152b]">{product.name}</span><span className="shrink-0 text-[11px] font-semibold text-[#d97706]">{product.stock} / {product.threshold}</span></div>)}{vm.lowStock.count > 5 && <Link to="/admin/inventory" className="inline-flex items-center gap-1 text-xs font-semibold text-[#4f2854]">View all {vm.lowStock.count}<ChevronRight className="w-3 h-3" /></Link>}</div>
           )}
         </Card>
       </div>
 
-      <Card className="rounded-2xl bg-gradient-to-r from-[#eef2ff] via-[#ffffff] to-[#f3f4f9]">
+      <Card className="rounded-2xl bg-gradient-to-r from-[#f1e5f3] via-[#ffffff] to-[#f3f4f9]">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
           <QuickLink href="/admin/inventory" icon={Package} title="Inventory" text="Check low stock & incoming stock" tone="blue" />
           <QuickLink href="/admin/orders" icon={ShoppingBag} title="Orders" text="Review and manage orders" tone="purple" />

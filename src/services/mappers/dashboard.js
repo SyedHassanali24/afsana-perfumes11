@@ -31,6 +31,9 @@ export function toDashboard(dashboard) {
   const d = dashboard || {};
   const k = d.kpis || null;
   const stock = d.lowStock || null;
+  const catalog = d.catalog || null;
+  const productsCount = catalog && typeof catalog.products === 'number' ? catalog.products : null;
+  const customersCount = catalog && typeof catalog.customers === 'number' ? catalog.customers : null;
 
   const cards = [
     card('todayRevenue', "Today's revenue", k ? money(k.todayRevenue) : HIDDEN, k ? pctOrUndefined(k.todayRevenueChangePct) : undefined, 'vs yesterday'),
@@ -39,6 +42,8 @@ export function toDashboard(dashboard) {
     card('pendingOrders', 'Pending orders', k ? num(k.pendingOrders) : HIDDEN),
     card('lowStock', 'Low stock', stock ? num(stock.count) : HIDDEN),
     card('avgOrderValue', 'Avg. order value', k ? money(k.avgOrderValue) : HIDDEN, k ? pctOrUndefined(k.avgOrderValueChangePct) : undefined, 'vs last month so far'),
+    card('products', 'Total products', productsCount === null ? HIDDEN : num(productsCount)),
+    card('customers', 'Total customers', customersCount === null ? HIDDEN : num(customersCount)),
   ];
 
   const series = Array.isArray(d.revenueSeries) ? d.revenueSeries.map((p) => ({ date: dayLabel(p.date), revenue: Number(p.revenue) || 0 })) : null;
@@ -64,6 +69,6 @@ export function toDashboard(dashboard) {
   return {
     cards, series, recentOrders, lowStock, topProducts,
     seriesIsEmpty: !!series && series.every((p) => p.revenue === 0),
-    allHidden: !k && !series && !recentOrders && !lowStock && !topProducts, // role has dashboard.view but none of the data permissions
+    allHidden: !k && !series && !recentOrders && !lowStock && !topProducts && productsCount === null && customersCount === null, // role has dashboard.view but none of the data permissions
   };
 }
