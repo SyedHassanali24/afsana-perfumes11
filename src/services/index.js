@@ -1,8 +1,9 @@
-import { api } from './api';
+import { api, uploadChunkedMedia } from './api';
 export { api, ApiError } from './api';
 
 export const authApi = {
-  login: (email, password) => api('/auth/login', { method: 'POST', body: { email, password } }),
+  login: (email, password, deviceId, turnstileToken) => api('/auth/login', { method: 'POST', body: { email, password, deviceId, turnstileToken } }),
+  verifyLoginOtp: (email, challengeId, otp, deviceId, turnstileToken) => api('/auth/login/2fa/verify', { method: 'POST', body: { email, challengeId, otp, deviceId, turnstileToken } }),
   logout: () => api('/auth/logout', { method: 'POST' }),
   logoutAll: () => api('/auth/logout-all', { method: 'POST' }),
   me: () => api('/auth/me'),
@@ -49,8 +50,21 @@ export const ordersApi = {
   setPayment: (id, paymentStatus, reference) => api(`/orders/admin/${id}/payment`, { method: 'PATCH', body: { paymentStatus, reference } }),
 };
 
+export const growthApi = {
+  me: () => api('/growth/me'),
+  dashboard: () => api('/growth/admin/dashboard'),
+  createPartner: (body) => api('/growth/admin/partners', { method: 'POST', body }),
+  updatePartner: (id, body) => api('/growth/admin/partners/' + id, { method: 'PATCH', body }),
+  commissions: (query) => api('/growth/admin/commissions', { query }),
+  payCommission: (id, body) => api('/growth/admin/commissions/' + id + '/payout', { method: 'POST', body }),
+  whatsapp: () => api('/growth/admin/whatsapp'),
+  retryWhatsapp: (id, confirmPassword) => api('/growth/admin/whatsapp/' + id + '/retry', { method: 'POST', body: { confirmPassword } }),
+  config: () => api('/growth/admin/config'),
+  saveConfig: (body) => api('/growth/admin/config', { method: 'PUT', body }),
+};
 export const analyticsApi = {
-  dashboard: () => api('/analytics/dashboard', { cacheTtl: 5000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }; a section is null when the role may not see it
+  dashboard: () => api('/analytics/dashboard', { cacheTtl: 60000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }; a section is null when the role may not see it
+  traffic: (days = 30) => api('/analytics/traffic', { query: { days } }), // anonymous acquisition: visits, page views, sources and landing pages
 };
 
 // ---- Phase 4: team & access (all writes need confirmPassword) ----
@@ -129,19 +143,20 @@ export const cmsApi = (resource) => ({
   update: (id, body) => api(`/cms/${resource}/${id}`, { method: 'PATCH', body }),
   setActive: (id, isActive) => api(`/cms/${resource}/${id}/active`, { method: 'PATCH', body: { isActive } }),
   remove: (id) => api(`/cms/${resource}/${id}`, { method: 'DELETE' }),
+  publishExperience: (body) => api('/cms/homepage/experience/publish', { method: 'POST', body }),
 });
 export const auditApi = { list: (query) => api('/audit', { query }) };
 
 // ---- Storefront customer accounts (separate cookie from staff) ----
 export const accountApi = {
-  register: (body) => api('/account/register', { method: 'POST', body }),
-  login: (identifier, password) => api('/account/login', { method: 'POST', body: { identifier, password } }),
+  register: (body, turnstileToken) => api('/account/register', { method: 'POST', body: { ...body, turnstileToken } }),
+  login: (identifier, password, turnstileToken) => api('/account/login', { method: 'POST', body: { identifier, password, turnstileToken } }),
   logout: () => api('/account/logout', { method: 'POST' }),
   me: () => api('/account/me'),
   updateProfile: (body) => api('/account/me', { method: 'PATCH', body }),
   changePassword: (currentPassword, newPassword) => api('/account/change-password', { method: 'POST', body: { currentPassword, newPassword } }),
-  forgotPassword: (identifier) => api('/account/forgot-password', { method: 'POST', body: { identifier } }),
-  resetPassword: (token, newPassword) => api('/account/reset-password', { method: 'POST', body: { token, newPassword } }),
+  forgotPassword: (identifier, turnstileToken) => api('/account/forgot-password', { method: 'POST', body: { identifier, turnstileToken } }),
+  resetPassword: (token, newPassword, turnstileToken) => api('/account/reset-password', { method: 'POST', body: { token, newPassword, turnstileToken } }),
   // Phase 6
   orders: (query) => api('/account/orders', { query }),
   order: (orderNumber) => api(`/account/orders/${encodeURIComponent(orderNumber)}`),
@@ -212,6 +227,7 @@ export const myReturnsApi = {
 // ---- picture upload (staff with products.manageImages) ----
 export const mediaApi = {
   upload: (body) => api('/media/admin', { method: 'POST', body }),
+  uploadVideo: (file, onProgress) => uploadChunkedMedia(file, onProgress),
   uploadProfile: (body) => api('/media/profile', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
 };
 
