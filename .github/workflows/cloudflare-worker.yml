@@ -6,6 +6,14 @@ on:
     branches: ["main"]
     paths:
       - "cloudflare/**"
+      - "functions/**"
+      - "netlify/functions/**"
+      - "middleware/**"
+      - "database/**"
+      - "services/**"
+      - "validation/**"
+      - "shared/**"
+      - "admin/**"
       - "src/**"
       - "public/**"
       - "index.html"
