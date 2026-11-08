@@ -19,5 +19,8 @@ new_sqlite_classes = ["MongoDBConnection"]
 [placement]
 mode = "smart"
 
+[previews.placement]
+mode = "smart"
+
 [cache]
 enabled = true
