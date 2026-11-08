@@ -41,7 +41,7 @@ const Pulse = ({ className = "" }) => <div className={`rounded-xl bg-[#4f2854]/1
 
 const toneClasses = {
   blue: "bg-[#743d78]/10 text-[#743d78] ring-[#743d78]/10",
-  green: "bg-[#16a34a]/10 text-[#16a34a] ring-[#16a34a]/10",
+  green: "bg-[#c8a15f]/15 text-[#9a6a2e] ring-[#c8a15f]/20",
   purple: "bg-[#743d78]/10 text-[#743d78] ring-[#743d78]/10",
   orange: "bg-[#9a6ca0]/15 text-[#743d78] ring-[#9a6ca0]/15",
   red: "bg-[#fff1f2] text-[#e11d48] ring-[#e11d48]/10",
