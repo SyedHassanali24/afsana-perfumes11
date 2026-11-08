@@ -55,3 +55,17 @@
 .storefront-theme .hero:after{background:radial-gradient(circle at 82% 28%,rgba(199,169,210,.18),transparent 23%),radial-gradient(circle at 22% 74%,rgba(123,0,58,.18),transparent 24%),linear-gradient(135deg,transparent 35%,rgba(200,161,95,.06),transparent 65%)!important}
 .storefront-theme footer{background:radial-gradient(circle at 86% 18%,rgba(116,61,120,.24),transparent 25%),radial-gradient(circle at 15% 82%,rgba(200,161,95,.10),transparent 24%),#0d090f!important}
 .storefront-theme .product-card-stage,.storefront-theme .main-product-stage{background:radial-gradient(circle at 50% 22%,rgba(199,169,210,.18),transparent 30%),linear-gradient(145deg,#fbf8fc,#eee5f0)!important}
+
+
+/* Admin/login restoration: keep the original purple Tailwind dashboard palette. */
+:root{--bg:#F5F7FF;--surface:#FFFFFF;--surface-raised:#FAFBFF;--border:#E7EAF4;--ink:#17204A;--ink-muted:#7280A2;--gold:#B4874B;--gold-soft:#F5EBDD;--primary:#4F46E5;--primary-hover:#4338CA;--primary-soft:#EEF0FF;--primary-soft-border:#C9CDFF;--table-head:#F8F9FF;--table-row-hover:#FAFBFF;--nav:#3035AD;--nav-muted:#D8DCFF;--nav-active:#FFFFFF;--nav-active-bg:rgba(255,255,255,.15)}
+.admin-shell{background:radial-gradient(900px 420px at 86% -8%,rgba(124,58,237,.14),transparent 62%),radial-gradient(700px 420px at 30% 110%,rgba(99,102,241,.09),transparent 60%),linear-gradient(135deg,#f8f8ff 0%,#eef0ff 48%,#f8f8ff 100%)!important;color:#17204a!important}
+.admin-shell:before{background:radial-gradient(circle at 70% 30%,rgba(255,255,255,.78),transparent 34%)!important}
+.admin-login-shell{background:radial-gradient(900px 520px at 15% 5%,rgba(124,58,237,.28),transparent 55%),radial-gradient(760px 480px at 95% 95%,rgba(79,70,229,.24),transparent 58%),linear-gradient(135deg,#100d24 0%,#24104a 52%,#100d24 100%);color:#fff}
+.admin-login-glow{position:absolute;border-radius:9999px;filter:blur(54px);pointer-events:none}
+.admin-login-glow-one{top:-6rem;left:-5rem;width:16rem;height:16rem;background:rgba(139,92,246,.22)}
+.admin-login-glow-two{right:-5rem;bottom:-6rem;width:18rem;height:18rem;background:rgba(99,102,241,.22)}
+.admin-login-card{background:rgba(250,251,255,.97);border:1px solid rgba(196,181,253,.34);color:#17204a;box-shadow:0 28px 90px rgba(0,0,0,.34)}
+.admin-login-brand{color:#24205a}.admin-login-subtitle{color:#7280a2}.admin-login-link{color:#5145cd}.admin-login-error{color:#c2415b}
+.admin-login-modal{background:rgba(10,8,25,.72);backdrop-filter:blur(8px)}
+:root[data-theme="dark"] .admin-shell{background:radial-gradient(850px 500px at 78% -8%,rgba(124,58,237,.25),transparent 58%),radial-gradient(700px 430px at 5% 92%,rgba(37,99,235,.15),transparent 58%),linear-gradient(145deg,#070918 0%,#0b1025 48%,#080a18 100%)!important;color:#f8faff!important}
