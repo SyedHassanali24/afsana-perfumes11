@@ -1,24 +1,16 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
+import { corsHeaders, securityHeaders } from "./security.js";
 import { onRequest as handleApiRequest } from "../functions/api/[[path]].js";
 
 const SITE_ORIGIN = "https://afsanaperfumes.store";
 const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
 
 function cors(origin) {
-  const allowed = origin === SITE_ORIGIN || origin === WORKER_ORIGIN ||
-    origin === "https://www.afsanaperfumes.store" ||
-    /^https:\/\/[^/]+\.workers\.dev$/.test(origin);
-  return {
-    "Access-Control-Allow-Origin": allowed ? origin : SITE_ORIGIN,
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Allow-Headers": "Content-Type, X-Requested-With, Idempotency-Key, Authorization",
-    "Access-Control-Allow-Methods": "GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Vary": "Origin"
-  };
+  return corsHeaders(origin, SITE_ORIGIN);
 }
 function json(data, status, headers = {}) {
-  return Response.json(data, { status, headers });
+  return Response.json(data, { status, headers: securityHeaders(headers) });
 }
 
 async function verifyMetaSignature(rawBody, signature, appSecret) {
@@ -40,7 +32,7 @@ async function health(env) {
 }
 
 function addCors(headers, origin) {
-  Object.entries(cors(origin)).forEach(([key, value]) => headers.set(key, value));
+  Object.entries(securityHeaders(cors(origin))).forEach(([key, value]) => headers.set(key, value));
   return headers;
 }
 
@@ -48,7 +40,7 @@ export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: securityHeaders(cors(origin)) });
 
     if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
       try {
@@ -67,9 +59,9 @@ export default {
         const token = u.searchParams.get("hub.verify_token");
         const challenge = u.searchParams.get("hub.challenge");
         if (mode === "subscribe" && env.WHATSAPP_VERIFY_TOKEN && token === env.WHATSAPP_VERIFY_TOKEN && challenge) {
-          return new Response(challenge, { status: 200, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+          return new Response(challenge, { status: 200, headers: securityHeaders({ "Content-Type": "text/plain", "Cache-Control": "no-store" }) });
         }
-        return new Response("Forbidden", { status: 403 });
+        return new Response("Forbidden", { status: 403, headers: securityHeaders() });
       }
       if (request.method === "POST") {
         const rawBody = await request.text();
@@ -92,7 +84,7 @@ export default {
           return json({ success: false, error: "WEBHOOK_STORAGE_UNAVAILABLE" }, 503, { "Cache-Control": "no-store" });
         }
       }
-      return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, POST" } });
+      return new Response("Method Not Allowed", { status: 405, headers: securityHeaders({ Allow: "GET, POST" }) });
     }
 
     if (u.pathname.startsWith("/api/")) {
@@ -106,7 +98,7 @@ export default {
         headers.delete("Netlify-Cache-Tag");
         headers.set("X-Afsana-Backend", "cloudflare-mongodb-api");
         addCors(headers, origin);
-        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers: securityHeaders(Object.fromEntries(headers.entries())) });
       } catch (error) {
         console.error("[afsana-api] request failed:", error?.message || error);
         return json({ success: false, error: { code: "INTERNAL", message: "Backend request failed." } }, 500,
@@ -122,7 +114,7 @@ export default {
       headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     }
     headers.set("X-Afsana-Backend", "cloudflare-assets");
-    return new Response(asset.body, { status: asset.status, headers });
+    return new Response(asset.body, { status: asset.status, headers: securityHeaders(Object.fromEntries(headers.entries())) });
   }
 };
 export { MongoDBConnection };
