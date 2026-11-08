@@ -1,3 +1,4 @@
+// Hassan storefront visual baseline redeploy sync
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
 import { corsHeaders, securityHeaders } from "./security.js";
