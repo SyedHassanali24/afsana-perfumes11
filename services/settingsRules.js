@@ -1,11 +1,12 @@
 // Store settings (pure, tested in tests/settings.test.js). Stored as Setting documents: key -> value.
 // `shipping` and `returns` keep the exact shape that orderService / returnService already read.
-const KEYS = ['store', 'bank', 'shipping', 'returns'];
+const KEYS = ['store', 'bank', 'shipping', 'returns', 'growth'];
 const DEFAULTS = {
   store: { name: 'Afsana Perfumes', tagline: '', phone: '', whatsapp: '', email: '', address: '', instagram: '', facebook: '' },
   bank: { enabled: false, bankName: '', accountTitle: '', accountNumber: '', iban: '', branch: '', instructions: '' },
   shipping: { flatRate: 250, freeAbove: 5000 },   // freeAbove 0 = free delivery on every order
   returns: { windowDays: 7 },
+  growth: { welcomeRewardEnabled: false, welcomeDiscountPercent: 15, welcomeMaxDiscount: 1000, welcomeMinOrder: 0, welcomeValidityDays: 30, commissionHoldDays: 14, whatsappTemplateName: 'afsana_first_purchase_reward', whatsappLanguage: 'en' },
 };
 const withDefaults = (key, value) => ({ ...DEFAULTS[key], ...(value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).filter(([k]) => k in DEFAULTS[key])) : {}) });
 
