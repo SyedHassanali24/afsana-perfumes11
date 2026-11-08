@@ -6,6 +6,7 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const { notifyAdmin } = require('./notificationService');
 const R = require('./accessRules');
+const { ensureStaffPartner } = require('./staffReferral');
 
 const hash = (pw) => bcrypt.hash(pw, 12);
 const revokeSessions = (userId, reason, session, exceptId) => Session.updateMany(
@@ -89,6 +90,11 @@ async function createStaff(ctx, body) {
     await audit(ctx, { action: 'staff.created', module: 'staff', recordId: staff._id, newValue: { email, name: body.name, role: role.key } }, session);
     return staff._id;
   });
+  const staffRecord = await Staff.findById(staffId).lean();
+  if (staffRecord) {
+    try { await ensureStaffPartner(staffRecord); }
+    catch (error) { console.error('[afsana-staff-referral-provisioning]', error?.message || error); }
+  }
   return { ...(await getStaff(staffId)), tempPassword: generated }; // shown once by the UI
 }
 
@@ -126,7 +132,19 @@ async function resetPassword(ctx, id, { password } = {}) {
   const generated = password ? null : R.generatePassword();
   const passwordHash = await hash(password || generated);
   await withTx(async (session) => {
-    await User.updateOne({ _id: staff.userId }, { $set: { passwordHash, mustChangePassword: true, passwordChangedAt: new Date(), failedLoginCount: 0 }, $unset: { lockedUntil: 1 } }, { session });
+    await User.updateOne(
+      { _id: staff.userId },
+      {
+        $set: { passwordHash, mustChangePassword: true, passwordChangedAt: new Date(), failedLoginCount: 0, trustedDevices: [] },
+        $inc: { authVersion: 1 },
+        $unset: {
+          lockedUntil: 1,
+          loginOtpChallengeHash: 1, loginOtpHash: 1, loginOtpDeviceHash: 1, loginOtpExpires: 1,
+          resetOtpHash: 1, resetOtpExpires: 1, resetOtpVerifiedHash: 1, resetOtpVerifiedExpires: 1,
+        },
+      },
+      { session },
+    );
     await revokeSessions(staff.userId, 'password_reset', session);
     await audit(ctx, { action: 'staff.password_reset', module: 'staff', recordId: staff._id }, session);
   });
@@ -216,8 +234,23 @@ async function changeOwnPassword(ctx, { currentPassword, newPassword }) {
   u.passwordHash = await hash(newPassword);
   u.passwordChangedAt = new Date();
   u.mustChangePassword = false;
+  u.failedLoginCount = 0;
+  u.lockedUntil = undefined;
+  u.trustedDevices = [];
+  u.authVersion = Number(u.authVersion || 0) + 1;
+  u.loginOtpChallengeHash = undefined;
+  u.loginOtpHash = undefined;
+  u.loginOtpDeviceHash = undefined;
+  u.loginOtpExpires = undefined;
+  u.resetOtpHash = undefined;
+  u.resetOtpExpires = undefined;
+  u.resetOtpVerifiedHash = undefined;
+  u.resetOtpVerifiedExpires = undefined;
   await u.save();
-  await revokeSessions(u._id, 'password_changed', null, ctx.session._id); // keep this device signed in
+  // Keep only the currently authenticated browser alive. Every other session has
+  // the old authVersion and is also explicitly revoked.
+  await Session.updateOne({ _id: ctx.session._id, userId: u._id }, { authVersion: u.authVersion });
+  await revokeSessions(u._id, 'password_changed', null, ctx.session._id);
   await audit(ctx, { action: 'auth.password_changed', module: 'security' });
   return {};
 }

@@ -12,7 +12,8 @@ const sortNum = (v) => (String(v).trim() === '' ? 0 : Number(v));
 const datesIn = (i) => ({ startsAt: toDateInput(i.startsAt), endsAt: toDateInput(i.endsAt) });
 const datesOut = (f) => ({ startsAt: startOfDayIso(f.startsAt), endsAt: endOfDayIso(f.endsAt) });
 const cleanLink = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^(https?:\/\/|\/|#)/i.test(t) ? t : null); };
-const cleanImage = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^https?:\/\//i.test(t) ? t : null); };
+const isOwnMediaPath = (value) => /^\/api\/media\/[0-9a-f]{24}$/i.test(value);
+const cleanImage = (v) => { const t = String(v || '').trim(); return t === '' ? null : (/^https?:\/\//i.test(t) || isOwnMediaPath(t) ? t : null); };
 
 export const RESOURCE_KEYS = ['banners', 'faqs', 'announcements'];
 
@@ -109,4 +110,9 @@ export const HOMEPAGE_SECTION_TYPES = [
   { key: 'instagram', label: 'Social / Instagram' },
   { key: 'rich_text', label: 'Rich text' },
   { key: 'spacer', label: 'Spacer' },
+  { key: 'reference_assets', label: 'AFSANA reference media / 3D assets' },
+  { key: 'custom_footer', label: 'Complete custom site footer' },
+  { key: 'nav_menu', label: 'Header navigation links' },
+  { key: 'whatsapp_float', label: 'Floating WhatsApp contact' },
+  { key: 'ai_concierge', label: 'Guided scent concierge toggle' },
 ];

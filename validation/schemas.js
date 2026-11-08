@@ -3,11 +3,12 @@ const C = require('../database/constants');
 const { isAllowedImageUrl } = require('../services/mediaRules');
 // picture address: normal https link OR one of our own uploads (/api/media/<id>)
 const imageAddress = z.string().trim().max(500).refine(isAllowedImageUrl, 'Enter a valid picture address');
-const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(980000) });
+const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(5600000) });
+const chunkedUploadBody = z.object({ filename: z.string().trim().min(1).max(120), contentType: z.enum(['video/mp4', 'video/webm']), size: z.number().int().positive().max(250 * 1024 * 1024) });
 const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
-const loginBody = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200) });
+const loginBody = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200), deviceId: z.string().min(20).max(128).optional() });
 
 // ---------- products ----------
 const variantBase = {
@@ -85,6 +86,8 @@ const checkoutBody = z.object({
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
   couponCode: z.string().trim().max(40).optional(),
+  referralCode: z.string().trim().max(40).optional(),
+  whatsappMarketingOptIn: z.boolean().default(false),
 });
 const trackQuery = z.object({ phone });
 const ordersQuery = z.object({
@@ -139,13 +142,13 @@ const auditQuery = z.object({
 const custPhone = z.string().trim().regex(/^[0-9+\-\s()]{10,18}$/, 'Enter a valid phone number').transform(normalizePhone);
 const registerBody = z.object({
   name: z.string().trim().min(2).max(100), phone: custPhone,
-  email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined),
+  email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v ? v.toLowerCase() : undefined),
   password: passwordRule(8),
 });
-const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(200), password: z.string().min(1).max(200) });
-const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined) }).partial();
+const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(200).transform((v) => v.includes('@') ? v.toLowerCase() : v), password: z.string().min(1).max(200) });
+const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v ? v.toLowerCase() : undefined) }).partial();
 const customerChangePassword = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordRule(8) });
-const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200) });
+const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200).transform((v) => v.includes('@') ? v.toLowerCase() : v) });
 const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid link'), newPassword: passwordRule(8) });
 
 // ---------- storefront: cart, wishlist, addresses, my orders ----------
@@ -301,10 +304,27 @@ const cmsShape = {
   announcements: z.object({ text: z.string().trim().max(160), link: cUrl, startsAt: optDate, endsAt: optDate, isActive: z.boolean().optional() }),
 };
 // ---------- visual homepage builder ----------
-const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement','lookbook','values_grid','blog_grid','post_grid','promo_timer','scent_finder','rich_text','faq','spacer'];
+const homepageSectionTypes = CMS.HOMEPAGE_SECTION_TYPES;
 const homepageConfig = z.record(z.string(), z.any()).optional();
-const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
+const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), pageKey: z.enum(CMS.HOMEPAGE_PAGE_KEYS).optional(), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
 const homepageSectionPatch = homepageSectionShape.partial();
+const homepageExperiencePublishBody = z.object({
+  templateId: z.literal('afsana-neon-experience-v1'),
+  sections: z.array(z.object({
+    slot: z.string().trim().regex(/^[a-z0-9-]{1,80}$/),
+    type: z.enum(homepageSectionTypes),
+    title: cText(120),
+    pageKey: z.enum(CMS.HOMEPAGE_PAGE_KEYS),
+    config: homepageConfig,
+    sortOrder: z.number().int().min(0).max(9999),
+    isEnabled: z.boolean().optional(),
+  })).min(1).max(80),
+}).superRefine((v, ctx) => {
+  const slots = v.sections.map((section) => section.slot);
+  if (new Set(slots).size !== slots.length) {
+    ctx.addIssue({ code: 'custom', path: ['sections'], message: 'Every published section must have a unique template slot.' });
+  }
+});
 
 // Shape here, business rules (required fields, links, dates) in services/cmsRules.crossFieldErrors; a PATCH is re-checked MERGED in cmsService.update.
 const cmsBody = {}; const cmsPatch = {};
@@ -324,6 +344,51 @@ const settingsBank = z.object({ enabled: z.boolean(), bankName: sText(80), accou
   .superRefine((v, ctx) => { if (v.enabled && (!v.accountTitle || !(v.accountNumber || v.iban))) ctx.addIssue({ code: 'custom', path: ['accountTitle'], message: 'To show bank details, fill the account title and the account number or IBAN.' }); });
 const settingsShipping = z.object({ flatRate: z.number().int().min(0).max(10000), freeAbove: z.number().int().min(0).max(1000000), confirmPassword });
 const settingsReturns = z.object({ windowDays: z.number().int().min(1).max(90), confirmPassword });
+const settingsGrowth = z.object({ welcomeRewardEnabled: z.boolean(), welcomeDiscountPercent: z.number().int().min(1).max(100), welcomeMaxDiscount: z.number().int().min(0).max(10000000), welcomeMinOrder: z.number().int().min(0).max(10000000), welcomeValidityDays: z.number().int().min(1).max(180), commissionHoldDays: z.number().int().min(1).max(90), whatsappTemplateName: z.string().trim().regex(/^[a-z0-9_]{3,512}$/), whatsappLanguage: z.string().trim().min(2).max(10), confirmPassword });
+
+const affiliateCreateBody = z.object({
+  name: z.string().trim().min(2).max(100),
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9_-]{2,29}$/),
+  platform: z.string().trim().max(40).optional(), handle: z.string().trim().max(100).optional(),
+  email: z.string().trim().email().max(200).optional().or(z.literal('')),
+  phone: z.string().trim().max(30).optional(),
+  discountType: z.enum(['none','percentage','fixed','free_shipping']).default('none'),
+  discountValue: z.number().min(0).max(10000000).default(0),
+  maxDiscount: z.number().min(0).max(10000000).optional(),
+  minOrder: z.number().min(0).max(10000000).default(0),
+  commissionType: z.enum(['percentage','fixed']).default('percentage'),
+  commissionValue: z.number().min(0).max(10000000).default(0),
+  usageLimit: z.number().int().min(1).max(10000000).optional(),
+  perCustomerLimit: z.number().int().min(0).max(1000).default(0),
+  startsAt: z.coerce.date().optional(), expiresAt: z.coerce.date().optional(),
+  isActive: z.boolean().optional(), confirmPassword,
+}).superRefine((v, ctx) => {
+  if (v.discountType === 'percentage' && (v.discountValue < 1 || v.discountValue > 100)) ctx.addIssue({ code:'custom', path:['discountValue'], message:'Discount percent must be from 1 to 100.' });
+  if (v.commissionType === 'percentage' && v.commissionValue > 100) ctx.addIssue({ code:'custom', path:['commissionValue'], message:'Commission percent cannot exceed 100.' });
+  if (v.startsAt && v.expiresAt && v.expiresAt <= v.startsAt) ctx.addIssue({ code:'custom', path:['expiresAt'], message:'Expiry must be after the start date.' });
+});
+const affiliatePatchBody = z.object({
+  name: z.string().trim().min(2).max(100).optional(),
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9_-]{2,29}$/).optional(),
+  platform: z.string().trim().max(40).optional(), handle: z.string().trim().max(100).optional(),
+  email: z.string().trim().email().max(200).optional().or(z.literal('')),
+  phone: z.string().trim().max(30).optional(),
+  discountType: z.enum(['none','percentage','fixed','free_shipping']).optional(),
+  discountValue: z.number().min(0).max(10000000).optional(), maxDiscount: z.number().min(0).max(10000000).optional(),
+  minOrder: z.number().min(0).max(10000000).optional(),
+  commissionType: z.enum(['percentage','fixed']).optional(), commissionValue: z.number().min(0).max(10000000).optional(),
+  usageLimit: z.number().int().min(1).max(10000000).nullable().optional(),
+  perCustomerLimit: z.number().int().min(0).max(1000).optional(),
+  startsAt: z.coerce.date().nullable().optional(), expiresAt: z.coerce.date().nullable().optional(),
+  isActive: z.boolean().optional(), confirmPassword,
+}).superRefine((v, ctx) => {
+  if (v.discountType === 'percentage' && v.discountValue !== undefined && (v.discountValue < 1 || v.discountValue > 100)) ctx.addIssue({ code:'custom', path:['discountValue'], message:'Discount percent must be from 1 to 100.' });
+  if (v.commissionType === 'percentage' && v.commissionValue !== undefined && v.commissionValue > 100) ctx.addIssue({ code:'custom', path:['commissionValue'], message:'Commission percent cannot exceed 100.' });
+  if (v.startsAt && v.expiresAt && v.expiresAt <= v.startsAt) ctx.addIssue({ code:'custom', path:['expiresAt'], message:'Expiry must be after the start date.' });
+});
+const affiliatePayoutBody = z.object({ reference: z.string().trim().max(100).optional(), confirmPassword });
+const affiliateRetryBody = z.object({ confirmPassword });
+
 
 // ---------- backup (owner export) ----------
 const backupOverview = z.object({ confirmPassword });
@@ -331,10 +396,10 @@ const backupData = z.object({ name: z.string().trim().max(40), after: z.string()
 const backupPictures = z.object({ after: z.string().trim().max(40).optional(), limit: z.number().int().min(1).max(200).optional(), confirmPassword });
 
 module.exports = {
-  settingsStore, settingsBank, settingsShipping, settingsReturns,
+  settingsStore, settingsBank, settingsShipping, settingsReturns, settingsGrowth, affiliateCreateBody, affiliatePatchBody, affiliatePayoutBody, affiliateRetryBody,
   backupOverview, backupData, backupPictures,
-  uploadBody,
-  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
+  uploadBody, chunkedUploadBody,
+  cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch, homepageExperiencePublishBody,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery,
   customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
@@ -349,9 +414,16 @@ module.exports = {
 };
 
 const forgotPasswordRequestBody = z.object({ email: z.string().email().max(254) });
-const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/) });
-const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), resetToken: z.string().regex(/^[a-f\\d]{64}$/i), password: z.string().min(8).max(128) });
+const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\d{6}$/) });
+const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), resetToken: z.string().regex(/^[a-f\d]{64}$/i), password: z.string().min(8).max(128) });
+const loginTwoFactorVerifyBody = z.object({
+  email: z.string().email().max(254),
+  challengeId: z.string().min(32).max(128),
+  otp: z.string().regex(/^\d{6}$/),
+  deviceId: z.string().min(20).max(128),
+});
 
 module.exports.forgotPasswordRequestBody = forgotPasswordRequestBody;
 module.exports.forgotPasswordVerifyBody = forgotPasswordVerifyBody;
 module.exports.forgotPasswordResetBody = forgotPasswordResetBody;
+module.exports.loginTwoFactorVerifyBody = loginTwoFactorVerifyBody;

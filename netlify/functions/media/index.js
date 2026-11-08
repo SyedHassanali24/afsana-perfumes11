@@ -1,6 +1,6 @@
-// Picture upload + serving.
-//   POST /api/media/admin  (staff who can edit pictures: products.manageImages, categories/banners edit...) body { filename?, contentType, data: base64 }  -> { url: "/api/media/<id>" }
-//   GET  /api/media/<id>   (public)  -> the picture itself, cached by the browser for a year (a picture never changes once uploaded)
+// Image, video and GLB upload + serving.
+//   POST /api/media/admin  (staff with content media permissions) body { filename?, contentType, data: base64 } -> { url }
+//   GET  /api/media/<id>   (public) -> original immutable asset, served with its verified MIME type and cached for one year
 const { createHandler } = require('../../../middleware/withApi');
 const { res, json } = require('../../../middleware/http');
 const { stripPrefix } = require('../../../middleware/router');
@@ -11,15 +11,21 @@ const { audit } = require('../../../services/audit');
 const { checkUpload } = require('../../../services/mediaRules');
 const S = require('../../../validation/schemas');
 
-// Anyone who can edit a picture somewhere (product pictures, categories, banners...) may upload one.
-const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit'], ['homepage', 'create'], ['homepage', 'edit']];
+// Upload is available only to staff who can edit media for at least one content area.
+const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit'], ['homepage', 'edit'], ['homepage', 'create'], ['pages', 'edit']];
 
 const api = createHandler('media', [
   { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
       const c = checkUpload(body); if (!c.ok) throw E.badRequest(c.message);
+      if (!c.contentType.startsWith('image/')) throw E.badRequest('Profile photos must be JPEG, PNG or WebP images.');
       const doc = await Media.create({ contentType: c.contentType, size: c.buffer.length, data: c.buffer, filename: body.filename || 'profile-avatar', uploadedBy: ctx.user._id });
       await audit(ctx, { action: 'media.profile_uploaded', module: 'staff', recordId: doc._id, newValue: { size: doc.size, contentType: doc.contentType } });
       return res(201, { url: `/api/media/${doc._id}`, size: doc.size });
+    } },
+  { method: 'POST', path: '/chunked/authorize', body: S.chunkedUploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
+    handler: async ({ ctx }) => {
+      if (!UPLOADERS.some(([m, a]) => ctx.perms.can(m, a))) throw E.forbidden();
+      return res(200, { authorized: true });
     } },
   { method: 'POST', path: '/admin', body: S.uploadBody, rateLimit: { limit: 60, windowMs: 10 * 60000 },
     handler: async ({ ctx, body }) => {
@@ -35,14 +41,70 @@ const api = createHandler('media', [
 exports.handler = async (event) => {
   const method = (event.httpMethod || 'GET').toUpperCase();
   const id = stripPrefix(event.path || '/', 'media').replace(/^\//, '');
-  if (method === 'GET' && /^[0-9a-f]{24}$/.test(id)) {
+  if ((method === 'GET' || method === 'HEAD') && /^[0-9a-f]{24}$/.test(id)) {
     try {
       await connectDB();
       const doc = await Media.findById(id).select('contentType data').lean();
       if (!doc) return json(404, { success: false, error: { code: 'NOT_FOUND', message: 'Picture not found.' } });
+      const bytes = Buffer.from(doc.data.buffer ? doc.data.buffer : doc.data);
+      const headers = {
+        'Content-Type': doc.contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+        'Accept-Ranges': 'bytes',
+      };
+      if (method === 'HEAD') {
+        headers['Content-Length'] = String(bytes.length);
+        headers['X-Afsana-Media-Size'] = String(bytes.length);
+        return { statusCode: 200, isBase64Encoded: true, body: '', headers };
+      }
+      // Netlify events normally lowercase header names, but the Cloudflare adapter and
+      // local runtimes may preserve original casing. Resolve Range case-insensitively.
+      const rangeHeader = Object.entries(event.headers || {}).find(([name]) => name.toLowerCase() === 'range')?.[1] || ''; 
+      let start = 0;
+      let end = bytes.length - 1;
+      let statusCode = 200;
+
+      if (rangeHeader) {
+        const match = String(rangeHeader).trim().match(/^bytes=(\d*)-(\d*)$/i);
+        if (!match || (!match[1] && !match[2])) {
+          headers['Content-Range'] = `bytes */${bytes.length}`;
+          headers['Content-Length'] = '0';
+          return { statusCode: 416, isBase64Encoded: true, body: '', headers };
+        }
+
+        if (!match[1]) {
+          const suffixLength = Number(match[2]);
+          if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0) {
+            headers['Content-Range'] = `bytes */${bytes.length}`;
+            headers['Content-Length'] = '0';
+            return { statusCode: 416, isBase64Encoded: true, body: '', headers };
+          }
+          start = Math.max(0, bytes.length - suffixLength);
+        } else {
+          start = Number(match[1]);
+          if (match[2]) end = Math.min(bytes.length - 1, Number(match[2]));
+        }
+
+        if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) ||
+            start < 0 || start >= bytes.length || end < start) {
+          headers['Content-Range'] = `bytes */${bytes.length}`;
+          headers['Content-Length'] = '0';
+          return { statusCode: 416, isBase64Encoded: true, body: '', headers };
+        }
+        statusCode = 206;
+        headers['Content-Range'] = `bytes ${start}-${end}/${bytes.length}`;
+      }
+
+      const payload = bytes.subarray(start, end + 1);
+      headers['Content-Length'] = String(payload.length);
+      headers['X-Afsana-Media-Size'] = String(bytes.length);
       return {
-        statusCode: 200, isBase64Encoded: true, body: Buffer.from(doc.data.buffer ? doc.data.buffer : doc.data).toString('base64'),
-        headers: { 'Content-Type': doc.contentType, 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; sandbox" },
+        statusCode,
+        isBase64Encoded: true,
+        body: payload.toString('base64'),
+        headers,
       };
     } catch (e) {
       console.error('[media] read failed:', e && e.name);

@@ -5,7 +5,8 @@ const json = (status, body, headers = {}) => ({
 });
 const res = (status, data = {}, headers = {}) => ({ __res: true, status, data, headers });
 const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-const clientIp = (h) => h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+// Cloudflare's edge-controlled CF-Connecting-IP takes precedence; never trust a client-supplied Netlify-style header when CF is present.
+const clientIp = (h) => h['cf-connecting-ip'] || h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
 function parseCookies(header = '') {
   const out = {};
@@ -34,7 +35,8 @@ function serializeCookie(name, value, { maxAge, secure = true } = {}) {
 function parseBody(event) {
   if (!event.body) return undefined;
   const raw = event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body;
-  if (raw.length > 1_000_000) { const { E } = require('./errors'); throw E.badRequest('Request too large.'); }
+  // Media uploads are Base64 JSON. Leave room for a 4 MB asset plus encoding overhead, while staying below Netlify Functions' 6 MB buffered payload ceiling.
+  if (Buffer.byteLength(raw, 'utf8') > 5_700_000) { const { E } = require('./errors'); throw E.badRequest('Request too large. Please upload a smaller or optimized media file.'); }
   try { return JSON.parse(raw); } catch { const { E } = require('./errors'); throw E.badRequest('Invalid JSON.'); }
 }
 module.exports = { json, res, lowerKeys, clientIp, parseCookies, serializeCookie, parseBody };

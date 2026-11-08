@@ -20,10 +20,11 @@ const timelineSchema = new Schema({
 const orderSchema = new Schema({
   orderNumber: { type: String, required: true, unique: true },
   customerId: { type: ObjectId, ref: 'Customer', index: true }, // null allowed for guest checkout
-  customer: { name: String, phone: String, email: String },       // snapshot at purchase time
+  customer: { name: String, phone: String, email: String, whatsappMarketingOptIn: Boolean },       // snapshot at purchase time
   shippingAddress: { fullName: String, phone: String, line1: String, line2: String, city: String, postalCode: String },
   subtotal: Number, shipping: { type: Number, default: 0 }, discount: { type: Number, default: 0 }, total: Number,
   couponCode: String,
+  referral: { partnerId: { type: ObjectId, ref: 'AffiliatePartner' }, partnerType: { type: String, enum: ['influencer', 'staff'] }, partnerName: String, code: String, source: { type: String, enum: ['promo_code', 'referral_link'] }, commissionType: { type: String, enum: ['percentage', 'fixed'] }, commissionValue: Number, attributedAt: Date },
   paymentMethod: { type: String, enum: C.PAYMENT_METHODS, required: true },
   paymentStatus: { type: String, enum: C.PAYMENT_STATUSES, default: 'Pending', index: true },
   status: { type: String, enum: C.ORDER_STATUSES, default: 'New' },
@@ -42,6 +43,7 @@ orderSchema.index({ status: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ storeId: 1, createdAt: -1 });
 orderSchema.index({ storeId: 1, status: 1, createdAt: -1 });
+orderSchema.index({ storeId: 1, 'referral.partnerId': 1, paymentStatus: 1, createdAt: -1 });
 orderSchema.index({ 'shippingAddress.city': 1 });
 storeScoped(orderSchema);
 

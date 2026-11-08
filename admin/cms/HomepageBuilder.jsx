@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import MediaUploadButton from '../components/MediaUploadButton';
 import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles, ArrowUp, ArrowDown, Copy, LayoutGrid, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
@@ -9,29 +10,109 @@ import { useAuth } from '../../src/auth/AuthContext';
 import { cmsApi } from '../../src/services';
 import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
-import ImageUploadButton from '../components/ImageUploadButton';
+
+const PAGE_OPTIONS = [["home","Homepage"],["site_navigation","Header navigation"],["site_header_after","Global header — after navigation"],["collection_before","Collection — before products"],["collection_after","Collection — after products"],["product_before","Product — before details"],["product_after","Product — after details"],["house","The House page"],["journal","Journal page"],["gifting","Gifting page"],["discover","Scent finder page"],["cart_before","Cart — before cart"],["cart_after","Cart — after cart"],["checkout_before","Checkout — before form"],["checkout_after","Checkout — after form"],["track_before","Track order — before form"],["track_after","Track order — after form"],["site_footer_before","Global footer — before footer"],["site_footer","Complete site footer"]];
+const SECTION_TYPE_GROUPS = [
+  { label: "Images, video & visual stories", keys: ["hero","image_banner","video_banner","split_story","cinematic_statement","lookbook","muse_scene","interactive_gallery","fragrance_dna","product_3d_showcase","reference_assets"] },
+  { label: "Products & collections", keys: ["featured_collection","best_sellers","new_arrivals","under_2000","gift_boxes","category_tiles"] },
+  { label: "Stories, trust & community", keys: ["blog_grid","post_grid","testimonials","community_pulse","trust_grid","benefits","values_grid"] },
+  { label: "Offers & customer engagement", keys: ["promo_timer","offer_timer","newsletter","scent_finder","faq","instagram","marquee","video_grid","rich_text","spacer"] },
+  { label: "Navigation & site-wide tools", keys: ["nav_menu","custom_footer","footer_showcase","whatsapp_float","ai_concierge"] }
+];
 
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
   buttonText: '', buttonLink: '', limit: 4, query: '', height: 'auto',
   width: 100, columns: 4, gap: 16, align: 'left', paddingTop: 80, paddingBottom: 80,
-  autoplay: true, muted: true, controls: false, overlay: true, background: '',
+  autoplay: true, muted: true, controls: false, overlay: true, background: '', theme: 'neon',
   items: '',
   ...(type === 'video_grid' ? { columns: 4, items: 'Atmosphere|The first impression|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=75\nIngredient|Dark woods|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=900&q=75\nCraft|Made by hand|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=75\nEmotion|Leave a trace|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=75' } : {}),
   ...(type === 'post_grid' ? { columns: 4, items: 'Find your signature scent|A guide to choosing your next fragrance|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=80|/journal\nThe world of oud|The mysterious world of oud|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=900&q=80|/journal\nThe psychology of scent|Why fragrance becomes memory|https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=80|/journal\nThe Afsana ritual|Make your fragrance yours|https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=80|/journal' } : {}),
   ...(type === 'promo_timer' || type === 'offer_timer' ? { endAt: '2026-11-05T23:59', label: 'PRIVATE COLLECTION OFFER', offerText: 'A special AFSANA offer ends soon.', buttonText: 'Shop the offer', buttonLink: '/shop' } : {}),
   ...(type === 'community_pulse' ? { eyebrow: 'THE AFSANA CIRCLE', subtitle: 'Use only verified brand numbers. Non-numeric values are treated as editorial labels.', disclaimer: 'Only publish verified numbers here.', items: 'Verified Reviews|0|Real customer feedback|/journal\nAfsana Circle|0|Community members|/account\nSignature Scents|0|Fragrances discovered|/shop\nGift Moments|0|Gifts created|/gifting' } : {}),
   ...(type === 'footer_showcase' ? { eyebrow: 'THE FINAL CHAPTER', body: 'Every scent leaves a trace. Make yours unforgettable.', offerLabel: 'PRIVATE ACCESS', offerText: 'Discover your signature scent.', buttonText: 'Explore Collection', buttonLink: '/shop' } : {}),
+  ...(type === 'reference_assets' ? {
+    heroBottleImageUrl:'', product3dModelUrl:'', product3dPosterUrl:'',
+    filmAtmosphereVideoUrl:'', filmBotanicalVideoUrl:'', filmCraftVideoUrl:'', filmEmotionVideoUrl:'',
+    worldDarkImageUrl:'', worldSoftImageUrl:'', worldBoldImageUrl:'',
+    filmAtmosphereImageUrl:'', filmBotanicalImageUrl:'', filmCraftImageUrl:'', filmEmotionImageUrl:'',
+    journalHeroImageUrl:'', journalImage1Url:'', journalImage2Url:'', journalImage3Url:'',
+    aboutHeroImageUrl:'', aboutStoryImageUrl:'', giftingHeroImageUrl:'', giftImage1Url:'', giftImage2Url:'', giftImage3Url:'',
+    discoverHeroImageUrl:'', discoverEnergyImageUrl:'', discoverSoftImageUrl:'', discoverNightImageUrl:'', collectionHeroImageUrl:''
+  } : {}),
+  ...(type === 'custom_footer' ? { brandName:'AFSANA', tagline:'THE ART OF SCENT', description:'Fragrance is more than a note. It is a memory, a feeling, a signature.', email:'', phone:'', instagramUrl:'', facebookUrl:'', footerNote:'The Art of Scent. Crafted for memories.', items:'Collection|Explore the fragrances||/shop\nThe House|Our story||/about\nJournal|Stories and rituals||/journal\nGifting|Thoughtful gifts||/gifting' } : {}),
+  ...(type === 'nav_menu' ? { logoUrl:'', brandName:'AFSANA', tagline:'THE ART OF SCENT', items:'Home|/\nCollection|/shop\nScent finder|/discover\nJournal|/journal\nThe house|/about\nGifting|/gifting' } : {}),
+  ...(type === 'whatsapp_float' ? { label: 'Chat with AFSANA', phone: '', message: 'Assalam-o-alaikum, I need help choosing an AFSANA fragrance.' } : {}),
+  ...(type === 'ai_concierge' ? { label: 'Scent Concierge', subtitle: 'A guided fragrance discovery assistant.' } : {}),
   ...(type === 'muse_scene' ? { eyebrow: 'THE AFSANA MUSE', characterImageUrl: '', body: 'A cinematic character-led chapter where fragrance, fashion and atmosphere meet.', buttonText: 'Meet the collection', buttonLink: '/shop' } : {}),
   ...(type === 'fragrance_dna' ? { eyebrow: 'FRAGRANCE DNA', body: 'Explore the personality behind every composition.', items: 'OUD|Deep & mysterious| |/shop\nAMBER|Warm & magnetic| |/shop\nROSE|Soft & luminous| |/shop\nMUSK|Clean & intimate| |/shop' } : {}),
   ...(type === 'product_3d_showcase' ? { eyebrow: 'THE AFSANA OBJECT', body: 'Explore the signature bottle in motion.', productSlug: '', imageUrl: '', buttonText: 'Explore fragrance', buttonLink: '/shop' } : {}),
   ...(type === 'interactive_gallery' ? { eyebrow: 'THE VISUAL JOURNEY', items: 'The Signature|Luminous opening|https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1000&q=85|/shop\nDark Woods|Deep oud atmosphere|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1000&q=85|/shop\nSoft Light|Floral world|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1000&q=85|/shop' } : {}),
+
+  ...(type === 'scent_finder' ? {
+    finderEyebrow:'AFSANA SCENT INTELLIGENCE',finderHeading:'Your scent',finderHeadingAccent:'has a personality.',
+    finderIntro:'Answer five thoughtful questions and discover a fragrance from the live AFSANA collection that matches your mood, notes and moment.',
+    stepLabel:'STEP',step1Title:'How do you want your fragrance to feel?',step1Subtitle:'Start with the energy you want to carry.',
+    step1Options:'Magnetic|Deep, confident and a little mysterious.|\nLuminous|Fresh, airy and effortlessly radiant.|\nElectric|Bright, bold and full of energy.|\nComforting|Warm, soft and quietly addictive.',
+    step2Title:'Which world pulls you in?',step2Subtitle:'Think about the atmosphere you love.',
+    step2Options:'After dark|Warm lights, velvet textures and late nights.|\nOpen air|Sunlight, fresh air and wide-open spaces.|\nCity pulse|Art, movement, music and new ideas.|\nSlow mornings|Soft light, calm rituals and comfort.',
+    step3Title:'Which notes sound most like you?',step3Subtitle:'Choose what you naturally gravitate towards.',
+    step3Options:'Amber & woods|Warm resin, sandalwood and smoky depth.|\nFlorals & musk|Petals, clean skin and soft elegance.|\nCitrus & spice|Fresh zest, pepper and aromatic lift.|\nVanilla & tonka|Creamy warmth and gentle sweetness.',
+    step4Title:'When will you wear it most?',step4Subtitle:'A scent can change with the moment.',
+    step4Options:'Everyday signature|Something that feels like you, daily.|\nEvening presence|A memorable trail after sunset.|\nSpecial occasions|Something expressive and distinctive.|\nA little of everything|Versatile, balanced and easy to love.',
+    step5Title:'How should it announce you?',step5Subtitle:'The final detail makes the match personal.',
+    step5Options:'Close & intimate|A personal discovery, just for those close.|\nNoticeable & elegant|A beautiful trail that turns heads.|\nBold & unforgettable|A confident entrance with presence.|\nFresh & effortless|A clean impression that feels natural.',
+    backText:'← Back',nextText:'Next step',revealText:'Reveal my scent',resultEyebrow:'YOUR SCENT MATCH IS READY',
+    resultTitle:'Your next chapter\nsmells like this.',matchLabel:'YOUR MATCH · CURATED FROM THE LIVE COLLECTION',
+    matchFallback:'A fragrance selected from the AFSANA collection based on your answers.',
+    noMatchText:'Your matching collection is loading. Browse the complete collection to find your scent.',
+    restartText:'Start again',matchButtonText:'Explore my match',noMatchButtonText:'Explore collection'
+  } : {}),
 });
-const parseItems = (text) => String(text || '').split('\n').map((x) => x.trim()).filter(Boolean).map((x) => {
+const parseItems = (text) => (Array.isArray(text) ? text : String(text || '').split('\n').map((x) => x.trim()).filter(Boolean).map((x) => {
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
   return { title: title.trim(), text: textValue.trim(), image: image.trim(), link: link.trim() };
-});
-const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
+})).map((x) => ({ title: String(x?.title || '').trim(), text: String(x?.text || '').trim(), image: String(x?.image || '').trim(), link: String(x?.link || '').trim() }));
+const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].join('|')).join('\n') : String(items || '');
+
+const AFSANA_EXPERIENCE_SECTIONS = [
+      { type:'reference_assets', title:'AFSANA image & 3D asset library', config:defaults('reference_assets') },
+      { type:'hero', title:'SCENT IS YOUR ENERGY.', config:{ eyebrow:'A new dimension of fragrance', subtitle:'Not just a fragrance. A feeling that enters the room before you do. Explore a world of unexpected notes, bold presence and unforgettable rituals.', heroKicker:'A new dimension of fragrance', buttonText:'Explore the collection', buttonLink:'/shop', secondaryButtonText:'Find your scent', secondaryButtonLink:'/discover', layout:'reference' } },
+      { type:'marquee', title:'Make an entrance. Leave a memory.', config:{ items:[{title:'MAKE AN ENTRANCE'},{title:'LEAVE A MEMORY'},{title:'BE YOUR OWN SIGNATURE'},{title:'SCENT IS A LANGUAGE'}] } },
+      { type:'category_tiles', title:'Enter a scent world.', config:{ eyebrow:'CHOOSE YOUR ATMOSPHERE', subtitle:'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.', columns:3, items:[{title:'Dark & magnetic',text:'Warm woods. Smoked amber. Quiet confidence.',image:'',link:'/shop?category=signature'},{title:'Soft & luminous',text:'Airy florals. Clean skin. Open windows.',image:'',link:'/shop?category=fresh'},{title:'Bright & bold',text:'Citrus sparks. Electric energy. No apologies.',image:'',link:'/shop?category=bold'}] } },
+      { type:'best_sellers', title:'Objects of desire.', config:{ eyebrow:'THE AFSANA SELECTION', subtitle:'Discover the fragrances that define the house.', limit:4, query:'sort:popular', columns:4 } },
+      { type:'product_3d_showcase', title:'Meet your scent in 3D.', config:{ eyebrow:'BEYOND THE BOTTLE', body:'Turn it. Tilt it. Get closer. Explore the AFSANA object from every angle with an interactive product experience made for curious minds.', buttonText:'Enter the 3D studio', buttonLink:'/shop' } },
+      { type:'offer_timer', title:'Good taste. Even better delivery.', config:{ label:'A LITTLE EXTRA FROM THE HOUSE', offerText:'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.', endAt:'2026-11-30T23:59', buttonText:'Explore the private edit', buttonLink:'/shop', hideTimer:false } },
+      { type:'scent_finder', title:'Your mood has a fragrance. Let’s find it.', config:{ eyebrow:'A LITTLE SCIENCE. A LOT OF INSTINCT.' } },
+      { type:'video_grid', title:'Feel the fragrance.', config:{ ...defaults('video_grid'), eyebrow:'THE AFSANA MOVING IMAGE', items:parseItems(defaults('video_grid').items), limit:4, columns:4 } },
+      { type:'blog_grid', title:'The scent journal.', config:{ eyebrow:'NOTES FROM THE HOUSE', items:parseItems(defaults('post_grid').items).slice(0,3), columns:3, limit:3 } },
+      { type:'community_pulse', title:'A house people come back to.', config:defaults('community_pulse') },
+      { type:'newsletter', title:'Good things linger.', config:{ eyebrow:'THE PRIVATE LIST', body:'Be first to discover new drops, private offers, scent rituals and stories from the AFSANA universe.' } },
+];
+
+const AFSANA_INNER_SECTIONS = [
+  { slot:'house-hero', pageKey:'house', type:'hero', title:'We make memories visible.', config:{ layout:'inner', eyebrow:'A house with a point of view', subtitle:'AFSANA is built around a simple belief: fragrance is more than what you wear. It is what you leave behind. We create modern scent objects designed to become part of your story.' } },
+  { slot:'house-story', pageKey:'house', type:'split_story', title:'A little unexpected. A lot unforgettable.', config:{ eyebrow:'OUR PHILOSOPHY', body:'From the first bright note to the final warm trace, our approach is rooted in contrast. We pair familiar ingredients in unfamiliar ways, creating fragrances that feel personal, expressive and unmistakably yours.', buttonText:'Explore our scents', buttonLink:'/shop' } },
+  { slot:'house-3d', pageKey:'house', type:'product_3d_showcase', title:'A scent object, from every angle.', config:{ eyebrow:'THE AFSANA OBJECT', body:'Explore the object behind the memory. Turn the bottle, discover its details and find the fragrance that feels like yours.' } },
+  { slot:'journal-hero', pageKey:'journal', type:'hero', title:'A world in every note.', config:{ layout:'inner', eyebrow:'STORIES, RITUALS & OLFACTORY CURIOSITIES', subtitle:'Explore the art of wearing fragrance, the craft of composition and the memories that scent makes possible.' } },
+  { slot:'journal-stories', pageKey:'journal', type:'blog_grid', title:'Stories from the house.', config:{ eyebrow:'NOTES FROM AFSANA', items:parseItems(defaults('post_grid').items).slice(0,3), columns:3, limit:3 } },
+  { slot:'gifting-hero', pageKey:'gifting', type:'hero', title:'Wrap up the extraordinary.', config:{ layout:'inner', eyebrow:'GIVE THEM A FEELING', subtitle:'For the person who has everything, give them something they will remember. Thoughtful fragrance gifts, discovery sizes and signature sets.', buttonText:'Explore gift-worthy scents', buttonLink:'/shop' } },
+  { slot:'gifting-worlds', pageKey:'gifting', type:'category_tiles', title:'Give them a feeling.', config:{ eyebrow:'THE ART OF GIFTING', subtitle:'Thoughtful fragrance gifts, discovery sizes and signature sets.', columns:3, items:[{title:'Signature gifting',text:'A fragrance as individual as they are.',image:'',link:'/shop'},{title:'Discovery set',text:'Let them find a new favourite.',image:'',link:'/shop'},{title:'Gift-ready moments',text:'Details that make it feel special.',image:'',link:'/shop'}] } },
+  { slot:'discover-hero', pageKey:'discover', type:'hero', title:'There is a scent for that.', config:{ layout:'inner', eyebrow:'AFSANA SCENT INTELLIGENCE / BETA', subtitle:'Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.', buttonText:'Begin your scent match', buttonLink:'#finderSection' } },
+  { slot:'discover-worlds', pageKey:'discover', type:'category_tiles', title:'Choose a feeling.', config:{ eyebrow:'A MORE PERSONAL DISCOVERY', subtitle:'Fragrance is personal. Let your instinct lead, and explore a scent world that matches your energy.', columns:3, items:[{title:'Make a statement',text:'Confident, vivid, unforgettable.',image:'',link:'/shop'},{title:'Feel luminous',text:'Soft, airy, effortless.',image:'',link:'/shop'},{title:'Stay mysterious',text:'Deep, warm, magnetic.',image:'',link:'/shop'}] } },
+  { slot:'discover-finder', pageKey:'discover', type:'scent_finder', title:'Find your fragrance.', config:{ eyebrow:'AFSANA SCENT INTELLIGENCE' } }
+];
+const AFSANA_GLOBAL_SECTIONS = [
+  { slot:'site-navigation', type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', config:defaults('nav_menu'), sortOrder:0, isEnabled:true },
+  { slot:'site-footer', type:'custom_footer', title:'AFSANA custom footer', pageKey:'site_footer', config:defaults('custom_footer'), sortOrder:0, isEnabled:true },
+  { slot:'site-footer-before-ai', type:'ai_concierge', title:'Scent Concierge', pageKey:'site_footer_before', config:defaults('ai_concierge'), sortOrder:0, isEnabled:true },
+  { slot:'site-footer-before-whatsapp', type:'whatsapp_float', title:'WhatsApp contact', pageKey:'site_footer_before', config:defaults('whatsapp_float'), sortOrder:1, isEnabled:true }
+];
+const AFSANA_EXPECTED_SLOTS = [
+  ...AFSANA_EXPERIENCE_SECTIONS.map((_,index)=>`home-${index}`),
+  ...AFSANA_INNER_SECTIONS.map((item)=>item.slot),
+  ...AFSANA_GLOBAL_SECTIONS.map((item)=>item.slot)
+];
 
 export default function HomepageBuilder() {
   const { can } = useAuth();
@@ -40,43 +121,200 @@ export default function HomepageBuilder() {
   const rows = data?.items || [];
   const [dragId, setDragId] = useState(null);
   const [drawer, setDrawer] = useState({ open: false, item: null });
+  const [pageKey, setPageKey] = useState('home');
+  const [insertAfter, setInsertAfter] = useState(null);
   const [form, setForm] = useState({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
   const [busy, setBusy] = useState(false);
+  const [layoutPreviewed, setLayoutPreviewed] = useState(false);
   const [notice, setNotice] = useState('');
   const [del, setDel] = useState(null);
-  const preview = () => { try { localStorage.setItem('afsana_cms_preview_v1', JSON.stringify({ sections: sorted })); window.open('/?afsanaPreview=1', '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
+  const [editorTab, setEditorTab] = useState('content');
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (loading || drawer.open) return;
+    if (query.get('openHeroAssetLibrary') === '1') {
+      openHeroAssetLibrary();
+      query.delete('openHeroAssetLibrary');
+    } else if (query.get('openLogoSettings') === '1') {
+      openLogoSettings();
+      query.delete('openLogoSettings');
+    } else return;
+    const next = query.toString();
+    window.history.replaceState({}, '', window.location.pathname + (next ? '?' + next : '') + window.location.hash);
+  }, [loading, rows.length, drawer.open]);
+  const previewExperienceLayout = () => {
+    try {
+      const innerLayouts = Object.fromEntries(
+        ['house','journal','gifting','discover'].map((targetPageKey) => [
+          targetPageKey,
+          AFSANA_INNER_SECTIONS.filter((section) => section.pageKey === targetPageKey).map((section,index) => ({
+            ...section,
+            id:`preview-${section.slot}`,
+            sortOrder:index,
+            isEnabled:true,
+            config:{...section.config,theme:'neon',templateId:'afsana-neon-experience-v1',templateSlot:section.slot}
+          }))
+        ])
+      );
+      const layouts = {
+        home: AFSANA_EXPERIENCE_SECTIONS.map((section,index) => ({
+          ...section,
+          id:`preview-home-${index}`,
+          pageKey:'home',
+          sortOrder:index,
+          isEnabled:true,
+          config:{
+            ...section.config,
+            ...(section.type==='reference_assets'?(rows.find((item)=>(item.pageKey||'home')==='home'&&item.type==='reference_assets')?.config||{}):{}),
+            theme:'neon',
+            templateId:'afsana-neon-experience-v1',
+            templateSlot:`home-${index}`
+          }
+        })),
+        ...innerLayouts,
+        site_navigation:[{id:'preview-navigation',type:'nav_menu',title:'AFSANA navigation',pageKey:'site_navigation',sortOrder:0,isEnabled:true,config:{...defaults('nav_menu'),items:parseItems(defaults('nav_menu').items),theme:'neon',templateId:'afsana-neon-experience-v1'}}],
+        site_footer:[{id:'preview-footer',type:'custom_footer',title:'AFSANA custom footer',pageKey:'site_footer',sortOrder:0,isEnabled:true,config:{...defaults('custom_footer'),items:parseItems(defaults('custom_footer').items),theme:'neon',templateId:'afsana-neon-experience-v1'}}],
+        site_footer_before:[{id:'preview-ai',type:'ai_concierge',title:'Scent Concierge',pageKey:'site_footer_before',sortOrder:0,isEnabled:true,config:{...defaults('ai_concierge'),theme:'neon',templateId:'afsana-neon-experience-v1'}}]
+      };
+      localStorage.setItem('afsana_cms_preview_v3',JSON.stringify({pageKey:'home',sections:layouts.home,layouts}));
+      const previewWindow = window.open('/?afsanaPreview=1&afsanaPageKey=home','_blank');
+      if (!previewWindow) {
+        setNotice('Preview tab was blocked. Allow pop-ups for this site, then click Preview again.');
+        return;
+      }
+      try { previewWindow.opener = null; } catch {}
+      setLayoutPreviewed(true);
+      setNotice('Preview opened. Check the new design first; nothing is live until you click Confirm & Publish.');
+    } catch {
+      setNotice('The AFSANA preview could not be opened in this browser.');
+    }
+  };
+
+  const addExperienceLayout = async () => {
+    const templateId = 'afsana-neon-experience-v1';
+    const sections = [
+      ...AFSANA_EXPERIENCE_SECTIONS.map((section,index) => ({
+        slot:`home-${index}`, type:section.type, title:section.title, pageKey:'home', sortOrder:index, isEnabled:true,
+        config:{
+          ...section.config,
+          ...(section.type==='reference_assets'?(rows.find((item)=>(item.pageKey||'home')==='home'&&item.type==='reference_assets')?.config||{}):{}),
+          theme:'neon', templateId, templateSlot:`home-${index}`
+        }
+      })),
+      ...AFSANA_INNER_SECTIONS.map((section,index) => ({
+        slot:section.slot, type:section.type, title:section.title, pageKey:section.pageKey, sortOrder:index, isEnabled:true,
+        config:{...section.config,theme:'neon',templateId,templateSlot:section.slot}
+      })),
+      ...AFSANA_GLOBAL_SECTIONS.map((section) => ({
+        slot:section.slot, type:section.type, title:section.title, pageKey:section.pageKey,
+        sortOrder:section.sortOrder, isEnabled:section.isEnabled,
+        config:{...section.config,theme:'neon',templateId,templateSlot:section.slot}
+      }))
+    ];
+    const slots = new Set(rows.filter((item)=>item.config?.templateId===templateId).map((item)=>item.config?.templateSlot));
+    const allSlotsExist = sections.every((section)=>slots.has(section.slot));
+    const enabledSlotsExist = sections.filter((section)=>section.isEnabled).every((section)=>rows.some((row)=>row.config?.templateId===templateId&&row.config?.templateSlot===section.slot&&row.isEnabled!==false));
+    if (allSlotsExist && enabledSlotsExist) {
+      setNotice('The AFSANA experience layout is already published. Edit, hide, reorder or remove its sections below.');
+      return;
+    }
+    setBusy(true); setNotice('');
+    try {
+      const result = await api.publishExperience({templateId,sections});
+      try { localStorage.removeItem('afsana_cms_preview_v3'); localStorage.removeItem('afsana_cms_preview_v2'); localStorage.removeItem('afsana_cms_preview_v1'); } catch {}
+      setLayoutPreviewed(false);
+      setPageKey('home');
+      setNotice(`AFSANA layout confirmed and published. ${result.created || 0} new sections added; previous sections hidden. The new layout is now permanent and editable.`);
+      reload();
+    } catch (e) {
+      setNotice(e.message || 'Publish failed. No partial CMS layout was applied; check your connection and try again.');
+      reload();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
-  const open = (item) => {
+  const open = (item, afterItem = null) => {
+    setInsertAfter(afterItem);
     if (item) {
+      setPageKey(item.pageKey || 'home');
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
       cfg.items = itemText(cfg.items);
-      setForm({ type: item.type, title: item.title || '', config: cfg, isEnabled: item.isEnabled !== false });
-    } else setForm({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
+      setForm({ type: item.type, title: item.title || '', pageKey: item.pageKey || 'home', config: cfg, isEnabled: item.isEnabled !== false });
+    } else {
+      const initialType = pageKey === 'site_navigation' ? 'nav_menu' : pageKey === 'site_footer' ? 'custom_footer' : 'hero';
+      setForm({ type: initialType, title: '', pageKey, config: defaults(initialType), isEnabled: true });
+    }
+    setEditorTab('content');
     setDrawer({ open: true, item: item || null });
   };
-  const close = () => setDrawer({ open: false, item: null });
+  const openHeroAssetLibrary = () => {
+    const assetSection = rows.find((item) => (item.pageKey || 'home') === 'home' && item.type === 'reference_assets');
+    if (assetSection) {
+      open(assetSection);
+      return;
+    }
+    setPageKey('home');
+    setInsertAfter(null);
+    setForm({ type: 'reference_assets', title: 'AFSANA image & 3D asset library', pageKey: 'home', config: defaults('reference_assets'), isEnabled: true });
+    setEditorTab('content');
+    setDrawer({ open: true, item: null });
+  };
+  const openLogoSettings = () => {
+    const navSection = rows.find((item) => item.pageKey === 'site_navigation' && item.type === 'nav_menu');
+    setPageKey('site_navigation');
+    setInsertAfter(null);
+    if (navSection) {
+      open(navSection);
+      return;
+    }
+    setForm({ type:'nav_menu', title:'AFSANA navigation', pageKey:'site_navigation', config:defaults('nav_menu'), isEnabled:true });
+    setEditorTab('content');
+    setDrawer({ open:true, item:null });
+  };
+  const close = () => { setDrawer({ open: false, item: null }); setInsertAfter(null); };
   const save = async (e) => {
     e.preventDefault(); setBusy(true); setNotice('');
     try {
       const cfg = { ...form.config };
-      const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse'];
+      const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu','custom_footer'];
       if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
-      const payload = { type: form.type, title: form.title.trim(), config: cfg, sortOrder: drawer.item?.sortOrder ?? rows.length, isEnabled: !!form.isEnabled };
-      if (drawer.item) await api.update(drawer.item.id, payload); else await api.create(payload);
-      close(); setNotice('Section saved.'); reload();
+      const targetPage = form.pageKey || 'home';
+      const payload = { type: form.type, title: form.title.trim(), pageKey: targetPage, config: cfg, sortOrder: drawer.item?.sortOrder ?? sorted.length, isEnabled: !!form.isEnabled };
+      if (drawer.item) {
+        if ((drawer.item.pageKey || 'home') !== targetPage) {
+          const destinationCount = rows.filter((x) => (x.pageKey || 'home') === targetPage && x.id !== drawer.item.id).length;
+          payload.sortOrder = destinationCount;
+        }
+        await api.update(drawer.item.id, payload);
+      } else {
+        const insertIndex = insertAfter ? Math.max(0, sorted.findIndex((x) => x.id === insertAfter.id) + 1) : sorted.length;
+        await api.create({ ...payload, sortOrder: insertIndex });
+        await Promise.all(sorted.map((item, i) => api.update(item.id, { sortOrder: i < insertIndex ? i : i + 1 })));
+      }
+      setPageKey(targetPage); close(); setNotice('Section saved in the selected page layout.'); reload();
     } catch (e2) { setNotice(e2.message || 'Could not save section.'); } finally { setBusy(false); }
   };
   const reorder = async (sourceId, targetId) => {
     if (!sourceId || !targetId || sourceId === targetId) return;
-    const next = [...rows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    const next = [...sorted];
     const from = next.findIndex((x) => x.id === sourceId), to = next.findIndex((x) => x.id === targetId);
     if (from < 0 || to < 0) return;
     const [moved] = next.splice(from, 1); next.splice(to, 0, moved);
     try { await Promise.all(next.map((item, i) => api.update(item.id, { sortOrder: i }))); setNotice('Section order saved.'); reload(); }
     catch (e) { setNotice(e.message || 'Could not reorder sections.'); }
   };
-  const sorted = [...rows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const allPageRows = rows.filter((item) => (item.pageKey || 'home') === pageKey);
+  const canonicalTemplateId = 'afsana-neon-experience-v1';
+  const canonicalPageRows = allPageRows.filter((item) => item.config?.templateId === canonicalTemplateId);
+  // Keep every saved section visible, including custom sections added after the canonical AFSANA template.
+  // The previous conditional hid all non-template rows whenever any canonical template row existed.
+  const pageRows = allPageRows;
+  const sorted = [...pageRows].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const experienceSlots = new Set(rows.filter((item) => item.config?.templateId === canonicalTemplateId).map((item) => item.config?.templateSlot));
+  const hasExperienceTemplate = AFSANA_EXPECTED_SLOTS.every((slot) => experienceSlots.has(slot)) && AFSANA_GLOBAL_SECTIONS.filter((section)=>section.isEnabled).every((section)=>rows.some((item)=>item.config?.templateId===canonicalTemplateId&&item.config?.templateSlot===section.slot&&item.isEnabled!==false));
   const moveBy = async (id, delta) => {
     const next = [...sorted], from = next.findIndex((x) => x.id === id), to = from + delta;
     if (from < 0 || to < 0 || to >= next.length) return;
@@ -86,17 +324,28 @@ export default function HomepageBuilder() {
   };
   const duplicate = async (item) => {
     setBusy(true); setNotice('');
-    try { await api.create({ type: item.type, title: item.title || '', config: item.config || {}, sortOrder: (item.sortOrder ?? rows.length) + 1, isEnabled: false }); setNotice('Section duplicated as hidden. Review it, then publish it.'); reload(); }
-    catch (e) { setNotice(e.message || 'Could not duplicate section.'); } finally { setBusy(false); }
+    try {
+      const insertIndex = Math.max(0, sorted.findIndex((x) => x.id === item.id) + 1);
+      await api.create({ type: item.type, title: item.title || '', pageKey: item.pageKey || pageKey, config: item.config || {}, sortOrder: insertIndex, isEnabled: false });
+      await Promise.all(sorted.map((row, i) => api.update(row.id, { sortOrder: i < insertIndex ? i : i + 1 })));
+      setNotice('Section duplicated just below the original as hidden. Review it, then publish it.'); reload();
+    } catch (e) { setNotice(e.message || 'Could not duplicate section.'); } finally { setBusy(false); }
   };
 
   const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
-  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid'];
+  const formPageTypes = form.pageKey === 'site_navigation' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'nav_menu') : form.pageKey === 'site_footer' ? HOMEPAGE_SECTION_TYPES.filter((x) => x.key === 'custom_footer') : HOMEPAGE_SECTION_TYPES.filter((x) => !['nav_menu','custom_footer'].includes(x.key));
+  const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse','nav_menu','custom_footer'];
   return <div className="space-y-5">
-    <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build the storefront like a canvas</h2><p className="text-sm text-[#5f654f] mt-1">Drag sections, set alignment, width, height, columns and spacing. Add up to 4 videos or posts in one row, then preview and publish.</p></div>
-        <div className="flex gap-2">{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
+    <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-4 sm:p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Universal website builder</p><h2 className="font-display text-2xl mt-1">Every page. One visual canvas.</h2><p className="text-sm text-[#5f654f] mt-1">Choose a page or insertion point, then add, hide, duplicate, delete and reorder sections without changing products, orders or checkout.</p></div>
+        <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto">
+          <Select className="w-full sm:min-w-[220px] sm:w-auto" aria-label="Website page" value={pageKey} onChange={(e) => { setPageKey(e.target.value); setLayoutPreviewed(false); }}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select>
+          {can('homepage.create') && <Button className="w-full sm:w-auto" icon={Plus} onClick={() => open(null)}>Add section</Button>}
+          {can('homepage.edit') && pageKey === 'home' && <Button className="w-full sm:w-auto" variant="secondary" onClick={openHeroAssetLibrary}>Upload hero bottle / 3D model</Button>}
+          {can('homepage.edit') && pageKey === 'home' && <Button className="w-full sm:w-auto" variant="secondary" onClick={previewExperienceLayout}>Preview AFSANA layout</Button>}
+          {can('homepage.create') && pageKey === 'home' && <Button className="w-full sm:w-auto" disabled={busy || hasExperienceTemplate || !layoutPreviewed} onClick={addExperienceLayout}>{busy ? 'Publishing…' : hasExperienceTemplate ? 'Already published' : 'Confirm & Publish'}</Button>}
+        </div>
       </div>
     </div>
     {notice && <p role="status" className="text-sm rounded-xl px-4 py-3 bg-[#e6f0e4] text-[#3d6b3d]">{notice}</p>}
@@ -104,62 +353,190 @@ export default function HomepageBuilder() {
       {sorted.map((item, index) => {
         const meta = HOMEPAGE_SECTION_TYPES.find((x) => x.key === item.type);
         const cfg = item.config || {};
-        return <div key={item.id} draggable={can('homepage.edit')} onDragStart={() => setDragId(item.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => { reorder(dragId, item.id); setDragId(null); }} className="group rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-4 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-hover)] transition-shadow">
-          <div className="flex items-center gap-3">
+        return <div key={item.id} draggable={can('homepage.edit')} onDragStart={() => setDragId(item.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => { reorder(dragId, item.id); setDragId(null); }} className="group rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-3 sm:p-4 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-hover)] transition-shadow">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <button type="button" className="cursor-grab p-2 rounded-xl bg-[#f3f1e9] text-[#5f654f]" aria-label="Drag section"><GripVertical className="w-5 h-5" /></button>
             <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="text-xs font-semibold text-[#748e40]">{String(index + 1).padStart(2, '0')}</span><h3 className="font-medium truncate">{item.title || meta?.label || item.type}</h3>{item.type.includes('video') && <Video className="w-4 h-4 text-[#263e0e]" />}{item.type.includes('image') && <ImageIcon className="w-4 h-4 text-[#263e0e]" />}</div><p className="text-xs text-[#5f654f] mt-1">{meta?.label || item.type} · {cfg.columns || 1} columns · {cfg.align || 'left'} · {cfg.width || 100}%</p></div>
             <span className={item.isEnabled ? 'text-xs rounded-full bg-[#e6f0e4] text-[#3d6b3d] px-2.5 py-1' : 'text-xs rounded-full bg-[#f3f1e9] text-[#5f654f] px-2.5 py-1'}>{item.isEnabled ? 'Live' : 'Hidden'}</span>
-            {can('homepage.edit') && <div className="flex items-center gap-1">
-              <button type="button" disabled={index === 0} onClick={() => moveBy(item.id, -1)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move up"><ArrowUp className="w-4 h-4" /></button>
-              <button type="button" disabled={index === sorted.length - 1} onClick={() => moveBy(item.id, 1)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move down"><ArrowDown className="w-4 h-4" /></button>
-              <button type="button" onClick={() => duplicate(item)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title="Duplicate"><Copy className="w-4 h-4" /></button>
-              <button type="button" onClick={() => api.setActive(item.id, !item.isEnabled).then(reload)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title={item.isEnabled ? 'Hide' : 'Show'}><Power className="w-4 h-4" /></button>
-              <button type="button" onClick={() => open(item)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title="Edit"><Pencil className="w-4 h-4" /></button>
+            {can('homepage.create') && <button type="button" onClick={() => open(null, item)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#748e40] hover:bg-[#eef2e5]" title="Insert a new section after this one"><Plus className="w-4 h-4" /><span>Insert</span></button>}
+            {can('homepage.edit') && <div className="flex flex-wrap items-center gap-1 sm:ml-auto">
+              <button type="button" disabled={index === 0} onClick={() => moveBy(item.id, -1)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move up"><ArrowUp className="w-4 h-4" /><span>Up</span></button>
+              <button type="button" disabled={index === sorted.length - 1} onClick={() => moveBy(item.id, 1)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e] disabled:opacity-30" title="Move down"><ArrowDown className="w-4 h-4" /><span>Down</span></button>
+              <button type="button" onClick={() => duplicate(item)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title="Duplicate"><Copy className="w-4 h-4" /><span>Copy</span></button>
+              <button type="button" onClick={() => api.setActive(item.id, !item.isEnabled).then(reload)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] hover:text-[#263e0e]" title={item.isEnabled ? 'Hide' : 'Show'}><Power className="w-4 h-4" /><span>{item.isEnabled ? 'Hide' : 'Show'}</span></button>
+              <button type="button" onClick={() => open(item)} className="inline-flex items-center gap-1 rounded-lg bg-[#263e0e] px-3 py-2 text-xs text-white hover:bg-[#182308]" title="Edit"><Pencil className="w-4 h-4" /><span>Edit</span></button>
             </div>}
-            {can('homepage.delete') && <button type="button" onClick={() => setDel(item)} className="p-2 rounded-xl text-[#5f654f] hover:bg-[#f7e7e5] hover:text-[#9b3f3f]" title="Delete"><Trash2 className="w-4 h-4" /></button>}
+            {can('homepage.delete') && <button type="button" onClick={() => setDel(item)} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#9b3f3f] hover:bg-[#f7e7e5]" title="Delete"><Trash2 className="w-4 h-4" /><span>Delete</span></button>}
           </div>
         </div>;
       })}
-      {!sorted.length && <Card><div className="py-10 text-center"><Sparkles className="w-8 h-8 mx-auto text-[#748e40]" /><p className="font-medium mt-3">Your canvas is empty</p><p className="text-sm text-[#5f654f] mt-1">Add a hero, product row, story, video grid, post grid, offer timer or another section.</p></div></Card>}
+      {!sorted.length && <Card><div className="py-10 text-center"><Sparkles className="w-8 h-8 mx-auto text-[#748e40]" /><p className="font-medium mt-3">No sections on this page yet</p><p className="text-sm text-[#5f654f] mt-1">Add a hero, product row, story, video grid, post grid, 3D theatre, offer timer or any other section.</p></div></Card>}
     </div>}
-    <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
+    <Drawer size="xl" open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button className="w-full sm:w-auto" variant="secondary" type="button" onClick={close}>Cancel</Button><Button className="w-full sm:w-auto" type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
-        <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{HOMEPAGE_SECTION_TYPES.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
-        <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
+        <div className="sticky top-0 z-10 -mx-3 sm:-mx-5 -mt-2 mb-2 border-b border-[#263e0e]/10 bg-[#faf8f4] px-3 pb-3 pt-2 sm:px-5">
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#f3f1e9] p-1">
+            <button type="button" onClick={() => setEditorTab('content')} aria-pressed={editorTab === 'content'} className={"rounded-lg px-3 py-3 text-sm font-semibold transition " + (editorTab === 'content' ? "bg-[#263e0e] text-white shadow" : "text-[#5f654f] hover:bg-white")}>Content & details</button>
+            <button type="button" onClick={() => setEditorTab('design')} aria-pressed={editorTab === 'design'} className={"rounded-lg px-3 py-3 text-sm font-semibold transition " + (editorTab === 'design' ? "bg-[#263e0e] text-white shadow" : "text-[#5f654f] hover:bg-white")}>Design & layout</button>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[#5f654f]">{editorTab === 'content' ? 'Edit the words, images, links and section content here. You do not need to change the design settings for normal updates.' : 'Choose the overall look here. The recommended defaults already work well on phones and desktop.'}</p>
+        </div>
+        {editorTab === 'content' && <>
+        <div className="rounded-xl border border-[#b4bf41]/30 bg-[#eef2e5] p-3 text-xs leading-5 text-[#40552c]">
+          <b>Easy editing:</b> Change the text, photos and links. Optional settings are kept in the Design tab.
+        </div>
+        <Field label="Place this section on"><Select disabled={form.type === 'nav_menu' || form.type === 'custom_footer'} value={form.pageKey || pageKey} onChange={(e) => set('pageKey', e.target.value)}>{PAGE_OPTIONS.map(([key,label]) => <option key={key} value={key}>{label}</option>)}</Select></Field>
+        <Field label="What would you like to add?"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{SECTION_TYPE_GROUPS.map((group) => { const options = formPageTypes.filter((x) => group.keys.includes(x.key)); return options.length ? <optgroup key={group.label} label={group.label}>{options.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</optgroup> : null; })}</Select></Field>
+        <Field label="Section title" hint="The main heading visitors will see. Leave empty to use the suggested heading."><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
+        </>}
 
+        {editorTab === 'design' && <>
         <div className="rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4 space-y-3">
+          <Field label="Visual palette"><Select value={form.config.theme || 'neon'} onChange={(e) => setConfig('theme', e.target.value)}><option value="neon">Electric violet + acid lime</option><option value="classic">AFSANA forest + olive</option></Select></Field>
           <div className="flex items-center gap-2 text-sm font-semibold"><LayoutGrid className="w-4 h-4 text-[#748e40]" /> Layout controls</div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Width %"><Input type="number" min="20" max="100" value={form.config.width ?? 100} onChange={(e) => setConfig('width', Math.min(100, Math.max(20, Number(e.target.value))))} /></Field>
-            <Field label="Height"><Input value={form.config.height ?? 'auto'} onChange={(e) => setConfig('height', e.target.value)} placeholder="auto or 650px" /></Field>
-            <Field label="Columns"><Select value={form.config.columns ?? 4} onChange={(e) => setConfig('columns', Number(e.target.value))}>{[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} columns</option>)}</Select></Field>
-            <Field label="Gap px"><Input type="number" min="0" max="64" value={form.config.gap ?? 16} onChange={(e) => setConfig('gap', Number(e.target.value))} /></Field>
-            <Field label="Top padding"><Input type="number" min="0" max="240" value={form.config.paddingTop ?? 80} onChange={(e) => setConfig('paddingTop', Number(e.target.value))} /></Field>
-            <Field label="Bottom padding"><Input type="number" min="0" max="240" value={form.config.paddingBottom ?? 80} onChange={(e) => setConfig('paddingBottom', Number(e.target.value))} /></Field>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Section width"><Select value={Number(form.config.width ?? 100)} onChange={(e) => setConfig('width', Number(e.target.value))}><option value="100">Full width</option><option value="90">Wide</option><option value="80">Narrow</option><option value="70">Compact</option></Select></Field>
+            <Field label="Cards per row"><Select value={form.config.columns ?? 4} onChange={(e) => setConfig('columns', Number(e.target.value))}>{[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} columns</option>)}</Select></Field>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[['left',AlignLeft,'Left'],['center',AlignCenter,'Center'],['right',AlignRight,'Right']].map(([value,Icon,label]) => <button type="button" key={value} onClick={() => setConfig('align', value)} className={'flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs '+(form.config.align===value?'border-[#263e0e] bg-[#263e0e] text-white':'border-[#263e0e]/10 bg-white text-[#5f654f]')}><Icon className="w-4 h-4"/>{label}</button>)}
           </div>
+          <details className="rounded-xl border border-[#263e0e]/10 bg-white p-3">
+            <summary className="cursor-pointer text-sm font-medium text-[#263e0e]">More layout settings (optional)</summary>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Height"><Input value={form.config.height ?? 'auto'} onChange={(e) => setConfig('height', e.target.value)} placeholder="auto or 650px" /></Field>
+              <Field label="Space between cards (px)"><Input type="number" min="0" max="64" value={form.config.gap ?? 16} onChange={(e) => setConfig('gap', Number(e.target.value))} /></Field>
+              <Field label="Top spacing (px)"><Input type="number" min="0" max="240" value={form.config.paddingTop ?? 80} onChange={(e) => setConfig('paddingTop', Number(e.target.value))} /></Field>
+              <Field label="Bottom spacing (px)"><Input type="number" min="0" max="240" value={form.config.paddingBottom ?? 80} onChange={(e) => setConfig('paddingBottom', Number(e.target.value))} /></Field>
+            </div>
+          </details>
         </div>
+        </>}
 
-        {common && <><Field label="Eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Body copy"><Textarea rows={5} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
-        {['hero','image_banner','split_story','lookbook'].includes(form.type) && <><Field label="Image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} placeholder="Paste an image URL or upload below" /><div className="mt-2 flex items-center gap-3">{form.config.imageUrl && <img src={form.config.imageUrl} alt="" className="h-16 w-24 rounded-lg object-cover border border-[#263e0e]/10" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}<ImageUploadButton onUploaded={(url) => setConfig('imageUrl', url)} /></div></Field><Field label="Mobile image URL"><Input value={form.config.mobileImageUrl || ''} onChange={(e) => setConfig('mobileImageUrl', e.target.value)} placeholder="Optional mobile image" /><div className="mt-2"><ImageUploadButton label="Upload mobile image" onUploaded={(url) => setConfig('mobileImageUrl', url)} /></div></Field></>}
-        {['video_banner','video_grid'].includes(form.type) && <><Field label="Video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="https://…/video.mp4" /></Field><Field label="Poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} placeholder="Optional video poster image" /><div className="mt-2"><ImageUploadButton label="Upload poster image" onUploaded={(url) => setConfig('posterUrl', url)} /></div></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
-        {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-2 gap-3"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
+        {editorTab === 'content' && <>
+        {common && <><Field label="Section eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Body copy"><Textarea rows={5} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
+        {['hero','image_banner','split_story','lookbook'].includes(form.type) && <><Field label="Image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} placeholder="https://…" /></Field><Field label="Mobile image URL"><Input value={form.config.mobileImageUrl || ''} onChange={(e) => setConfig('mobileImageUrl', e.target.value)} /></Field></>}
+        {['video_banner','cinematic_statement'].includes(form.type) && <><Field label="Background video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="Upload an MP4/WebM video or paste its URL" /><div className="mt-2"><MediaUploadButton label="Upload original video" accept="video/mp4,video/webm,.mp4,.webm" onUploaded={(url) => setConfig('videoUrl', url)} /></div></Field><Field label="Video poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} /></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
+        {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
         {['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','blog_grid'].includes(form.type) && <><Field label="Collection / query hint"><Input value={form.config.query || ''} onChange={(e) => setConfig('query', e.target.value)} placeholder="Optional category / collection / query" /></Field><Field label="Number of items"><Input type="number" min="1" max="12" value={form.config.limit ?? 4} onChange={(e) => setConfig('limit', Number(e.target.value))} /></Field></>}
-        {itemTypes.includes(form.type) && <Field label="Items" hint="One per line: Title|Description|Image URL|Link. Video grid uses Title|Description|Video URL|Poster URL."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
+        {['category_tiles','video_grid'].includes(form.type) && <div className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4">
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#263e0e]">Quick media uploads</p>
+          <p className="text-xs text-[#5f654f]">Upload directly for each card. Larger videos are automatically resized and compressed in your browser before upload; MP4, WebM and browser-playable phone videos are supported.</p>
+          {parseItems(form.config.items).slice(0, form.type === 'video_grid' ? 4 : 3).map((item,index) => (
+            <div key={index} className="rounded-xl border border-[#263e0e]/10 bg-white p-3 space-y-2">
+              <Input value={item.title || ''} placeholder={form.type === 'video_grid' ? 'Film title' : 'Card title'} onChange={(e) => { const items=parseItems(form.config.items); items[index].title=e.target.value; setConfig('items',itemText(items)); }} />
+              {form.type === 'video_grid'
+                ? <><Field label="Video URL"><Input value={item.image || ''} placeholder="https://… or uploaded /api/media/…" onChange={(e)=>{const items=parseItems(form.config.items);items[index].image=e.target.value;setConfig('items',itemText(items));}} /></Field><div className="grid grid-cols-2 gap-2"><MediaUploadButton accept="video/mp4,video/webm,.mp4,.webm" label="Upload video" onUploaded={(url)=>{const items=parseItems(form.config.items);items[index].image=url;setConfig('items',itemText(items));}} /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload poster" onUploaded={(url)=>{const items=parseItems(form.config.items);items[index].link=url;setConfig('items',itemText(items));}} /></div><Field label="Poster URL"><Input value={item.link || ''} placeholder="https://… poster image" onChange={(e)=>{const items=parseItems(form.config.items);items[index].link=e.target.value;setConfig('items',itemText(items));}} /></Field></>
+                : <MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload card image" onUploaded={(url)=>{const items=parseItems(form.config.items);items[index].image=url;setConfig('items',itemText(items));}} />}
+              {item.image && <p className="truncate text-[10px] text-[#748e40]">Video: {item.image}</p>}
+            </div>
+          ))}
+          <details className="rounded-xl border border-[#263e0e]/10 bg-white p-3">
+            <summary className="cursor-pointer text-xs font-semibold text-[#263e0e]">Advanced: edit raw item data</summary>
+            <Field label="Manual item data" hint="One per line: Title|Description|Image/Video URL|Link/Poster URL."><Textarea rows={6} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>
+          </details>
+        </div>}
+        {itemTypes.includes(form.type) && !['category_tiles','video_grid'].includes(form.type) && <div className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-3 sm:p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><p className="text-sm font-semibold text-[#263e0e]">{form.type === 'community_pulse' ? 'Community cards' : form.type === 'nav_menu' ? 'Navigation links' : 'Content cards'}</p><p className="mt-1 text-xs leading-5 text-[#5f654f]">{form.type === 'community_pulse' ? 'Enter only genuine, verified numbers. You can use words such as “Growing” when there is no verified number.' : form.type === 'nav_menu' ? 'Add one link per row. Use site paths such as /shop or /journal.' : 'Add or remove cards using the fields below. No special formatting is needed.'}</p></div>
+            <Button type="button" variant="secondary" className="w-full sm:w-auto" icon={Plus} onClick={() => { const items = parseItems(form.config.items); if (items.length < 12) setConfig('items', [...items, { title: '', text: '', image: '', link: '' }]); }}>Add item</Button>
+          </div>
+          {parseItems(form.config.items).slice(0, 12).map((item, index) => {
+            const updateItem = (key, value) => { const items = parseItems(form.config.items); items[index] = { ...items[index], [key]: value }; setConfig('items', items); };
+            const isPulse = form.type === 'community_pulse';
+            const isNavigation = form.type === 'nav_menu';
+            const isFooter = form.type === 'custom_footer';
+            return <div key={index} className="rounded-xl border border-[#263e0e]/10 bg-white p-3 sm:p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-semibold uppercase tracking-[.12em] text-[#748e40]">Item {String(index + 1).padStart(2, '0')}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" disabled={index === 0} onClick={() => { const items = parseItems(form.config.items); const [moved] = items.splice(index, 1); items.splice(index - 1, 0, moved); setConfig('items', items); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] disabled:opacity-30"><ArrowUp className="h-4 w-4" /><span>Up</span></button>
+                  <button type="button" disabled={index === parseItems(form.config.items).length - 1} onClick={() => { const items = parseItems(form.config.items); const [moved] = items.splice(index, 1); items.splice(index + 1, 0, moved); setConfig('items', items); }} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#5f654f] hover:bg-[#eef2e5] disabled:opacity-30"><ArrowDown className="h-4 w-4" /><span>Down</span></button>
+                  <button type="button" disabled={parseItems(form.config.items).length <= 1} onClick={() => setConfig('items', parseItems(form.config.items).filter((_, i) => i !== index))} className="inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-[#9b3f3f] hover:bg-[#f7e7e5] disabled:opacity-30"><Trash2 className="h-4 w-4" /><span>Remove</span></button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Field label={isPulse ? 'Card title' : isNavigation ? 'Menu label' : 'Title'}><Input value={item.title || ''} onChange={(e) => updateItem('title', e.target.value)} placeholder={isPulse ? 'e.g. Verified Reviews' : 'Enter a short title'} /></Field>
+                <Field label={isPulse ? 'Value / number (verified only)' : isNavigation ? 'Page path' : 'Description'} hint={isPulse ? 'Use only a real, verified number. Leave empty if not verified.' : isNavigation ? 'Example: /shop' : undefined}><Input value={item.text || ''} onChange={(e) => updateItem('text', e.target.value)} placeholder={isPulse ? 'e.g. 125' : isNavigation ? '/shop' : 'Write a short description'} /></Field>
+                {!isPulse && !isNavigation && !isFooter && <Field label="Image URL (optional)"><div className="space-y-2"><Input value={item.image || ''} onChange={(e) => updateItem('image', e.target.value)} placeholder="Paste an image URL or upload below" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload image" onUploaded={(url) => updateItem('image', url)} /></div></Field>}
+                {isPulse && <Field label="Supporting detail"><Input value={item.image || ''} onChange={(e) => updateItem('image', e.target.value)} placeholder="e.g. Real customer feedback" /></Field>}
+                {!isNavigation && <Field label="Link / destination" hint="Example: /shop"><Input value={item.link || ''} onChange={(e) => updateItem('link', e.target.value)} placeholder="/shop" /></Field>}
+              </div>
+            </div>;
+          })}
+          {parseItems(form.config.items).length >= 12 && <p className="text-xs text-[#5f654f]">Maximum 12 items per section.</p>}
+        </div>}
         {['promo_timer','offer_timer'].includes(form.type) && <><Field label="Offer label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Offer end (ISO/date-time)"><Input type="datetime-local" value={form.config.endAt || ''} onChange={(e) => setConfig('endAt', e.target.value)} /></Field><Field label="Offer text"><Textarea rows={3} value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></>}
         {form.type === 'muse_scene' && <><Field label="Character image URL"><Input value={form.config.characterImageUrl || ''} onChange={(e) => setConfig('characterImageUrl', e.target.value)} placeholder="Upload/host an editorial character image" /></Field><p className="text-xs text-[#5f654f]">Best result: transparent PNG/WebP of the AFSANA Muse. The storefront adds cinematic glow and motion.</p></>}
         {form.type === 'product_3d_showcase' && <><Field label="Product slug (optional)"><Input value={form.config.productSlug || ''} onChange={(e) => setConfig('productSlug', e.target.value)} placeholder="e.g. signature-oud" /></Field><Field label="Fallback bottle image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The homepage theatre uses the product media already stored in Products. Add multiple product images in Admin → Products for the strongest 360° effect.</p></>}
         {form.type === 'community_pulse' && <><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Verified-number disclaimer"><Input value={form.config.disclaimer || ''} onChange={(e) => setConfig('disclaimer', e.target.value)} /></Field></>}
-        {form.type === 'footer_showcase' && <><Field label="Body"><Textarea rows={4} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field><div className="grid grid-cols-2 gap-3"><Field label="Offer label"><Input value={form.config.offerLabel || ''} onChange={(e) => setConfig('offerLabel', e.target.value)} /></Field><Field label="Offer text"><Input value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></div></>}
+        {form.type === 'footer_showcase' && <><Field label="Body"><Textarea rows={4} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Offer label"><Input value={form.config.offerLabel || ''} onChange={(e) => setConfig('offerLabel', e.target.value)} /></Field><Field label="Offer text"><Input value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></div></>}
+        {form.type === 'reference_assets' && <div className="space-y-5">
+          <p className="text-xs leading-5 text-[#5f654f]">Upload your real AFSANA bottle image, GLB 3D model and campaign photos. Leave a field blank to keep its existing visual fallback. Images are optimized before upload; GLB assets can be up to 4 MB.</p>
+          <Field label="Hero perfume bottle image"><Input value={form.config.heroBottleImageUrl || ''} onChange={(e) => setConfig('heroBottleImageUrl', e.target.value)} placeholder="Uploaded media URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload hero bottle photo" onUploaded={(url) => setConfig('heroBottleImageUrl', url)} /></Field>
+          <Field label="Interactive 3D perfume model (.glb)"><Input value={form.config.product3dModelUrl || ''} onChange={(e) => setConfig('product3dModelUrl', e.target.value)} placeholder="Uploaded .glb URL" /><MediaUploadButton accept=".glb,model/gltf-binary" label="Upload 3D GLB model" onUploaded={(url) => setConfig('product3dModelUrl', url)} /></Field>
+          <Field label="3D model poster / fallback image"><Input value={form.config.product3dPosterUrl || ''} onChange={(e) => setConfig('product3dPosterUrl', e.target.value)} /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload 3D poster" onUploaded={(url) => setConfig('product3dPosterUrl', url)} /></Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              ['worldDarkImageUrl','Dark & magnetic world'],['worldSoftImageUrl','Soft & luminous world'],['worldBoldImageUrl','Bright & bold world'],
+              ['filmAtmosphereImageUrl','Film 01 — Atmosphere'],['filmBotanicalImageUrl','Film 02 — Botanical'],['filmCraftImageUrl','Film 03 — Craft'],['filmEmotionImageUrl','Film 04 — Emotion'],
+              ['journalHeroImageUrl','Journal page hero'],['journalImage1Url','Journal image 01'],['journalImage2Url','Journal image 02'],['journalImage3Url','Journal image 03'],
+              ['aboutHeroImageUrl','The House page hero'],['aboutStoryImageUrl','The House story image'],['giftingHeroImageUrl','Gifting page hero'],['giftImage1Url','Gifting image 01'],['giftImage2Url','Gifting image 02'],['giftImage3Url','Gifting image 03'],
+              ['discoverHeroImageUrl','Scent finder page hero'],['discoverEnergyImageUrl','Discover — Energy seeker image'],['discoverSoftImageUrl','Discover — Soft romantic image'],['discoverNightImageUrl','Discover — Night thinker image'],['collectionHeroImageUrl','Collection page hero']
+            ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded media URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload image" onUploaded={(url) => setConfig(key, url)} /></Field>)}
+          </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            {[
+              ['filmAtmosphereVideoUrl','Film 01 — Atmosphere video'],['filmBotanicalVideoUrl','Film 02 — Botanical video'],
+              ['filmCraftVideoUrl','Film 03 — Craft video'],['filmEmotionVideoUrl','Film 04 — Emotion video']
+            ].map(([key,label]) => <Field key={key} label={label}><Input value={form.config[key] || ''} onChange={(e) => setConfig(key, e.target.value)} placeholder="Uploaded MP4/WebM URL" /><MediaUploadButton accept="video/*" label="Upload campaign video" onUploaded={(url) => setConfig(key, url)} /></Field>)}
+          </div>
+        </div>}
+        {form.type === 'custom_footer' && <><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || ''} onChange={(e) => setConfig('tagline', e.target.value)} /></Field><Field label="Footer description"><Textarea rows={3} value={form.config.description || ''} onChange={(e) => setConfig('description', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">Edit footer links in the simple Content cards list above. Add, remove or reorder them there without typing special separators.</p><div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Contact email"><Input value={form.config.email || ''} onChange={(e) => setConfig('email', e.target.value)} /></Field><Field label="Contact phone"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} /></Field><Field label="Instagram URL"><Input value={form.config.instagramUrl || ''} onChange={(e) => setConfig('instagramUrl', e.target.value)} placeholder="https://instagram.com/your-page" /></Field><Field label="Facebook URL"><Input value={form.config.facebookUrl || ''} onChange={(e) => setConfig('facebookUrl', e.target.value)} placeholder="https://facebook.com/your-page" /></Field><Field label="TikTok URL"><Input value={form.config.tiktokUrl || ''} onChange={(e) => setConfig('tiktokUrl', e.target.value)} placeholder="https://tiktok.com/@your-page" /></Field><Field label="YouTube URL"><Input value={form.config.youtubeUrl || ''} onChange={(e) => setConfig('youtubeUrl', e.target.value)} placeholder="https://youtube.com/@your-channel" /></Field><Field label="Pinterest URL"><Input value={form.config.pinterestUrl || ''} onChange={(e) => setConfig('pinterestUrl', e.target.value)} placeholder="https://pinterest.com/your-page" /></Field><Field label="X / Twitter URL"><Input value={form.config.xUrl || ''} onChange={(e) => setConfig('xUrl', e.target.value)} placeholder="https://x.com/your-page" /></Field></div><Field label="Bottom copyright / note"><Input value={form.config.footerNote || ''} onChange={(e) => setConfig('footerNote', e.target.value)} /></Field></>}
+        {form.type === 'nav_menu' && <>
+          <Field label="Header logo image"><Input value={form.config.logoUrl || ''} onChange={(e) => setConfig('logoUrl', e.target.value)} placeholder="Uploaded logo image URL" /><MediaUploadButton accept="image/jpeg,image/png,image/webp" label="Upload header logo" onUploaded={(url) => setConfig('logoUrl', url)} /></Field>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><Field label="Brand name"><Input value={form.config.brandName || 'AFSANA'} onChange={(e) => setConfig('brandName', e.target.value)} /></Field><Field label="Tagline"><Input value={form.config.tagline || 'THE ART OF SCENT'} onChange={(e) => setConfig('tagline', e.target.value)} /></Field></div>
+          <p className="text-xs text-[#5f654f]">Edit navigation links in the simple Navigation links list above. Their order is used on desktop and mobile.</p>
+        </>}
+        {form.type === 'whatsapp_float' && <><Field label="WhatsApp phone (international digits)"><Input value={form.config.phone || ''} onChange={(e) => setConfig('phone', e.target.value)} placeholder="923001234567" /></Field><Field label="Button label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="First message"><Textarea rows={3} value={form.config.message || ''} onChange={(e) => setConfig('message', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This becomes a floating WhatsApp button on every page when placed in the global footer area.</p></>}
+        {form.type === 'ai_concierge' && <><Field label="Assistant label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Description"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">This opens the guided scent discovery experience. It is a front-end guided assistant, not a connected LLM service yet.</p></>}
         {form.type === 'rich_text' && <Field label="Content"><Textarea rows={10} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field>}
         {form.type === 'spacer' && <Field label="Height (px)"><Input type="number" min="20" max="500" value={form.config.height || 80} onChange={(e) => setConfig('height', Number(e.target.value))} /></Field>}
         {form.type === 'faq' && <p className="text-sm text-[#5f654f]">This section automatically uses active FAQ content.</p>}
         {form.type === 'newsletter' && <p className="text-sm text-[#5f654f]">Newsletter signup can be placed anywhere.</p>}
-        {form.type === 'scent_finder' && <p className="text-sm text-[#5f654f]">Uses the interactive AFSANA scent-finder experience.</p>}
+        {form.type === 'scent_finder' && <div className="space-y-5">
+          <div className="rounded-xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[.15em] text-[#263e0e]">Scent finder content & result control</p>
+            <p className="mt-2 text-xs leading-5 text-[#5f654f]">Edit every heading and option. For each option, add product slug(s) in the third column to control the exact perfume recommendation. Separate multiple slugs with commas. Leave blank to use automatic fragrance matching.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Section eyebrow"><Input value={form.config.finderEyebrow || ''} onChange={e=>setConfig('finderEyebrow',e.target.value)}/></Field>
+            <Field label="Step label"><Input value={form.config.stepLabel || ''} onChange={e=>setConfig('stepLabel',e.target.value)}/></Field>
+            <Field label="Main heading"><Input value={form.config.finderHeading || ''} onChange={e=>setConfig('finderHeading',e.target.value)}/></Field>
+            <Field label="Heading accent"><Input value={form.config.finderHeadingAccent || ''} onChange={e=>setConfig('finderHeadingAccent',e.target.value)}/></Field>
+          </div>
+          <Field label="Intro text"><Textarea rows={3} value={form.config.finderIntro || ''} onChange={e=>setConfig('finderIntro',e.target.value)}/></Field>
+          {[1,2,3,4,5].map(n=><div key={n} className="space-y-3 rounded-xl border border-[#263e0e]/10 bg-white p-4">
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-[#263e0e]">Step {String(n).padStart(2,'0')} / 05</p>
+            <Field label="Question"><Input value={form.config['step'+n+'Title'] || ''} onChange={e=>setConfig('step'+n+'Title',e.target.value)}/></Field>
+            <Field label="Supporting text"><Input value={form.config['step'+n+'Subtitle'] || ''} onChange={e=>setConfig('step'+n+'Subtitle',e.target.value)}/></Field>
+            <Field label="Options & exact product mapping" hint="One option per line: Option title|Description|product-slug (optional). Multiple product slugs: yawar,oud.">
+              <Textarea rows={6} value={form.config['step'+n+'Options'] || ''} onChange={e=>setConfig('step'+n+'Options',e.target.value)}/>
+            </Field>
+          </div>)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              ['backText','Back button'],['nextText','Next button'],['revealText','Final reveal button'],
+              ['resultEyebrow','Result eyebrow'],['resultTitle','Result heading'],['matchLabel','Matched product label'],
+              ['matchFallback','Matched product fallback description'],['noMatchText','No product fallback message'],
+              ['restartText','Restart button'],['matchButtonText','Matched product CTA'],['noMatchButtonText','Collection CTA']
+            ].map(([key,label])=><Field key={key} label={label}><Input value={form.config[key] || ''} onChange={e=>setConfig(key,e.target.value)}/></Field>)}
+          </div>
+          <p className="text-xs leading-5 text-[#5f654f]">Product slugs are read from Admin → Products. The finder recommends real catalogue products; if multiple answers map to products, the most frequently selected mapped slug wins. Without a mapping, automatic fragrance-note matching is used.</p>
+        </div>}
         {form.type === 'instagram' && <><Field label="Social URL"><Input value={form.config.url || ''} onChange={(e) => setConfig('url', e.target.value)} placeholder="https://instagram.com/…" /></Field><Field label="Intro text"><Textarea rows={3} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
         <Check label="Show this section on the storefront" checked={form.isEnabled} onChange={(v) => set('isEnabled', v)} />
+        </>}
       </form>
     </Drawer>
     <ConfirmDialog open={!!del} danger title="Delete this section?" message="The section will disappear from the homepage. You can add another section later." confirmLabel="Delete" onClose={() => setDel(null)} onConfirm={async () => { await api.remove(del.id); setDel(null); setNotice('Section deleted.'); reload(); }} />

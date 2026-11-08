@@ -4,6 +4,7 @@ module.exports = [
   ['Catalog', ['products', 'categories', 'collections', 'brands', 'inventory', 'suppliers', 'purchaseOrders']],
   ['Sales', ['orders', 'shipping', 'payments', 'returns', 'refunds', 'customers', 'carts', 'wishlists', 'abandonedCarts', 'reviews']],
   ['Marketing', ['coupons', 'flashSales', 'giftBoxes', 'giftCards', 'loyalty', 'campaigns']],
+  ['Growth & attribution', ['referrals', 'commissions']],
   ['Content', ['homepage', 'navigation', 'banners', 'pages', 'faq', 'announcements', 'seo']],
   ['Finance', ['finance', 'expenses', 'profit']],
   ['Team & security', ['staff', 'roles', 'permissions', 'accessScope', 'temporaryAccess', 'sessions', 'auditLogs', 'security']],

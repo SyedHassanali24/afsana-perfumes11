@@ -23,3 +23,22 @@ test('health: inspectUri describes the connection string without revealing it', 
   assert.equal(JSON.stringify(good).includes('cluster0'), false);
   assert.match(inspectUri('abc').scheme, /MISSING/);
 });
+
+test('health: email readiness distinguishes OTP delivery from customer password-reset delivery', () => {
+  const { emailProviderReadiness } = require('../services/emailReadiness');
+  const emailJsOtpOnly = emailProviderReadiness({
+    EMAILJS_SERVICE_ID: 'service',
+    EMAILJS_TEMPLATE_ID: 'otp',
+    EMAILJS_PUBLIC_KEY: 'public',
+    EMAILJS_PRIVATE_KEY: 'private',
+  });
+  assert.equal(emailJsOtpOnly.adminOtp, true);
+  assert.equal(emailJsOtpOnly.customerPasswordReset, false);
+  const gmail = emailProviderReadiness({
+    GMAIL_CLIENT_ID: 'client',
+    GMAIL_CLIENT_SECRET: 'secret',
+    GMAIL_REFRESH_TOKEN: 'refresh',
+  });
+  assert.equal(gmail.adminOtp, true);
+  assert.equal(gmail.customerPasswordReset, true);
+});

@@ -6,11 +6,49 @@
 require('dotenv').config({ quiet: true });
 const fs = require('fs');
 const mongoose = require('mongoose');
+const { isEncryptedBackup, decryptBackupBuffer } = require('./backupCrypto.cjs');
 const { connectDB } = require('../connection');
 const M = require('../models');
 const { isBackupModel } = require('../../services/backupRules');
 
 const BATCH = 100;
+function askHidden(question) {
+  return new Promise((resolve, reject) => {
+    const input = process.stdin;
+    const output = process.stdout;
+    if (!input.isTTY || typeof input.setRawMode !== 'function') {
+      reject(new Error('Encrypted backup requires a terminal prompt or AFSANA_BACKUP_PASSPHRASE environment variable.'));
+      return;
+    }
+    let value = '';
+    const cleanup = () => {
+      input.removeListener('data', onData);
+      try { input.setRawMode(false); } catch {}
+      input.pause();
+      output.write('\n');
+    };
+    const onData = (chunk) => {
+      for (const char of chunk.toString('utf8')) {
+        if (char === '\u0003') {
+          cleanup();
+          reject(new Error('Restore cancelled.'));
+          return;
+        }
+        if (char === '\r' || char === '\n') {
+          cleanup();
+          resolve(value);
+          return;
+        }
+        if (char === '\u007f' || char === '\b') value = value.slice(0, -1);
+        else if (char >= ' ' && char !== '\u007f') value += char;
+      }
+    };
+    output.write(question);
+    try { input.setRawMode(true); input.resume(); input.on('data', onData); }
+    catch (error) { cleanup(); reject(error); }
+  });
+}
+
 async function insertAll(Model, docs) {
   let ok = 0; let skipped = 0;
   for (let i = 0; i < docs.length; i += BATCH) {
@@ -29,7 +67,15 @@ async function main() {
   const force = args.includes('--force');
   const file = args.find((a) => !a.startsWith('--'));
   if (!file || !fs.existsSync(file)) throw new Error('Give the backup file: npm run db:restore -- C:\\path\\to\\afsana-backup.json');
-  const backup = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const backupBytes = fs.readFileSync(file);
+  let backup;
+  if (isEncryptedBackup(backupBytes)) {
+    const passphrase = process.env.AFSANA_BACKUP_PASSPHRASE || await askHidden('Backup passphrase (input hidden): ');
+    backup = decryptBackupBuffer(backupBytes, passphrase);
+  } else {
+    // Keep compatibility with legacy plaintext exports created before encrypted backups were introduced.
+    backup = JSON.parse(backupBytes.toString('utf8'));
+  }
   if (backup.app !== 'afsana-perfumes' || !backup.collections) throw new Error('This is not an Afsana backup file.');
   await connectDB();
   const existing = (await M.Product.countDocuments({})) + (await M.Order.countDocuments({}));

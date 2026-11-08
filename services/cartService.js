@@ -1,4 +1,5 @@
-const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon } = require('../database/models');
+const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon, AffiliatePartner } = require('../database/models');
+const AR = require('./affiliateRules');
 const { ApiError, E } = require('../middleware/errors');
 const { effectivePrice, validateCoupon, calcDiscount } = require('./pricing');
 const { mergeItems, lineStatus, summarize } = require('./cartRules');
@@ -39,16 +40,24 @@ async function quote({ items, couponCode, city }, cust) {
     try {
       const c = await Coupon.findOne({ code, isDeleted: false });
       const cid = cust && cust.customer._id;
-      validateCoupon(c, {
-        subtotal, customerId: cid,
-        customerUses: c && cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
-        isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
-      });
-      ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
-      coupon = { code: c.code, valid: true };
+      if (c) {
+        validateCoupon(c, {
+          subtotal, customerId: cid,
+          customerUses: cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
+          isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
+        });
+        ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
+        coupon = { code: c.code, valid: true, source: 'coupon' };
+      } else {
+        const partner = await AffiliatePartner.findOne({ code, isDeleted: false, storeId: 'main' }).lean();
+        const problem = AR.validatePartner(partner, { subtotal, customerId: cid });
+        if (problem) throw E.badRequest(problem);
+        ({ discount, shippingDiscount } = AR.discountFor(partner, subtotal, delivery.fee));
+        coupon = { code: partner.code, valid: true, source: 'referral' };
+      }
     } catch (e) {
       if (!(e instanceof ApiError)) throw e;
-      coupon = { code, valid: false, message: e.message }; // shown next to the coupon box, does not break the cart
+      coupon = { code, valid: false, message: e.message };
     }
   }
   return {

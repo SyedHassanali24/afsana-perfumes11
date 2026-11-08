@@ -5,6 +5,7 @@ const { E, ApiError } = require('../middleware/errors');
 const { startSession, verifyLogin } = require('../middleware/customerAuth');
 const { sha256 } = require('../middleware/auth');
 const { normalizePhone } = require('./phone');
+const { normalizeEmail, emailExactQuery } = require('./emailRules');
 const { withTx } = require('./tx');
 const { sendPasswordReset } = require('./mailer');
 const { MAX_ADDRESSES, normalizeDefaults } = require('./addressRules');
@@ -20,12 +21,13 @@ const shape = (c) => ({
 // NOTE: no automatic merge with guest customers who ordered with the same phone: the phone is not verified yet,
 // so linking would let anyone claim someone else's order history. Do this after OTP/email verification exists.
 async function register(body, meta) {
-  const or = [{ phone: body.phone }, ...(body.email ? [{ email: body.email.toLowerCase() }] : [])];
+  const email = normalizeEmail(body.email);
+  const or = [{ phone: body.phone }, ...(email ? [{ email: emailExactQuery(email) }] : [])];
   if (await User.exists({ $or: or })) throw E.conflict('An account with this phone number or email already exists. Try signing in.');
   const passwordHash = await hash(body.password);
   const user = await withTx(async (session) => {
-    const [u] = await User.create([{ kind: 'customer', phone: body.phone, email: body.email, passwordHash, passwordChangedAt: new Date() }], { session });
-    await Customer.create([{ userId: u._id, name: body.name, phone: body.phone, email: body.email }], { session });
+    const [u] = await User.create([{ kind: 'customer', phone: body.phone, email, passwordHash, passwordChangedAt: new Date() }], { session });
+    await Customer.create([{ userId: u._id, name: body.name, phone: body.phone, email }], { session });
     return u;
   });
   const customer = await Customer.findOne({ userId: user._id });
@@ -33,7 +35,8 @@ async function register(body, meta) {
 }
 
 async function login(body, meta) {
-  const identifier = body.identifier.includes('@') ? body.identifier : normalizePhone(body.identifier);
+  const normalizedIdentifier = normalizeEmail(body.identifier);
+  const identifier = normalizedIdentifier && normalizedIdentifier.includes('@') ? normalizedIdentifier : normalizePhone(body.identifier);
   const user = await verifyLogin({ identifier, password: body.password });
   const customer = await Customer.findOne({ userId: user._id, isDeleted: false });
   if (!customer) throw E.forbidden('This account is not active.');
@@ -43,9 +46,9 @@ async function login(body, meta) {
 async function updateProfile(ctx, patch) {
   const clean = { ...patch };
   if (clean.email !== undefined) {
-    const email = clean.email ? clean.email.toLowerCase() : undefined;
+    const email = normalizeEmail(clean.email);
     if (email) {
-      const exists = await User.findOne({ kind: 'customer', email, _id: { $ne: ctx.user._id } });
+      const exists = await User.findOne({ kind: 'customer', email: emailExactQuery(email), _id: { $ne: ctx.user._id } });
       if (exists) throw E.conflict('That email is already linked to another account.');
     }
     await User.updateOne({ _id: ctx.user._id }, email ? { $set: { email } } : { $unset: { email: 1 } });
@@ -57,18 +60,32 @@ async function updateProfile(ctx, patch) {
 
 async function changePassword(ctx, { currentPassword, newPassword }) {
   const u = await User.findById(ctx.user._id).select('+passwordHash');
-  if (!(await bcrypt.compare(currentPassword, u.passwordHash))) throw new ApiError(400, 'WRONG_PASSWORD', 'Current password is incorrect.');
+  if (!u || !(await bcrypt.compare(currentPassword, u.passwordHash))) throw new ApiError(400, 'WRONG_PASSWORD', 'Current password is incorrect.');
   if (currentPassword === newPassword) throw E.badRequest('Choose a password different from the current one.');
-  u.passwordHash = await hash(newPassword); u.passwordChangedAt = new Date();
-  await u.save();
-  await Session.updateMany({ userId: u._id, _id: { $ne: ctx.session._id }, revokedAt: { $exists: false } }, { $set: { revokedAt: new Date(), revokedReason: 'password_changed' } });
+  const now = new Date();
+  const changed = await User.findOneAndUpdate(
+    { _id: u._id, passwordHash: u.passwordHash, kind: 'customer', status: 'Active' },
+    {
+      $set: { passwordHash: await hash(newPassword), passwordChangedAt: now, failedLoginCount: 0 },
+      $inc: { authVersion: 1 },
+      $unset: { lockedUntil: '', resetTokenHash: '', resetTokenExpires: '' },
+    },
+    { new: true },
+  ).select('authVersion');
+  if (!changed) throw E.conflict('Your password changed in another request. Please sign in again.');
+  await Session.updateOne({ _id: ctx.session._id, userId: u._id }, { $set: { authVersion: Number(changed.authVersion || 0) } });
+  await Session.updateMany(
+    { userId: u._id, _id: { $ne: ctx.session._id }, revokedAt: { $exists: false } },
+    { $set: { revokedAt: now, revokedReason: 'password_changed' } },
+  );
   return {};
 }
 
 // Always answers the same way so it cannot be used to discover which emails/phones have accounts.
 async function forgotPassword({ identifier }) {
-  const isEmail = identifier.includes('@');
-  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email: identifier.toLowerCase() } : { phone: normalizePhone(identifier) }) });
+  const email = normalizeEmail(identifier);
+  const isEmail = !!email && email.includes('@');
+  const user = await User.findOne({ kind: 'customer', ...(isEmail ? { email: emailExactQuery(email) } : { phone: normalizePhone(identifier) }) });
   if (user && user.email && user.status === 'Active') {
     const token = crypto.randomBytes(32).toString('hex');
     await User.updateOne({ _id: user._id }, { $set: { resetTokenHash: sha256(token), resetTokenExpires: new Date(Date.now() + RESET_MINUTES * 60000) } });
@@ -80,13 +97,29 @@ async function forgotPassword({ identifier }) {
 
 async function resetPassword({ token, newPassword }) {
   const bad = new ApiError(400, 'INVALID_RESET_LINK', 'This reset link is invalid or has expired.');
-  const user = await User.findOne({ kind: 'customer', resetTokenHash: sha256(token), resetTokenExpires: { $gt: new Date() } }).select('+resetTokenHash');
-  if (!user) throw bad;
+  const now = new Date();
   const passwordHash = await hash(newPassword);
-  await withTx(async (session) => {
-    await User.updateOne({ _id: user._id }, { $set: { passwordHash, passwordChangedAt: new Date(), failedLoginCount: 0 }, $unset: { resetTokenHash: 1, resetTokenExpires: 1, lockedUntil: 1 } }, { session });
-    await Session.updateMany({ userId: user._id, revokedAt: { $exists: false } }, { $set: { revokedAt: new Date(), revokedReason: 'password_reset' } }, { session });
-  });
+  // Single-use reset token is consumed atomically, including under concurrent requests.
+  const user = await User.findOneAndUpdate(
+    {
+      kind: 'customer',
+      status: 'Active',
+      resetTokenHash: sha256(token),
+      resetTokenExpires: { $gt: now },
+    },
+    {
+      $set: { passwordHash, passwordChangedAt: now, failedLoginCount: 0 },
+      $inc: { authVersion: 1 },
+      $unset: { resetTokenHash: '', resetTokenExpires: '', lockedUntil: '' },
+    },
+    { new: true },
+  ).select('_id');
+  if (!user) throw bad;
+  // The new authVersion blocks every old customer session even if a bulk revoke fails.
+  await Session.updateMany(
+    { userId: user._id, revokedAt: { $exists: false } },
+    { $set: { revokedAt: now, revokedReason: 'password_reset' } },
+  );
   return {};
 }
 

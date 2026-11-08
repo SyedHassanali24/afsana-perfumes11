@@ -10,5 +10,5 @@ const save = (key, schema) => ({ method: 'PUT', path: `/admin/${key}`, permissio
 exports.handler = createHandler('settings', [
   { method: 'GET', path: '/public', public: true, cache: 300, cacheTags: ['settings'], handler: () => Settings.getPublic() },
   { method: 'GET', path: '/admin', permission: ['settings', 'view'], handler: ({ ctx, scopes }) => Settings.getAll(ctx, scopes) },
-  save('store', S.settingsStore), save('bank', S.settingsBank), save('shipping', S.settingsShipping), save('returns', S.settingsReturns),
+  save('store', S.settingsStore), save('bank', S.settingsBank), save('shipping', S.settingsShipping), save('returns', S.settingsReturns), save('growth', S.settingsGrowth),
 ]);

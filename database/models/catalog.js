@@ -24,7 +24,7 @@ function taxonomy(extra = {}) {
 }
 
 const mediaSchema = new Schema({
-  kind: { type: String, enum: ['main', 'gallery', 'closeup', 'lifestyle', 'packaging', 'ingredients', 'video', 'media360'], default: 'gallery' },
+  kind: { type: String, enum: ['main', 'gallery', 'closeup', 'lifestyle', 'packaging', 'ingredients', 'video', 'media360', 'model3d'], default: 'gallery' },
   url: { type: String, required: true }, // CDN/object-storage URL only; never binary in MongoDB
   alt: String, width: Number, height: Number, sortOrder: { type: Number, default: 0 },
 }, { _id: true });

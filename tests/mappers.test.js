@@ -58,3 +58,19 @@ test('image address validation and API error mapping', async () => {
   assert.equal(M.badImage([{ url: '/api/media/not-an-id' }]), 0);
   assert.deepEqual(M.fieldErrors({ details: [{ path: 'variants.0.price', message: 'bad' }, { path: 'media.2.url', message: 'x' }] }), { price: 'bad', media: 'x' });
 });
+
+const loadCms = async () => import('data:text/javascript;base64,' +
+  Buffer.from(fs.readFileSync(path.join(__dirname, '../src/services/mappers/cms.js'), 'utf8')).toString('base64'));
+
+test('CMS banner mapper preserves URLs returned by the same-site media upload endpoint', async () => {
+  const M = await loadCms();
+  const url = '/api/media/0123456789abcdef01234567';
+  const payload = M.SECTIONS.banners.toPayload({
+    ...M.SECTIONS.banners.emptyForm,
+    heading: 'New campaign',
+    desktopImageUrl: url,
+    mobileImageUrl: url,
+  });
+  assert.equal(payload.desktopImageUrl, url);
+  assert.equal(payload.mobileImageUrl, url);
+});

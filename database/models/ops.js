@@ -2,11 +2,12 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { ObjectId } = Schema.Types;
 const { storeScoped, model: m } = require('./_plugins');
+const C = require('../constants');
 const model = (n, s) => m(mongoose, n, s);
 
-// Uploaded pictures (stored in the database so nothing depends on another service; served by netlify/functions/media).
+// Uploaded images, videos and GLB assets (stored in the database; served by netlify/functions/media).
 const mediaSchema = new Schema({
-  contentType: { type: String, enum: ['image/jpeg', 'image/png', 'image/webp'], required: true },
+  contentType: { type: String, enum: C.MEDIA_CONTENT_TYPES, required: true },
   size: { type: Number, required: true }, data: { type: Buffer, required: true },
   filename: String, uploadedBy: { type: ObjectId, ref: 'User' },
 }, { timestamps: true });
@@ -31,9 +32,17 @@ storeScoped(expenseSchema);
 const analyticsEventSchema = new Schema({
   event: { type: String, enum: ['page_view', 'product_view', 'add_to_cart', 'begin_checkout', 'purchase'], required: true },
   productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed,
+  // Anonymous acquisition attribution. Store only the host and path (never the full referrer URL or query string).
+  source: { type: String, enum: ['instagram', 'tiktok', 'youtube', 'facebook', 'whatsapp', 'search', 'direct', 'email', 'other_social', 'referral', 'other'] },
+  medium: String, campaign: String, referrerHost: String, path: String, landingPath: String, affiliateCode: String,
   at: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 180 },
 });
+storeScoped(analyticsEventSchema);
 analyticsEventSchema.index({ event: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, event: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, sessionRef: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, source: 1, at: -1 });
+analyticsEventSchema.index({ storeId: 1, affiliateCode: 1, event: 1, at: -1 });
 analyticsEventSchema.index({ productId: 1, event: 1 });
 
 // Append-only. Updates/deletes are blocked at the model layer.
