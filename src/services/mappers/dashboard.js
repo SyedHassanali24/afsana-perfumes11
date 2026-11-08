@@ -31,6 +31,9 @@ export function toDashboard(dashboard) {
   const d = dashboard || {};
   const k = d.kpis || null;
   const stock = d.lowStock || null;
+  const catalog = d.catalog || null;
+  const productsCount = catalog && typeof catalog.products === 'number' ? catalog.products : null;
+  const customersCount = catalog && typeof catalog.customers === 'number' ? catalog.customers : null;
 
   const cards = [
     card('todayRevenue', "Today's revenue", k ? money(k.todayRevenue) : HIDDEN, k ? pctOrUndefined(k.todayRevenueChangePct) : undefined, 'vs yesterday'),
@@ -54,9 +57,6 @@ export function toDashboard(dashboard) {
       items: (stock.items || []).map((i) => ({ id: i.id, name: i.label ? `${i.name} — ${i.label}` : i.name, stock: i.available, threshold: i.threshold })) }
     : null;
 
-  const catalog = d.catalog || null;
-  const productsCount = catalog && typeof catalog.products === 'number' ? catalog.products : null;
-  const customersCount = catalog && typeof catalog.customers === 'number' ? catalog.customers : null;
   const top = d.topProducts || null;
   const topProducts = top
     ? { days: top.days || 30,
