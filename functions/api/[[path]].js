@@ -1,3 +1,5 @@
+import { responseFromNetlify } from "./response.js";
+
 const handlerLoaders = {
   account: () => import("../../netlify/functions/account/index.js"),
   analytics: () => import("../../netlify/functions/analytics/index.js"),
@@ -9,6 +11,7 @@ const handlerLoaders = {
   coupons: () => import("../../netlify/functions/coupons/index.js"),
   customers: () => import("../../netlify/functions/customers/index.js"),
   finance: () => import("../../netlify/functions/finance/index.js"),
+  growth: () => import("../../netlify/functions/growth/index.js"),
   health: () => import("../../netlify/functions/health/index.js"),
   inventory: () => import("../../netlify/functions/inventory/index.js"),
   media: () => import("../../netlify/functions/media/index.js"),
@@ -44,24 +47,19 @@ function headersObject(headers) {
   for (const [key, value] of headers.entries()) out[key.toLowerCase()] = value;
   return out;
 }
-
 function queryObject(url) {
   const out = {};
   for (const [key, value] of new URL(url).searchParams.entries()) out[key] = value;
   return out;
 }
-
+function bytesToBase64(bytes) {
+  return Buffer.from(bytes).toString("base64");
+}
 async function netlifyEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    const bytes = new Uint8Array(await request.arrayBuffer());
-    let binary = "";
-    const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-    }
-    body = btoa(binary);
+    body = bytesToBase64(new Uint8Array(await request.arrayBuffer()));
   }
   return {
     httpMethod: request.method,
@@ -73,38 +71,14 @@ async function netlifyEvent(request, path) {
   };
 }
 
-function responseFromNetlify(result) {
-  const responseHeaders = new Headers(result?.headers || {});
-  const multi = result?.multiValueHeaders || {};
-  for (const [key, values] of Object.entries(multi)) {
-    if (Array.isArray(values)) {
-      responseHeaders.delete(key);
-      for (const value of values) responseHeaders.append(key, String(value));
-    }
-  }
-  return new Response(result?.body ?? "", {
-    status: result?.statusCode || 200,
-    headers: responseHeaders,
-  });
-}
-
 export async function onRequest(context) {
   const { request, params, env } = context;
-
-  // Populate Node-style environment before loading function modules. In production,
-  // use the local isolate limiter only when no shared Redis credentials are configured.
-  process.env.MONGODB_URI = env.MONGODB_URI || "";
-  process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
-  process.env.JWT_SECRET = env.JWT_SECRET || "";
-  process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
-  process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
-  process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
-  if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
-  }
-
-  const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
+  // The Pages wildcard param shape differs between the Pages runtime and the Durable Object
+  // adapter. Derive API segments from the original URL so both runtimes resolve identical routes.
+  const pathname = new URL(request.url).pathname;
+  const pathParts = pathname.startsWith("/api/")
+    ? pathname.slice("/api/".length).split("/").filter(Boolean)
+    : (Array.isArray(params.path) ? params.path : [params.path].filter(Boolean));
   const group = pathParts[0];
   const functionPath = "/api/" + pathParts.join("/");
   const handler = await getHandler(group);
@@ -113,12 +87,47 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
   }
 
+  // Cloudflare is the production runtime; do not let Netlify development defaults
+  // silently turn customer password-reset emails into log-only development output.
+  process.env.NODE_ENV = "production";
+  process.env.CONTEXT = "production";
+  process.env.MONGODB_URI = env.MONGODB_URI || "";
+  process.env.MONGODB_DB_NAME = env.MONGODB_DB_NAME || "afsana_live";
+  process.env.JWT_SECRET = env.JWT_SECRET || "";
+  process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
+  process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
+  process.env.ALLOWED_ORIGIN = env.ALLOWED_ORIGIN || new URL(request.url).origin;
+  process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "false";
+  process.env.DURABLE_RATE_LIMIT_ENABLED = env.MONGODB_CONNECTION ? "true" : "false";
+  if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
+  if (env.RESEND_API_KEY) process.env.RESEND_API_KEY = env.RESEND_API_KEY;
+  if (env.EMAIL_FROM) process.env.EMAIL_FROM = env.EMAIL_FROM;
+  if (env.UPSTASH_REDIS_REST_URL) process.env.UPSTASH_REDIS_REST_URL = env.UPSTASH_REDIS_REST_URL;
+  if (env.UPSTASH_REDIS_REST_TOKEN) process.env.UPSTASH_REDIS_REST_TOKEN = env.UPSTASH_REDIS_REST_TOKEN;
+  if (env.ADMIN_EMAIL) process.env.ADMIN_EMAIL = env.ADMIN_EMAIL;
+  if (env.EASTWALA_EMAIL) process.env.EASTWALA_EMAIL = env.EASTWALA_EMAIL;
+  if (env.OWNER_EMAIL) process.env.OWNER_EMAIL = env.OWNER_EMAIL;
+  if (env.GMAIL_CLIENT_ID) process.env.GMAIL_CLIENT_ID = env.GMAIL_CLIENT_ID;
+  if (env.GMAIL_CLIENT_SECRET) process.env.GMAIL_CLIENT_SECRET = env.GMAIL_CLIENT_SECRET;
+  if (env.GMAIL_REFRESH_TOKEN) process.env.GMAIL_REFRESH_TOKEN = env.GMAIL_REFRESH_TOKEN;
+  if (env.GMAIL_SENDER_EMAIL) process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL;
+  if (env.EMAILJS_SERVICE_ID) process.env.EMAILJS_SERVICE_ID = env.EMAILJS_SERVICE_ID;
+  if (env.EMAILJS_TEMPLATE_ID) process.env.EMAILJS_TEMPLATE_ID = env.EMAILJS_TEMPLATE_ID;
+  if (env.EMAILJS_PUBLIC_KEY) process.env.EMAILJS_PUBLIC_KEY = env.EMAILJS_PUBLIC_KEY;
+  if (env.EMAILJS_PRIVATE_KEY) process.env.EMAILJS_PRIVATE_KEY = env.EMAILJS_PRIVATE_KEY;
+  if (env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID) process.env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID = env.EMAILJS_PASSWORD_RESET_TEMPLATE_ID;
+  if (env.GMAIL_SENDER_EMAIL) process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL;
+  if (env.TURNSTILE_SECRET_KEY) process.env.TURNSTILE_SECRET_KEY = env.TURNSTILE_SECRET_KEY;
+  if (env.WHATSAPP_ACCESS_TOKEN) process.env.WHATSAPP_ACCESS_TOKEN = env.WHATSAPP_ACCESS_TOKEN;
+  if (env.WHATSAPP_PHONE_NUMBER_ID) process.env.WHATSAPP_PHONE_NUMBER_ID = env.WHATSAPP_PHONE_NUMBER_ID;
+  if (env.WHATSAPP_GRAPH_VERSION) process.env.WHATSAPP_GRAPH_VERSION = env.WHATSAPP_GRAPH_VERSION;
+
+
   const event = await netlifyEvent(request, functionPath);
   try {
-    const response = await handler(event, { ...context, site: { url: new URL(request.url).origin } });
-    return responseFromNetlify(response);
+    return responseFromNetlify(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
   } catch (error) {
-    console.error("[afsana-api-adapter]", error?.message || error);
+    console.error("[api-adapter]", error?.message || error);
     return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
   }
 }
