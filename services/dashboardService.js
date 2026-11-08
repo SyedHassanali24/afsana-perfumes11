@@ -108,10 +108,11 @@ async function stockSection(scopes, uid) {
 }
 
 async function catalogSection(access, uid) {
-  const map = { stores: 'storeId' };
+  const productScope = { stores: 'storeId', categories: 'categoryId', products: '_id', createdByMe: 'createdBy' };
+  const customerScope = { stores: 'storeId', cities: 'city' };
   const [products, customers] = await Promise.all([
-    access.products ? Product.countDocuments({ ...scopeFilter(access.products, uid, map), isDeleted: false }) : null,
-    access.customers ? Customer.countDocuments({ ...scopeFilter(access.customers, uid, map), isDeleted: false }) : null,
+    access.products ? Product.countDocuments({ ...scopeFilter(access.products, uid, productScope), isDeleted: false }) : null,
+    access.customers ? Customer.countDocuments({ ...scopeFilter(access.customers, uid, customerScope), isDeleted: false }) : null,
   ]);
   return { products, customers };
 }
