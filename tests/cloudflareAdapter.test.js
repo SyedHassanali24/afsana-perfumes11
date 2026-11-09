@@ -7,7 +7,7 @@ const load = async () => import('data:text/javascript;base64,' +
   Buffer.from(fs.readFileSync(path.join(__dirname, '../functions/api/response.js'), 'utf8')).toString('base64'));
 
 test('Cloudflare adapter returns uploaded image, video and GLB media as bytes', async () => {
-  const { responseFromNetlify } = await load();
+  const { responseFromHandler } = await load();
   const samples = [
     ['image/jpeg', Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x41, 0x46, 0x53, 0x41, 0x4e, 0x41])],
     ['video/mp4', Buffer.concat([Buffer.alloc(4), Buffer.from('ftyp'), Buffer.from('AFSANA-MP4')])],
@@ -16,7 +16,7 @@ test('Cloudflare adapter returns uploaded image, video and GLB media as bytes', 
   ];
 
   for (const [contentType, original] of samples) {
-    const response = responseFromNetlify({
+    const response = responseFromHandler({
       statusCode: 200,
       isBase64Encoded: true,
       body: original.toString('base64'),
@@ -29,8 +29,8 @@ test('Cloudflare adapter returns uploaded image, video and GLB media as bytes', 
 });
 
 test('Cloudflare adapter preserves ordinary JSON response bodies', async () => {
-  const { responseFromNetlify } = await load();
-  const response = responseFromNetlify({
+  const { responseFromHandler } = await load();
+  const response = responseFromHandler({
     statusCode: 201,
     isBase64Encoded: false,
     body: JSON.stringify({ success: true, url: '/api/media/0123456789abcdef01234567' }),
