@@ -5,7 +5,7 @@ const json = (status, body, headers = {}) => ({
 });
 const res = (status, data = {}, headers = {}) => ({ __res: true, status, data, headers });
 const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-// Cloudflare's edge-controlled CF-Connecting-IP takes precedence; never trust a client-supplied Netlify-style header when CF is present.
+// Cloudflare's edge-controlled CF-Connecting-IP takes precedence; never trust a client-supplied forwarding header when CF is present.
 const clientIp = (h) => h['cf-connecting-ip'] || h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
 function parseCookies(header = '') {
@@ -26,7 +26,7 @@ function parseCookies(header = '') {
   return out;
 }
 function serializeCookie(name, value, { maxAge, secure = true } = {}) {
-  // Same-site Netlify deployments use Lax. Set COOKIE_SAMESITE=None only when the frontend/API are intentionally cross-site.
+  // Same-site deployments use Lax. Set COOKIE_SAMESITE=None only when the frontend/API are intentionally cross-site.
   const sameSite = String(process.env.COOKIE_SAMESITE || 'Lax').toLowerCase();
   const sameSiteValue = ['lax', 'strict', 'none'].includes(sameSite) ? sameSite[0].toUpperCase() + sameSite.slice(1) : 'Lax';
   return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', `SameSite=${sameSiteValue}`, secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']
@@ -35,7 +35,7 @@ function serializeCookie(name, value, { maxAge, secure = true } = {}) {
 function parseBody(event) {
   if (!event.body) return undefined;
   const raw = event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body;
-  // Media uploads are Base64 JSON. Leave room for a 4 MB asset plus encoding overhead, while staying below Netlify Functions' 6 MB buffered payload ceiling.
+  // Media uploads are Base64 JSON. Leave room for a 4 MB asset plus encoding overhead within the Worker request-size budget.
   if (Buffer.byteLength(raw, 'utf8') > 5_700_000) { const { E } = require('./errors'); throw E.badRequest('Request too large. Please upload a smaller or optimized media file.'); }
   try { return JSON.parse(raw); } catch { const { E } = require('./errors'); throw E.badRequest('Invalid JSON.'); }
 }
