@@ -17,7 +17,7 @@ id = "c0168837510e4188bc655a7b4f25c0a4"
 ALLOWED_ORIGINS = "https://afsanaperfumes.store,https://www.afsanaperfumes.store,https://afsana-perfumes11.eastwala12.workers.dev"
 EMAILJS_SERVICE_ID = "service_jx5mizj"
 EMAILJS_TEMPLATE_ID = "template_36spa09"
-RATE_LIMIT_FAIL_OPEN = "false"
+RATE_LIMIT_FAIL_OPEN = "true"
 SITE_URL = "https://afsanaperfumes.store"
 TURNSTILE_SITE_KEY = "0x4AAAAAAF06iSkhZh8g9mEb"
 
