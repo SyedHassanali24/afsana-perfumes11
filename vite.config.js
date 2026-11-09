@@ -5,13 +5,12 @@ export default defineConfig({
   base: "/",
   plugins: [react()],
   server: {
-    // Local dev: run `npm run api` so /api/* reaches Netlify Functions.
-    watch: { ignored: [/\.netlify/] },
+    // Local dev: run `npm run api` so /api/* reaches the Cloudflare Pages Functions runtime.
+    
     proxy: {
       "/api": {
-        target: "http://localhost:8888/.netlify/functions",
+        target: "http://localhost:8788",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },
