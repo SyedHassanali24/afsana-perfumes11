@@ -55,13 +55,9 @@ async function netlifyEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    const bytes = new Uint8Array(await request.arrayBuffer());
-    let binary = "";
-    const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-    }
-    body = btoa(binary);
+    // API payloads are JSON. Keep the body as UTF-8 JSON instead of
+    // base64-wrapping the entire request (which needlessly expands uploads by 33%).
+    body = await request.text();
   }
   return {
     httpMethod: request.method,
