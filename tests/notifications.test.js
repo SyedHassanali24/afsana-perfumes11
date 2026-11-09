@@ -63,7 +63,7 @@ test('notifications service: list, mark one read, mark all read (only what the m
 
 test('notifications handler: three routes for any signed-in staff (no module permission)', () => {
   stub('middleware/withApi.js', { createHandler: (g, routes) => ({ group: g, routes }) });
-  const { group, routes } = require('../netlify/functions/notifications/index.js').handler;
+  const { group, routes } = require('../api/handlers/notifications/index.js').handler;
   assert.equal(group, 'notifications');
   assert.deepEqual(routes.map((r) => `${r.method} ${r.path}${r.permission || r.public || r.audience ? ' RESTRICTED' : ''}`), ['GET /admin', 'POST /admin/read-all', 'POST /admin/:id/read']);
 });
