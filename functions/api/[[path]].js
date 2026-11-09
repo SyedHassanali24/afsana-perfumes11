@@ -1,34 +1,34 @@
-import { responseFromNetlify } from "./response.js";
+import { responseFromHandler } from "./response.js";
 
 const handlerLoaders = {
-  account: () => import("../../netlify/functions/account/index.js"),
-  analytics: () => import("../../netlify/functions/analytics/index.js"),
-  audit: () => import("../../netlify/functions/audit/index.js"),
-  auth: () => import("../../netlify/functions/auth/index.js"),
-  backup: () => import("../../netlify/functions/backup/index.js"),
-  cart: () => import("../../netlify/functions/cart/index.js"),
-  cms: () => import("../../netlify/functions/cms/index.js"),
-  coupons: () => import("../../netlify/functions/coupons/index.js"),
-  customers: () => import("../../netlify/functions/customers/index.js"),
-  finance: () => import("../../netlify/functions/finance/index.js"),
-  growth: () => import("../../netlify/functions/growth/index.js"),
-  health: () => import("../../netlify/functions/health/index.js"),
-  inventory: () => import("../../netlify/functions/inventory/index.js"),
-  media: () => import("../../netlify/functions/media/index.js"),
-  notifications: () => import("../../netlify/functions/notifications/index.js"),
-  orders: () => import("../../netlify/functions/orders/index.js"),
-  permissions: () => import("../../netlify/functions/permissions/index.js"),
-  products: () => import("../../netlify/functions/products/index.js"),
-  "purchase-orders": () => import("../../netlify/functions/purchase-orders/index.js"),
-  returns: () => import("../../netlify/functions/returns/index.js"),
-  reviews: () => import("../../netlify/functions/reviews/index.js"),
-  roles: () => import("../../netlify/functions/roles/index.js"),
-  settings: () => import("../../netlify/functions/settings/index.js"),
-  shipping: () => import("../../netlify/functions/shipping/index.js"),
-  staff: () => import("../../netlify/functions/staff/index.js"),
-  suppliers: () => import("../../netlify/functions/suppliers/index.js"),
-  taxonomy: () => import("../../netlify/functions/taxonomy/index.js"),
-  wishlist: () => import("../../netlify/functions/wishlist/index.js"),
+  account: () => import("../../api/handlers/account/index.js"),
+  analytics: () => import("../../api/handlers/analytics/index.js"),
+  audit: () => import("../../api/handlers/audit/index.js"),
+  auth: () => import("../../api/handlers/auth/index.js"),
+  backup: () => import("../../api/handlers/backup/index.js"),
+  cart: () => import("../../api/handlers/cart/index.js"),
+  cms: () => import("../../api/handlers/cms/index.js"),
+  coupons: () => import("../../api/handlers/coupons/index.js"),
+  customers: () => import("../../api/handlers/customers/index.js"),
+  finance: () => import("../../api/handlers/finance/index.js"),
+  growth: () => import("../../api/handlers/growth/index.js"),
+  health: () => import("../../api/handlers/health/index.js"),
+  inventory: () => import("../../api/handlers/inventory/index.js"),
+  media: () => import("../../api/handlers/media/index.js"),
+  notifications: () => import("../../api/handlers/notifications/index.js"),
+  orders: () => import("../../api/handlers/orders/index.js"),
+  permissions: () => import("../../api/handlers/permissions/index.js"),
+  products: () => import("../../api/handlers/products/index.js"),
+  "purchase-orders": () => import("../../api/handlers/purchase-orders/index.js"),
+  returns: () => import("../../api/handlers/returns/index.js"),
+  reviews: () => import("../../api/handlers/reviews/index.js"),
+  roles: () => import("../../api/handlers/roles/index.js"),
+  settings: () => import("../../api/handlers/settings/index.js"),
+  shipping: () => import("../../api/handlers/shipping/index.js"),
+  staff: () => import("../../api/handlers/staff/index.js"),
+  suppliers: () => import("../../api/handlers/suppliers/index.js"),
+  taxonomy: () => import("../../api/handlers/taxonomy/index.js"),
+  wishlist: () => import("../../api/handlers/wishlist/index.js"),
 };
 
 const handlerCache = new Map();
@@ -55,7 +55,7 @@ function queryObject(url) {
 function bytesToBase64(bytes) {
   return Buffer.from(bytes).toString("base64");
 }
-async function netlifyEvent(request, path) {
+async function handlerEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -87,7 +87,7 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
   }
 
-  // Cloudflare is the production runtime; do not let Netlify development defaults
+  // Cloudflare is the production runtime; do not let development defaults
   // silently turn customer password-reset emails into log-only development output.
   process.env.NODE_ENV = "production";
   process.env.CONTEXT = "production";
@@ -123,9 +123,9 @@ export async function onRequest(context) {
   if (env.WHATSAPP_GRAPH_VERSION) process.env.WHATSAPP_GRAPH_VERSION = env.WHATSAPP_GRAPH_VERSION;
 
 
-  const event = await netlifyEvent(request, functionPath);
+  const event = await handlerEvent(request, functionPath);
   try {
-    return responseFromNetlify(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
+    return responseFromHandler(await handler(event, { ...context, site: { url: new URL(request.url).origin } }));
   } catch (error) {
     console.error("[api-adapter]", error?.message || error);
     return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
