@@ -97,7 +97,7 @@ test('reviews service: admin list has names, product, and counts per status', as
 
 test('reviews handler: public list, my review (customer), moderation (staff, reviews.approve)', () => {
   stub('middleware/withApi.js', { createHandler: (g, routes) => ({ group: g, routes }) });
-  const { group, routes } = require('../netlify/functions/reviews/index.js').handler;
+  const { group, routes } = require('../api/handlers/reviews/index.js').handler;
   assert.equal(group, 'reviews');
   assert.deepEqual(routes.map((r) => `${r.method} ${r.path} ${r.public ? 'public' : r.audience === 'customer' ? 'customer' : r.permission.join('.')}`), [
     'GET /product/:slug public', 'GET /mine/:slug customer', 'PUT /mine/:slug customer', 'DELETE /mine/:slug customer', 'GET /admin reviews.view', 'PATCH /admin/:id/status reviews.approve',
