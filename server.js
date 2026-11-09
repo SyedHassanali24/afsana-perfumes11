@@ -25,7 +25,7 @@ async function createServer() {
 
   function getHandler(group) {
     if (handlers.has(group)) return handlers.get(group);
-    const fnPath = path.join(__dirname, 'netlify', 'functions', group, 'index.js');
+    const fnPath = path.join(__dirname, 'api', 'handlers', group, 'index.js');
     if (!fs.existsSync(fnPath)) return null;
     try {
       const mod = require(fnPath);
