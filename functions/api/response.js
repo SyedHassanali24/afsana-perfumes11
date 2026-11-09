@@ -6,7 +6,7 @@ export function base64ToBytes(encoded) {
   return bytes;
 }
 
-export function responseFromNetlify(result) {
+export function responseFromHandler(result) {
   const responseHeaders = new Headers(result?.headers || {});
   const multi = result?.multiValueHeaders || {};
   for (const [key, values] of Object.entries(multi)) {
