@@ -14,7 +14,7 @@ test('health: database errors become a plain cause and never echo secrets', () =
 });
 
 test('health: inspectUri describes the connection string without revealing it', () => {
-  const { inspectUri } = require('../netlify/functions/health');
+  const { inspectUri } = require('../api/handlers/health/index.js');
   const good = inspectUri('mongodb+srv://user:Abc12345@cluster0.abc1234.mongodb.net/?retryWrites=true');
   assert.deepEqual([good.scheme, good.atSigns, good.hasSpaceOrNewline, good.passwordOnlyLettersAndNumbers, good.hostEndsWithMongodbNet, good.hostParts], ['mongodb+srv', 1, false, true, true, 4]);
   const bad = inspectUri('"mongodb+srv://user:p@ss@x.mongodb.net/ ');
