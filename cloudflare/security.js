@@ -3,7 +3,7 @@ export const SECURITY_HEADERS = Object.freeze({
   "X-Frame-Options": "DENY",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains"
 });
 
 export function normalizeOrigin(value) {
@@ -46,3 +46,7 @@ export function corsHeaders(origin, env = {}, requestUrl) {
   };
 }
 
+
+export function securityHeaders(extra = {}) {
+  return { ...SECURITY_HEADERS, ...extra };
+}
