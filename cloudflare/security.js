@@ -21,6 +21,8 @@ export function normalizeOrigin(value) {
 
 export function allowedOrigins(env = {}, requestUrl) {
   const values = [
+    "https://afsanaperfumes.store",
+    "https://www.afsanaperfumes.store",
     ...String(env.ALLOWED_ORIGINS || "").split(","),
     env.SITE_URL,
     requestUrl ? new URL(requestUrl).origin : null
