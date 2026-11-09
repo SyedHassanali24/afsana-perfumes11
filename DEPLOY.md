@@ -1,57 +1,34 @@
-# Afsana Perfumes: website ko live karne ki guide (Netlify + MongoDB Atlas)
+# Afsana Perfumes — Cloudflare deployment
 
-Is ke baad site kisi bhi jagah se khulti hai, PC band ho tab bhi. Data MongoDB Atlas mein hamesha ke liye save rehta hai.
-Ek waqt mein ek hi step karein, aur kahin atak jayein to screen ka message mujhe hu-ba-hu bhej dein.
+Cloudflare is the only hosting and runtime target for this project.
 
-## Step 1: MongoDB Atlas (database)
-1. Atlas mein apna cluster kholein, **Database Access**: ek naya user banayein (naya, mazboot password, sirf is project ke liye).
-2. **Network Access** mein `0.0.0.0/0` (Allow access from anywhere) add karein. Netlify ka koi fixed IP nahi hota, isliye yeh zaroori hai. Security phir user/password aur HTTPS se aati hai.
-3. **Connect, Drivers** se connection string copy karein (`mongodb+srv://...`). Is mein user ka naya password likhein.
-4. Live data ke liye naya database name rakhein, jaise `afsana_live` (testing wale `afsana_dev` se alag).
+## Runtime layout
+- Storefront: Vite build output in `dist/`.
+- API: Cloudflare Worker / Pages Functions under `functions/api/`.
+- Shared API handlers: `api/handlers/<group>/index.js`.
+- Database: MongoDB Atlas, database name `afsana_live` in production.
+- Secrets are configured in Cloudflare Worker settings; never commit credentials.
 
-## Step 2: Code GitHub par
-1. Is folder ko GitHub ki **private** repo mein push karein.
-2. Dekh lein ke `.env` file repo mein nahi hai (`.gitignore` usay rokta hai). Asli passwords kabhi GitHub par nahi jane chahiye.
+## Local checks
+```bash
+npm install
+npm run check
+npm test
+npm run build
+```
 
-## Step 3: Netlify
-1. Netlify mein **Add new site, Import from GitHub** chunein aur apni repo select karein.
-2. Build settings khud `netlify.toml` se aa jati hain (`npm run build`, publish `dist`). Netlify Node 22 use karega. Kuch badalna nahi.
-3. **Site configuration → Environment variables** mein production ke liye yeh variables add karein:
+For local API testing after building:
+```bash
+npm run api
+```
+Then run the Vite dev server separately with `npm run dev`; its `/api` proxy targets the local Cloudflare runtime on port 8788.
 
-| Naam | Required | Value |
-|---|---|---|
-| `MONGODB_URI` | Yes | Atlas wali connection string |
-| `MONGODB_DB_NAME` | Yes | `afsana_live` |
-| `JWT_SECRET` | Yes | Naya random secret, kam az kam 32 characters |
-| `SITE_URL` | Yes | Apni actual HTTPS site URL |
-| `ALLOWED_ORIGINS` | Yes | Trusted frontend origin(s), e.g. apni HTTPS site URL |
-| `RESEND_API_KEY` | Yes | Production password-reset email provider API key |
-| `EMAIL_FROM` | Yes | Verified sender address |
-| `UPSTASH_REDIS_REST_URL` | Yes | Production shared rate-limit Redis REST URL |
-| `UPSTASH_REDIS_REST_TOKEN` | Yes | Production shared rate-limit Redis REST token |
-| `RATE_LIMIT_FAIL_OPEN` | No | Production mein false/empty rakhein |
+## Production deployment
+The GitHub Actions workflow `.github/workflows/cloudflare-worker.yml` builds the frontend and deploys `cloudflare/wrangler.toml` to Cloudflare when changes reach `main`.
 
-Admin ka email/password Netlify mein **mat** daalein (sirf Step 4 mein apne PC par chahiye).
-Production mein shared rate limiter required hai. Upstash variables missing hon to rate limiter production mein fail-closed karega.
+Required GitHub Actions secret:
+- `CLOUDFLARE_API_TOKEN`
 
-Production password reset ke liye `RESEND_API_KEY` aur `EMAIL_FROM` required hain.
+Required Cloudflare Worker bindings/secrets are documented in `cloudflare/wrangler.toml` and include the MongoDB connection, JWT secret, allowed origins, and any enabled email/WhatsApp integration values.
 
-4. **Deploy** dabayein.
-
-## Step 4: Live database ka pehla setup
-Live database mein owner/admin aur indexes create karna zaroori hai:
-`npm run db:setup`
-`npm run db:indexes:preflight`
-`npm run db:indexes`
-
-## Pehle health check
-Browser mein kholein: `/api/health`
-- `"ok":true` aaye to env variables aur database sahi hain.
-- `"ok":false` aaye to response ke `"fixes"` field mein missing configuration ya connection issue identify hota hai.
-
-## Check
-`/admin/login` par owner credentials se login karein.
-`/shop` par products check karein.
-
-<!-- Netlify production environment refresh marker -->
-<!-- Environment values changed: production URL switched to a hidden custom Netlify subdomain. -->
+Do not change or reseed the production MongoDB database as part of a frontend deployment. Run database migrations/index synchronization only when explicitly required and after a backup.
