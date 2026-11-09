@@ -1,8 +1,6 @@
 require('dotenv').config({ quiet: true });
-// Cached connection: Netlify Functions reuse warm containers, so we must not reconnect per invocation.
-// The cache lives on the mongoose instance itself (not on global): some runtimes (e.g. netlify dev) reload
-// modules on every request, which creates a NEW mongoose instance whose models would otherwise wait forever
-// on a connection that belongs to the old instance.
+// Reuse the Mongoose connection across requests in long-lived server runtimes.
+// Store the in-flight connection on the Mongoose instance to prevent duplicate concurrent connects.
 const mongoose = require('mongoose');
 
 function cleanEnvValue(value) {
