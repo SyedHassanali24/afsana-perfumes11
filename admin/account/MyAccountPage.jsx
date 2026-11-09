@@ -20,7 +20,7 @@ export default function MyAccountPage() {
 
   useEffect(() => { setProfile({ name:user?.name||"", phone:user?.phone||"", jobTitle:user?.jobTitle||"", department:user?.department||"", bio:user?.bio||"", address:user?.address||"", city:user?.city||"", country:user?.country||"Pakistan", avatarUrl:user?.avatarUrl||"" }); }, [user]);
 
-  const save = async (e) => { e.preventDefault(); setSaving(true); setMsg(""); try { await authApi.updateProfile(profile); await refresh(); setMsg("Profile updated successfully."); } catch(e){ setMsg(e.message); } finally { setSaving(false); } };
+  const save = async (e) => { e.preventDefault(); setSaving(true); setMsg(""); try { const payload = { ...profile }; if (!String(payload.avatarUrl || "").trim()) delete payload.avatarUrl; await authApi.updateProfile(payload); await refresh(); setMsg("Profile updated successfully."); } catch(e){ setMsg(e.message); } finally { setSaving(false); } };
   const upload = async (e) => { const file=e.target.files?.[0]; if(!file) return; if(!/^image\/(jpeg|png|webp)$/.test(file.type)) return setMsg("Use JPG, PNG or WebP."); if(file.size>700000) return setMsg("Profile picture must be under 700KB."); const reader=new FileReader(); reader.onload=async()=>{ try { const r=await mediaApi.uploadProfile({filename:file.name,contentType:file.type,data:String(reader.result).split(",")[1]}); setProfile(p=>({...p,avatarUrl:r.url})); setMsg("Picture uploaded. Save profile to apply it."); } catch(e){setMsg(e.message);} }; reader.readAsDataURL(file); };
   const revoke = async (id) => { try { await authApi.revokeSession(id); reload(); } catch (e) { setMsg(e.message); } };
   const everywhere = async () => { try { await authApi.logoutAll(); } catch {} await logout(); };
