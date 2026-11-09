@@ -55,8 +55,8 @@ async function netlifyEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    // API payloads are JSON. Keep the body as UTF-8 JSON instead of
-    // base64-wrapping the entire request (which needlessly expands uploads by 33%).
+    // Keep the JSON payload as UTF-8. Its embedded image data is already base64;
+    // base64-encoding the entire JSON again expands it and breaks upload parsing.
     body = await request.text();
   }
   return {
@@ -65,7 +65,7 @@ async function netlifyEvent(request, path) {
     headers,
     queryStringParameters: queryObject(request.url),
     body,
-    isBase64Encoded: Boolean(body),
+    isBase64Encoded: false,
   };
 }
 
@@ -78,7 +78,18 @@ function responseFromNetlify(result) {
       for (const value of values) responseHeaders.append(key, String(value));
     }
   }
-  return new Response(result?.body ?? "", {
+
+  let responseBody = result?.body ?? "";
+  if (result?.isBase64Encoded && typeof responseBody === "string") {
+    const binary = atob(responseBody);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    responseBody = bytes;
+    responseHeaders.delete("content-length");
+    responseHeaders.delete("content-encoding");
+  }
+
+  return new Response(responseBody, {
     status: result?.statusCode || 200,
     headers: responseHeaders,
   });
