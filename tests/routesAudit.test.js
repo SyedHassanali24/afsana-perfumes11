@@ -1,4 +1,4 @@
-// Route/permission audit: loads every netlify/functions/*/index.js (no DB, no network) and checks the route tables.
+// Route/permission audit: loads every api/handlers/*/index.js (no DB, no network) and checks the route tables.
 // Catches: a staff route with no permission, an /admin path left public, a typo in a module/action name, a write route guarded only by "view".
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -25,7 +25,7 @@ let captured = null;
 stub('middleware/withApi.js', { createHandler: (g, routes) => { captured = routes; return () => {}; } });
 
 const { MODULES, ACTIONS } = require('../database/constants');
-const FN_DIR = path.join(ROOT, 'netlify/functions');
+const FN_DIR = path.join(ROOT, 'api/handlers');
 const dirs = fs.readdirSync(FN_DIR).filter((d) => fs.existsSync(path.join(FN_DIR, d, 'index.js')));
 const groups = {};
 for (const d of dirs) {
