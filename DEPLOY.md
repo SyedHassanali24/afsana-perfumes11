@@ -1,6 +1,6 @@
 # Afsana Perfumes — Cloudflare deployment guide
 
-The live application is deployed as a Cloudflare Worker with static assets. Configure Worker bindings and secrets in Cloudflare, then deploy from the approved GitHub branch using the repository Cloudflare workflow. Do not use Netlify for hosting or API execution.
+The live application is deployed as a Cloudflare Worker with static assets. Configure Worker bindings and secrets in Cloudflare, then deploy from the approved GitHub branch using the repository Cloudflare workflow. Hosting and API execution run exclusively on Cloudflare.
 
 ## Local checks
 
