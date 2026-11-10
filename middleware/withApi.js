@@ -34,9 +34,9 @@ function createHandler(group, routes) {
     if ((event.httpMethod || 'GET').toUpperCase() === 'OPTIONS') return json(204, {}, cors);
 
     let stage = 'route-match';
+    const method = (event.httpMethod || 'GET').toUpperCase();
     try {
       const req = { ...event, headers };
-      const method = (event.httpMethod || 'GET').toUpperCase();
       const found = match(compiled, method, stripPrefix(event.path || '/', group));
       if (!found) throw E.notFound('Route not found.');
       const { route, params } = found;
@@ -78,8 +78,8 @@ function createHandler(group, routes) {
       }
       return json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
     } catch (err) {
-      if (group === 'media' && method === 'POST') {
-        console.error('[media-upload-diagnostic]', {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        console.error('[afsana-write-diagnostic]', {
           stage,
           errorName: err?.name || 'Error',
           errorCode: typeof err?.code === 'string' || typeof err?.code === 'number' ? err.code : undefined,
