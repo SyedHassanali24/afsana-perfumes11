@@ -1,6 +1,6 @@
 # Afsana Perfumes — Cloudflare deployment
 
-Afsana is hosted by the Cloudflare Worker and its Static Assets binding. MongoDB Atlas remains the database. Netlify is not used for hosting, functions, or local API development.
+Afsana is hosted by the Cloudflare Worker and its Static Assets binding. MongoDB Atlas remains the database.
 
 ## Local development
 1. Install dependencies: `npm install`.
