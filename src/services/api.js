@@ -55,11 +55,15 @@ async function executeRequest(url, path, options) {
   const { method = 'GET', body, idempotencyKey } = options;
   let res;
   try {
+    // Keep the JSON request body as a string. The custom ReadableStream used
+    // for media writes caused Cloudflare FixedLengthStream byte-count errors.
+    const serializedBody = body === undefined ? undefined : JSON.stringify(body);
+
     res = await fetch(url, {
       method,
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: serializedBody,
     });
   } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
 
