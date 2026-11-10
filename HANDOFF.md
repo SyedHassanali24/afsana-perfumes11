@@ -1,3 +1,5 @@
+> **ARCHIVE NOTICE (2026-11-10):** This handoff contains historical Netlify setup notes. They are obsolete. Current hosting and API runtime are Cloudflare Worker; API handlers now live in `cloudflare/api/`, local API runs through Wrangler (`npm run api`), and deployment is controlled by `.github/workflows/cloudflare-worker.yml`. Do not follow the older Netlify commands below.
+
 # Afsana Perfumes — Project Handoff (updated 2026-10-21, after Round 3)
 
 ## START HERE (new chat? read only this block first)

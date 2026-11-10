@@ -9,13 +9,13 @@ Lovable ke pages mein jo bhi dummy data / fake `fetch` / localStorage cart ho, w
 ## Kya touch NAHI karna (in ko Lovable se overwrite mat karna)
 | Folder / file | Kyun |
 |---|---|
-| `netlify/`, `services/`, `middleware/`, `database/`, `validation/`, `tests/` | Poora backend |
+| `cloudflare/api/`, `services/`, `middleware/`, `database/`, `validation/`, `tests/` | Poora backend |
 | `admin/` | Admin portal |
 | `src/services/` (`api.js`, `index.js`, `mappers/`) | Backend se baat karne wala layer |
 | `src/auth/`, `src/customer/` | Staff aur customer login |
 | `src/shop/CartContext.jsx`, `cartLogic.js`, `WishlistContext.jsx`, `useQuote.js`, `useShopSettings.js` | Cart / quote / wishlist ka logic |
 | `src/main.jsx` | Provider ka order: Auth > CustomerAuth > Cart > Wishlist (agar badla to cart/login toot jate hain) |
-| `package.json`, `netlify.toml`, `vite.config.*` | Sirf nayi dependency add karni ho to package.json mein sirf wohi line add karein |
+| `package.json`, `wrangler.jsonc`, `vite.config.*` | Sirf nayi dependency add karni ho to package.json mein sirf wohi line add karein |
 
 ## Kya Lovable se lena hai (sirf look)
 - Page layouts (JSX ka structure), colors, fonts, spacing, images, icons
@@ -47,7 +47,7 @@ Lovable ke pages mein jo bhi dummy data / fake `fetch` / localStorage cart ho, w
 1. `npm install` (agar nayi library aayi) -> `npm test` -> `npm run check` -> `npm run build` — teeno saaf aane chahiye.
 2. `npm run api` chalayen, phir `npm run e2e` — saare PASS.
 3. Browser mein: home, shop, product (reviews dikhein), cart mein item daal kar city badlein (delivery fee badalni chahiye), checkout se order, `/track`, login/register, wishlist, mobile view.
-4. Browser console (F12) mein red error nahi aana chahiye. CSP (`netlify.toml`) kisi image/font ko rok sakti hai; agar aaye to error ka text mujhe bhej dein.
+4. Browser console (F12) mein red error nahi aana chahiye. Cloudflare Worker security headers kisi image/font ko rok sakti hai; agar aaye to error ka text mujhe bhej dein.
 
 ## Mujhe kya dena hai
 Lovable ka poora zip (ya GitHub link) + batayein kaun se pages ready hain. Main pehle ek page ka diff dekh kar bataunga ke kya lena hai, phir ek ek karke merge karunga (ek step, ek zip).
