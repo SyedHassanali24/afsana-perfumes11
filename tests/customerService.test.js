@@ -64,7 +64,7 @@ test('customers service: update changes only group + notes, writes an audit row,
 
 test('customers handler: 3 staff-only routes with the right permissions', () => {
   stub('middleware/withApi.js', { createHandler: (g, routes) => ({ group: g, routes }) });
-  const { group, routes } = require('../netlify/functions/customers/index.js').handler;
+  const { group, routes } = require('../cloudflare/api/customers/index.js').handler;
   assert.equal(group, 'customers');
   assert.deepEqual(routes.map((r) => `${r.method} ${r.path} ${r.permission.join('.')}`), ['GET /admin customers.view', 'GET /admin/:id customers.view', 'PATCH /admin/:id customers.edit']);
   assert.ok(routes[0].query && routes[2].body, 'query and body are validated');

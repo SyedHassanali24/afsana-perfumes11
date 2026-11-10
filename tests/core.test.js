@@ -20,7 +20,7 @@ test('router: static admin routes win over :slug, params decoded, prefixes strip
   assert.equal(match(c, 'GET', '/').route.path, '/');
   assert.equal(match(c, 'POST', '/royal-oud'), null);
   assert.equal(stripPrefix('/api/products/admin/x', 'products'), '/admin/x');
-  assert.equal(stripPrefix('/.netlify/functions/products', 'products'), '/');
+  assert.equal(stripPrefix('/api/products', 'products'), '/');
 });
 
 test('permissions: role grants, missing = null, owner unrestricted', () => {

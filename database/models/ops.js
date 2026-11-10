@@ -4,7 +4,7 @@ const { ObjectId } = Schema.Types;
 const { storeScoped, model: m } = require('./_plugins');
 const model = (n, s) => m(mongoose, n, s);
 
-// Uploaded pictures (stored in the database so nothing depends on another service; served by netlify/functions/media).
+// Uploaded pictures (stored in the database so nothing depends on another service; served by the Cloudflare API).
 const mediaSchema = new Schema({
   contentType: { type: String, enum: ['image/jpeg', 'image/png', 'image/webp'], required: true },
   size: { type: Number, required: true }, data: { type: Buffer, required: true },
