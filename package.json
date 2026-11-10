@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "api": "wrangler dev --config wrangler.jsonc --port 8787",
+    "api": "npx --yes wrangler dev --config cloudflare/wrangler.toml --port 8787",
     "db:seed": "node database/seed/index.js",
     "db:indexes:preflight": "node database/indexes/preflight.js",
     "db:indexes": "node database/indexes/sync.js",
