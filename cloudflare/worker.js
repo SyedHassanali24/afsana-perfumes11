@@ -89,10 +89,17 @@ export default {
 
     let response;
     try {
+      // Buffer non-GET bodies before proxying so Cloudflare does not forward
+      // a streamed body with a stale/mismatched FixedLengthStream byte count.
+      const requestBody = ["GET", "HEAD"].includes(request.method)
+        ? undefined
+        : await request.arrayBuffer();
+      headers.delete("content-length");
+      headers.delete("transfer-encoding");
       response = await fetch(new Request(upstream.toString(), {
         method: request.method,
         headers,
-        body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
+        body: requestBody,
         redirect: "follow"
       }));
     } catch {
