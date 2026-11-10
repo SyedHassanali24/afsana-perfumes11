@@ -1,31 +1,31 @@
 const handlerLoaders = {
-  account: () => import("../../netlify/functions/account/index.js"),
-  analytics: () => import("../../netlify/functions/analytics/index.js"),
-  audit: () => import("../../netlify/functions/audit/index.js"),
-  auth: () => import("../../netlify/functions/auth/index.js"),
-  backup: () => import("../../netlify/functions/backup/index.js"),
-  cart: () => import("../../netlify/functions/cart/index.js"),
-  cms: () => import("../../netlify/functions/cms/index.js"),
-  coupons: () => import("../../netlify/functions/coupons/index.js"),
-  customers: () => import("../../netlify/functions/customers/index.js"),
-  finance: () => import("../../netlify/functions/finance/index.js"),
-  health: () => import("../../netlify/functions/health/index.js"),
-  inventory: () => import("../../netlify/functions/inventory/index.js"),
-  media: () => import("../../netlify/functions/media/index.js"),
-  notifications: () => import("../../netlify/functions/notifications/index.js"),
-  orders: () => import("../../netlify/functions/orders/index.js"),
-  permissions: () => import("../../netlify/functions/permissions/index.js"),
-  products: () => import("../../netlify/functions/products/index.js"),
-  "purchase-orders": () => import("../../netlify/functions/purchase-orders/index.js"),
-  returns: () => import("../../netlify/functions/returns/index.js"),
-  reviews: () => import("../../netlify/functions/reviews/index.js"),
-  roles: () => import("../../netlify/functions/roles/index.js"),
-  settings: () => import("../../netlify/functions/settings/index.js"),
-  shipping: () => import("../../netlify/functions/shipping/index.js"),
-  staff: () => import("../../netlify/functions/staff/index.js"),
-  suppliers: () => import("../../netlify/functions/suppliers/index.js"),
-  taxonomy: () => import("../../netlify/functions/taxonomy/index.js"),
-  wishlist: () => import("../../netlify/functions/wishlist/index.js"),
+  account: () => import("../../cloudflare/api/account/index.js"),
+  analytics: () => import("../../cloudflare/api/analytics/index.js"),
+  audit: () => import("../../cloudflare/api/audit/index.js"),
+  auth: () => import("../../cloudflare/api/auth/index.js"),
+  backup: () => import("../../cloudflare/api/backup/index.js"),
+  cart: () => import("../../cloudflare/api/cart/index.js"),
+  cms: () => import("../../cloudflare/api/cms/index.js"),
+  coupons: () => import("../../cloudflare/api/coupons/index.js"),
+  customers: () => import("../../cloudflare/api/customers/index.js"),
+  finance: () => import("../../cloudflare/api/finance/index.js"),
+  health: () => import("../../cloudflare/api/health/index.js"),
+  inventory: () => import("../../cloudflare/api/inventory/index.js"),
+  media: () => import("../../cloudflare/api/media/index.js"),
+  notifications: () => import("../../cloudflare/api/notifications/index.js"),
+  orders: () => import("../../cloudflare/api/orders/index.js"),
+  permissions: () => import("../../cloudflare/api/permissions/index.js"),
+  products: () => import("../../cloudflare/api/products/index.js"),
+  "purchase-orders": () => import("../../cloudflare/api/purchase-orders/index.js"),
+  returns: () => import("../../cloudflare/api/returns/index.js"),
+  reviews: () => import("../../cloudflare/api/reviews/index.js"),
+  roles: () => import("../../cloudflare/api/roles/index.js"),
+  settings: () => import("../../cloudflare/api/settings/index.js"),
+  shipping: () => import("../../cloudflare/api/shipping/index.js"),
+  staff: () => import("../../cloudflare/api/staff/index.js"),
+  suppliers: () => import("../../cloudflare/api/suppliers/index.js"),
+  taxonomy: () => import("../../cloudflare/api/taxonomy/index.js"),
+  wishlist: () => import("../../cloudflare/api/wishlist/index.js"),
 };
 
 const handlerCache = new Map();
@@ -51,7 +51,7 @@ function queryObject(url) {
   return out;
 }
 
-async function netlifyEvent(request, path) {
+async function toHandlerEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -73,7 +73,7 @@ async function netlifyEvent(request, path) {
   };
 }
 
-function responseFromNetlify(result) {
+function responseFromHandler(result) {
   const responseHeaders = new Headers(result?.headers || {});
   const multi = result?.multiValueHeaders || {};
   for (const [key, values] of Object.entries(multi)) {
@@ -113,12 +113,12 @@ export async function onRequest(context) {
     return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Route not found." } }, { status: 404 });
   }
 
-  const event = await netlifyEvent(request, functionPath);
+  const handlerEvent = await toHandlerEvent(request, functionPath);
   try {
-    const response = await handler(event, { ...context, site: { url: new URL(request.url).origin } });
-    return responseFromNetlify(response);
+    const response = await handler(handlerEvent, { ...context, site: { url: new URL(request.url).origin } });
+    return responseFromHandler(response);
   } catch (error) {
-    console.error("[afsana-api-adapter]", error?.message || error);
+    console.error("[afsana-cloudflare-api]", error?.message || error);
     return Response.json({ success: false, error: { code: "INTERNAL", message: "Internal server error." } }, { status: 500 });
   }
 }
