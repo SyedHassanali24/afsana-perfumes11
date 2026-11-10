@@ -42,7 +42,7 @@ exports.handler = async () => {
   };
   const out = {
     success: true, version: 'health-v2',                      // if you do not see "health-v2", Cloudflare Worker is still running OLD code
-    runningOn: { site: platform: 'Cloudflare Worker' },
+    runningOn: { platform: 'Cloudflare Worker' },
     env: checks, jwtSecret: jwt, uriShape: inspectUri(env.MONGODB_URI), database: { connected: false },
   };
   const fixes = [];
