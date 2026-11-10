@@ -1,34 +1,30 @@
 name: Deploy AFSANA Cloudflare Worker
-# Production edge deploy: Cloudflare is the direct storefront origin.
+# Production deployment is intentionally manual and explicitly gated.
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "cloudflare/**"
-      - "functions/**"
-      - "netlify/functions/**"
-      - "middleware/**"
-      - "database/**"
-      - "services/**"
-      - "validation/**"
-      - "shared/**"
-      - "admin/**"
-      - "src/**"
-      - "public/**"
-      - "index.html"
-      - "package.json"
-      - "package-lock.json"
-      - "vite.config.*"
-      - ".github/workflows/cloudflare-worker.yml"
   workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: "Type DEPLOY-HASSAN-APPROVED only after the exact change is reviewed."
+        required: true
+        type: choice
+        options:
+          - NO-DEPLOY
+          - DEPLOY-HASSAN-APPROVED
+        default: NO-DEPLOY
 
 permissions:
   contents: read
 
+concurrency:
+  group: afsana-production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    if: github.event.inputs.confirm_production == 'DEPLOY-HASSAN-APPROVED'
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -43,5 +39,3 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: eb104cb2498331e8ace489bbf746dc15
         run: npx --yes wrangler deploy --config cloudflare/wrangler.toml
-
-# Production redeploy trigger: latest frontend bundle.
