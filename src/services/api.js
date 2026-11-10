@@ -55,26 +55,18 @@ async function executeRequest(url, path, options) {
   const { method = 'GET', body, idempotencyKey } = options;
   let res;
   try {
-    // Cloudflare's incoming fixed-length request stream has been rejecting these
-    // JSON/base64 media uploads. Stream only media writes so the edge does not
-    // infer a Content-Length for the request body; all other API requests stay unchanged.
-    const streamingUpload = body !== undefined && (path === '/media/admin' || path === '/media/profile');
+    // Send JSON as a native Blob. The previous custom ReadableStream upload
+    // path caused Cloudflare FixedLengthStream byte-count exceptions on media writes.
     const serializedBody = body === undefined ? undefined : JSON.stringify(body);
-    const requestBody = streamingUpload
-      ? new ReadableStream({
-          start(controller) {
-            controller.enqueue(new TextEncoder().encode(serializedBody));
-            controller.close();
-          },
-        })
-      : serializedBody;
+    const requestBody = serializedBody === undefined
+      ? undefined
+      : new Blob([serializedBody], { type: 'application/json' });
 
     res = await fetch(url, {
       method,
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
       body: requestBody,
-      ...(streamingUpload ? { duplex: 'half' } : {}),
     });
   } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
 
