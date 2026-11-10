@@ -56,7 +56,13 @@ async function netlifyEvent(request, path) {
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
     const bytes = new Uint8Array(await request.arrayBuffer());
-    body = btoa(String.fromCharCode(...bytes));
+    // Convert in bounded chunks: spreading a full image into fromCharCode can exceed the argument limit.
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    body = btoa(binary);
   }
   return {
     httpMethod: request.method,
