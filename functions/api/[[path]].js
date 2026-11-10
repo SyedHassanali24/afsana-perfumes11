@@ -82,7 +82,14 @@ function responseFromHandler(result) {
       for (const value of values) responseHeaders.append(key, String(value));
     }
   }
-  return new Response(result?.body ?? "", {
+  let responseBody = result?.body ?? "";
+  if (result?.isBase64Encoded && typeof responseBody === "string") {
+    const binary = atob(responseBody);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    responseBody = bytes;
+  }
+  return new Response(responseBody, {
     status: result?.statusCode || 200,
     headers: responseHeaders,
   });
