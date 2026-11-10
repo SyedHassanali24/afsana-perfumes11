@@ -21,3 +21,12 @@ mode = "smart"
 
 [cache]
 enabled = true
+
+# Branch previews are isolated from production. Each preview receives its own
+# Durable Object namespace so preview traffic cannot touch production DO state.
+[previews.placement]
+mode = "smart"
+
+[[previews.durable_objects.bindings]]
+name = "MONGODB_CONNECTION"
+class_name = "MongoDBConnection"
