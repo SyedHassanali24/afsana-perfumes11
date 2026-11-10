@@ -1,1 +1,0 @@
-Cloudflare Pages deployment trigger after production environment variables were configured.
