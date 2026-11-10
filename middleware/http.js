@@ -5,7 +5,7 @@ const json = (status, body, headers = {}) => ({
 });
 const res = (status, data = {}, headers = {}) => ({ __res: true, status, data, headers });
 const lowerKeys = (h = {}) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k.toLowerCase(), v]));
-const clientIp = (h) => h['x-nf-client-connection-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+const clientIp = (h) => h['cf-connecting-ip'] || (h['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
 function parseCookies(header = '') {
   const out = {};
@@ -25,7 +25,7 @@ function parseCookies(header = '') {
   return out;
 }
 function serializeCookie(name, value, { maxAge, secure = true } = {}) {
-  // Same-site Netlify deployments use Lax. Set COOKIE_SAMESITE=None only when the frontend/API are intentionally cross-site.
+  // Same-site storefront/API deployments use Lax. Set COOKIE_SAMESITE=None only when the frontend/API are intentionally cross-site.
   const sameSite = String(process.env.COOKIE_SAMESITE || 'Lax').toLowerCase();
   const sameSiteValue = ['lax', 'strict', 'none'].includes(sameSite) ? sameSite[0].toUpperCase() + sameSite.slice(1) : 'Lax';
   return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', `SameSite=${sameSiteValue}`, secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']

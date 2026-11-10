@@ -14,5 +14,5 @@ function match(compiled, method, path) {
   }
   return null;
 }
-const stripPrefix = (path, group) => path.replace(new RegExp(`^/(?:\\.netlify/functions|api)/${group}`), '') || '/';
+const stripPrefix = (path, group) => path.replace(new RegExp(`^/api/${group}`), '') || '/';
 module.exports = { compile, match, stripPrefix };

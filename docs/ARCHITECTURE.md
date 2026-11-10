@@ -50,7 +50,7 @@ Key decisions
 
 Seeded roles: Owner (unrestricted), Super Admin (everything), Admin (everything except roles/permissions/security/backup/settings/payments), Manager (ops modules: view/create/edit/changeStatus, no cost/profit), Staff (view dashboard/orders/products). All except Owner are editable from the Roles UI.
 
-## 4. API map (Netlify Functions, `/api/*`)
+## 4. API map (Cloudflare Worker API, `/api/*`)
 Response shape `{ success, ...data }` / `{ success:false, error:{ code, message } }`. Lists are paginated (`?page&limit&sort&q`), limit capped at 100. Every write validated (Zod) server-side. Centralised error handler returns "Something went wrong. Please try again." for unknown errors.
 
 | Group | Endpoints | Notes |
@@ -74,7 +74,7 @@ Response shape `{ success, ...data }` / `{ success:false, error:{ code, message 
 | notifications | GET, PATCH read | |
 | audit / settings / backup | GET /audit-logs; GET/PATCH /settings/:key; POST /export/:type | |
 
-Function layout: `netlify/functions/<group>/<handler>.js`, each wrapped by `middleware/withApi.js` = `connectDB → rateLimit → authenticate → authorize(module, action) → validate → handler → errorHandler`.
+Function layout: `cloudflare/api/<group>/index.js`, each wrapped by `middleware/withApi.js` = `connectDB → rateLimit → authenticate → authorize(module, action) → validate → handler → errorHandler`.
 
 ## 5. Frontend routes
 **Customer** (`src/pages`): `/`, `/shop`, `/category/:slug`, `/collection/:slug`, `/product/:slug`, `/search`, `/cart`, `/checkout`, `/track`, `/wishlist`, `/login`, `/register`, `/account` (orders, addresses, loyalty, coupons, reviews, profile, password), `/page/:slug`, `/faq`.
@@ -118,9 +118,9 @@ Known limits (planned, not forgotten)
 ## 8. Run Phase 3 locally
 ```bash
 npm i zod jsonwebtoken            # (mongoose bcryptjs dotenv from Phase 2)
-npm i -D netlify-cli
+npm i -D wrangler
 # .env: JWT_SECRET must be 32+ random chars
-npx netlify dev                   # serves Vite + /api/* functions together on :8888
+npm run api                   # serves Vite + /api/* functions together on :8787
 node --test tests/core.test.js    # pure-logic tests (no DB needed)
 ```
 Then `POST /api/auth/login` with the seeded Owner email/password.

@@ -131,7 +131,7 @@ test('finance schemas: dates must be real, amount a positive whole number (text 
 
 test('finance handler: summary needs finance.view; expenses need expenses.view/create/edit/delete', () => {
   stub('middleware/withApi.js', { createHandler: (g, routes) => ({ group: g, routes }) });
-  const { group, routes } = require('../netlify/functions/finance/index.js').handler;
+  const { group, routes } = require('../cloudflare/api/finance/index.js').handler;
   assert.equal(group, 'finance');
   assert.deepEqual(routes.map((r) => `${r.method} ${r.path} ${r.permission.join('.')}`), ['GET /admin/summary finance.view', 'GET /admin/expenses expenses.view', 'POST /admin/expenses expenses.create', 'PATCH /admin/expenses/:id expenses.edit', 'DELETE /admin/expenses/:id expenses.delete']);
 });

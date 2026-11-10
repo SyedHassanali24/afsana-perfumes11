@@ -2,7 +2,7 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
 import { corsHeaders, securityHeaders } from "./security.js";
-import { onRequest as handleApiRequest } from "../functions/api/[[path]].js";
+import { onRequest as handleApiRequest } from "./api-router.js";
 
 const SITE_ORIGIN = "https://afsanaperfumes.store";
 const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
@@ -95,8 +95,6 @@ export default {
         const headers = new Headers(response.headers);
         // Keep API reads fresh during restoration; no old proxy/cache responses.
         headers.set("Cache-Control", "no-store, private");
-        headers.delete("Netlify-CDN-Cache-Control");
-        headers.delete("Netlify-Cache-Tag");
         headers.set("X-Afsana-Backend", "cloudflare-mongodb-api");
         addCors(headers, origin);
         return new Response(response.body, { status: response.status, statusText: response.statusText, headers: securityHeaders(Object.fromEntries(headers.entries())) });
