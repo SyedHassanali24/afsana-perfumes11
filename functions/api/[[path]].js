@@ -82,7 +82,18 @@ function responseFromNetlify(result) {
       for (const value of values) responseHeaders.append(key, String(value));
     }
   }
-  return new Response(result?.body ?? "", {
+
+  // Netlify-style handlers mark binary media responses as base64. Decode them
+  // before constructing the Fetch Response; otherwise browsers receive base64 text.
+  let responseBody = result?.body ?? "";
+  if (result?.isBase64Encoded && typeof responseBody === "string") {
+    const binary = atob(responseBody);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    responseBody = bytes;
+  }
+
+  return new Response(responseBody, {
     status: result?.statusCode || 200,
     headers: responseHeaders,
   });
