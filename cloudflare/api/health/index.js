@@ -41,14 +41,14 @@ exports.handler = async () => {
     distributedRateLimit: !production || redisConfigured || env.RATE_LIMIT_FAIL_OPEN === 'true',
   };
   const out = {
-    success: true, version: 'health-v2',                      // if you do not see "health-v2", Netlify is still running OLD code
-    runningOn: { site: env.SITE_NAME || null, context: env.CONTEXT || null },
+    success: true, version: 'health-v2',                      // if you do not see "health-v2", Cloudflare Worker is still running OLD code
+    runningOn: { platform: 'Cloudflare Worker' },
     env: checks, jwtSecret: jwt, uriShape: inspectUri(env.MONGODB_URI), database: { connected: false },
   };
   const fixes = [];
   if (production && !emailConfigured) fixes.push('Production mein RESEND_API_KEY aur EMAIL_FROM required hain password reset emails ke liye.');
   if (production && !redisConfigured && env.RATE_LIMIT_FAIL_OPEN !== 'true') fixes.push('Production mein UPSTASH_REDIS_REST_URL aur UPSTASH_REDIS_REST_TOKEN required hain distributed rate limiting ke liye.');
-  if (jwt !== 'ok') fixes.push(jwt === 'missing' ? 'JWT_SECRET khali hai ya Netlify ko mila hi nahi.' : 'JWT_SECRET 32 harf se chhota hai.');
+  if (jwt !== 'ok') fixes.push(jwt === 'missing' ? 'JWT_SECRET khali hai ya Cloudflare Worker ko mila hi nahi.' : 'JWT_SECRET 32 harf se chhota hai.');
   if (/[<>]/.test(env.MONGODB_URI || '')) fixes.push('MONGODB_URI mein < ya > hai: <db_password> ko asli password se badlein (brackets samet).');
   try {
     const mongoose = await connectDB();
