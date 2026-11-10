@@ -55,18 +55,15 @@ async function executeRequest(url, path, options) {
   const { method = 'GET', body, idempotencyKey } = options;
   let res;
   try {
-    // Send JSON as a native Blob. The previous custom ReadableStream upload
-    // path caused Cloudflare FixedLengthStream byte-count exceptions on media writes.
+    // Keep the JSON request body as a string. The custom ReadableStream used
+    // for media writes caused Cloudflare FixedLengthStream byte-count errors.
     const serializedBody = body === undefined ? undefined : JSON.stringify(body);
-    const requestBody = serializedBody === undefined
-      ? undefined
-      : new Blob([serializedBody], { type: 'application/json' });
 
     res = await fetch(url, {
       method,
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
-      body: requestBody,
+      body: serializedBody,
     });
   } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
 
