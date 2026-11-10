@@ -1,7 +1,7 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { connectMongo } from "./mongodb.js";
 import { corsHeaders, securityHeaders } from "./security.js";
-import { onRequest as handleApiRequest } from "../functions/api/[[path]].js";
+import { onRequest as handleApiRequest } from "./api-router.js";
 
 const SITE_ORIGIN = "https://afsanaperfumes.store";
 const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
