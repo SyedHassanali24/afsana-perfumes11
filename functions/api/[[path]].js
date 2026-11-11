@@ -112,7 +112,8 @@ export async function onRequest(context) {
   process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
+    // Without shared Redis, always use the documented per-isolate fallback. A stale "false" binding must not reject every API request.
+    process.env.RATE_LIMIT_FAIL_OPEN = "true";
   }
 
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
