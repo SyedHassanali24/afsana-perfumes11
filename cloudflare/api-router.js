@@ -51,13 +51,27 @@ function queryObject(url) {
   return out;
 }
 
+async function readRequestBodyText(request) {
+  // Read the incoming stream directly. Request.text() may use an internal
+  // fixed-length buffering path that can fail on larger JSON media uploads.
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder();
+  let body = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    body += decoder.decode(value, { stream: true });
+  }
+  return body + decoder.decode();
+}
+
 async function cloudflareEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    // Keep the JSON payload as UTF-8. Its embedded image data is already base64;
-    // base64-encoding the entire JSON again expands it and breaks upload parsing.
-    body = await request.text();
+    // Preserve JSON UTF-8; embedded image data is already base64.
+    body = await readRequestBodyText(request);
   }
   return {
     httpMethod: request.method,
@@ -108,7 +122,10 @@ export async function onRequest(context) {
   process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
+    // No shared Redis credentials exist on this Worker. Keep uploads and
+    // other API writes available with the isolate-local fallback until Redis
+    // is configured; this is a deliberate temporary availability trade-off.
+    process.env.RATE_LIMIT_FAIL_OPEN = "true";
   }
 
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);
