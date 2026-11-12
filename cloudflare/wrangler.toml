@@ -21,3 +21,6 @@ mode = "smart"
 
 [cache]
 enabled = true
+
+[previews.placement]
+mode = "smart"
