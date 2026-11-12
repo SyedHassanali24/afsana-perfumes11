@@ -82,7 +82,18 @@ function responseFromNetlify(result) {
       for (const value of values) responseHeaders.append(key, String(value));
     }
   }
-  return new Response(result?.body ?? "", {
+
+  // Netlify-style handlers mark binary media responses as base64. Decode them
+  // before constructing the Fetch Response; otherwise browsers receive base64 text.
+  let responseBody = result?.body ?? "";
+  if (result?.isBase64Encoded && typeof responseBody === "string") {
+    const binary = atob(responseBody);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    responseBody = bytes;
+  }
+
+  return new Response(responseBody, {
     status: result?.statusCode || 200,
     headers: responseHeaders,
   });
@@ -101,7 +112,8 @@ export async function onRequest(context) {
   process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
+    // Without shared Redis, always use the documented per-isolate fallback. A stale "false" binding must not reject every API request.
+    process.env.RATE_LIMIT_FAIL_OPEN = "true";
   }
 
   const pathParts = Array.isArray(params.path) ? params.path : [params.path].filter(Boolean);

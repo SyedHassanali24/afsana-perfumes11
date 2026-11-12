@@ -33,18 +33,23 @@ function createHandler(group, routes) {
     } : {};
     if ((event.httpMethod || 'GET').toUpperCase() === 'OPTIONS') return json(204, {}, cors);
 
+    let stage = 'route-match';
+    const method = (event.httpMethod || 'GET').toUpperCase();
     try {
       const req = { ...event, headers };
-      const method = (event.httpMethod || 'GET').toUpperCase();
       const found = match(compiled, method, stripPrefix(event.path || '/', group));
       if (!found) throw E.notFound('Route not found.');
       const { route, params } = found;
+      stage = 'rate-limit';
       const ip = clientIp(headers);
       const rl = route.rateLimit || { limit: 120, windowMs: 60000 };
       if (!await hit(`${group}:${route.method}:${route.path}:${ip}`, rl.limit, rl.windowMs)) throw E.tooMany();
+      stage = 'csrf';
       if (!['GET', 'HEAD'].includes(method) && headers['x-requested-with'] !== 'afsana') throw E.forbidden('Invalid request.');
+      stage = 'database';
       await connectDB();
       let ctx = null; let scopes = null;
+      stage = 'authentication';
       if (route.public && route.optionalCustomer) {
         try { ctx = await authenticateCustomer(req); } catch { ctx = null; }
       }
@@ -56,11 +61,13 @@ function createHandler(group, routes) {
           if (!scopes) throw E.forbidden();
         }
       }
+      stage = 'validation';
       const rawBody = parseBody(req);
       const rawQuery = event.queryStringParameters || {};
       const query = route.query ? route.query.parse(rawQuery) : rawQuery;
       const body = route.body ? route.body.parse(rawBody === undefined ? {} : rawBody) : rawBody;
       if (route.reauth) await ctx.reauth(rawBody && rawBody.confirmPassword);
+      stage = 'handler';
       const out = await route.handler({ req, params, query, body, ctx, scopes, ip });
       const r = out && out.__res ? out : { status: 200, data: out || {}, headers: {} };
       const cacheable = route.cache && route.public && !route.optionalCustomer &&
@@ -71,6 +78,14 @@ function createHandler(group, routes) {
       }
       return json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
     } catch (err) {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        console.error('[afsana-write-diagnostic]', {
+          stage,
+          errorName: err?.name || 'Error',
+          errorCode: typeof err?.code === 'string' || typeof err?.code === 'number' ? err.code : undefined,
+          status: Number.isInteger(err?.status) ? err.status : undefined,
+        });
+      }
       const r = toResponse(err);
       return json(r.status, r.body, cors);
     }
