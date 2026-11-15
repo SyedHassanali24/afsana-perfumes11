@@ -1,7 +1,9 @@
-// Anonymous, in-memory storefront session attribution. No browser storage or personal identifiers are used.
+// Anonymous, per-tab storefront attribution. A random session reference is kept in sessionStorage
+// so refreshes do not inflate unique-session counts; no customer identity or IP is stored.
 let activeSession = null;
 let lastTrackedLocation = '';
 const REF_KEY = 'afsana_referral_code_v1';
+const SESSION_KEY = 'afsana_traffic_session_v1';
 
 function createSessionRef() {
   try {
@@ -11,6 +13,18 @@ function createSessionRef() {
     return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
   } catch {
     return 'afsana-' + Math.random().toString(36).slice(2) + '-' + Date.now().toString(36);
+  }
+}
+function getSessionRef() {
+  try {
+    const existing = sessionStorage.getItem(SESSION_KEY);
+    if (existing && /^[a-zA-Z0-9-]{8,100}$/.test(existing)) return existing;
+    const created = createSessionRef();
+    sessionStorage.setItem(SESSION_KEY, created);
+    return created;
+  } catch {
+    // Private browsing/storage restrictions should never block storefront analytics.
+    return createSessionRef();
   }
 }
 function hostOnly(value) {
@@ -32,7 +46,7 @@ export function trackStorefrontPageView(pathname, search = '') {
   if (!activeSession) {
     const params = new URLSearchParams(search || '');
     activeSession = {
-      sessionRef: createSessionRef(),
+      sessionRef: getSessionRef(),
       landingPath: path,
       utmSource: params.get('utm_source') || '',
       utmMedium: params.get('utm_medium') || '',
