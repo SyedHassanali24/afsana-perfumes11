@@ -17,6 +17,8 @@ test('dashboard includes MongoDB product and customer counts when role permissio
     topProducts: { days: 30, items: [] },
     lowStock: { count: 0, outOfStock: 0, items: [] },
   });
+  assert.equal(vm.cards.find((c) => c.key === 'totalOrders').value, '20');
+  assert.equal(vm.cards.find((c) => c.key === 'outOfStock').value, '0');
   assert.equal(vm.cards.find((c) => c.key === 'products').value, '12');
   assert.equal(vm.cards.find((c) => c.key === 'customers').value, '4');
   assert.equal(vm.allHidden, false);
