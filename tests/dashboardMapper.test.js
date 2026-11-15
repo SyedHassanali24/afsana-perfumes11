@@ -11,12 +11,14 @@ test('dashboard includes MongoDB product and customer counts when role permissio
   const { toDashboard } = await load();
   const vm = toDashboard({
     catalog: { products: 12, customers: 4 },
-    kpis: { todayRevenue: 5000, todayOrders: 2, monthRevenue: 9000, pendingOrders: 1, avgOrderValue: 4500 },
+    kpis: { todayRevenue: 5000, todayOrders: 2, totalOrders: 20, monthRevenue: 9000, pendingOrders: 1, avgOrderValue: 4500 },
     revenueSeries: [],
     recentOrders: [],
     topProducts: { days: 30, items: [] },
     lowStock: { count: 0, outOfStock: 0, items: [] },
   });
+  assert.equal(vm.cards.find((c) => c.key === 'totalOrders').value, '20');
+  assert.equal(vm.cards.find((c) => c.key === 'outOfStock').value, '0');
   assert.equal(vm.cards.find((c) => c.key === 'products').value, '12');
   assert.equal(vm.cards.find((c) => c.key === 'customers').value, '4');
   assert.equal(vm.allHidden, false);

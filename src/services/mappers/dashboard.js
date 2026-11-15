@@ -38,9 +38,11 @@ export function toDashboard(dashboard) {
   const cards = [
     card('todayRevenue', "Today's revenue", k ? money(k.todayRevenue) : HIDDEN, k ? pctOrUndefined(k.todayRevenueChangePct) : undefined, 'vs yesterday'),
     card('todayOrders', "Today's orders", k ? num(k.todayOrders) : HIDDEN),
+    card('totalOrders', 'All orders', k ? num(k.totalOrders) : HIDDEN),
     card('monthRevenue', 'This month', k ? money(k.monthRevenue) : HIDDEN, k ? pctOrUndefined(k.monthRevenueChangePct) : undefined, 'vs last month so far'),
     card('pendingOrders', 'Pending orders', k ? num(k.pendingOrders) : HIDDEN),
     card('lowStock', 'Low stock', stock ? num(stock.count) : HIDDEN),
+    card('outOfStock', 'Out of stock', stock ? num(stock.outOfStock) : HIDDEN),
     card('avgOrderValue', 'Avg. order value', k ? money(k.avgOrderValue) : HIDDEN, k ? pctOrUndefined(k.avgOrderValueChangePct) : undefined, 'vs last month so far'),
     card('products', 'Total products', productsCount === null ? HIDDEN : num(productsCount)),
     card('customers', 'Total customers', customersCount === null ? HIDDEN : num(customersCount)),

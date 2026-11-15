@@ -621,7 +621,8 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   // The public API sends only enabled and non-deleted CMS rows.
   // Do not require internal template/theme tags here: custom and older saved
   // sections are valid storefront content too.
-  const safe = source.filter((s) => s?.isEnabled !== false);
+  // The footer showcase is rendered once in the global footer by ShopLayout, not again in the homepage flow.
+  const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'footer_showcase');
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
