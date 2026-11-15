@@ -11,7 +11,7 @@ test('dashboard includes MongoDB product and customer counts when role permissio
   const { toDashboard } = await load();
   const vm = toDashboard({
     catalog: { products: 12, customers: 4 },
-    kpis: { todayRevenue: 5000, todayOrders: 2, monthRevenue: 9000, pendingOrders: 1, avgOrderValue: 4500 },
+    kpis: { todayRevenue: 5000, todayOrders: 2, totalOrders: 20, monthRevenue: 9000, pendingOrders: 1, avgOrderValue: 4500 },
     revenueSeries: [],
     recentOrders: [],
     topProducts: { days: 30, items: [] },
