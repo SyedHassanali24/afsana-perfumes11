@@ -60,6 +60,7 @@ export default function ShopLayout(){
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
+ const hasFooterShowcase=(cmsData?.homepageSections||[]).some((s)=>s?.type==='footer_showcase'&&s?.isEnabled!==false);
  const cmsWhatsapp = (cmsData?.pageSections?.site_footer_before || []).some((section) => section?.type === 'whatsapp_float' && section?.isEnabled !== false);
  const directWhatsappHref = 'https://wa.me/923132956206?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like to know more about AFSANA perfumes.');
  const isPreviewRequested = new URLSearchParams(location.search).get('afsanaPreview') === '1';
@@ -105,9 +106,7 @@ export default function ShopLayout(){
    {isCmsPreview && <div className="relative z-[60] bg-[#7357ff] px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[.18em] text-white">Preview only — this design is not live. Return to Admin CMS and click Confirm &amp; Publish after checking.</div>}
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
-  <div className="overflow-hidden border-b border-[#100d24]/10 bg-[#d9ff55] text-[#100d24]">
-    <div className="marquee-track flex min-w-max items-center gap-8 py-2.5">{Array.from({length:2}).flatMap(() => [cmsData?.announcement?.text || 'COMPLIMENTARY DELIVERY ON ORDERS ABOVE PKR 7,500','DISCOVER YOUR SIGNATURE','CRAFTED FOR MEMORIES','THE AFSANA PRIVATE COLLECTION']).map((x,i)=><span key={i} className="flex items-center gap-8 text-[8px] uppercase tracking-[.3em]">AFSANA <b className="text-[#7357ff]">•</b>{x}<b className="text-[#7357ff]">•</b></span>)}</div>
-  </div>
+  {cmsData?.announcement?.text && <div className="border-b border-[#100d24]/10 bg-[#d9ff55] px-4 py-2.5 text-center text-[9px] font-semibold uppercase tracking-[.22em] text-[#100d24]">AFSANA <span className="mx-2 text-[#7357ff]">•</span>{cmsData.announcement.text}</div>}
 
   <header className="sticky top-0 z-40 text-[#100d24]">
    <div className="absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/92 backdrop-blur-xl shadow-[0_10px_40px_rgba(16,13,36,.07)]"/>
@@ -142,9 +141,8 @@ export default function ShopLayout(){
   <footer className="relative overflow-hidden bg-[#100d24] text-white border-t border-[#d9ff55]/20">
    <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_18%_18%,rgba(115,87,255,.24),transparent_26%),radial-gradient(circle_at_88%_72%,rgba(217,255,85,.08),transparent_28%)]"/>
    <div className="relative">
-    <div className="border-b border-white/10 overflow-hidden"><div className="marquee-track flex min-w-max gap-12 py-3 text-[9px] uppercase tracking-[.32em] text-white/35">{['THE ART OF SCENT','CRAFTED FOR MEMORIES','AFSANA PERFUMES','LEAVE A TRACE','THE PRIVATE COLLECTION','THE ART OF SCENT'].map((x,i)=><span key={i}>{x}<b className="mx-12 text-[#d9ff55]">✦</b></span>)}</div></div>
     <Container className="container-xl py-16 sm:py-24">
-      <div className="grid lg:grid-cols-[1.3fr_.7fr] gap-12 pb-14 border-b border-white/10">
+      {hasFooterShowcase && <div className="grid lg:grid-cols-[1.3fr_.7fr] gap-12 pb-14 border-b border-white/10">
         <div>
           <p className="text-[9px] uppercase tracking-[.4em] text-[#d9ff55]">{footerCms.eyebrow||'THE HOUSE OF AFSANA'}</p>
           <div className="mt-5 font-display text-[clamp(5rem,14vw,11rem)] leading-[.68] tracking-[-.07em]">AFSANA</div>
@@ -155,7 +153,7 @@ export default function ShopLayout(){
           <h3 className="mt-4 font-display text-3xl">{footerCms.offerText||'Discover the scent that feels like you.'}</h3>
           <Link to={footerCms.buttonLink||'/shop'} className="mt-7 inline-flex items-center gap-2 bg-[#d9ff55] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.2em] text-[#100d24] hover:bg-white transition">{footerCms.buttonText||'Explore Collection'}<span>↗</span></Link>
         </div>
-      </div>
+      </div>}
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] py-14">
         <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#d9ff55]">Customer care ↗</Link></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link></div></div>
