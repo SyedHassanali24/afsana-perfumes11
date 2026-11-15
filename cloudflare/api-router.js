@@ -51,13 +51,42 @@ function queryObject(url) {
   return out;
 }
 
+async function readRequestBody(request, maxBytes = 1_000_000) {
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel("Request body too large");
+        throw new Error("Request body too large");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+}
+
 async function cloudflareEvent(request, path) {
   const headers = headersObject(request.headers);
   let body;
   if (request.method !== "GET" && request.method !== "HEAD") {
-    // Keep the JSON payload as UTF-8. Its embedded image data is already base64;
-    // base64-encoding the entire JSON again expands it and breaks upload parsing.
-    body = await request.text();
+    // Read the incoming stream directly. Request.text() can hit Cloudflare's
+    // FixedLengthStream framing error when the forwarded Content-Length differs
+    // from the bytes delivered by the edge. Preserve the JSON/base64 payload as UTF-8.
+    body = await readRequestBody(request);
   }
   return {
     httpMethod: request.method,
