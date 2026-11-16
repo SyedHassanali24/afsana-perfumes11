@@ -3104,3 +3104,150 @@
   .afsana-collection-campaign-bottle{transform:scale(.74)}
   .afsana-collection-campaign-index{right:6px;bottom:6px;font-size:4px}
 }
+
+
+/* AFSANA storefront: mobile-first readability and media sizing (storefront only). */
+@media (max-width: 640px) {
+  .storefront-theme { overflow-x: clip; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .storefront-theme .container-xl,
+  .storefront-theme .afsana-cms-section > .container-xl {
+    width: calc(100% - 32px) !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+    padding-inline: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .storefront-theme .afsana-cms-section { min-width: 0; max-width: 100%; overflow: clip; }
+  .storefront-theme .afsana-cms-section > section { min-width: 0; max-width: 100%; }
+  .storefront-theme .afsana-cms-section h1,
+  .storefront-theme .afsana-cms-section h2,
+  .storefront-theme .afsana-cms-section h3 {
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+  .storefront-theme .afsana-cms-section p,
+  .storefront-theme .afsana-cms-section li {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  .storefront-theme .afsana-cms-section [style*="width"] { max-width: 100%; }
+  .storefront-theme .afsana-cms-section img,
+  .storefront-theme .afsana-cms-section video,
+  .storefront-theme .afsana-cms-section iframe {
+    max-width: 100%;
+  }
+
+  /* Video/editorial sections use a full-width landscape frame instead of tiny cards. */
+  .storefront-theme .video-wall,
+  .storefront-theme .cinematic-video-wall {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+  }
+  .storefront-theme .video-card,
+  .storefront-theme .cinematic-video-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 16 / 10 !important;
+    border-radius: 16px !important;
+  }
+  .storefront-theme .video-card video,
+  .storefront-theme .cinematic-video-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .storefront-theme .afsana-world-reel-shell { display: grid; grid-template-columns: minmax(0,1fr) !important; gap: 20px !important; }
+  .storefront-theme .afsana-world-reel-frame { width: 100% !important; max-width: 100% !important; min-width: 0 !important; }
+  .storefront-theme .afsana-world-reel-iframe { width: 100% !important; max-width: 100% !important; height: min(78vh, 560px) !important; }
+
+  /* Countdown: four equal readable cells, never squeezed into a narrow inline row. */
+  .storefront-theme .cms-timer,
+  .storefront-theme .afsana-digital-countdown {
+    display: grid !important;
+    width: 100% !important;
+    max-width: 560px !important;
+    min-width: 0 !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    gap: 7px !important;
+    margin-inline: auto !important;
+    white-space: nowrap;
+  }
+  .storefront-theme .afsana-digital-countdown .cms-timer-unit,
+  .storefront-theme .cms-timer > span {
+    display: flex !important;
+    min-width: 0 !important;
+    min-height: 66px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    padding: 9px 3px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,.09);
+    box-sizing: border-box !important;
+  }
+  .storefront-theme .afsana-digital-countdown .cms-timer-unit b {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: clamp(22px, 7vw, 32px) !important;
+    line-height: 1 !important;
+    font-weight: 750 !important;
+    letter-spacing: -.04em !important;
+    font-variant-numeric: tabular-nums;
+  }
+  .storefront-theme .afsana-digital-countdown .cms-timer-unit small {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 8px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+    letter-spacing: .12em !important;
+  }
+  .storefront-theme .afsana-digital-countdown > i { display: none !important; }
+  .storefront-theme .cms-timer > b { align-self: center; font-size: 12px; }
+
+  /* Product catalogue stays two columns on phones with full-size readable cards. */
+  .storefront-theme .afsana-shop-product-grid,
+  .storefront-theme .product-grid,
+  .storefront-theme .purchase-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 18px 12px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .storefront-theme .afsana-product-card,
+  .storefront-theme .afsana-product-link,
+  .storefront-theme .afsana-product-image { min-width: 0 !important; width: 100% !important; }
+  .storefront-theme .afsana-product-image { aspect-ratio: 4 / 5 !important; overflow: hidden; }
+  .storefront-theme .afsana-product-name {
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere;
+  }
+  .storefront-theme .afsana-product-info { padding: 10px 2px 0 !important; }
+  .storefront-theme .afsana-product-category { font-size: 8px !important; letter-spacing: .08em !important; }
+  .storefront-theme .afsana-product-price { font-size: 12px !important; }
+
+  /* Standard typography: neutral sans-serif for UI/body; editorial serif only for display headings. */
+  .storefront-theme button,
+  .storefront-theme input,
+  .storefront-theme select,
+  .storefront-theme textarea,
+  .storefront-theme .afsana-cms-section p,
+  .storefront-theme .afsana-cms-section small {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+}
+@media (max-width: 380px) {
+  .storefront-theme .container-xl,
+  .storefront-theme .afsana-cms-section > .container-xl { width: calc(100% - 24px) !important; }
+  .storefront-theme .afsana-digital-countdown { gap: 5px !important; }
+  .storefront-theme .afsana-digital-countdown .cms-timer-unit { min-height: 60px !important; padding: 7px 2px !important; }
+  .storefront-theme .afsana-digital-countdown .cms-timer-unit b { font-size: 22px !important; }
+  .storefront-theme .afsana-digital-countdown .cms-timer-unit small { font-size: 7px !important; letter-spacing: .08em !important; }
+  .storefront-theme .afsana-product-name { font-size: 12px !important; }
+}
