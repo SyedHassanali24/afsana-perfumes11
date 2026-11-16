@@ -152,6 +152,41 @@ function CmsTimer({ endAt, digital = false }) {
     <span className="cms-timer-unit"><b>{String(s).padStart(2,'0')}</b><small>SEC</small></span>
   </div> : <div className="cms-timer" aria-label="Offer countdown"><span>{String(d).padStart(2,'0')}d</span><b>:</b><span>{String(h).padStart(2,'0')}h</span><b>:</b><span>{String(m).padStart(2,'0')}m</span><b>:</b><span>{String(s).padStart(2,'0')}s</span></div>;
 }
+
+const nextOfferResetAt = (timestamp) => {
+  const next = new Date(timestamp);
+  next.setHours(24, 0, 0, 0);
+  return next.getTime();
+};
+const resolveOfferTarget = (endAt, now) => {
+  const parsed = endAt ? new Date(endAt).getTime() : NaN;
+  return Number.isFinite(parsed) && parsed > now ? parsed : nextOfferResetAt(now);
+};
+function OfferCountdown({ endAt }) {
+  const [now, setNow] = useState(() => Date.now());
+  const [target, setTarget] = useState(() => resolveOfferTarget(endAt, Date.now()));
+  useEffect(() => { setTarget(resolveOfferTarget(endAt, Date.now())); }, [endAt]);
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  useEffect(() => {
+    if (target <= now) setTarget(nextOfferResetAt(now));
+  }, [target, now]);
+  const total = Math.max(0, Math.floor((target - now) / 1000));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  const units = [[days, 'DAYS'], [hours, 'HRS'], [minutes, 'MINS'], [seconds, 'SECS']];
+  return <div className="grid grid-cols-4 gap-2 sm:gap-3" role="timer" aria-live="off" aria-label={`Offer countdown: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`}>
+    {units.map(([value, label]) => <div key={label} className="min-w-0 rounded-xl border border-white/15 bg-gradient-to-b from-[#49316c] to-[#2b1a46] px-1.5 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_9px_24px_rgba(13,6,25,.2)] sm:rounded-2xl sm:px-2 sm:py-4">
+      <span className="block font-mono text-[clamp(1.8rem,5.4vw,4.2rem)] font-bold leading-none tracking-[-.08em] text-[#fff1a6] tabular-nums drop-shadow-[0_0_16px_rgba(255,241,166,.18)]">{String(value).padStart(2, '0')}</span>
+      <span className="mt-2 block text-[7px] font-bold uppercase tracking-[.16em] text-white/65 sm:text-[9px] sm:tracking-[.22em]">{label}</span>
+    </div>)}
+  </div>;
+}
+
 function AnimatedValue({ value }) {
   const raw = String(value ?? '').trim();
   const numeric = /^\d+(?:[.,]\d+)?[kKmM%+]*$/.test(raw);
@@ -397,7 +432,39 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   }
   if (section.type === 'ai_concierge') return <ConciergeFloat section={section}/>;
   if (section.type === 'spacer') return <div style={{ height: Number(c.height) || 80 }} />;
-  if (section.type === 'offer_timer') return <section className="afsana-ref-offer-banner"><div className="container-xl afsana-ref-offer-inner"><div><p className="afsana-ref-eyebrow">{c.label || 'A LITTLE EXTRA FROM THE HOUSE'}</p><h2>{section.title || 'Good taste. Even better delivery.'}</h2><p>{c.offerText || 'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.'}</p>{btn}</div><div className="afsana-ref-offer-stamp"><div className="afsana-offer-stamp-copy"><b>✳</b><span>LIMITED TIME</span><strong>AFSANA OFFER</strong></div>{c.endAt && <CmsTimer endAt={c.endAt} digital/>}</div></div></section>;
+  if (section.type === 'offer_timer') return <section className="relative isolate overflow-hidden bg-white px-4 py-14 font-sans text-[#261638] sm:px-6 sm:py-20">
+    <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-[-5rem] h-80 w-80 rounded-full bg-[#fff0a8]/45 blur-3xl"/>
+    <div aria-hidden="true" className="pointer-events-none absolute right-[-8rem] top-[-4rem] h-[26rem] w-[26rem] rounded-full bg-pink-100/80 blur-3xl"/>
+    <div aria-hidden="true" className="pointer-events-none absolute bottom-[-10rem] left-[35%] h-96 w-96 rounded-full bg-sky-100/80 blur-3xl"/>
+    <div className="container-xl relative mx-auto grid max-w-[1320px] overflow-hidden rounded-[28px] border border-purple-100 bg-gradient-to-br from-white via-[#fffaff] to-[#f0f9ff] shadow-[0_24px_80px_rgba(65,41,105,.12)] lg:grid-cols-[1.05fr_.95fr]">
+      <div className="relative flex flex-col items-start justify-center p-7 sm:p-10 lg:p-12">
+        <span className="inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white px-4 py-2 text-[9px] font-bold uppercase tracking-[.2em] text-purple-700 shadow-sm sm:text-[10px]"><span className="h-2 w-2 rounded-full bg-[#f6d957] shadow-[0_0_0_4px_rgba(246,217,87,.2)]"/>{c.label || 'A LITTLE EXTRA FROM THE HOUSE'}</span>
+        <p className="mt-7 text-[9px] font-bold uppercase tracking-[.25em] text-sky-700 sm:text-[10px]">A GESTURE FROM AFSANA</p>
+        <h2 className="mt-3 max-w-xl font-sans text-3xl font-semibold leading-[1.08] tracking-[-.04em] text-[#261638] sm:text-4xl lg:text-5xl">{section.title || 'Good taste. Even better delivery.'}</h2>
+        <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">{c.offerText || 'Complimentary delivery on orders above PKR 7,500. Your next favourite arrives wrapped in the AFSANA experience.'}</p>
+        <div className="mt-7 inline-flex items-center gap-3 rounded-2xl border border-[#f2df87] bg-gradient-to-r from-[#fff9d9] via-white to-[#fff0f8] px-4 py-3">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#ffe66d] text-lg text-[#261638]">✳</span>
+          <span><b className="block text-[10px] font-extrabold uppercase tracking-[.12em] text-purple-800">Complimentary delivery</b><small className="mt-1 block text-[9px] font-semibold uppercase tracking-[.12em] text-slate-500">On orders above PKR 7,500</small></span>
+        </div>
+        <Link to={c.buttonLink || '/shop'} className="group mt-8 inline-flex min-h-12 items-center gap-5 rounded-full bg-gradient-to-r from-purple-700 via-violet-600 to-pink-500 px-6 py-3 text-[10px] font-bold uppercase tracking-[.16em] text-white shadow-[0_12px_28px_rgba(109,40,217,.2)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(109,40,217,.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400 sm:text-[11px]">{c.buttonText || 'Explore the private edit'}<span className="grid h-7 w-7 place-items-center rounded-full bg-[#ffe66d] text-base text-[#261638] transition-transform duration-300 group-hover:translate-x-1">↗</span></Link>
+      </div>
+      <div className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-br from-[#382154] via-[#2a193f] to-[#20152f] p-7 text-white sm:p-10 lg:p-12">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10 shadow-[0_0_0_22px_rgba(255,255,255,.025),0_0_0_48px_rgba(255,255,255,.02)]"/>
+        <div aria-hidden="true" className="pointer-events-none absolute bottom-[-7rem] left-[-5rem] h-64 w-64 rounded-full bg-pink-500/10 blur-3xl"/>
+        <div className="relative">
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[.22em] text-[#ffe66d] sm:text-[10px]"><span className="text-xl leading-none">✳</span> AFSANA PRIVATE OFFER</span>
+            <span className="rounded-full border border-pink-200/35 bg-pink-300/10 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[.16em] text-pink-100">Limited time</span>
+          </div>
+          <h3 className="mt-8 font-sans text-xl font-semibold uppercase tracking-[.08em] text-white sm:text-2xl">Your offer window</h3>
+          <p className="mt-2 text-[10px] font-medium uppercase tracking-[.18em] text-white/55">Time remaining</p>
+          <div className="mt-5"><OfferCountdown endAt={c.endAt}/></div>
+          <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/15 pt-4 text-[8px] font-semibold uppercase tracking-[.13em] text-white/50 sm:text-[9px] sm:tracking-[.16em]"><span>Live digital countdown</span><span className="text-sky-200">D · H · M · S</span></div>
+          <p className="mt-3 text-[9px] leading-5 text-white/40">Uses the deadline set in the CMS. When no future deadline is set, the display counts down to the next daily reset.</p>
+        </div>
+      </div>
+    </div>
+  </section>;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p>{!c.hideTimer && c.endAt ? <CmsTimer endAt={c.endAt}/> : null}{btn}</div></div></section>;
   if (section.type === 'muse_scene') return <MuseScene section={section}/>;
     if (section.type === 'product_3d_showcase') return <Product3DShowcase section={{...section,config:c}} products={products}/>;
