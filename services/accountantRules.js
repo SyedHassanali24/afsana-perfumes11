@@ -38,7 +38,9 @@ function buildJournal({ orders = [], itemsByOrder = new Map(), payments = [], re
   }
   for (const refund of refunds) {
     const amount = Number(refund.amount) || 0;
-    if (amount > 0) rows.push(batch({ date: refund.createdAt, reference: refund.orderNumber || String(refund.orderId), narration: 'Customer refund', source: 'refund', lines: [line('Sales returns and refunds', amount), line('Refund clearing', 0, amount)] }));
+    const method = String(refund.method || '').toLowerCase();
+    const account = method.includes('cash') ? 'Cash refunds' : method.includes('bank') ? 'Bank refunds' : 'Refund clearing';
+    if (amount > 0) rows.push(batch({ date: refund.createdAt, reference: refund.orderNumber || String(refund.orderId), narration: 'Customer refund', source: 'refund', lines: [line('Sales returns and refunds', amount), line(account, 0, amount)] }));
   }
   for (const expense of expenses) {
     const amount = Number(expense.amount) || 0;
