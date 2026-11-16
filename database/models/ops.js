@@ -30,7 +30,9 @@ storeScoped(expenseSchema);
 // Raw storefront events; TTL keeps the collection small (aggregate into daily stats before expiry, Phase 9).
 const analyticsEventSchema = new Schema({
   event: { type: String, enum: ['page_view', 'product_view', 'add_to_cart', 'begin_checkout', 'purchase'], required: true },
-  productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed, affiliateCode: String,
+  productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed,
+  source: { type: String, enum: ['instagram', 'tiktok', 'youtube', 'facebook', 'whatsapp', 'search', 'direct', 'email', 'other_social', 'referral', 'other'] },
+  medium: String, campaign: String, referrerHost: String, path: String, landingPath: String, affiliateCode: String,
   at: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 180 },
 });
 analyticsEventSchema.index({ event: 1, at: -1 });
