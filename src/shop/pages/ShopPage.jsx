@@ -14,7 +14,7 @@ export default function ShopPage() {
   const [sp, setSp] = useSearchParams();
   const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
   const {data:categoryData}=useApi(()=>publicTaxonomyApi.list('categories'),[]);
-  const categories=categoryData?.items||[];
+  const categories=(categoryData?.items||[]).filter((category)=>Number(category.productCount||0)>0);
   const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
   const get = (k) => sp.get(k) || '';
   const set = (patch) => {
@@ -28,27 +28,40 @@ export default function ShopPage() {
   const query = Object.fromEntries(KEYS.map((k) => [k, get(k)]).filter(([, v]) => v));
   const { data, loading, error, reload } = useApi(() => productsApi.list({ ...query, limit: 12 }), [sp.toString()]);
   const list = data?.products || [];
+  const collectionVisual = referenceAssets.collectionHeroImageUrl || list.find((product)=>product.image?.url)?.image?.url || '';
 
   return (
     <div className="shop-page afsana-shop-page">
       <section className="afsana-shop-intro">
-        {referenceAssets.collectionHeroImageUrl && <div className="afsana-shop-intro-visual"><img src={referenceAssets.collectionHeroImageUrl} alt="" /></div>}
+        <div className="afsana-shop-intro-glow" aria-hidden="true"/>
         <div className="container-xl afsana-shop-intro-inner">
-          <p className="afsana-shop-eyebrow">AFSANA <span> / </span> THE COMPLETE COLLECTION</p>
-          <h1>Find your<br/><em>forever note.</em></h1>
-          <p>Explore fragrances crafted around mood, memory and modern identity. Find the scent that feels unmistakably yours.</p>
-          <span className="afsana-shop-intro-foot"><i/> CURATED SCENTS. LASTING IMPRESSIONS.</span>
+          <div className="afsana-shop-intro-copy">
+            <p className="afsana-shop-eyebrow">AFSANA <span> / </span> THE COMPLETE COLLECTION</p>
+            <h1>Find your<br/><em>forever note.</em></h1>
+            <p>Explore fragrances crafted around mood, memory and modern identity. Find the scent that feels unmistakably yours.</p>
+            <span className="afsana-shop-intro-foot"><i/> CURATED SCENTS. LASTING IMPRESSIONS.</span>
+          </div>
+          <div className="afsana-shop-intro-visual" aria-hidden="true">
+            {collectionVisual
+              ? <img src={collectionVisual} alt="" loading="lazy" onError={(event)=>{event.currentTarget.style.display='none';}}/>
+              : <div className="afsana-collection-bottle-placeholder"><span>AFSANA</span><small>EAU DE PARFUM</small></div>}
+            <span className="afsana-shop-visual-stamp">THE SCENT<br/>ARCHIVE</span>
+          </div>
         </div>
+        <div className="afsana-shop-intro-index">01 <i/> THE AFSANA COLLECTION</div>
       </section>
-      <div className="container-xl afsana-shop-content pb-24 pt-8 sm:pt-10">
+      <div className="container-xl afsana-shop-content pb-24 pt-7 sm:pt-9">
 
       <div className="afsana-shop-toolbar mt-2 flex flex-col gap-4 border-y py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="filters flex-nowrap overflow-x-auto">
-          {[['','All fragrances'], ...categories.map((category)=>[category.slug,category.name])].map(([value,label]) => {
-            const activeValue=get('category');
-            const active=value ? activeValue===value : !activeValue;
-            return <button key={label} type="button" className={'afsana-shop-filter whitespace-nowrap '+(active?'active':'')} aria-pressed={active} onClick={()=>applyFilter({category:value,page:''})}>{label}</button>;
-          })}
+        <div className="afsana-shop-category-heading">
+          <div><span>THE COLLECTION</span><strong>Browse by category</strong></div>
+          <div className="filters afsana-shop-filter-rail" aria-label="Filter fragrances by category">
+            {[['','All fragrances'], ...categories.map((category)=>[category.slug,category.name])].map(([value,label]) => {
+              const activeValue=get('category');
+              const active=value ? activeValue===value : !activeValue;
+              return <button key={value || 'all'} type="button" className={'afsana-shop-filter whitespace-nowrap '+(active?'active':'')} aria-pressed={active} onClick={()=>applyFilter({category:value,page:''})}>{label}<span aria-hidden="true">↗</span></button>;
+            })}
+          </div>
         </div>
         <label className="afsana-shop-sort-wrap"><span>Sort by</span><Select aria-label="Sort products" value={get('sort') || 'popular'} onChange={(e)=>set({sort:e.target.value})} className="afsana-shop-sort !w-auto min-w-[180px]">
           {SORTS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
