@@ -17,6 +17,8 @@ const ShippingPage = lazy(() => import('../admin/shipping/ShippingPage'));
 const CustomersList = lazy(() => import('../admin/customers/CustomersList'));
 const ReviewsList = lazy(() => import('../admin/reviews/ReviewsList'));
 const FinancePage = lazy(() => import('../admin/finance/FinancePage'));
+const GrowthPage = lazy(() => import('../admin/growth/GrowthPage'));
+const VirtualAccountantPage = lazy(() => import('../admin/accountant/VirtualAccountantPage'));
 const BackupPage = lazy(() => import('../admin/backup/BackupPage'));
 const SettingsPage = lazy(() => import('../admin/settings/SettingsPage'));
 const StaffPage = lazy(() => import('../admin/staff/StaffPage'));
@@ -104,6 +106,8 @@ export default function App() {
           <Route path="/admin/customers" element={page('customers.view', <CustomersList />)} />
           <Route path="/admin/reviews" element={page('reviews.view', <ReviewsList />)} />
           <Route path="/admin/finance" element={page('finance.view', <FinancePage />)} />
+          <Route path="/admin/growth" element={page('dashboard.view', <GrowthPage />)} />
+          <Route path="/admin/accountant" element={page('finance.view', <VirtualAccountantPage />)} />
           <Route path="/admin/marketing" element={page('coupons.view', <CouponsList />)} />
           <Route path="/admin/cms" element={page('homepage.view', <CmsPage />)} />
           <Route path="/admin/settings" element={page('settings.view', <SettingsPage />)} />
