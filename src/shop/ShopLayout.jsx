@@ -109,22 +109,28 @@ export default function ShopLayout(){
 
   {cmsData?.announcement?.text && <div className="border-b border-[#100d24]/10 bg-[#d9ff55] px-4 py-2.5 text-center text-[9px] font-semibold uppercase tracking-[.22em] text-[#100d24]">AFSANA <span className="mx-2 text-[#7357ff]">•</span>{cmsData.announcement.text}</div>}
 
-  <header className="sticky top-0 z-40 text-[#100d24]">
-   <div className="absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/92 backdrop-blur-xl shadow-[0_10px_40px_rgba(16,13,36,.07)]"/>
-   <Container className="container-xl relative flex h-[84px] items-center">
-    <button className={'md:hidden '+icon} onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
-    <Link to="/" className="logo group flex shrink-0 items-center gap-3" aria-label={brandName}>
-      <span className="grid h-[31px] w-[31px] place-items-center overflow-hidden rounded-full bg-[#100d24]">{logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[19px] italic text-[#d9ff55]">A</span>}</span>
-      <span className="block font-display text-[20px] tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[1px] block font-mono text-[8px] tracking-[.32em] text-[#80798f]">{brandTagline}</small></span>
+  <header className="storefront-header sticky top-0 z-40 text-[#100d24]">
+   <div className="storefront-header-surface absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/95 backdrop-blur-xl shadow-[0_10px_36px_rgba(16,13,36,.08)]"/>
+   <Container className="container-xl storefront-header-inner relative flex h-[82px] items-center justify-between gap-4">
+    <button className="storefront-mobile-toggle lg:hidden" onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
+    <Link to="/" className="logo storefront-brand group flex shrink-0 items-center gap-3" aria-label={brandName}>
+      <span className="storefront-brand-mark grid h-10 w-10 place-items-center overflow-hidden rounded-[13px] bg-[#17112f] shadow-[0_5px_16px_rgba(23,17,47,.2)]">{logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[23px] italic text-[#d9ff55]">A</span>}</span>
+      <span className="block font-display text-[20px] leading-none tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[5px] block font-mono text-[7px] font-semibold tracking-[.34em] text-[#80798f]">{brandTagline}</small></span>
     </Link>
-    <nav className="main-nav hidden md:flex items-center gap-8 ml-14">{nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/' } className={({isActive})=>'py-7 text-[10px] uppercase tracking-[.13em] transition '+(isActive?'text-[#7357ff]':'text-[#514b62] hover:text-[#100d24]')}>{label}</NavLink>)}</nav>
-    <div className="header-actions ml-auto flex items-center">
-      <button className={icon} onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="w-[18px]"/></button>
-      <Link className={icon} to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Login / register'} title={status==='authed'?'My account':'Login / register'}><User className="w-[18px]"/></Link>
-      <button className={icon+' relative'} onClick={openDrawer} aria-label="Cart"><ShoppingBag className="w-[18px]"/>{count>0&&<span className="absolute right-0 top-1 min-w-4 h-4 rounded-full bg-[#d9ff55] text-[#100d24] text-[9px] leading-4 text-center">{count}</span>}</button>
+    <nav className="storefront-main-nav hidden lg:flex items-center gap-1 rounded-full border border-[#e8e2ef] bg-white/80 p-1 shadow-[0_5px_20px_rgba(23,17,47,.055)]" aria-label="Main navigation">
+      {nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/'} className={({isActive})=>'storefront-nav-link '+(isActive?'is-active':'')}>{label}</NavLink>)}
+    </nav>
+    <div className="header-actions storefront-header-actions ml-auto flex shrink-0 items-center gap-2">
+      <button className="storefront-header-action storefront-search-trigger" onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="h-[17px] w-[17px]"/><span className="hidden 2xl:inline">Search</span></button>
+      <Link className="storefront-header-action" to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Login / register'} title={status==='authed'?'My account':'Login / register'}><User className="h-[17px] w-[17px]"/></Link>
+      <button className="storefront-header-action storefront-cart-action relative" onClick={openDrawer} aria-label="Cart"><ShoppingBag className="h-[17px] w-[17px]"/>{count>0&&<span className="storefront-cart-count absolute -right-1 -top-1 min-w-[18px] h-[18px] rounded-full bg-[#d9ff55] px-1 text-[#100d24] text-[9px] leading-[18px] text-center">{count}</span>}</button>
     </div>
    </Container>
-   {menu&&<div id="mobile-navigation" className="relative md:hidden border-t border-[#100d24]/10 bg-[#f7f4ed]"><nav className="grid grid-cols-2 p-5">{nav.map(([to,label])=><Link key={to} onClick={()=>setMenu(false)} to={to} className="border-b border-[#100d24]/10 py-4 text-[10px] uppercase tracking-[.2em] text-[#514b62] hover:text-[#7357ff]">{label}</Link>)}</nav></div>}
+   {menu&&<div id="mobile-navigation" className="storefront-mobile-menu relative lg:hidden">
+     <nav className="container-xl grid grid-cols-2 gap-2 px-5 py-5" aria-label="Mobile navigation">
+       {nav.map(([to,label])=><NavLink key={to} onClick={()=>setMenu(false)} to={to} end={to==='/'} className={({isActive})=>'storefront-mobile-nav-link '+(isActive?'is-active':'')}>{label}<span aria-hidden="true">↗</span></NavLink>)}
+     </nav>
+   </div>}
   </header>
 
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_header_after" /></Suspense>
@@ -168,30 +174,55 @@ export default function ShopLayout(){
 
   {hasManagedFooter && <div className="border-t border-[#d9ff55]/15 bg-[#100d24] px-4 py-4 text-center text-[9px] uppercase tracking-[.2em] text-white/45"><Link to="/privacy-policy" className="transition hover:text-[#d9ff55]">Privacy Policy</Link></div>}
 
-  {search&&<div className="fixed inset-0 z-[65] bg-[#100d24]/98 backdrop-blur-xl text-white overflow-y-auto">
-    <Container className="container-xl min-h-full py-8 md:py-12">
-      <div className="flex items-center justify-between border-b border-white/10 pb-5">
-        <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">The Afsana search</div><h2 className="font-display text-4xl md:text-6xl mt-3">Search Afsana</h2></div>
-        <button className="icon-btn" onClick={()=>setSearch(false)} aria-label="Close search" autoFocus><X/></button>
+  {search&&<div
+    className="storefront-search-backdrop fixed inset-0 z-[65] overflow-y-auto px-3 py-5 sm:px-6 sm:py-9"
+    role="presentation"
+    onMouseDown={(event)=>{if(event.target===event.currentTarget)setSearch(false)}}
+  >
+    <div className="storefront-search-panel mx-auto w-full max-w-5xl overflow-hidden rounded-[26px] border border-white/60 bg-[#f7f4ed] text-[#17112f] shadow-[0_28px_100px_rgba(0,0,0,.38)]">
+      <div className="storefront-search-heading flex items-start justify-between gap-5 bg-[#17112f] px-5 py-6 text-white sm:px-9 sm:py-8">
+        <div>
+          <div className="text-[9px] font-semibold uppercase tracking-[.36em] text-[#d9ff55]">The AFSANA edit</div>
+          <h2 className="mt-3 font-display text-3xl leading-tight sm:text-5xl">Find your next signature.</h2>
+          <p className="mt-2 text-xs leading-5 text-white/55">Search by fragrance, mood or note.</p>
+        </div>
+        <button className="storefront-search-close" onClick={()=>setSearch(false)} aria-label="Close search" autoFocus><X className="h-5 w-5"/></button>
       </div>
-      <form onSubmit={submit} className="mt-14 border-b border-white/25 flex items-center">
-        <Search className="w-5 h-5 text-[#d9ff55]"/>
-        <input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search fragrances..." className="w-full bg-transparent px-5 py-6 font-display text-4xl md:text-6xl outline-none placeholder:text-white/20"/>
-        <button className="text-[9px] uppercase tracking-[.25em] text-[#d9ff55]" type="submit">Search</button>
-      </form>
-      {q.trim().length>=2&&(suggesting||suggestions.length>0)&&<div className="mt-4 max-w-3xl border-b border-white/10 pb-5">{suggesting?<p className="text-xs text-white/50">Finding fragrances…</p>:suggestions.map(product=><Link key={product.id||product._id||product.slug} to={`/product/${product.slug}`} onClick={()=>setSearch(false)} className="flex items-center justify-between gap-4 border-b border-white/10 py-3 text-white/80 transition hover:text-[#d9ff55]"><span className="font-display text-xl">{product.name}</span><span className="text-xs text-white/50">View fragrance ↗</span></Link>)}</div>}
-      <div className="mt-14 grid gap-10 md:grid-cols-3">
-        <div><div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">Popular paths</div><div className="mt-5 space-y-3">
-          {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="block text-left font-display text-3xl hover:text-[#d9ff55]">{x}</button>)}
-        </div></div>
-        <div className="md:col-span-2 border-l border-white/10 md:pl-10">
-          <div className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">Find your ritual</div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {['Discover your signature','Choose a gift','Explore the collection'].map((x,i)=><button key={x} type="button" onClick={()=>{setSearch(false);navigate(i===0?'/discover':i===1?'/gifting':'/shop')}} className="border border-white/10 p-5 text-left hover:border-[#d9ff55] transition"><span className="text-[9px] uppercase tracking-[.18em] text-[#d9ff55]">0{i+1}</span><span className="block mt-8 font-display text-2xl">{x}</span></button>)}
+      <div className="px-5 py-6 sm:px-9 sm:py-8">
+        <form onSubmit={submit} className="storefront-search-form flex flex-col gap-2 rounded-[18px] border border-[#e4deec] bg-white p-2 shadow-[0_10px_28px_rgba(23,17,47,.08)] sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3 px-3">
+            <Search className="h-5 w-5 shrink-0 text-[#7357ff]"/>
+            <input aria-label="Search fragrances" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Try oud, floral, fresh..." className="min-w-0 w-full border-0 bg-transparent px-1 py-4 font-display text-xl text-[#17112f] outline-none placeholder:font-sans placeholder:text-sm placeholder:text-[#aaa2b4] focus:outline-none focus:ring-0 sm:text-2xl"/>
+            {q&&<button type="button" onClick={()=>setQ('')} className="rounded-full p-2 text-[#8c8497] transition hover:bg-[#f0edf6] hover:text-[#17112f]" aria-label="Clear search"><X className="h-4 w-4"/></button>}
+          </div>
+          <button className="storefront-search-submit inline-flex min-h-12 items-center justify-center gap-2 rounded-[13px] bg-[#7357ff] px-7 text-[10px] font-bold uppercase tracking-[.2em] text-white shadow-[0_5px_14px_rgba(115,87,255,.25)] transition hover:bg-[#5e43e4]" type="submit">Search fragrances <span aria-hidden="true">↗</span></button>
+        </form>
+        {q.trim().length>=2&&(suggesting||suggestions.length>0)&&<div className="storefront-search-results mt-4 overflow-hidden rounded-2xl border border-[#e8e2ef] bg-white shadow-[0_8px_24px_rgba(23,17,47,.05)]">
+          {suggesting?<p className="px-5 py-4 text-xs text-[#81798d]">Finding fragrances…</p>:suggestions.map(product=><Link key={product.id||product._id||product.slug} to={`/product/${product.slug}`} onClick={()=>setSearch(false)} className="storefront-search-result-row flex items-center justify-between gap-4 border-b border-[#f0edf4] px-5 py-4 text-[#17112f] transition last:border-0 hover:bg-[#f7f4ed]">
+            <span className="font-display text-xl">{product.name}</span><span className="shrink-0 text-[9px] font-semibold uppercase tracking-[.17em] text-[#7357ff]">View fragrance ↗</span>
+          </Link>)}
+        </div>}
+        {q.trim().length>=2&&!suggesting&&suggestions.length===0&&<div className="mt-4 rounded-2xl border border-[#e8e2ef] bg-white px-5 py-4 text-sm text-[#81798d]">No matching fragrances found. Try another scent or note.</div>}
+        <div className="mt-8 grid gap-8 md:grid-cols-[.75fr_1.25fr]">
+          <div>
+            <div className="text-[9px] font-semibold uppercase tracking-[.28em] text-[#8a8195]">Explore by scent</div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {['Signature','Oud','Floral','Fresh'].map(x=><button key={x} type="button" onClick={()=>{setQ(x);navigate('/shop?category='+x.toLowerCase());setSearch(false)}} className="storefront-search-chip">{x}<span aria-hidden="true">↗</span></button>)}
+            </div>
+          </div>
+          <div className="md:border-l md:border-[#e7e1ed] md:pl-8">
+            <div className="text-[9px] font-semibold uppercase tracking-[.28em] text-[#8a8195]">A little direction</div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {['Discover your signature','Choose a gift','Explore the collection'].map((x,i)=><button key={x} type="button" onClick={()=>{setSearch(false);navigate(i===0?'/discover':i===1?'/gifting':'/shop')}} className="storefront-search-path">
+                <span className="text-[9px] font-bold tracking-[.18em] text-[#7357ff]">0{i+1}</span>
+                <span className="mt-5 block font-display text-lg leading-tight text-[#17112f]">{x}</span>
+                <span className="mt-3 block text-xs text-[#8b8296]">Explore ↗</span>
+              </button>)}
+            </div>
           </div>
         </div>
       </div>
-    </Container>
+    </div>
   </div>}
 
   <CartDrawer/>
