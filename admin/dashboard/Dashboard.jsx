@@ -13,6 +13,7 @@ import Button from "../components/Button";
 import StatusPill from "../components/StatusPill";
 import useApi from "../../src/hooks/useApi";
 import { analyticsApi } from "../../src/services";
+import { useAuth } from "../../src/auth/AuthContext";
 import { toDashboard, money, HIDDEN } from "../../src/services/mappers/dashboard";
 
 const DASHBOARD_ORDER_KEY = "afsana-dashboard-stat-order-v1";
@@ -110,6 +111,12 @@ function QuickLink({ href, icon: Icon, title, text, tone }) {
 }
 
 export default function Dashboard() {
+  const { can } = useAuth();
+  const canViewSecurity = can("security.view");
+  const { data: securityData, loading: securityLoading, error: securityError, reload: reloadSecurity } = useApi(
+    () => canViewSecurity ? analyticsApi.security() : Promise.resolve({ security: null }),
+    [canViewSecurity],
+  );
   const { data, loading, error, reload } = useApi(() => analyticsApi.dashboard(), []);
   const [draggedCard, setDraggedCard] = useState(null);
   const [cardOrder, setCardOrder] = useState(() => {
@@ -296,6 +303,42 @@ export default function Dashboard() {
           )}
         </Card>
       </div>
+
+      {canViewSecurity && (
+        <Card className="rounded-2xl">
+          <SectionTitle title="Security overview" subtitle="Live staff sessions and login protection" />
+          {securityError ? (
+            <div className="py-5 text-center space-y-2">
+              <p className="text-sm text-[#e11d48]">{securityError.message || "Security data could not be loaded."}</p>
+              <Button variant="secondary" size="sm" onClick={reloadSecurity}>Try again</Button>
+            </div>
+          ) : securityLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3"><Pulse className="h-20"/><Pulse className="h-20"/><Pulse className="h-20"/></div>
+          ) : securityData?.security ? (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="rounded-xl border border-[#1e1b4b]/10 bg-[#eef2ff] p-4"><p className="text-[11px] text-[#64748b]">Active staff sessions</p><p className="mt-1 text-2xl font-semibold text-[#1e1b4b]">{securityData.security.activeSessions}</p></div>
+                <div className="rounded-xl border border-[#1e1b4b]/10 bg-white p-4"><p className="text-[11px] text-[#64748b]">Locked accounts</p><p className="mt-1 text-2xl font-semibold text-[#1e1b4b]">{securityData.security.lockedAccounts.length}</p></div>
+                <div className="rounded-xl border border-[#1e1b4b]/10 bg-white p-4"><p className="text-[11px] text-[#64748b]">Accounts with failed attempts</p><p className="mt-1 text-2xl font-semibold text-[#1e1b4b]">{securityData.security.failedAccounts.length}</p></div>
+              </div>
+              <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div>
+                  <h3 className="text-xs font-semibold text-[#172033] mb-3">Recent staff sessions</h3>
+                  {securityData.security.recentSessions.length ? <div className="space-y-3">{securityData.security.recentSessions.slice(0,5).map((session,index)=><div key={session.email+session.lastActiveAt+index} className="flex items-center justify-between gap-3 border-b border-[#1e1b4b]/10 pb-2"><div className="min-w-0"><p className="text-xs font-medium text-[#172033] truncate">{session.email}</p><p className="text-[10px] text-[#64748b] truncate">{session.device}</p></div><span className="shrink-0 text-[10px] text-[#64748b]">{session.lastActiveAt ? new Date(session.lastActiveAt).toLocaleString() : "—"}</span></div>)}</div> : <p className="text-xs text-[#64748b]">No active staff sessions.</p>}
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-[#172033] mb-3">Login protection</h3>
+                  {securityData.security.lockedAccounts.length || securityData.security.failedAccounts.length ? <div className="space-y-3">
+                    {securityData.security.lockedAccounts.map((account)=><div key={account.email} className="rounded-xl bg-[#fff1f2] p-3"><p className="text-xs font-semibold text-[#be123c]">Temporarily locked: {account.email}</p><p className="mt-1 text-[10px] text-[#9f1239]">Unlocks {new Date(account.lockedUntil).toLocaleString()}</p></div>)}
+                    {securityData.security.failedAccounts.map((account)=><div key={account.email} className="rounded-xl bg-[#eef2ff] p-3"><p className="text-xs font-semibold text-[#1e1b4b]">{account.email}</p><p className="mt-1 text-[10px] text-[#64748b]">{account.failedAttempts} failed attempt(s) currently recorded</p></div>)}
+                  </div> : <p className="text-xs text-[#64748b]">No failed login attempts or locked accounts are currently recorded.</p>}
+                </div>
+              </div>
+              <p className="mt-4 text-[10px] text-[#64748b]">This panel uses live session records and current failed-login counters; it does not invent historical alerts.</p>
+            </>
+          ) : null}
+        </Card>
+      )}
 
       <Card className="rounded-2xl bg-gradient-to-r from-[#eef2ff] via-[#ffffff] to-[#f3f4f9]">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
