@@ -1,6 +1,7 @@
 import useApi from '../hooks/useApi';
 import useDebounce from '../hooks/useDebounce';
 import { cartApi } from '../services';
+import { getReferralCode } from './trafficTracking';
 
 // Server-priced view of the cart. Re-runs (debounced) when items or coupon change; keeps showing the old numbers while it reloads.
 // `city` (optional, from the checkout form) makes the delivery fee follow the city's zone; without it the shop's default fee is shown.
