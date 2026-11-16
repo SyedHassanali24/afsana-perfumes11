@@ -38,38 +38,55 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
   if (priced.length) {
     const manualCode = normalizeCode(couponCode);
     const linkCode = normalizeCode(referralCode);
-    let regularCoupon = null;
-    if (manualCode) regularCoupon = await Coupon.findOne({ code: manualCode, isDeleted: false });
-    const manualPartner = !regularCoupon && manualCode ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true }) : null;
-    const linkPartner = linkCode ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }) : null;
-    const partner = manualPartner || linkPartner;
-    if (partner) {
-      const problem = validatePartner(partner, { subtotal, customerId: cust?.customer?._id });
-      if (problem) {
-        coupon = { code: partner.code, valid: false, message: problem };
+    const regularCoupon = manualCode ? await Coupon.findOne({ code: manualCode, isDeleted: false }) : null;
+    const manualPartner = manualCode && !regularCoupon
+      ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true })
+      : null;
+    const linkPartner = linkCode
+      ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true })
+      : null;
+
+    if (manualPartner || (!manualCode && linkCode)) {
+      const partner = manualPartner || linkPartner;
+      if (!partner) {
+        coupon = { code: manualCode || linkCode, valid: false, message: 'This referral code is not active.' };
       } else {
-        // A standard coupon entered at checkout wins; referral attribution is retained, but discounts never stack.
-        if (!regularCoupon) ({ discount, shippingDiscount } = discountFor(partner, subtotal, delivery.fee));
-        coupon = { code: regularCoupon?.code || partner.code, valid: true, kind: regularCoupon ? 'coupon' : 'referral' };
-        appliedReferral = { code: partner.code, name: partner.name, discountApplied: discount + shippingDiscount, source: manualPartner ? 'promo_code' : 'referral_link' };
+        const problem = validatePartner(partner, { subtotal, customerId: cust?.customer?._id });
+        if (problem) coupon = { code: partner.code, valid: false, message: problem };
+        else {
+          ({ discount, shippingDiscount } = discountFor(partner, subtotal, delivery.fee));
+          coupon = { code: partner.code, valid: true, kind: 'referral' };
+          appliedReferral = { code: partner.code, name: partner.name, discountApplied: discount + shippingDiscount, source: manualPartner ? 'promo_code' : 'referral_link' };
+        }
       }
-    } else if (regularCoupon || manualCode) {
+    } else if (regularCoupon) {
       try {
-        const c = regularCoupon;
         const cid = cust && cust.customer._id;
-        validateCoupon(c, {
+        validateCoupon(regularCoupon, {
           subtotal, customerId: cid,
-          customerUses: c && cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
+          customerUses: cid ? (regularCoupon.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
           isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
         });
-        ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
-        coupon = { code: c.code, valid: true, kind: 'coupon' };
+        ({ discount, shippingDiscount } = calcDiscount(regularCoupon, priced, delivery.fee));
+        coupon = { code: regularCoupon.code, valid: true, kind: 'coupon' };
+        // A valid first-touch referral is recorded, but its discount never stacks with a coupon.
+        if (linkPartner && !validatePartner(linkPartner, { subtotal, customerId: cust?.customer?._id })) {
+          appliedReferral = { code: linkPartner.code, name: linkPartner.name, discountApplied: 0, source: 'referral_link' };
+        }
       } catch (e) {
         if (!(e instanceof ApiError)) throw e;
         coupon = { code: manualCode, valid: false, message: e.message };
       }
-    } else if (linkCode) {
-      coupon = { code: linkCode, valid: false, message: 'This referral link is not active.' };
+    } else if (manualCode) {
+      try {
+        validateCoupon(null, {
+          subtotal, customerId: cust?.customer?._id,
+          customerUses: 0, isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
+        });
+      } catch (e) {
+        if (!(e instanceof ApiError)) throw e;
+        coupon = { code: manualCode, valid: false, message: e.message };
+      }
     }
   }
   return {
