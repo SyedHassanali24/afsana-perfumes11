@@ -190,6 +190,10 @@ export default function GrowthPage() {
             </div>
             <div className="mt-4 flex justify-end"><Button type="submit">Save referral terms</Button></div>
           </form>}
+          <div className="mt-4 rounded-xl border border-slate-100 p-3">
+            <div className="mb-2 flex items-center justify-between gap-3"><h3 className="text-xs font-semibold text-slate-700">Referral visits by channel</h3><span className="text-[10px] text-slate-400">First-touch source</span></div>
+            {(row.metrics.sources || []).length ? <div className="flex flex-wrap gap-2">{row.metrics.sources.map((source)=><span key={source.source} className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] text-slate-600">{source.source}: <strong className="tabular-nums text-slate-800">{number(source.visits)}</strong></span>)}</div> : <p className="text-[11px] text-slate-500">No referral-link visits recorded in this retention window.</p>}
+          </div>
           <div className="mt-5"><div className="mb-2 flex items-center justify-between gap-3"><h3 className="text-sm font-semibold text-slate-800">Monthly paid sales graph</h3><span className="text-[10px] text-slate-500">Last 12 months · PKR</span></div><PartnerGraph row={row}/></div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-100 p-3"><p className="text-xs font-semibold text-slate-700">Booked revenue</p><p className="mt-1 text-lg font-semibold text-slate-900">{money(row.metrics.bookedRevenue)}</p></div>
@@ -208,6 +212,6 @@ export default function GrowthPage() {
       ))}
     </div>
     {confirm && <ConfirmPasswordModal open title={confirm.title} message={confirm.message} confirmLabel={confirm.confirmLabel} onConfirm={confirm.action} onClose={()=>setConfirm(null)}/>}
-    <p className="text-[11px] leading-5 text-slate-500">Attribution is first-touch per browser tab. Orders placed with a referral code are recorded for this partner; older orders without a saved referral snapshot cannot be retroactively assigned.</p>
+    <p className="text-[11px] leading-5 text-slate-500">Attribution is first-touch per browser tab. Referral-link visit events are retained for up to {number(data?.attributionRetentionDays || 180)} days; partner sales graphs use the last 12 months of order records. Orders without a saved referral snapshot cannot be retroactively assigned.</p>
   </div>;
 }
