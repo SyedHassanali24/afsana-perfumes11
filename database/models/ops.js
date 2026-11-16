@@ -38,6 +38,7 @@ const analyticsEventSchema = new Schema({
 analyticsEventSchema.index({ event: 1, at: -1 });
 analyticsEventSchema.index({ productId: 1, event: 1 });
 analyticsEventSchema.index({ storeId: 1, affiliateCode: 1, event: 1, at: -1 });
+analyticsEventSchema.index({ 'meta.affiliateCode': 1, event: 1, at: -1 });
 
 // Append-only. Updates/deletes are blocked at the model layer.
 const auditLogSchema = new Schema({
