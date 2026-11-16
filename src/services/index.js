@@ -52,6 +52,7 @@ export const ordersApi = {
 export const analyticsApi = {
   dashboard: () => api('/analytics/dashboard', { cacheTtl: 5000 }), // -> { dashboard: { kpis, revenueSeries, recentOrders, topProducts, lowStock } }
   sources: (query = { days: 30 }) => api('/analytics/sources', { query, cacheTtl: 60000 }), // -> { traffic: { totalViews, uniqueSessions, sources, daily } }
+  traffic: (days = 30) => api('/analytics/sources', { query: { days }, cacheTtl: 60000 }), // -> { traffic: { visits, pageViews, sources, daily, landingPages } }
   security: () => api('/analytics/security'), // -> { security: { activeSessions, lockedAccounts, failedAccounts, recentSessions } }
 };
 
