@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { productsApi, cmsPublicApi, publicTaxonomyApi } from '../../services';
 import { Select } from '../../../admin/components/FormFields';
