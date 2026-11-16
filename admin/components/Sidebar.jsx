@@ -3,7 +3,7 @@ import { useAuth } from "../../src/auth/AuthContext";
 import {
   LayoutDashboard, BarChart3, Package, Warehouse, Tags, ShoppingBag, Truck, RotateCcw,
   Users, Star, Megaphone, LayoutTemplate, Landmark, ShieldCheck, Settings, DatabaseBackup,
-  ChevronsLeft, ChevronsRight, Menu, X,
+  ChevronsLeft, ChevronsRight, Menu, X, Target, Calculator,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -25,10 +25,12 @@ const NAV_GROUPS = [
   ]},
   { label: "Growth", items: [
     { label: "Marketing", icon: Megaphone, href: "/admin/marketing", permission: "coupons.view" },
+    { label: "Growth & referrals", icon: Target, href: "/admin/growth", permission: "dashboard.view" },
     { label: "CMS", icon: LayoutTemplate, href: "/admin/cms", permission: "homepage.view" },
   ]},
   { label: "Operations", items: [
     { label: "Finance", icon: Landmark, href: "/admin/finance", permission: "finance.view" },
+    { label: "Virtual Accountant", icon: Calculator, href: "/admin/accountant", permission: "finance.view" },
     { label: "Staff & roles", icon: ShieldCheck, href: "/admin/staff", permission: "staff.view" },
     { label: "Backup", icon: DatabaseBackup, href: "/admin/backup", permission: "backup.export" },
     { label: "Settings", icon: Settings, href: "/admin/settings", permission: "settings.view" },
