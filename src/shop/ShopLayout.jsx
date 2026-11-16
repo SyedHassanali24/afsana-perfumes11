@@ -59,16 +59,17 @@ export default function ShopLayout(){
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
- const footerCms=(cmsData?.homepageSections||[]).find((s)=>s?.type==='footer_showcase')?.config||{};
- const hasFooterShowcase=(cmsData?.homepageSections||[]).some((s)=>s?.type==='footer_showcase'&&s?.isEnabled!==false);
+ const siteFooterSections=cmsData?.pageSections?.site_footer||[];
+ const footerCms=siteFooterSections.find((s)=>s?.type==='footer_showcase')?.config||{};
+ const hasFooterShowcase=siteFooterSections.some((s)=>s?.type==='footer_showcase'&&s?.isEnabled!==false);
  const cmsWhatsapp = (cmsData?.pageSections?.site_footer_before || []).some((section) => section?.type === 'whatsapp_float' && section?.isEnabled !== false);
  const directWhatsappHref = 'https://wa.me/923132956206?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like to know more about AFSANA perfumes.');
  const isPreviewRequested = new URLSearchParams(location.search).get('afsanaPreview') === '1';
  let previewLayout = null;
  try { if (isPreviewRequested) previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null'); } catch {}
  const isCmsPreview = isPreviewRequested && !!previewLayout;
- const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer);
- const hasManagedFooter = footerPreview || (cmsData?.managedPageKeys || []).includes('site_footer');
+ const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer) && previewLayout.layouts.site_footer.some((s) => s?.type === 'custom_footer');
+ const hasManagedFooter = footerPreview || siteFooterSections.some((s) => s?.type === 'custom_footer' && s?.isEnabled !== false);
  let navigationSections = cmsData?.pageSections?.site_navigation || [];
  if (isCmsPreview) {
    if (Array.isArray(previewLayout?.layouts?.site_navigation)) navigationSections = previewLayout.layouts.site_navigation;

@@ -1,6 +1,7 @@
 const { createHandler } = require('../../../middleware/withApi');
 const R = require('../../../services/dashboardRules');
 const { getDashboard } = require('../../../services/dashboardService');
+const { getSecurityOverview } = require('../../../services/securityOverviewService');
 const Traffic = require('../../../services/analyticsTrafficService');
 const { z } = require('../../../validation/common');
 
@@ -27,6 +28,8 @@ const routes = [
       access.customers = ctx.perms.can('customers', 'view');
       return { dashboard: await getDashboard({ access, uid: ctx.user._id, denied: ctx.perms.deniedFields }) };
     } },
+  { method: 'GET', path: '/security', permission: ['security', 'view'],
+    handler: async () => ({ security: await getSecurityOverview() }) },
   { method: 'GET', path: '/sources', permission: ['dashboard', 'view'], query: sourcesQuery,
     handler: async ({ query }) => ({ traffic: await Traffic.getTrafficSources(query.days) }) },
   // Anonymous, random-session page views only. No IP, customer identity, or full referrer URL is stored.
