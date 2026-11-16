@@ -118,21 +118,21 @@ function Testimonials(){
  if(loading||!reviews.length)return null;
  return <section className="bg-[#263e0e] py-20 sm:py-28 text-white"><div className="container-xl"><Eyebrow light>Real customer feedback</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">Loved by<br/><em className="text-[#b4bf41]">the unforgettable.</em></h2><div className="testimonial-track testimonial-track-premium">{reviews.map((review,index)=><article key={review.id||review._id||index} className="border border-white/10 p-7 sm:p-9"><div className="text-[#b4bf41] tracking-[.3em]" aria-label={`${Number(review.rating)} out of 5 stars`}>{'★'.repeat(Math.max(0,Math.min(5,Number(review.rating)||0)))}</div><blockquote className="mt-7 font-display text-2xl leading-tight">“{review.text||review.title}”</blockquote><p className="mt-7 text-[9px] uppercase tracking-[.22em] text-white/40">— {review.customerName||'Afsana customer'} / {review.productName}</p></article>)}</div></div></section>;
 }
-function SelectionBanner(){return <section aria-label="The Afsana Selection" className="relative isolate overflow-hidden border-y border-[#d8bd8e]/20 bg-[#21172b] text-[#fbf6ed]">
-  <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_78%_48%,rgba(216,189,142,.20),transparent_31%),radial-gradient(ellipse_at_12%_0%,rgba(120,84,116,.25),transparent_38%),linear-gradient(112deg,#21172b_0%,#35243d_58%,#493444_100%)]"/>
-  <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[.16] [background-image:repeating-linear-gradient(118deg,rgba(255,255,255,.12)_0px,rgba(255,255,255,.12)_1px,transparent_1px,transparent_88px)]"/>
+function SelectionBanner(){return <section aria-label="The Afsana Selection" className="relative isolate overflow-hidden border-y border-[#c5a878]/25 bg-[#18251f] text-[#f7f2e8]">
+  <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_78%_48%,rgba(197,168,120,.20),transparent_30%),radial-gradient(ellipse_at_12%_0%,rgba(111,129,91,.24),transparent_38%),linear-gradient(112deg,#18251f_0%,#26372d_56%,#344337_100%)]"/>
+  <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[.13] [background-image:repeating-linear-gradient(118deg,rgba(255,255,255,.12)_0px,rgba(255,255,255,.12)_1px,transparent_1px,transparent_88px)]"/>
   <div className="container-xl mx-auto grid min-h-[290px] max-w-[1320px] grid-cols-1 items-center gap-8 px-6 py-14 sm:px-10 md:grid-cols-[1fr_auto] md:gap-12 md:py-16 lg:px-14">
     <div className="max-w-3xl">
-      <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.34em] text-[#d8bd8e] sm:text-[10px]"><span className="h-px w-8 bg-[#d8bd8e]"/>THE AFSANA SELECTION</p>
-      <h2 className="mt-5 font-display text-[clamp(2.8rem,7vw,5.8rem)] font-medium leading-[.9] tracking-[-.055em] text-[#fffaf2]">Objects of <em className="text-[#e2c69a]">desire.</em></h2>
-      <p className="mt-5 max-w-xl text-sm leading-7 text-[#f7eee2]/70 sm:text-base">Discover the fragrances that define the house.</p>
-      <Link to="/shop" className="group mt-8 inline-flex min-h-12 items-center gap-8 rounded-full border border-[#d8bd8e]/65 bg-[#d8bd8e] px-6 py-3 text-[10px] font-bold uppercase tracking-[.19em] text-[#2b2034] shadow-[0_12px_30px_rgba(0,0,0,.2)] transition duration-300 hover:-translate-y-1 hover:border-[#f0d9b1] hover:bg-[#f0d9b1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e2c69a] sm:text-[11px]">View full collection <span aria-hidden="true" className="text-base transition-transform duration-300 group-hover:translate-x-1">↗</span></Link>
+      <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.34em] text-[#d4bd91] sm:text-[10px]"><span className="h-px w-8 bg-[#c5a878]"/>THE AFSANA SELECTION</p>
+      <h2 className="mt-5 font-display text-[clamp(2.8rem,7vw,5.8rem)] font-medium leading-[.9] tracking-[-.055em] text-[#fffaf0]">Objects of <em className="text-[#d8c39e]">desire.</em></h2>
+      <p className="mt-5 max-w-xl text-sm leading-7 text-[#f7f2e8]/75 sm:text-base">Discover the fragrances that define the house.</p>
+      <Link to="/shop" className="group mt-8 inline-flex min-h-12 items-center gap-8 rounded-full border border-[#d4bd91] bg-[#d4bd91] px-6 py-3 text-[10px] font-bold uppercase tracking-[.19em] text-[#1d2a22] shadow-[0_12px_30px_rgba(0,0,0,.22)] transition duration-300 hover:-translate-y-1 hover:border-[#ead8b7] hover:bg-[#ead8b7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ead8b7] sm:text-[11px]">View full collection <span aria-hidden="true" className="text-base transition-transform duration-300 group-hover:translate-x-1">↗</span></Link>
     </div>
     <div aria-hidden="true" className="relative mx-auto hidden h-44 w-44 items-center justify-center md:flex lg:mr-8 lg:h-52 lg:w-52">
-      <span className="absolute inset-0 rounded-full border border-[#d8bd8e]/30 shadow-[0_0_0_16px_rgba(216,189,142,.035),0_0_0_34px_rgba(216,189,142,.025)]"/>
-      <span className="absolute inset-5 rounded-full border border-[#d8bd8e]/15"/>
-      <span className="font-display text-5xl italic text-[#e2c69a]/80">A.</span>
-      <span className="absolute -bottom-1 text-[7px] font-semibold uppercase tracking-[.3em] text-[#d8bd8e]/70">THE ART OF SCENT</span>
+      <span className="absolute inset-0 rounded-full border border-[#d4bd91]/35 shadow-[0_0_0_16px_rgba(212,189,145,.045),0_0_0_34px_rgba(212,189,145,.025)]"/>
+      <span className="absolute inset-5 rounded-full border border-[#d4bd91]/20"/>
+      <span className="font-display text-5xl italic text-[#d8c39e]/90">A.</span>
+      <span className="absolute -bottom-1 text-[7px] font-semibold uppercase tracking-[.3em] text-[#d4bd91]/80">THE ART OF SCENT</span>
     </div>
   </div>
 </section>;}
