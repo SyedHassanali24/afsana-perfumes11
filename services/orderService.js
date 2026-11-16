@@ -173,7 +173,7 @@ async function placeOrder(input, cust, idempotencyKey) {
             { $or: [
               { $eq: [{ $ifNull: ['$perCustomerLimit', 0] }, 0] },
               { $lt: [
-                { $size: { $filter: { input: { $ifNull: ['$redemptions', []] }, as: 'r', cond: { $eq: ['$r.customerId', txCustomer._id] } } } },
+                { $size: { $filter: { input: { $ifNull: ['$redemptions', []] }, as: 'r', cond: { $eq: ['$$r.customerId', txCustomer._id] } } } },
                 '$perCustomerLimit',
               ] },
             ] },
