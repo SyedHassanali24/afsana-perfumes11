@@ -104,7 +104,21 @@ async function remove(ctx, type, id, scopes) {
 async function publicList(type) {
   const c = cfg(type);
   const rows = await c.Model.find({ isDeleted: false, isActive: true }).sort({ sortOrder: 1, name: 1 }).select('name slug description image parentId').lean();
-  return { items: rows.map((r) => ({ id: r._id, name: r.name, slug: r.slug, description: r.description, image: r.image, parentId: r.parentId || null })) };
+  let productCounts = new Map();
+  if (type === 'categories') {
+    const counts = await Product.aggregate([
+      { $match: { status: 'Active', isDeleted: false } },
+      { $group: { _id: '$categoryId', count: { $sum: 1 } } },
+    ]);
+    productCounts = new Map(counts.map((row) => [String(row._id), row.count]));
+  }
+  return {
+    items: rows.map((r) => ({
+      id: r._id, name: r.name, slug: r.slug, description: r.description, image: r.image,
+      parentId: r.parentId || null,
+      ...(type === 'categories' ? { productCount: productCounts.get(String(r._id)) || 0 } : {}),
+    })),
+  };
 }
 
 module.exports = { TYPES, list, create, update, remove, publicList, slugify };
