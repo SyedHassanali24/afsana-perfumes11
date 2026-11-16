@@ -49,8 +49,29 @@ const loyaltyTxSchema = new Schema({
   points: { type: Number, required: true }, orderId: ObjectId, reason: String, by: { type: ObjectId, ref: 'User' },
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
+// Influencer and staff partners. Every referral code is unique within the store.
+const affiliatePartnerSchema = new Schema({
+  name: { type: String, required: true, trim: true },
+  code: { type: String, required: true, uppercase: true, trim: true },
+  type: { type: String, enum: ['influencer', 'staff'], required: true, index: true },
+  userId: { type: ObjectId, ref: 'User', index: true },
+  staffId: { type: ObjectId, ref: 'Staff', index: true },
+  platform: String, handle: String, email: String, phone: String,
+  discountType: { type: String, enum: ['none', 'percentage', 'fixed', 'free_shipping'], default: 'none' },
+  discountValue: { type: Number, default: 0 }, maxDiscount: Number, minOrder: { type: Number, default: 0 },
+  commissionType: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' },
+  commissionValue: { type: Number, default: 0 },
+  usageLimit: Number, perCustomerLimit: { type: Number, default: 0 }, usedCount: { type: Number, default: 0 },
+  redemptions: [{ customerId: ObjectId, orderId: ObjectId, at: { type: Date, default: Date.now } }],
+  startsAt: Date, expiresAt: Date, isActive: { type: Boolean, default: true },
+  createdBy: { type: ObjectId, ref: 'User' },
+}, { timestamps: true });
+affiliatePartnerSchema.index({ code: 1, storeId: 1 }, { unique: true });
+affiliatePartnerSchema.index({ userId: 1, isActive: 1 });
+storeScoped(affiliatePartnerSchema); softDelete(affiliatePartnerSchema);
+
 module.exports = {
-  Coupon: model('Coupon', couponSchema), FlashSale: model('FlashSale', flashSaleSchema),
+  Coupon: model('Coupon', couponSchema), AffiliatePartner: model('AffiliatePartner', affiliatePartnerSchema), FlashSale: model('FlashSale', flashSaleSchema),
   Campaign: model('Campaign', campaignSchema), GiftCard: model('GiftCard', giftCardSchema),
   LoyaltyTransaction: model('LoyaltyTransaction', loyaltyTxSchema),
 };
