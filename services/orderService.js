@@ -105,11 +105,28 @@ async function placeOrder(input, cust, idempotencyKey) {
     const manualCode = normalizeCode(input.couponCode);
     const linkCode = normalizeCode(input.referralCode);
     coupon = manualCode ? await Coupon.findOne({ code: manualCode, isDeleted: false }).session(session) : null;
-    let manualPartner = null;
-    if (manualCode && !coupon) manualPartner = await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true }).session(session);
-    const linkPartner = linkCode ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }).session(session) : null;
-    referralPartner = manualPartner || linkPartner || null;
-    referralSource = manualPartner ? 'promo_code' : (linkPartner ? 'referral_link' : null);
+    const manualPartner = manualCode && !coupon
+      ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true }).session(session)
+      : null;
+    const linkPartner = linkCode
+      ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }).session(session)
+      : null;
+
+    if (manualPartner) {
+      referralPartner = manualPartner;
+      referralSource = 'promo_code';
+    } else if (coupon && linkPartner) {
+      // A regular coupon wins the discount; retain valid first-touch partner attribution only.
+      if (!validatePartner(linkPartner, { subtotal, customerId: txCustomer._id })) {
+        referralPartner = linkPartner;
+        referralSource = 'referral_link';
+      }
+    } else if (!manualCode && linkCode) {
+      referralPartner = linkPartner;
+      referralSource = 'referral_link';
+      if (!referralPartner) throw E.badRequest('This referral code is not active.');
+    }
+
     if (referralPartner) {
       const problem = validatePartner(referralPartner, { subtotal, customerId: txCustomer._id });
       if (problem) throw E.badRequest(problem);
@@ -120,8 +137,7 @@ async function placeOrder(input, cust, idempotencyKey) {
       validateCoupon(coupon, { subtotal, customerId: txCustomer._id, customerUses, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
       ({ discount, shippingDiscount } = calcDiscount(coupon, lines, shippingFee));
     } else if (manualCode && !manualPartner) {
-      const customerUses = 0;
-      validateCoupon(null, { subtotal, customerId: txCustomer._id, customerUses, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
+      validateCoupon(null, { subtotal, customerId: txCustomer._id, customerUses: 0, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
     } else if (referralPartner) {
       ({ discount, shippingDiscount } = discountFor(referralPartner, subtotal, shippingFee));
     }
