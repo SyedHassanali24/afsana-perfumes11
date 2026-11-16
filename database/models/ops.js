@@ -30,11 +30,12 @@ storeScoped(expenseSchema);
 // Raw storefront events; TTL keeps the collection small (aggregate into daily stats before expiry, Phase 9).
 const analyticsEventSchema = new Schema({
   event: { type: String, enum: ['page_view', 'product_view', 'add_to_cart', 'begin_checkout', 'purchase'], required: true },
-  productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed,
+  productId: ObjectId, customerId: ObjectId, sessionRef: String, meta: Schema.Types.Mixed, affiliateCode: String,
   at: { type: Date, default: Date.now, expires: 60 * 60 * 24 * 180 },
 });
 analyticsEventSchema.index({ event: 1, at: -1 });
 analyticsEventSchema.index({ productId: 1, event: 1 });
+analyticsEventSchema.index({ storeId: 1, affiliateCode: 1, event: 1, at: -1 });
 
 // Append-only. Updates/deletes are blocked at the model layer.
 const auditLogSchema = new Schema({
