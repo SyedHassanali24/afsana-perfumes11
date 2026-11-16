@@ -27,6 +27,18 @@ function getSessionRef() {
     return createSessionRef();
   }
 }
+function rememberReferral(search = '') {
+  const candidate = String(new URLSearchParams(search || '').get('ref') || '').trim().toUpperCase();
+  if (!/^[A-Z0-9][A-Z0-9_-]{2,29}$/.test(candidate)) return getStoredReferral();
+  try {
+    if (!sessionStorage.getItem(REF_KEY)) sessionStorage.setItem(REF_KEY, candidate);
+  } catch { /* referral tracking must never block shopping */ }
+  return getStoredReferral() || candidate;
+}
+function getStoredReferral() {
+  try { return String(sessionStorage.getItem(REF_KEY) || '').toUpperCase(); } catch { return ''; }
+}
+
 function hostOnly(value) {
   try { return value ? new URL(value).hostname.toLowerCase() : ''; } catch { return ''; }
 }
@@ -43,6 +55,7 @@ export function trackStorefrontPageView(pathname, search = '') {
   if (locationKey === lastTrackedLocation) return;
   lastTrackedLocation = locationKey;
 
+  const referralCode = rememberReferral(search);
   if (!activeSession) {
     const params = new URLSearchParams(search || '');
     activeSession = {
@@ -52,8 +65,10 @@ export function trackStorefrontPageView(pathname, search = '') {
       utmMedium: params.get('utm_medium') || '',
       utmCampaign: params.get('utm_campaign') || '',
       referrerHost: hostOnly(document.referrer),
-      affiliateCode: (() => { try { return sessionStorage.getItem(REF_KEY) || ''; } catch { return ''; } })(),
+      affiliateCode: referralCode,
     };
+  } else if (!activeSession.affiliateCode && referralCode) {
+    activeSession.affiliateCode = referralCode;
   }
 
   const payload = {
@@ -74,6 +89,4 @@ export function trackStorefrontPageView(pathname, search = '') {
   }
 }
 
-export function getReferralCode() {
-  try { return String(sessionStorage.getItem(REF_KEY) || '').toUpperCase(); } catch { return ''; }
-}
+export function getReferralCode() { return getStoredReferral(); }
