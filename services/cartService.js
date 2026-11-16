@@ -40,8 +40,9 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
     const linkCode = normalizeCode(referralCode);
     let regularCoupon = null;
     if (manualCode) regularCoupon = await Coupon.findOne({ code: manualCode, isDeleted: false });
-    const partnerCode = regularCoupon ? linkCode : (manualCode || linkCode);
-    const partner = partnerCode ? await AffiliatePartner.findOne({ code: partnerCode, storeId: 'main', isDeleted: false, isActive: true }) : null;
+    const manualPartner = !regularCoupon && manualCode ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true }) : null;
+    const linkPartner = linkCode ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }) : null;
+    const partner = manualPartner || linkPartner;
     if (partner) {
       const problem = validatePartner(partner, { subtotal, customerId: cust?.customer?._id });
       if (problem) {
@@ -50,7 +51,7 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
         // A standard coupon entered at checkout wins; referral attribution is retained, but discounts never stack.
         if (!regularCoupon) ({ discount, shippingDiscount } = discountFor(partner, subtotal, delivery.fee));
         coupon = { code: regularCoupon?.code || partner.code, valid: true, kind: regularCoupon ? 'coupon' : 'referral' };
-        appliedReferral = { code: partner.code, name: partner.name, discountApplied: discount + shippingDiscount, source: regularCoupon ? 'referral_link' : (manualCode ? 'promo_code' : 'referral_link') };
+        appliedReferral = { code: partner.code, name: partner.name, discountApplied: discount + shippingDiscount, source: manualPartner ? 'promo_code' : 'referral_link' };
       }
     } else if (regularCoupon || manualCode) {
       try {
