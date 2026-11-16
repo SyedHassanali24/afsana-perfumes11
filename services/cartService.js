@@ -1,14 +1,15 @@
-const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon } = require('../database/models');
+const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon, AffiliatePartner } = require('../database/models');
 const { ApiError, E } = require('../middleware/errors');
 const { effectivePrice, validateCoupon, calcDiscount } = require('./pricing');
 const { mergeItems, lineStatus, summarize } = require('./cartRules');
 const { loadContext, deliveryFor } = require('./shippingQuote');
+const { validatePartner, discountFor, normalizeCode } = require('./affiliateRules');
 
 const mainImage = (p) => ((p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || {}).url;
 const card = (p) => ({ id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount, image: (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null });
 
 // ---------- quote: prices a list of { variantId, quantity } from the DB. Never trusts client prices. Never throws for stale items. ----------
-async function quote({ items, couponCode, city }, cust) {
+async function quote({ items, couponCode, referralCode, city }, cust) {
   const merged = mergeItems(items);
   const ids = merged.map((i) => i.variantId);
   const variants = ids.length ? await ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean() : [];
@@ -33,26 +34,63 @@ async function quote({ items, couponCode, city }, cust) {
   const priced = lines.filter((l) => l.status === 'ok' || l.status === 'limited');
   const subtotal = priced.reduce((s, l) => s + l.lineTotal, 0);
   const delivery = await deliveryFor(city, subtotal, ship); // city fee (zone) or the Settings fee when the city has no zone
-  let discount = 0; let shippingDiscount = 0; let coupon = null;
-  if (couponCode && priced.length) {
-    const code = couponCode.toUpperCase();
-    try {
-      const c = await Coupon.findOne({ code, isDeleted: false });
-      const cid = cust && cust.customer._id;
-      validateCoupon(c, {
-        subtotal, customerId: cid,
-        customerUses: c && cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
-        isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
-      });
-      ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
-      coupon = { code: c.code, valid: true };
-    } catch (e) {
-      if (!(e instanceof ApiError)) throw e;
-      coupon = { code, valid: false, message: e.message }; // shown next to the coupon box, does not break the cart
+  let discount = 0; let shippingDiscount = 0; let coupon = null; let appliedReferral = null;
+  if (priced.length) {
+    const manualCode = normalizeCode(couponCode);
+    const linkCode = normalizeCode(referralCode);
+    const regularCoupon = manualCode ? await Coupon.findOne({ code: manualCode, isDeleted: false }) : null;
+    const manualPartner = manualCode && !regularCoupon
+      ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true })
+      : null;
+    const linkPartner = linkCode
+      ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true })
+      : null;
+
+    if (manualPartner || (!manualCode && linkCode)) {
+      const partner = manualPartner || linkPartner;
+      if (!partner) {
+        coupon = { code: manualCode || linkCode, valid: false, message: 'This referral code is not active.' };
+      } else {
+        const problem = validatePartner(partner, { subtotal, customerId: cust?.customer?._id });
+        if (problem) coupon = { code: partner.code, valid: false, message: problem };
+        else {
+          ({ discount, shippingDiscount } = discountFor(partner, subtotal, delivery.fee));
+          coupon = { code: partner.code, valid: true, kind: 'referral' };
+          appliedReferral = { code: partner.code, name: partner.name, discountApplied: discount + shippingDiscount, source: manualPartner ? 'promo_code' : 'referral_link' };
+        }
+      }
+    } else if (regularCoupon) {
+      try {
+        const cid = cust && cust.customer._id;
+        validateCoupon(regularCoupon, {
+          subtotal, customerId: cid,
+          customerUses: cid ? (regularCoupon.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
+          isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
+        });
+        ({ discount, shippingDiscount } = calcDiscount(regularCoupon, priced, delivery.fee));
+        coupon = { code: regularCoupon.code, valid: true, kind: 'coupon' };
+        // A valid first-touch referral is recorded, but its discount never stacks with a coupon.
+        if (linkPartner && !validatePartner(linkPartner, { subtotal, customerId: cust?.customer?._id })) {
+          appliedReferral = { code: linkPartner.code, name: linkPartner.name, discountApplied: 0, source: 'referral_link' };
+        }
+      } catch (e) {
+        if (!(e instanceof ApiError)) throw e;
+        coupon = { code: manualCode, valid: false, message: e.message };
+      }
+    } else if (manualCode) {
+      try {
+        validateCoupon(null, {
+          subtotal, customerId: cust?.customer?._id,
+          customerUses: 0, isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
+        });
+      } catch (e) {
+        if (!(e instanceof ApiError)) throw e;
+        coupon = { code: manualCode, valid: false, message: e.message };
+      }
     }
   }
   return {
-    lines: lines.map(({ categoryId, ...l }) => l), coupon,
+    lines: lines.map(({ categoryId, ...l }) => l), coupon, referral: appliedReferral,
     ...summarize(lines, ship.cfg, { discount, shippingDiscount, delivery }),
     delivery: { city: city || '', zone: delivery.zone, method: delivery.method, estDays: delivery.estDays, source: delivery.source },
   };

@@ -4,7 +4,7 @@ const MODULES = [
   'orders','shipping','payments','returns','refunds','customers','carts','wishlists','abandonedCarts','reviews',
   'coupons','flashSales','giftBoxes','giftCards','loyalty','campaigns','homepage','navigation','banners','pages',
   'faq','announcements','finance','expenses','profit','reports','staff','roles','permissions','accessScope',
-  'temporaryAccess','sessions','notifications','email','whatsapp','seo','tracking','auditLogs','security','backup','settings',
+  'temporaryAccess','sessions','notifications','email','whatsapp','seo','tracking','auditLogs','security','backup','settings','referrals','commissions',
 ];
 const ACTIONS = [
   'view','create','edit','delete','restore','export','import','approve','reject','publish','archive',
@@ -16,7 +16,7 @@ const SCOPES = ['all','assigned','createdByMe','cities','categories','products',
 const HIGH_RISK = [
   'products.delete','customers.delete','refunds.refund','orders.refund','products.managePrice','inventory.manageStock',
   'customers.export','orders.export','staff.edit','roles.edit','permissions.edit','payments.edit','security.edit','settings.edit',
-  'staff.create','staff.delete','roles.create','roles.delete','temporaryAccess.create','sessions.delete','backup.export',
+  'staff.create','staff.delete','roles.create','roles.delete','temporaryAccess.create','sessions.delete','backup.export','referrals.create','referrals.edit','commissions.edit',
 ];
 const RESTRICTABLE_FIELDS = [
   'customer.phone','customer.address','order.paymentDetails','product.costPrice','order.profit','order.internalNotes',

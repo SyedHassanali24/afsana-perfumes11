@@ -88,6 +88,15 @@ export const financeApi = { // staff. summary(query {period, from?, to?}) -> { r
   updateExpense: (id, body) => api(`/finance/admin/expenses/${id}`, { method: 'PATCH', body }),
   deleteExpense: (id) => api(`/finance/admin/expenses/${id}`, { method: 'DELETE' }),
 };
+export const growthApi = {
+  me: () => api('/growth/me'),
+  dashboard: () => api('/growth/admin/dashboard'),
+  createPartner: (body) => api('/growth/admin/partners', { method: 'POST', body }),
+  updatePartner: (id, body) => api(`/growth/admin/partners/${id}`, { method: 'PATCH', body }),
+};
+export const accountantApi = {
+  report: (query) => api('/accountant/admin/report', { query, cacheTtl: 30000 }),
+};
 export const notificationsApi = { // staff bell. list -> { notifications:[{id,type,title,body,link,createdAt,read}], unread }
   list: () => api('/notifications/admin'),
   markRead: (id) => api(`/notifications/admin/${id}/read`, { method: 'POST' }),

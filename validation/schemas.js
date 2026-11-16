@@ -85,6 +85,7 @@ const checkoutBody = z.object({
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
   couponCode: z.string().trim().max(40).optional(),
+  referralCode: z.string().trim().max(30).optional(),
 });
 const trackQuery = z.object({ phone });
 const ordersQuery = z.object({
@@ -150,7 +151,7 @@ const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid 
 
 // ---------- storefront: cart, wishlist, addresses, my orders ----------
 const cartItems = z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(20) })).max(30);
-const quoteBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional(), city: z.string().trim().max(80).optional() });
+const quoteBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional(), referralCode: z.string().trim().max(30).optional(), city: z.string().trim().max(80).optional() });
 const cartBody = z.object({ items: cartItems, couponCode: z.string().trim().max(40).optional().or(z.literal('')).transform((v) => v || undefined) });
 const addressBody = z.object({
   type: z.enum(['Home', 'Office', 'Other']).default('Home'), fullName: z.string().trim().min(2).max(100), phone,
@@ -277,6 +278,37 @@ const expenseBody = expenseShape;
 const expensePatch = expenseShape.partial().refine((v) => Object.keys(v).length > 0, 'Nothing to change');
 const expenseQuery = z.object({ category: z.enum(FIN.CATEGORIES).optional(), from: dayKey.optional(), to: dayKey.optional(), ...paging });
 
+// ---- referral partners ----
+const referralPartnerFields = {
+  name: z.string().trim().min(2).max(100),
+  code: z.string().trim().min(3).max(30).transform((v) => v.toUpperCase()),
+  platform: z.enum(['instagram','tiktok','youtube','facebook','other']).optional(),
+  handle: z.string().trim().max(120).optional(),
+  discountType: z.enum(['none','percentage','fixed','free_shipping']).default('none'),
+  discountValue: num(z.number().min(0).max(10000000).default(0)),
+  maxDiscount: optNum(z.number().min(0).max(10000000)),
+  minOrder: num(z.number().min(0).max(10000000).default(0)),
+  commissionType: z.enum(['percentage','fixed']).default('percentage'),
+  commissionValue: num(z.number().min(0).max(10000000).default(0)),
+  usageLimit: optNum(z.number().int().min(1).max(10000000)),
+  perCustomerLimit: num(z.number().int().min(0).max(1000).default(0)),
+  startsAt: optDate, expiresAt: optDate, isActive: z.boolean().optional(),
+};
+const referralPartnerBody = z.object(referralPartnerFields).superRefine((v, ctx) => {
+  if (v.discountType === 'percentage' && (v.discountValue <= 0 || v.discountValue > 100)) ctx.addIssue({ code: 'custom', path: ['discountValue'], message: 'Use a discount between 1 and 100 percent.' });
+  if (v.commissionType === 'percentage' && v.commissionValue > 100) ctx.addIssue({ code: 'custom', path: ['commissionValue'], message: 'Commission cannot exceed 100 percent.' });
+  if (v.startsAt && v.expiresAt && v.expiresAt <= v.startsAt) ctx.addIssue({ code: 'custom', path: ['expiresAt'], message: 'Expiry must be after the start date.' });
+});
+const referralPartnerPatch = z.object({
+  name: referralPartnerFields.name.optional(), platform: referralPartnerFields.platform,
+  handle: referralPartnerFields.handle, discountType: referralPartnerFields.discountType.optional(),
+  discountValue: referralPartnerFields.discountValue.optional(), maxDiscount: referralPartnerFields.maxDiscount,
+  minOrder: referralPartnerFields.minOrder.optional(), commissionType: referralPartnerFields.commissionType.optional(),
+  commissionValue: referralPartnerFields.commissionValue.optional(), usageLimit: referralPartnerFields.usageLimit,
+  perCustomerLimit: referralPartnerFields.perCustomerLimit.optional(), startsAt: referralPartnerFields.startsAt,
+  expiresAt: referralPartnerFields.expiresAt, isActive: referralPartnerFields.isActive,
+}).refine((v) => Object.keys(v).length > 0, 'Nothing to update');
+
 // ---- reviews ----
 const REVIEW = require('../services/reviewRules');
 const reviewBody = z.object({ rating: z.number().int().min(1).max(5), title: z.string().trim().max(80).optional(), text: z.string().trim().max(1500).optional() });
@@ -336,7 +368,7 @@ module.exports = {
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
   couponBody, couponPatch, couponActiveBody, couponQuery,
-  financeQuery, expenseBody, expensePatch, expenseQuery,
+  financeQuery, expenseBody, expensePatch, expenseQuery, referralPartnerBody, referralPartnerPatch,
   customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
   courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,

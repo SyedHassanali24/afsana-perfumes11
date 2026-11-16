@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Order, OrderItem, Payment, Customer, Coupon, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
+const { Order, OrderItem, Payment, Customer, Coupon, AffiliatePartner, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { samePhone } = require('./phone');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
@@ -11,6 +11,7 @@ const { publicShipment, staffShipment } = require('./shippingService');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const R = require('./orderRules');
+const { normalizeCode, validatePartner, discountFor } = require('./affiliateRules');
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
 
@@ -83,7 +84,8 @@ async function placeOrder(input, cust, idempotencyKey) {
   }
 
   // 3. Reserve stock + re-read coupon rules inside the transaction so checkout uses one consistent snapshot.
-  let coupon = null; let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
+  let coupon = null; let referralPartner = null; let referralSource = null; let referralAppliedAt = null;
+  let discount = 0; let shippingDiscount = 0; let shipping = shippingFee; let total = subtotal + shippingFee;
   const orderNumber = await nextNumber('order', 'AFS');
 
   // 4. atomic: reserve stock + write order. If any unit is gone the whole thing rolls back.
@@ -100,14 +102,47 @@ async function placeOrder(input, cust, idempotencyKey) {
     const txCustomer = await Customer.findById(customer._id).session(session);
     if (!txCustomer) throw E.conflict('Customer record is no longer available.');
 
-    if (input.couponCode) {
-      coupon = await Coupon.findOne({ code: input.couponCode.toUpperCase(), isDeleted: false }).session(session);
-      const customerUses = coupon ? (coupon.usage || []).filter((u) => String(u.customerId) === String(txCustomer._id)).length : 0;
+    const manualCode = normalizeCode(input.couponCode);
+    const linkCode = normalizeCode(input.referralCode);
+    coupon = manualCode ? await Coupon.findOne({ code: manualCode, isDeleted: false }).session(session) : null;
+    const manualPartner = manualCode && !coupon
+      ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true }).session(session)
+      : null;
+    const linkPartner = linkCode
+      ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }).session(session)
+      : null;
+
+    if (manualPartner) {
+      referralPartner = manualPartner;
+      referralSource = 'promo_code';
+    } else if (coupon && linkPartner) {
+      // A regular coupon wins the discount; retain valid first-touch partner attribution only.
+      if (!validatePartner(linkPartner, { subtotal, customerId: txCustomer._id })) {
+        referralPartner = linkPartner;
+        referralSource = 'referral_link';
+      }
+    } else if (!manualCode && linkCode) {
+      referralPartner = linkPartner;
+      referralSource = 'referral_link';
+      if (!referralPartner) throw E.badRequest('This referral code is not active.');
+    }
+
+    if (referralPartner) {
+      const problem = validatePartner(referralPartner, { subtotal, customerId: txCustomer._id });
+      if (problem) throw E.badRequest(problem);
+      referralAppliedAt = new Date();
+    }
+    if (coupon) {
+      const customerUses = (coupon.usage || []).filter((u) => String(u.customerId) === String(txCustomer._id)).length;
       validateCoupon(coupon, { subtotal, customerId: txCustomer._id, customerUses, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
       ({ discount, shippingDiscount } = calcDiscount(coupon, lines, shippingFee));
-      shipping = shippingFee - shippingDiscount;
-      total = subtotal - discount + shipping;
+    } else if (manualCode && !manualPartner) {
+      validateCoupon(null, { subtotal, customerId: txCustomer._id, customerUses: 0, isFirstOrder: (txCustomer.stats && txCustomer.stats.ordersCount || 0) === 0 });
+    } else if (referralPartner) {
+      ({ discount, shippingDiscount } = discountFor(referralPartner, subtotal, shippingFee));
     }
+    shipping = shippingFee - shippingDiscount;
+    total = subtotal - discount + shipping;
 
     if (coupon) {
       const used = await Coupon.findOneAndUpdate(
@@ -127,15 +162,44 @@ async function placeOrder(input, cust, idempotencyKey) {
         { $inc: { usedCount: 1 } }, { new: true, session });
       if (!used) throw E.badRequest('This coupon has reached its usage limit.');
     }
+    const referral = referralPartner ? {
+      partnerId: referralPartner._id, partnerType: referralPartner.type, partnerName: referralPartner.name,
+      code: referralPartner.code, source: referralSource, commissionType: referralPartner.commissionType,
+      commissionValue: referralPartner.commissionValue, discountType: referralPartner.discountType,
+      discountValue: referralPartner.discountValue, discountAmount: coupon ? 0 : discount + shippingDiscount,
+      attributedAt: referralAppliedAt, appliedAt: referralAppliedAt,
+    } : undefined;
     const [o] = await Order.create([{
       orderNumber, customerId: customer._id, customer: input.customer, shippingAddress: input.shippingAddress,
-      subtotal, shipping, discount, total, couponCode: coupon ? coupon.code : undefined,
+      subtotal, shipping, discount, total,
+      couponCode: coupon ? coupon.code : (manualPartner ? manualPartner.code : undefined),
+      ...(referral ? { referral } : {}),
       paymentMethod: input.paymentMethod, status: 'New', paymentStatus: 'Pending',
       timeline: [{ event: 'Order Placed', status: 'New' }],
       ...(key ? { idempotencyKey: key, idempotencyHash: requestHash } : {}),
     }], { session });
     await OrderItem.insertMany(lines.map(({ categoryId, ...l }) => ({ ...l, orderId: o._id, lineTotal: l.lineTotal })), { session });
     if (coupon) await Coupon.updateOne({ _id: coupon._id }, { $push: { usage: { customerId: txCustomer._id, orderId: o._id, at: new Date() } } }, { session });
+    if (referralPartner) {
+      const usedPartner = await AffiliatePartner.findOneAndUpdate(
+        {
+          _id: referralPartner._id, isActive: true,
+          $expr: { $and: [
+            { $or: [{ $eq: [{ $ifNull: ['$usageLimit', 0] }, 0] }, { $lt: [{ $ifNull: ['$usedCount', 0] }, '$usageLimit'] }] },
+            { $or: [
+              { $eq: [{ $ifNull: ['$perCustomerLimit', 0] }, 0] },
+              { $lt: [
+                { $size: { $filter: { input: { $ifNull: ['$redemptions', []] }, as: 'r', cond: { $eq: ['$$r.customerId', txCustomer._id] } } } },
+                '$perCustomerLimit',
+              ] },
+            ] },
+          ] },
+        },
+        { $inc: { usedCount: 1 }, $push: { redemptions: { customerId: txCustomer._id, orderId: o._id, at: referralAppliedAt } } },
+        { new: true, session },
+      );
+      if (!usedPartner) throw E.badRequest('This referral code has reached its usage limit.');
+    }
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
     await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
     return o;
