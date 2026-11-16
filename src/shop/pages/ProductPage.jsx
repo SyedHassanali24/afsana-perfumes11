@@ -69,7 +69,7 @@ export default function ProductPage(){
   })||null
  ),[cmsContent]);
  const offerEndAt=activeOffer?.config?.endAt||null;
- const {add}=useCart(); const {has,toggle}=useWishlist();
+ const {add,openDrawer}=useCart(); const {has,toggle}=useWishlist();
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
  const [tilt,setTilt]=useState({x:0,y:0});
  const [offerRemaining,setOfferRemaining]=useState(0);
@@ -117,7 +117,7 @@ export default function ProductPage(){
  },[product3dUrl,modelViewerReady]);
  const ratingAvg=Number(p?.ratingAvg||0),ratingCount=Number(p?.ratingCount||0);
  const v=variants.find(x=>x.id===vid), hasSalePrice=Boolean(v&&v.salePrice>0&&v.salePrice<v.price), price=v&&(hasSalePrice?v.salePrice:v.price), discountPct=hasSalePrice?Math.round((1-v.salePrice/v.price)*100):0, soldOut=!v||v.available<=0, ns=notes(p);
- const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);window.setTimeout(()=>setAdding(false),650)}};
+ const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);openDrawer();window.setTimeout(()=>setAdding(false),650)}};
  const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
  const activeMedia=media[img]||media[0]||null;
  const hasProductVisual=!!(activeMedia?.url&&!mediaBroken);
