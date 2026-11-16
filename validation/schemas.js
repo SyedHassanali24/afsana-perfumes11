@@ -349,7 +349,8 @@ module.exports = {
 };
 
 const turnstileTokenBody = { turnstileToken: z.string().max(2048).optional() };
-const loginTwoFactorVerifyBody = z.object({ email: z.string().email().max(254), challengeId: z.string().regex(/^[a-f\\d]{64}$/i), otp: z.string().regex(/^\\d{6}$/), deviceId: z.string().min(20).max(128), ...turnstileTokenBody });\nconst forgotPasswordRequestBody = z.object({ email: z.string().email().max(254), ...turnstileTokenBody });
+const loginTwoFactorVerifyBody = z.object({ email: z.string().email().max(254), challengeId: z.string().regex(/^[a-f\\d]{64}$/i), otp: z.string().regex(/^\\d{6}$/), deviceId: z.string().min(20).max(128), ...turnstileTokenBody });
+const forgotPasswordRequestBody = z.object({ email: z.string().email().max(254), ...turnstileTokenBody });
 const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/), ...turnstileTokenBody });
 const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), resetToken: z.string().regex(/^[a-f\\d]{64}$/i), password: z.string().min(8).max(128), ...turnstileTokenBody });
 
