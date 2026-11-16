@@ -136,8 +136,8 @@ async function buildDashboard({ partnerId, now = new Date() } = {}) {
       { $project: { orderNumber: 1, couponCode: 1, discount: 1, subtotal: 1, total: 1, shipping: 1, status: 1, paymentStatus: 1, createdAt: 1, referral: 1, refunded: 1 } },
     ]),
     AnalyticsEvent.aggregate([
-      { $match: { storeId: 'main', affiliateCode: { $in: partners.map((p) => p.code) }, event: 'page_view', at: { $gte: from, $lt: to } } },
-      { $group: { _id: { code: '$affiliateCode', source: { $ifNull: ['$source', 'direct'] }, sessionRef: '$sessionRef' } } },
+      { $match: { 'meta.affiliateCode': { $in: partners.map((p) => p.code) }, event: 'page_view', at: { $gte: from, $lt: to } } },
+      { $group: { _id: { code: '$meta.affiliateCode', source: { $ifNull: ['$meta.source', 'Direct'] }, sessionRef: '$sessionRef' } } },
       { $group: { _id: { code: '$_id.code', source: '$_id.source' }, visits: { $sum: 1 } } },
     ]),
   ]);
