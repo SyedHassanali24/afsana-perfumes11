@@ -135,6 +135,19 @@ export async function onRequest(context) {
   process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
   process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
+  process.env.OWNER_EMAIL = env.OWNER_EMAIL || process.env.OWNER_EMAIL || "";
+  process.env.TURNSTILE_SECRET_KEY = env.TURNSTILE_SECRET_KEY || "";
+  process.env.EMAILJS_SERVICE_ID = env.EMAILJS_SERVICE_ID || "";
+  process.env.EMAILJS_TEMPLATE_ID = env.EMAILJS_TEMPLATE_ID || "";
+  process.env.EMAILJS_PUBLIC_KEY = env.EMAILJS_PUBLIC_KEY || "";
+  process.env.EMAILJS_PRIVATE_KEY = env.EMAILJS_PRIVATE_KEY || "";
+  process.env.GMAIL_CLIENT_ID = env.GMAIL_CLIENT_ID || "";
+  process.env.GMAIL_CLIENT_SECRET = env.GMAIL_CLIENT_SECRET || "";
+  process.env.GMAIL_REFRESH_TOKEN = env.GMAIL_REFRESH_TOKEN || "";
+  process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL || "";
+  process.env.RESEND_API_KEY = env.RESEND_API_KEY || "";
+  process.env.EMAIL_FROM = env.EMAIL_FROM || "";
+
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     process.env.RATE_LIMIT_FAIL_OPEN = env.RATE_LIMIT_FAIL_OPEN || "true";
