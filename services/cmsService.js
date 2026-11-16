@@ -106,11 +106,9 @@ async function publicContent() {
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
-  const allSections = h
-    // The owner previously asked to remove this specific hard-coded-feeling hero.
-    // Keep its CMS record intact, but stop publishing it to the storefront.
-    .filter((d) => !(d.type === 'hero' && String(d.title || '').trim().toLowerCase() === 'scent is your energy.'))
-    .map((d) => ({ id: d._id, type: d.type, title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0, isEnabled: true }));
+  // Publish every enabled CMS record exactly where its saved template slot belongs.
+  // In particular, keep the bottle-led Home hero and its reference asset available.
+  const allSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0, isEnabled: true }));
   const pageSections = {};
   for (const section of allSections) {
     const pageKey = sectionPageKey(section);

@@ -1,5 +1,5 @@
 const { createHandler } = require('../../../middleware/withApi');
-const { login, clearCookie, sessionCookie, requestPasswordReset, verifyPasswordResetOtp, resetPasswordWithToken } = require('../../../middleware/auth');
+const { login, verifyAdminLoginOtp, clearCookie, sessionCookie, requestPasswordReset, verifyPasswordResetOtp, resetPasswordWithToken } = require('../../../middleware/auth');
 const { res } = require('../../../middleware/http');
 const { E } = require('../../../middleware/errors');
 const { Session } = require('../../../database/models');
@@ -7,12 +7,19 @@ const S = require('../../../validation/schemas');
 const { changeOwnPassword, updateOwnProfile } = require('../../../services/staffService');
 
 const routes = [
-  { method: 'POST', path: '/forgot-password/request', public: true, body: S.forgotPasswordRequestBody, rateLimit: { limit: 3, windowMs: 15 * 60000 }, async handler({ body }) { await requestPasswordReset(body.email); return { sent: true }; } },
-  { method: 'POST', path: '/forgot-password/verify', public: true, body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) { return verifyPasswordResetOtp(body.email, body.otp); } },
-  { method: 'POST', path: '/forgot-password/reset', public: true, body: S.forgotPasswordResetBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) { return resetPasswordWithToken(body.email, body.resetToken, body.password); } },
-  { method: 'POST', path: '/login', public: true, body: S.loginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
+  { method: 'POST', path: '/forgot-password/request', public: true, turnstileAction: 'staff_password_reset_request', body: S.forgotPasswordRequestBody, rateLimit: { limit: 3, windowMs: 15 * 60000 }, async handler({ body }) { await requestPasswordReset(body.email); return { sent: true }; } },
+  { method: 'POST', path: '/forgot-password/verify', public: true, turnstileAction: 'staff_password_reset_verify', body: S.forgotPasswordVerifyBody, rateLimit: { limit: 10, windowMs: 15 * 60000 }, async handler({ body }) { return verifyPasswordResetOtp(body.email, body.otp); } },
+  { method: 'POST', path: '/forgot-password/reset', public: true, turnstileAction: 'staff_password_reset_complete', body: S.forgotPasswordResetBody, rateLimit: { limit: 5, windowMs: 15 * 60000 }, async handler({ body }) { return resetPasswordWithToken(body.email, body.resetToken, body.password); } },
+  { method: 'POST', path: '/login', public: true, turnstileAction: 'staff_login', body: S.loginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
     async handler({ body, ip, req }) {
-      const { cookie, user, staff } = await login({ ...body, ip, userAgent: req.headers['user-agent'] });
+      const result = await login({ ...body, ip, userAgent: req.headers['user-agent'] });
+      if (result.requiresTwoFactor) return res(200, { requiresTwoFactor: true, challengeId: result.challengeId });
+      const { cookie, user, staff } = result;
+      return res(200, { user: { id: user._id, email: user.email, name: staff.name }, mustChangePassword: !!user.mustChangePassword }, { 'Set-Cookie': cookie });
+    } },
+  { method: 'POST', path: '/login/2fa/verify', public: true, turnstileAction: 'staff_2fa', body: S.loginTwoFactorVerifyBody, rateLimit: { limit: 8, windowMs: 15 * 60000 },
+    async handler({ body, ip, req }) {
+      const { cookie, user, staff } = await verifyAdminLoginOtp({ ...body, ip, userAgent: req.headers['user-agent'] });
       return res(200, { user: { id: user._id, email: user.email, name: staff.name }, mustChangePassword: !!user.mustChangePassword }, { 'Set-Cookie': cookie });
     } },
   { method: 'POST', path: '/logout', allowPasswordChange: true,

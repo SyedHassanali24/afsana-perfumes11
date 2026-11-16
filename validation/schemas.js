@@ -7,7 +7,7 @@ const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), c
 const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
-const loginBody = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200) });
+const loginBody = z.object({ email: z.string().email().max(200), password: z.string().min(1).max(200), deviceId: z.string().min(20).max(128).optional(), turnstileToken: z.string().max(2048).optional() });
 
 // ---------- products ----------
 const variantBase = {
@@ -348,10 +348,13 @@ module.exports = {
   adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
 };
 
-const forgotPasswordRequestBody = z.object({ email: z.string().email().max(254) });
-const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/) });
-const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), resetToken: z.string().regex(/^[a-f\\d]{64}$/i), password: z.string().min(8).max(128) });
+const turnstileTokenBody = { turnstileToken: z.string().max(2048).optional() };
+const loginTwoFactorVerifyBody = z.object({ email: z.string().email().max(254), challengeId: z.string().regex(/^[a-f\\d]{64}$/i), otp: z.string().regex(/^\\d{6}$/), deviceId: z.string().min(20).max(128), ...turnstileTokenBody });
+const forgotPasswordRequestBody = z.object({ email: z.string().email().max(254), ...turnstileTokenBody });
+const forgotPasswordVerifyBody = z.object({ email: z.string().email().max(254), otp: z.string().regex(/^\\d{6}$/), ...turnstileTokenBody });
+const forgotPasswordResetBody = z.object({ email: z.string().email().max(254), resetToken: z.string().regex(/^[a-f\\d]{64}$/i), password: z.string().min(8).max(128), ...turnstileTokenBody });
 
+module.exports.loginTwoFactorVerifyBody = loginTwoFactorVerifyBody;
 module.exports.forgotPasswordRequestBody = forgotPasswordRequestBody;
 module.exports.forgotPasswordVerifyBody = forgotPasswordVerifyBody;
 module.exports.forgotPasswordResetBody = forgotPasswordResetBody;
