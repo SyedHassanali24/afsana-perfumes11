@@ -68,8 +68,8 @@ export default function ShopLayout(){
  let previewLayout = null;
  try { if (isPreviewRequested) previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null'); } catch {}
  const isCmsPreview = isPreviewRequested && !!previewLayout;
- const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer);
- const hasManagedFooter = footerPreview || (cmsData?.managedPageKeys || []).includes('site_footer');
+ const footerPreview = Array.isArray(previewLayout?.layouts?.site_footer) && previewLayout.layouts.site_footer.some((s) => s?.type === 'custom_footer');
+ const hasManagedFooter = footerPreview || siteFooterSections.some((s) => s?.type === 'custom_footer' && s?.isEnabled !== false);
  let navigationSections = cmsData?.pageSections?.site_navigation || [];
  if (isCmsPreview) {
    if (Array.isArray(previewLayout?.layouts?.site_navigation)) navigationSections = previewLayout.layouts.site_navigation;
