@@ -43,6 +43,7 @@ export default function GrowthPage() {
   const canEdit = can('referrals.edit');
   const { data, loading, error, reload } = useApi(() => manager ? growthApi.dashboard() : growthApi.me(), [manager]);
   const [form, setForm] = useState(blank);
+  const [editing, setEditing] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState('');
@@ -97,6 +98,30 @@ export default function GrowthPage() {
     catch { setNotice('Clipboard not available in this browser.'); }
   };
 
+  const submitPartnerEdit = (event) => {
+    event.preventDefault();
+    if (!editing) return;
+    const payload = {
+      discountType: editing.discountType,
+      discountValue: Number(editing.discountValue || 0),
+      maxDiscount: editing.maxDiscount === '' ? null : Number(editing.maxDiscount),
+      minOrder: Number(editing.minOrder || 0),
+      commissionType: editing.commissionType,
+      commissionValue: Number(editing.commissionValue || 0),
+    };
+    setConfirm({
+      title: 'Confirm partner terms',
+      message: 'New discount and commission terms apply to future orders only. Existing order snapshots stay unchanged.',
+      confirmLabel: 'Save terms',
+      action: async (password) => {
+        await growthApi.updatePartner(editing.id, { ...payload, confirmPassword: password });
+        setEditing(null);
+        setNotice('Referral terms updated.');
+        await reload();
+      },
+    });
+  };
+
   if (loading && !data) return <div className="space-y-4"><div className="h-8 w-64 animate-pulse rounded bg-slate-100"/><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[0,1,2,3].map((n) => <div key={n} className="h-28 animate-pulse rounded-2xl bg-slate-100"/>)}</div></div>;
 
   const displayRows = manager ? rows : rows;
@@ -142,7 +167,10 @@ export default function GrowthPage() {
               <div className="mt-2 flex flex-wrap items-center gap-2"><code className="max-w-full break-all rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-600">{row.partner.referralUrl}</code><Button variant="secondary" size="sm" icon={Copy} onClick={()=>copy(row.partner.referralUrl)}>Copy link</Button></div>
               <p className="mt-2 text-[11px] text-slate-500">Discount: {row.partner.discountType} {row.partner.discountValue || 0} · Commission: {row.partner.commissionType} {row.partner.commissionValue || 0} · Uses: {number(row.partner.usedCount)}{row.partner.usageLimit ? ' / ' + number(row.partner.usageLimit) : ''}</p>
             </div>
-            {manager && canEdit && <Button size="sm" variant="secondary" icon={row.partner.isActive ? PauseCircle : PlayCircle} onClick={()=>togglePartner(row.partner)}>{row.partner.isActive ? 'Pause code' : 'Activate code'}</Button>}
+            {manager && canEdit && <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="secondary" onClick={()=>setEditing({ id: row.partner.id, discountType: row.partner.discountType, discountValue: String(row.partner.discountValue || 0), maxDiscount: row.partner.maxDiscount ? String(row.partner.maxDiscount) : '', minOrder: String(row.partner.minOrder || 0), commissionType: row.partner.commissionType, commissionValue: String(row.partner.commissionValue || 0) })}>Configure terms</Button>
+              <Button size="sm" variant="secondary" icon={row.partner.isActive ? PauseCircle : PlayCircle} onClick={()=>togglePartner(row.partner)}>{row.partner.isActive ? 'Pause code' : 'Activate code'}</Button>
+            </div>}
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Visits</p><p className="mt-1 text-lg font-semibold text-slate-900">{number(row.metrics.visits)}</p></div>
@@ -150,6 +178,18 @@ export default function GrowthPage() {
             <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Paid revenue</p><p className="mt-1 text-lg font-semibold text-slate-900">{money(row.metrics.paidRevenue)}</p></div>
             <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Est. commission</p><p className="mt-1 text-lg font-semibold text-slate-900">{money(row.metrics.estimatedCommission)}</p></div>
           </div>
+          {editing?.id === row.partner.id && <form onSubmit={submitPartnerEdit} className="mt-5 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+            <div className="mb-3 flex items-center justify-between gap-3"><div><h3 className="text-sm font-semibold text-slate-900">Configure {row.partner.name}</h3><p className="mt-1 text-[11px] text-slate-500">Set the customer reward and this person's sales commission.</p></div><button type="button" className="text-xs font-medium text-slate-500 underline" onClick={()=>setEditing(null)}>Close</button></div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <label className="block text-xs font-medium text-slate-600">Customer discount<select className={fieldClass} value={editing.discountType} onChange={(e)=>setEditing((v)=>({...v,discountType:e.target.value}))}><option value="none">Tracking only</option><option value="percentage">Percentage</option><option value="fixed">Fixed PKR</option><option value="free_shipping">Free delivery</option></select></label>
+              <TextField label="Discount value" type="number" min="0" max={editing.discountType === 'percentage' ? '100' : undefined} value={editing.discountValue} onChange={(e)=>setEditing((v)=>({...v,discountValue:e.target.value}))}/>
+              <TextField label="Maximum discount (PKR)" type="number" min="0" value={editing.maxDiscount} onChange={(e)=>setEditing((v)=>({...v,maxDiscount:e.target.value}))}/>
+              <TextField label="Minimum order (PKR)" type="number" min="0" value={editing.minOrder} onChange={(e)=>setEditing((v)=>({...v,minOrder:e.target.value}))}/>
+              <label className="block text-xs font-medium text-slate-600">Commission basis<select className={fieldClass} value={editing.commissionType} onChange={(e)=>setEditing((v)=>({...v,commissionType:e.target.value}))}><option value="percentage">Percentage of net sales</option><option value="fixed">Fixed per paid order</option></select></label>
+              <TextField label="Commission value" type="number" min="0" max={editing.commissionType === 'percentage' ? '100' : undefined} value={editing.commissionValue} onChange={(e)=>setEditing((v)=>({...v,commissionValue:e.target.value}))}/>
+            </div>
+            <div className="mt-4 flex justify-end"><Button type="submit">Save referral terms</Button></div>
+          </form>}
           <div className="mt-5"><div className="mb-2 flex items-center justify-between gap-3"><h3 className="text-sm font-semibold text-slate-800">Monthly paid sales graph</h3><span className="text-[10px] text-slate-500">Last 12 months · PKR</span></div><PartnerGraph row={row}/></div>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-100 p-3"><p className="text-xs font-semibold text-slate-700">Booked revenue</p><p className="mt-1 text-lg font-semibold text-slate-900">{money(row.metrics.bookedRevenue)}</p></div>
