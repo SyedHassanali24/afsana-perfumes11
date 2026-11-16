@@ -1,0 +1,96 @@
+name: Export AFSANA source backup
+
+on:
+  push:
+    branches:
+      - backup/afsana-source-2026-11-16
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact Hassan production source
+        uses: actions/checkout@v4
+        with:
+          ref: 485cbe7ec07cfe40accb93d8aa08c0a518718bb7
+          fetch-depth: 0
+
+      - name: Package source and Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf package
+          mkdir -p package/source
+          git archive --format=tar 485cbe7ec07cfe40accb93d8aa08c0a518718bb7 | tar -xf - -C package/source
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          git bundle create package/source/afsana-main-history.bundle refs/remotes/origin/main
+          git bundle verify package/source/afsana-main-history.bundle
+
+          cat > package/source/RESTORE-MANIFEST.md <<'EOF'
+          # AFSANA Perfumes — Exact Source Snapshot
+
+          ## Identity
+          - Repository: https://github.com/SyedHassanali24/afsana-perfumes11
+          - Branch: main
+          - Exact source commit: 485cbe7ec07cfe40accb93d8aa08c0a518718bb7
+          - Snapshot date: 2026-11-16
+          - Production domain: https://afsanaperfumes.store
+          - Worker: afsana-perfumes11
+
+          ## Production deployment matched to this source
+          - GitHub Actions deployment run: 43813901527 (success)
+          - Cloudflare account ID: eb104cb2498331e8ace489bbf746dc15
+          - Cloudflare deployment ID: 67e812bc-c6d0-482b-8750-0037b01a13a2
+          - Worker version number: 431
+          - Worker version ID: 2534758b-7032-4dfe-9549-eae6447a6e6f
+          - Traffic assignment: 100%
+          - Deployment time (UTC): 2026-11-16 06:01:28
+
+          ## Key Cloudflare bindings (names and resource IDs only)
+          - KV: AFSANA_MEDIA_FREE — c0168837510e4188bc655a7b4f25c0a4
+          - Assets binding: ASSETS
+          - Durable Object: MONGODB_CONNECTION — namespace 4f96f5f149f5403eadf014369491980f; class MongoDBConnection
+          - SITE_URL: https://afsanaperfumes.store
+          - ALLOWED_ORIGINS: https://afsanaperfumes.store, https://www.afsanaperfumes.store, https://afsana-perfumes11.eastwala12.workers.dev
+          - EMAILJS_SERVICE_ID: service_jx5mizj
+          - EMAILJS_TEMPLATE_ID: template_36spa09
+          - RATE_LIMIT_FAIL_OPEN: true
+          - TURNSTILE_SITE_KEY: 0x4AAAAAAF06iSkhZh8g9mEb
+
+          ## Secret binding names (secret values intentionally NOT included)
+          EMAILJS_PRIVATE_KEY, EMAILJS_PUBLIC_KEY, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET,
+          GMAIL_REFRESH_TOKEN, JWT_SECRET, META_APP_SECRET, MONGODB_DB_NAME, MONGODB_URI,
+          OWNER_EMAIL, TURNSTILE_SECRET_KEY, WHATSAPP_ACCESS_TOKEN,
+          WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN.
+
+          ## Restore
+          1. Extract this ZIP.
+          2. Use the exact source commit above (or clone the bundled Git history bundle).
+          3. Install Node.js 22 and run npm install --include=dev.
+          4. Run npm run check, npm test, and npm run build.
+          5. Configure the Cloudflare Worker using the bindings above and securely re-enter the secret values from the owner's Cloudflare account.
+          6. Reconnect the existing MongoDB database and KV namespace. Do not create empty replacements if the existing resources are still available.
+          7. Deploy only through the approved GitHub workflow with DEPLOY-HASSAN-APPROVED.
+
+          ## Important: what a source ZIP cannot contain
+          The live MongoDB records (products, orders, CMS, analytics, customer/admin records), KV-stored uploads, Cloudflare secrets, DNS/domain settings, and provider account state remain in their respective services. They are not embedded in this ZIP. This archive preserves the project source and Git history; it is not a full database/media export or an automatic Cloudflare account clone.
+          EOF
+
+          cd package
+          zip -qr AFSANA-HASSAN-SOURCE-2026-11-16.zip source
+          sha256sum AFSANA-HASSAN-SOURCE-2026-11-16.zip > AFSANA-HASSAN-SOURCE-2026-11-16.zip.sha256
+          unzip -t AFSANA-HASSAN-SOURCE-2026-11-16.zip
+          ls -lh AFSANA-HASSAN-SOURCE-2026-11-16.zip AFSANA-HASSAN-SOURCE-2026-11-16.zip.sha256
+
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AFSANA-HASSAN-SOURCE-2026-11-16
+          path: |
+            package/AFSANA-HASSAN-SOURCE-2026-11-16.zip
+            package/AFSANA-HASSAN-SOURCE-2026-11-16.zip.sha256
+          if-no-files-found: error
+          retention-days: 90
