@@ -44,6 +44,7 @@ async function sendEmailJsOtp({ to, subject, purpose, otp }, { config, fetchImpl
         purpose: String(purpose || 'security verification'),
         otp: code,
         expiry_minutes: expiryMinutes,
+        expiry: expiryMinutes,
         app_name: 'AFSANA Perfumes',
       },
     }),
