@@ -1,4 +1,5 @@
 import Dashboard from "./Dashboard";
+import TrafficAnalytics from "./TrafficAnalytics";
 import Card from "../components/Card";
 import useApi from "../../src/hooks/useApi";
 import { analyticsApi } from "../../src/services";
@@ -63,6 +64,7 @@ export default function AnalyticsPage() {
         <p className="mt-1 text-sm text-[#76677b]">Audience acquisition and store performance.</p>
       </div>
       <TrafficSources />
+      <TrafficAnalytics />
       <Dashboard />
     </div>
   );
