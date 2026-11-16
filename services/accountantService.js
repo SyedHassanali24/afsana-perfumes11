@@ -77,10 +77,12 @@ async function report(query, scopes, denied, now = new Date()) {
     orderIds.length ? Refund.find({ storeId: 'main', orderId: { $in: orderIds } }).select('_id orderId orderNumber amount method createdAt').lean() : [],
     orderIds.length && !hideProfit ? OrderItem.find({ orderId: { $in: orderIds } }).select('orderId costPrice quantity').lean() : [],
     Expense.find({ storeId: 'main', date: { $gte: range.from, $lt: range.to } }).select('_id category amount date description').lean(),
-    orderIds.length ? Payment.find({ storeId: 'main', orderId: { $in: orderIds }, status: 'Paid' }).select('orderId orderNumber method amount status receivedAt createdAt updatedAt').lean() : [],
+    orderIds.length ? Payment.find({ orderId: { $in: orderIds }, status: { $in: ['Paid', 'Partially Refunded'] } }).select('orderId orderNumber method amount status receivedAt createdAt updatedAt').lean() : [],
   ]);
+  const orderNumberById = new Map(orders.map((order) => [String(order._id), order.orderNumber]));
+  const journalPayments = payments.map((payment) => ({ ...payment, orderNumber: orderNumberById.get(String(payment.orderId)) || String(payment.orderId) }));
   const paidByOrder = new Map();
-  for (const payment of payments) paidByOrder.set(String(payment.orderId), (paidByOrder.get(String(payment.orderId)) || 0) + (Number(payment.amount) || 0));
+  for (const payment of journalPayments) paidByOrder.set(String(payment.orderId), (paidByOrder.get(String(payment.orderId)) || 0) + (Number(payment.amount) || 0));
   const preparedOrders = orders.map((order) => ({ ...order, paidAmount: Math.min(Number(order.total) || 0, paidByOrder.get(String(order._id)) || 0) }));
   const itemsByOrder = new Map();
   for (const item of items) {
@@ -89,7 +91,7 @@ async function report(query, scopes, denied, now = new Date()) {
     list.push(item);
     itemsByOrder.set(key, list);
   }
-  const journal = R.buildJournal({ orders, itemsByOrder, payments, refunds, expenses, hideProfit });
+  const journal = R.buildJournal({ orders, itemsByOrder, payments: journalPayments, refunds, expenses, hideProfit });
   const journalTotals = R.totals(journal);
   const trial = R.trialBalance(journal);
   const statement = summarize({ orders: preparedOrders, refunds, items, expenses, hideProfit });
