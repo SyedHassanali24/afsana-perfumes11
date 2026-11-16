@@ -12,7 +12,7 @@ import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 import ImageUploadButton from '../components/ImageUploadButton';
 
 const defaults = (type) => ({
-  eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '',
+  eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '', templateSlot: 'home',
   buttonText: '', buttonLink: '', limit: 4, query: '', height: 'auto',
   width: 100, columns: 4, gap: 16, align: 'left', paddingTop: 80, paddingBottom: 80,
   autoplay: true, muted: true, controls: false, overlay: true, background: '',
@@ -95,7 +95,7 @@ export default function HomepageBuilder() {
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build the storefront like a canvas</h2><p className="text-sm text-[#5f654f] mt-1">Drag sections, set alignment, width, height, columns and spacing. Add up to 4 videos or posts in one row, then preview and publish.</p></div>
+        <div><p className="text-xs uppercase tracking-[.18em] text-[#263e0e] font-semibold">Visual homepage builder</p><h2 className="font-display text-2xl mt-1">Build the storefront like a canvas</h2><p className="text-sm text-[#5f654f] mt-1">Drag sections, set alignment, width, height, columns and spacing. Choose which page each section appears on, including a CMS-editable banner above the Collection page.</p></div>
         <div className="flex gap-2">{can('homepage.edit') && <Button variant="secondary" onClick={preview}>Preview</Button>}{can('homepage.create') && <Button icon={Plus} onClick={() => open(null)}>Add section</Button>}</div>
       </div>
     </div>
@@ -126,6 +126,20 @@ export default function HomepageBuilder() {
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
         <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{HOMEPAGE_SECTION_TYPES.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
+        <Field label="Display on page" hint="Choose Collection page — top banner to place an editable campaign banner above the collection heading and category filters.">
+          <Select value={form.config.templateSlot || 'home'} onChange={(e) => setConfig('templateSlot', e.target.value)}>
+            <option value="home">Home page</option>
+            <option value="collection-before">Collection page — top banner</option>
+            <option value="collection-after">Collection page — below products</option>
+            <option value="house">The House page</option>
+            <option value="journal">Journal page</option>
+            <option value="gifting">Gifting page</option>
+            <option value="discover">Scent finder page</option>
+            <option value="site-header-after">Below the main navigation</option>
+            <option value="site-footer-before">Above the footer</option>
+            <option value="site-footer">Footer</option>
+          </Select>
+        </Field>
 
         <div className="rounded-2xl border border-[#263e0e]/10 bg-[#f3f1e9] p-4 space-y-3">
           <div className="flex items-center gap-2 text-sm font-semibold"><LayoutGrid className="w-4 h-4 text-[#748e40]" /> Layout controls</div>
