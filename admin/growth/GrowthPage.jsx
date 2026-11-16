@@ -45,7 +45,6 @@ export default function GrowthPage() {
   const [form, setForm] = useState(blank);
   const [editing, setEditing] = useState(null);
   const [confirm, setConfirm] = useState(null);
-  const [editing, setEditing] = useState(null);
   const [notice, setNotice] = useState('');
   const rows = data?.partners || [];
   const totals = data?.totals || {};
