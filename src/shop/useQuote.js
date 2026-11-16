@@ -6,6 +6,7 @@ import { cartApi } from '../services';
 // `city` (optional, from the checkout form) makes the delivery fee follow the city's zone; without it the shop's default fee is shown.
 export default function useQuote(items, couponCode, city) {
   const cityKey = (city || '').trim();
-  const key = useDebounce(JSON.stringify([items, couponCode || '', cityKey]), 250);
-  return useApi(() => (items.length ? cartApi.quote({ items, couponCode: couponCode || undefined, city: cityKey || undefined }) : Promise.resolve(null)), [key]);
+  const referralCode = getReferralCode();
+  const key = useDebounce(JSON.stringify([items, couponCode || '', cityKey, referralCode]), 250);
+  return useApi(() => (items.length ? cartApi.quote({ items, couponCode: couponCode || undefined, referralCode: referralCode || undefined, city: cityKey || undefined }) : Promise.resolve(null)), [key]);
 }
