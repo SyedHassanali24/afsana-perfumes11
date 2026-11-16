@@ -110,7 +110,14 @@ async function buildDashboard({ partnerId, now = new Date() } = {}) {
     Order.aggregate([
       { $match: match },
       { $lookup: { from: 'refunds', localField: '_id', foreignField: 'orderId', as: 'refundRows' } },
-      { $addFields: { refunded: { $ifNull: [{ $sum: '$refundRows.amount' }, 0] }, month: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: 'Asia/Karachi' } } } },
+      { $addFields: {
+        refunded: { $ifNull: [{ $sum: '$refundRows.amount' }, 0] },
+        commissionBase: { $multiply: [
+          { $max: [0, { $subtract: ['$subtotal', '$discount'] }] },
+          { $divide: [ { $max: [0, { $subtract: ['$total', { $min: ['$refunded', '$total'] }] }] }, { $max: [1, '$total'] } ] },
+        ] },
+        month: { $dateToString: { format: '%Y-%m', date: '$createdAt', timezone: 'Asia/Karachi' } },
+      } },
       { $group: {
         _id: { partnerId: '$referral.partnerId', month: '$month' },
         orders: { $sum: 1 },
@@ -122,8 +129,8 @@ async function buildDashboard({ partnerId, now = new Date() } = {}) {
         commissionEstimate: { $sum: { $cond: [{ $in: ['$paymentStatus', ['Paid', 'Partially Refunded']] }, {
           $cond: [
             { $eq: ['$referral.commissionType', 'fixed'] },
-            { $min: [{ $max: [0, { $subtract: [{ $subtract: ['$subtotal', '$discount'] }, '$refunded'] }] }, { $ifNull: ['$referral.commissionValue', 0] }] },
-            { $floor: { $multiply: [{ $max: [0, { $subtract: [{ $subtract: ['$subtotal', '$discount'] }, '$refunded'] }] }, { $divide: [{ $min: [100, { $ifNull: ['$referral.commissionValue', 0] }] }, 100] }] } },
+            { $min: ['$commissionBase', { $ifNull: ['$referral.commissionValue', 0] }] },
+            { $floor: { $multiply: ['$commissionBase', { $divide: [{ $min: [100, { $ifNull: ['$referral.commissionValue', 0] }] }, 100] }] } },
           ],
         }, 0] } },
       } },
@@ -152,11 +159,13 @@ async function buildDashboard({ partnerId, now = new Date() } = {}) {
     const list = detailMap.get(key);
     if (list && list.length < 100) {
       const paid = isPaid(row.paymentStatus);
-      const base = Math.max(0, Number(row.subtotal || 0) - Number(row.discount || 0) - Number(row.refunded || 0));
+      const merchandiseAfterDiscount = Math.max(0, Number(row.subtotal || 0) - Number(row.discount || 0));
+      const retainedRatio = Number(row.total) > 0 ? Math.max(0, Number(row.total) - Math.min(Number(row.refunded || 0), Number(row.total))) / Number(row.total) : 0;
+      const base = Math.floor(merchandiseAfterDiscount * retainedRatio);
       const rate = Math.max(0, Number(row.referral?.commissionValue) || 0);
       const estimated = paid ? (row.referral?.commissionType === 'fixed' ? Math.min(base, rate) : Math.floor(base * Math.min(100, rate) / 100)) : 0;
       list.push({
-        orderNumber: row.orderNumber, promoCode: row.couponCode || row.referral?.code || '',
+        orderNumber: row.orderNumber, promoCode: row.couponCode && row.referral?.code && row.couponCode !== row.referral.code ? row.couponCode + ' + ' + row.referral.code : (row.couponCode || row.referral?.code || ''),
         codeAppliedAt: row.referral?.appliedAt || row.createdAt,
         discount: Number(row.discount) || 0, revenue: Math.max(0, Number(row.total || 0) - Number(row.refunded || 0)),
         grossRevenue: Number(row.total) || 0, refunded: Number(row.refunded) || 0,
@@ -190,7 +199,7 @@ async function buildDashboard({ partnerId, now = new Date() } = {}) {
   }, emptyTotals());
   return {
     range: { from: D.pktDateKey(from), to: D.pktDateKey(now) },
-    months, totals, partners: rows,
+    months, totals, partners: rows, attributionRetentionDays: 180,
     couponApplications: rows.flatMap((r) => r.metrics.couponApplications.map((x) => ({ ...x, partnerName: r.partner.name, partnerCode: r.partner.code }))).sort((a,b) => new Date(b.codeAppliedAt) - new Date(a.codeAppliedAt)).slice(0, 300),
   };
 }
