@@ -3,7 +3,10 @@
 const { AffiliatePartner } = require('../database/models');
 const { slugCode } = require('./affiliateRules');
 
+let indexesReady;
 async function ensureStaffPartner(staff) {
+  if (!indexesReady) indexesReady = AffiliatePartner.createIndexes().catch((error) => { indexesReady = null; throw error; });
+  await indexesReady;
   const existing = await AffiliatePartner.findOne({ userId: staff.userId, type: 'staff', isDeleted: false });
   if (existing) return existing;
   const base = slugCode(staff.name, 'STAFF');
