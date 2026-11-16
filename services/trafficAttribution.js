@@ -13,6 +13,8 @@ function classifyTrafficSource(utmSource, referrerHost) {
   if (/instagram/.test(value)) return 'Instagram';
   if (/facebook|fb\.com/.test(value)) return 'Facebook';
   if (/whatsapp|wa\.me/.test(value)) return 'WhatsApp';
+  if (/mail|email|newsletter|gmail/.test(value)) return 'Email';
+  if (/snapchat|pinterest|pin\.it|threads|linkedin|twitter|x\.com/.test(value)) return 'Other Social';
   if (/google|bing|yahoo|duckduckgo|search/.test(value)) return 'Search';
   if (source) return source.split(/[\s_-]+/).filter(Boolean).map((part) => part[0].toUpperCase() + part.slice(1)).join(' ').slice(0, 60);
   return host ? 'Referral' : 'Direct';
