@@ -76,7 +76,24 @@ async function remove(ctx, r, id, scopes) {
 
 module.exports = { list, create, update, setActive, remove };
 
-// What the shop may show right now: live banners, live FAQs, the newest live announcement. No ids of staff, no drafts.
+// Route enabled CMS sections to the page they were created for.
+// Older manually-created sections without a templateSlot remain on Home.
+function sectionPageKey(section) {
+  const type = String(section.type || '');
+  const slot = String(section.config?.templateSlot || '').trim().toLowerCase();
+  if (slot === 'site-navigation' || type === 'nav_menu') return 'site_navigation';
+  if (slot === 'site-footer' || type === 'custom_footer' || type === 'footer_showcase') return 'site_footer';
+  if (slot.startsWith('site-footer-before-') || ['whatsapp_float', 'ai_concierge'].includes(type)) return 'site_footer_before';
+  if (slot.startsWith('site-header-after-') || slot === 'site-header-after') return 'site_header_after';
+  if (slot === 'collection-before' || slot.startsWith('collection-before-')) return 'collection_before';
+  if (slot === 'collection-after' || slot.startsWith('collection-after-')) return 'collection_after';
+  const prefix = slot.split('-')[0];
+  if (['home', 'house', 'journal', 'gifting', 'discover'].includes(prefix)) return prefix;
+  return 'home';
+}
+
+// Keep each CMS page isolated. Flattening every page into Home caused the
+// House, Journal, Gifting, Discover, navigation and footer sections to repeat.
 async function publicContent() {
   const now = new Date();
   const live = (r, rows) => rows.filter((d) => R.cmsStatus(r, d, now) === 'Live');
@@ -89,11 +106,16 @@ async function publicContent() {
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
   const ann = live('announcements', a)[0];
-  // Keep the public CMS contract aligned with the storefront's managed-page reader.
-  // These are the same enabled homepage records; no CMS records are changed or removed.
-  const homepageSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0, isEnabled: true }));
-  const pageSections = homepageSections.length ? { home: homepageSections } : {};
-  const managedPageKeys = homepageSections.length ? ['home'] : [];
+  const allSections = h.map((d) => ({ id: d._id, type: d.type, title: d.title || '', config: d.config || {}, sortOrder: d.sortOrder || 0, isEnabled: true }));
+  const pageSections = {};
+  for (const section of allSections) {
+    const pageKey = sectionPageKey(section);
+    if (!pageSections[pageKey]) pageSections[pageKey] = [];
+    pageSections[pageKey].push(section);
+  }
+  const homepageSections = pageSections.home || [];
+  const managedPageKeys = Object.keys(pageSections).filter((key) => pageSections[key].length > 0);
   return { banners, faqs, announcement: ann ? { text: ann.text, link: ann.link || null } : null, homepageSections, pageSections, managedPageKeys };
 }
 module.exports.publicContent = publicContent;
+module.exports.sectionPageKey = sectionPageKey;
