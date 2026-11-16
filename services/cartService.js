@@ -1,14 +1,15 @@
-const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon } = require('../database/models');
+const { Cart, Wishlist, Product, ProductVariant, Inventory, Coupon, AffiliatePartner } = require('../database/models');
 const { ApiError, E } = require('../middleware/errors');
 const { effectivePrice, validateCoupon, calcDiscount } = require('./pricing');
 const { mergeItems, lineStatus, summarize } = require('./cartRules');
 const { loadContext, deliveryFor } = require('./shippingQuote');
+const { validatePartner, discountFor, normalizeCode } = require('./affiliateRules');
 
 const mainImage = (p) => ((p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || {}).url;
 const card = (p) => ({ id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount, image: (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null });
 
 // ---------- quote: prices a list of { variantId, quantity } from the DB. Never trusts client prices. Never throws for stale items. ----------
-async function quote({ items, couponCode, city }, cust) {
+async function quote({ items, couponCode, referralCode, city }, cust) {
   const merged = mergeItems(items);
   const ids = merged.map((i) => i.variantId);
   const variants = ids.length ? await ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean() : [];
@@ -33,26 +34,45 @@ async function quote({ items, couponCode, city }, cust) {
   const priced = lines.filter((l) => l.status === 'ok' || l.status === 'limited');
   const subtotal = priced.reduce((s, l) => s + l.lineTotal, 0);
   const delivery = await deliveryFor(city, subtotal, ship); // city fee (zone) or the Settings fee when the city has no zone
-  let discount = 0; let shippingDiscount = 0; let coupon = null;
-  if (couponCode && priced.length) {
-    const code = couponCode.toUpperCase();
-    try {
-      const c = await Coupon.findOne({ code, isDeleted: false });
-      const cid = cust && cust.customer._id;
-      validateCoupon(c, {
-        subtotal, customerId: cid,
-        customerUses: c && cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
-        isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
-      });
-      ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
-      coupon = { code: c.code, valid: true };
-    } catch (e) {
-      if (!(e instanceof ApiError)) throw e;
-      coupon = { code, valid: false, message: e.message }; // shown next to the coupon box, does not break the cart
+  let discount = 0; let shippingDiscount = 0; let coupon = null; let appliedReferral = null;
+  if (priced.length) {
+    const manualCode = normalizeCode(couponCode);
+    const linkCode = normalizeCode(referralCode);
+    let regularCoupon = null;
+    if (manualCode) regularCoupon = await Coupon.findOne({ code: manualCode, isDeleted: false });
+    const partnerCode = regularCoupon ? linkCode : (manualCode || linkCode);
+    const partner = partnerCode ? await AffiliatePartner.findOne({ code: partnerCode, storeId: 'main', isDeleted: false, isActive: true }) : null;
+    if (partner) {
+      const problem = validatePartner(partner, { subtotal, customerId: cust?.customer?._id });
+      if (problem) {
+        coupon = { code: partner.code, valid: false, message: problem };
+      } else {
+        // A standard coupon entered at checkout wins; referral attribution is retained, but discounts never stack.
+        if (!regularCoupon) ({ discount, shippingDiscount } = discountFor(partner, subtotal, delivery.fee));
+        coupon = { code: regularCoupon?.code || partner.code, valid: true, kind: regularCoupon ? 'coupon' : 'referral' };
+        appliedReferral = { code: partner.code, name: partner.name, discountApplied: discount + shippingDiscount, source: regularCoupon ? 'referral_link' : (manualCode ? 'promo_code' : 'referral_link') };
+      }
+    } else if (regularCoupon || manualCode) {
+      try {
+        const c = regularCoupon;
+        const cid = cust && cust.customer._id;
+        validateCoupon(c, {
+          subtotal, customerId: cid,
+          customerUses: c && cid ? (c.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
+          isFirstOrder: !cust || ((cust.customer.stats && cust.customer.stats.ordersCount) || 0) === 0,
+        });
+        ({ discount, shippingDiscount } = calcDiscount(c, priced, delivery.fee));
+        coupon = { code: c.code, valid: true, kind: 'coupon' };
+      } catch (e) {
+        if (!(e instanceof ApiError)) throw e;
+        coupon = { code: manualCode, valid: false, message: e.message };
+      }
+    } else if (linkCode) {
+      coupon = { code: linkCode, valid: false, message: 'This referral link is not active.' };
     }
   }
   return {
-    lines: lines.map(({ categoryId, ...l }) => l), coupon,
+    lines: lines.map(({ categoryId, ...l }) => l), coupon, referral: appliedReferral,
     ...summarize(lines, ship.cfg, { discount, shippingDiscount, delivery }),
     delivery: { city: city || '', zone: delivery.zone, method: delivery.method, estDays: delivery.estDays, source: delivery.source },
   };
