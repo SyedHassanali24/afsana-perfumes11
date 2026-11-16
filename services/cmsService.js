@@ -101,7 +101,7 @@ async function publicContent() {
     Banner.find({ isDeleted: false, isActive: true }).sort(SORT.banners).limit(20).lean(),
     Faq.find({ isActive: true }).sort(SORT.faqs).limit(100).lean(),
     Announcement.find({ isActive: true }).sort(SORT.announcements).limit(10).lean(),
-    HomepageSection.find({ isEnabled: true }).sort(SORT.homepage).limit(100).lean(),
+    HomepageSection.find({ isEnabled: { $ne: false } }).sort(SORT.homepage).limit(100).lean(),
   ]);
   const banners = live('banners', b).map((d) => { const x = R.fromDoc('banners', d); return { id: d._id, heading: x.heading, subtitle: x.subtitle, buttonText: x.buttonText, buttonLink: x.buttonLink, desktopImage: x.desktopImageUrl ? { url: x.desktopImageUrl, alt: x.desktopImageAlt } : null, mobileImage: x.mobileImageUrl ? { url: x.mobileImageUrl, alt: x.mobileImageAlt } : null }; });
   const faqs = live('faqs', f).map((d) => ({ id: d._id, question: d.question, answer: d.answer }));
