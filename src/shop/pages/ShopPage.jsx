@@ -29,9 +29,28 @@ export default function ShopPage() {
   const { data, loading, error, reload } = useApi(() => productsApi.list({ ...query, limit: 12 }), [sp.toString()]);
   const list = data?.products || [];
   const collectionVisual = referenceAssets.collectionHeroImageUrl || list.find((product)=>product.image?.url)?.image?.url || '';
+  const collectionBeforeSections = cmsContent?.pageSections?.collection_before || [];
+  const hasCmsCollectionBanner = collectionBeforeSections.some((section)=>['hero','image_banner','video_banner'].includes(section.type));
 
   return (
     <div className="shop-page afsana-shop-page">
+      {!hasCmsCollectionBanner && <section className="afsana-collection-campaign-banner">
+        <div className="container-xl afsana-collection-campaign-inner">
+          <div className="afsana-collection-campaign-copy">
+            <p>THE AFSANA EDIT <span/> SCENT, SELECTED</p>
+            <h2>Make the first<br/><em>impression linger.</em></h2>
+            <span className="afsana-collection-campaign-description">Explore the collection. Find a fragrance that feels unmistakably yours.</span>
+            <Link to="/discover" className="afsana-collection-campaign-cta">Find your signature scent <span>↗</span></Link>
+          </div>
+          <div className="afsana-collection-campaign-art" aria-hidden="true">
+            {collectionVisual
+              ? <img src={collectionVisual} alt="" loading="lazy" onError={(event)=>{event.currentTarget.style.display='none';}}/>
+              : <div className="afsana-collection-campaign-bottle"><span>AFSANA</span><small>EAU DE PARFUM</small></div>}
+            <span className="afsana-collection-campaign-orbit"/>
+            <span className="afsana-collection-campaign-index">OBJECT / 001</span>
+          </div>
+        </div>
+      </section>}
       <section className="afsana-shop-intro">
         <div className="afsana-shop-intro-glow" aria-hidden="true"/>
         <div className="container-xl afsana-shop-intro-inner">
