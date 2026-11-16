@@ -411,52 +411,19 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
       image: x.image || [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || '',
       link: x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || ''
     }));
-    return <section className="afsana-ref-films afsana-film-experience">
-      <style>{`
-        /* AFSANA — cinematic fragrance film gallery. All rules remain scoped to this section. */
-        .afsana-film-experience{position:relative;isolation:isolate;overflow:hidden;padding:clamp(68px,7.5vw,112px) 0 clamp(72px,8vw,120px);background:#080611;color:#fbf8ff}
-        .afsana-film-experience:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 8%,rgba(142,83,255,.26),transparent 34%),radial-gradient(ellipse at 88% 64%,rgba(103,53,180,.24),transparent 38%),radial-gradient(ellipse at 50% 110%,rgba(193,148,85,.11),transparent 42%),repeating-linear-gradient(115deg,rgba(255,255,255,.018) 0 1px,transparent 1px 110px);animation:afsanaFilmAura 18s ease-in-out infinite alternate}
-        .afsana-film-experience:after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(224,190,137,.8),rgba(196,157,255,.65),transparent)}
-        .afsana-film-experience>.container-xl{position:relative;z-index:1;width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important}
-        .afsana-film-heading{display:flex;align-items:end;justify-content:space-between;gap:44px;width:calc(100% - clamp(32px,7vw,140px));max-width:1760px;margin:0 auto clamp(34px,4.2vw,58px);padding:0}
-        .afsana-film-kicker{display:flex;align-items:center;gap:14px;color:#d8bbff;font-size:10px;font-weight:700;letter-spacing:.38em;text-transform:uppercase}
-        .afsana-film-kicker:before{content:"";width:42px;height:1px;background:linear-gradient(90deg,#d7b8ff,#e7c895)}
-        .afsana-film-heading h2{margin:22px 0 0;font-family:var(--font-display,Georgia,serif);font-size:clamp(58px,8.4vw,136px);font-weight:400;line-height:.82;letter-spacing:-.068em;color:#fff}
-        .afsana-film-heading h2 em{color:#e2c497;font-weight:400;font-style:italic;text-shadow:0 0 35px rgba(216,174,118,.16)}
-        .afsana-film-intro{max-width:370px;margin:0 0 8px;color:rgba(244,237,255,.68);font-size:13px;line-height:2;letter-spacing:.035em}
-        .afsana-ref-film-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(5px,.55vw,10px);width:calc(100% - clamp(20px,3.5vw,68px));max-width:1900px;margin:0 auto}
-        .afsana-ref-film-card{position:relative;isolation:isolate;overflow:hidden;min-width:0;height:clamp(570px,56vw,790px);min-height:570px;aspect-ratio:auto;border:1px solid rgba(213,183,255,.3);border-radius:8px;background:#151020;box-shadow:0 24px 70px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.025);transform:translateY(0);transition:transform .8s cubic-bezier(.2,.78,.2,1),border-color .5s,box-shadow .7s;animation:afsanaFilmReveal .9s both}
-        .afsana-ref-film-card:nth-child(2){animation-delay:.09s}
-        .afsana-ref-film-card:nth-child(3){animation-delay:.18s}
-        .afsana-ref-film-card:nth-child(4){animation-delay:.27s}
-        .afsana-ref-film-card:before{content:"";position:absolute;inset:12px;z-index:4;border:1px solid rgba(255,255,255,.2);border-radius:3px;pointer-events:none;transition:inset .7s,border-color .6s,opacity .6s}
-        .afsana-ref-film-card:after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(8,5,18,.26) 0%,transparent 22%,transparent 48%,rgba(7,4,17,.28) 65%,rgba(7,4,17,.92) 100%),linear-gradient(125deg,rgba(169,118,255,.16),transparent 44%),linear-gradient(0deg,rgba(8,5,18,.18),transparent 35%)}
-        .afsana-ref-film-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.12) contrast(1.08) brightness(.94);transform:scale(1.035);transition:transform 1.35s cubic-bezier(.2,.7,.2,1),filter 1s}
-        .afsana-ref-film-card:hover{transform:translateY(-10px);border-color:rgba(229,198,151,.9);box-shadow:0 34px 90px rgba(0,0,0,.64),0 0 42px rgba(157,101,255,.18)}
-        .afsana-ref-film-card:hover:before{inset:18px;border-color:rgba(246,222,183,.58)}
-        .afsana-ref-film-card:hover video{transform:scale(1.105);filter:saturate(1.22) contrast(1.1) brightness(1.02)}
-        .afsana-ref-film-card>div:last-child{position:absolute;left:clamp(18px,2vw,30px);right:clamp(16px,1.8vw,26px);bottom:clamp(24px,3vw,42px);z-index:5}
-        .afsana-ref-film-card small{display:flex;align-items:center;gap:9px;margin-bottom:13px;color:#e9c995;font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
-        .afsana-ref-film-card small:before{content:"";width:20px;height:1px;background:#e9c995}
-        .afsana-ref-film-card h3{max-width:95%;margin:0;font-family:var(--font-display,Georgia,serif);font-size:clamp(22px,2.35vw,38px);font-weight:400;line-height:1.02;letter-spacing:-.025em;color:#fff;text-shadow:0 5px 24px rgba(0,0,0,.42)}
-        .afsana-ref-film-play{position:absolute;top:50%;left:50%;z-index:5;display:grid;width:68px;height:68px;place-items:center;border:1px solid rgba(246,226,195,.78);border-radius:50%;background:rgba(17,9,30,.3);color:#fff;font-size:15px;transform:translate(-50%,-50%);backdrop-filter:blur(14px);box-shadow:0 0 0 9px rgba(255,255,255,.045),0 12px 38px rgba(0,0,0,.26);transition:background .4s,transform .55s,border-color .4s,box-shadow .4s}
-        .afsana-ref-film-card:hover .afsana-ref-film-play{background:rgba(224,190,137,.94);border-color:#f5dfbd;color:#160f20;transform:translate(-50%,-50%) scale(1.13);box-shadow:0 0 0 13px rgba(224,190,137,.1),0 14px 42px rgba(0,0,0,.3)}
-        .afsana-film-mute{position:absolute;top:25px;right:25px;z-index:7;display:grid;width:43px;height:43px;place-items:center;border:1px solid rgba(255,255,255,.42);border-radius:50%;background:rgba(13,8,24,.62);color:white;backdrop-filter:blur(14px);box-shadow:0 8px 26px rgba(0,0,0,.25);transition:background .3s,transform .3s,border-color .3s}
-        .afsana-film-mute:hover{background:rgba(224,190,137,.96);border-color:#f5dfbd;color:#160f20;transform:scale(1.09)}
-        .afsana-ref-film-placeholder{display:grid;place-items:center;color:#e1caff;font-size:10px;letter-spacing:.2em}
-        @keyframes afsanaFilmAura{from{transform:scale(1);opacity:.72}to{transform:scale(1.08);opacity:1}}
-        @keyframes afsanaFilmReveal{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-        @media(max-width:1050px){.afsana-ref-film-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:calc(100% - 28px)}.afsana-ref-film-card{height:clamp(520px,76vw,680px);min-height:520px}.afsana-film-heading{width:calc(100% - 48px)}.afsana-film-intro{max-width:300px}}
-        @media(max-width:600px){.afsana-film-experience{padding:58px 0 66px}.afsana-film-heading{display:block;width:calc(100% - 32px);margin-bottom:28px}.afsana-film-kicker{font-size:8px;letter-spacing:.28em}.afsana-film-kicker:before{width:28px}.afsana-film-heading h2{margin-top:18px;font-size:clamp(52px,13vw,78px)}.afsana-film-intro{margin-top:19px;max-width:100%;font-size:12px}.afsana-ref-film-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:calc(100% - 16px)}.afsana-ref-film-card{height:clamp(390px,112vw,520px);min-height:390px;border-radius:6px}.afsana-ref-film-card:before{inset:7px}.afsana-ref-film-card>div:last-child{left:14px;right:12px;bottom:18px}.afsana-ref-film-card small{font-size:7px;letter-spacing:.14em;margin-bottom:9px;gap:6px}.afsana-ref-film-card small:before{width:12px}.afsana-ref-film-card h3{font-size:clamp(18px,5.2vw,25px)}.afsana-ref-film-play{width:48px;height:48px;font-size:12px}.afsana-film-mute{top:15px;right:15px;width:35px;height:35px}}
-        @media(max-width:360px){.afsana-ref-film-card{height:370px;min-height:370px}.afsana-film-heading h2{font-size:48px}}
-        @media(prefers-reduced-motion:reduce){.afsana-film-experience:before,.afsana-ref-film-card{animation:none}.afsana-ref-film-card,.afsana-ref-film-card video,.afsana-film-mute,.afsana-ref-film-play{transition:none}}
-      `}</style>
-      <div className="container-xl">
-        <div className="afsana-film-heading">
-          <div><p className="afsana-film-kicker">{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p><h2>Feel the <em>fragrance.</em></h2></div>
-          <p className="afsana-film-intro">{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p>
+    return <section className="relative isolate overflow-hidden bg-white py-16 text-[#241638] sm:py-20 lg:py-24">
+      <div aria-hidden="true" className="pointer-events-none absolute -left-32 top-[-5rem] h-96 w-96 rounded-full bg-purple-100/80 blur-3xl"/>
+      <div aria-hidden="true" className="pointer-events-none absolute right-[-8rem] top-[18%] h-[30rem] w-[30rem] rounded-full bg-pink-100/80 blur-3xl"/>
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-[-10rem] left-[38%] h-96 w-96 rounded-full bg-sky-100/80 blur-3xl"/>
+      <div className="container-xl relative mx-auto max-w-[1440px]">
+        <div className="mb-9 flex flex-col gap-5 px-1 sm:mb-12 lg:flex-row lg:items-end lg:justify-between lg:gap-12">
+          <div className="max-w-3xl">
+            <p className="flex items-center gap-3 text-[9px] font-bold uppercase tracking-[.32em] text-purple-700 sm:text-[10px]"><span className="h-px w-8 bg-gradient-to-r from-purple-500 to-pink-400"/>{c.eyebrow || 'THE AFSANA MOVING IMAGE'}</p>
+            <h2 className="mt-5 font-display text-[clamp(2.8rem,7vw,6.5rem)] font-medium leading-[.9] tracking-[-.055em] text-[#241638]">Feel the <em className="bg-gradient-to-r from-purple-700 via-pink-500 to-sky-500 bg-clip-text text-transparent">fragrance.</em></h2>
+          </div>
+          <p className="max-w-xl text-sm leading-7 text-slate-600 sm:text-base lg:mb-2">{c.subtitle || 'Stories that begin with a note, gather emotion and stay long after the moment has passed.'}</p>
         </div>
-        <div className="afsana-ref-film-grid">{videos.map((x,i)=><FilmCard key={i} film={x} index={i} autoplay={c.autoplay!==false}/>)}</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5">{videos.map((x,i)=><FilmCard key={i} film={x} index={i} autoplay={c.autoplay!==false}/>)}</div>
       </div>
     </section>;
   }
@@ -617,20 +584,36 @@ function FilmCard({ film, index, autoplay = true }) {
   const [muted, setMuted] = useState(true);
   const videoRef = useRef(null);
   const source = String(film.image || '').trim();
+  const labels = ['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'];
+  const accents = [
+    'from-purple-500/55 via-fuchsia-400/10 to-transparent',
+    'from-sky-400/55 via-blue-400/10 to-transparent',
+    'from-pink-400/55 via-rose-400/10 to-transparent',
+    'from-amber-300/55 via-yellow-300/10 to-transparent'
+  ];
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !source) return;
     video.muted = muted;
     if (autoplay) video.play().catch(() => {});
   }, [source, muted, autoplay]);
-  return <article className="afsana-ref-film-card">
-    {source ? <video ref={videoRef} key={source} src={source} poster={film.link || undefined} autoPlay={autoplay} muted={muted} loop playsInline preload="metadata" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}}/> : <div className="afsana-ref-film-placeholder">ADD A VIDEO IN CMS</div>}
-    {source && <button type="button" className="afsana-film-mute" aria-label={muted ? 'Unmute video' : 'Mute video'} title={muted ? 'Unmute video' : 'Mute video'} onClick={() => setMuted((value) => !value)}>{muted ? <VolumeX className="h-4 w-4"/> : <Volume2 className="h-4 w-4"/>}</button>}
-    <span className="afsana-ref-film-play">▶</span>
-    <div><small>{['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'][index] || 'AFSANA FILM'}</small><h3>{film.title}</h3></div>
+  return <article className="group relative isolate min-h-[390px] aspect-[.78] overflow-hidden rounded-[22px] border border-purple-100 bg-[#201632] shadow-[0_18px_48px_rgba(42,27,70,.13)] transition duration-700 hover:-translate-y-2 hover:border-pink-200 hover:shadow-[0_28px_64px_rgba(96,52,148,.22)] sm:min-h-[440px] xl:min-h-[500px]">
+    {source
+      ? <video ref={videoRef} key={source} src={source} poster={film.link || undefined} autoPlay={autoplay} muted={muted} loop playsInline preload="metadata" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
+      : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-purple-900 via-[#292044] to-sky-900 px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-white/70">Add a video in CMS</div>}
+    <div aria-hidden="true" className={'pointer-events-none absolute inset-0 bg-gradient-to-br '+(accents[index] || accents[0])}/>
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#160d2d]/95 via-[#211638]/16 to-[#1d1230]/10"/>
+    <div aria-hidden="true" className="pointer-events-none absolute inset-[10px] rounded-[15px] border border-white/25 transition duration-700 group-hover:inset-[15px] group-hover:border-white/45"/>
+    {source && <button type="button" className="absolute right-5 top-5 z-20 grid h-10 w-10 place-items-center rounded-full border border-white/45 bg-white/20 text-white shadow-lg backdrop-blur-xl transition hover:scale-110 hover:border-[#ffe66d] hover:bg-[#ffe66d] hover:text-[#241638] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300" aria-label={muted ? 'Unmute video' : 'Mute video'} title={muted ? 'Unmute video' : 'Mute video'} onClick={() => setMuted((value) => !value)}>{muted ? <VolumeX className="h-4 w-4"/> : <Volume2 className="h-4 w-4"/>}</button>}
+    <span aria-hidden="true" className="absolute left-1/2 top-1/2 z-10 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/70 bg-white/20 pl-1 text-lg text-white shadow-[0_0_0_8px_rgba(255,255,255,.08),0_12px_30px_rgba(0,0,0,.2)] backdrop-blur-xl transition duration-500 group-hover:scale-110 group-hover:border-[#ffe66d] group-hover:bg-[#ffe66d] group-hover:text-[#241638] sm:h-16 sm:w-16">▶</span>
+    <div className="absolute bottom-0 left-0 right-0 z-10 p-5 sm:p-6">
+      <small className="mb-3 flex items-center gap-2 text-[7px] font-bold uppercase tracking-[.2em] text-[#ffe66d] sm:text-[8px]"><span className="h-px w-5 bg-[#ffe66d]"/>{labels[index] || 'AFSANA FILM'}</small>
+      <h3 className="font-display text-2xl font-medium leading-tight text-white drop-shadow-lg sm:text-3xl">{film.title}</h3>
+      <div className="mt-4 h-px w-full bg-gradient-to-r from-white/60 via-white/20 to-transparent"/>
+      <p className="mt-3 text-[8px] font-semibold uppercase tracking-[.2em] text-white/65">A moving story from the house <span className="float-right text-[#ffe66d]">0{index+1}</span></p>
+    </div>
   </article>;
 }
-
 function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
   const shopSettings = useShopSettings();
