@@ -933,3 +933,18 @@
     min-height:46px!important;
   }
 }
+
+
+/* Homepage fragrance image cards: force all editorial overlay copy to white. */
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a,
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a p,
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a h2,
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a h3,
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a span,
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a strong,
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a em {
+  color:#fff!important;
+}
+.storefront-theme.afsana-reference-storefront main .cinematic-grid a .text-\\[\\#b4bf41\\] {
+  color:#fff!important;
+}
