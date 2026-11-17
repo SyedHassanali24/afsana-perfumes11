@@ -58,7 +58,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
                   <button
                     type="button"
                     onClick={() => go(item.href)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition-all ${isActive ? "bg-white/15 text-white shadow-sm" : "text-white/70 hover:bg-white/10 hover:text-white"}`}
+                    className={`afsana-admin-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition-all ${isActive ? "is-active" : ""}`}
                     aria-current={isActive ? "page" : undefined}
                     title={compact ? item.label : undefined}
                   >
@@ -77,8 +77,7 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
   return (
     <>
       <aside
-        className={`hidden md:flex h-screen sticky top-0 flex-col transition-[width] duration-200 shadow-2xl ${collapsed ? "w-[76px]" : "w-64"}`}
-        style={{ background: "linear-gradient(180deg, #151642 0%, #1e1b4b 48%, #0f102f 100%)" }}
+        className={`afsana-admin-sidebar hidden md:flex h-screen sticky top-0 flex-col transition-[width] duration-200 shadow-2xl ${collapsed ? "w-[76px]" : "w-64"}`}
       >
         <div className="flex items-center justify-between px-4 h-[82px] shrink-0 border-b border-white/10">
           {!collapsed ? (
@@ -102,13 +101,13 @@ export default function Sidebar({ activeHref = "/admin", onNavigate }) {
         )}
       </aside>
 
-      <button type="button" className="md:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl text-white shadow-lg" style={{ background: "#151642" }} onClick={() => setMobileOpen(true)} aria-label="Open admin navigation">
+      <button type="button" className="afsana-admin-mobile-trigger md:hidden fixed top-3 left-3 z-50 p-2.5 rounded-xl text-white shadow-lg" onClick={() => setMobileOpen(true)} aria-label="Open admin navigation">
         <Menu className="w-5 h-5" />
       </button>
 
       {mobileOpen && <button type="button" aria-label="Close navigation overlay" className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setMobileOpen(false)} />}
 
-      <aside className={`md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`} style={{ background: "linear-gradient(180deg, #151642 0%, #0f102f 100%)" }}>
+      <aside className={`afsana-admin-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col shadow-2xl transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between px-5 h-[82px] border-b border-white/10">
           <div><p className="text-xl font-bold tracking-[0.12em] text-white">AFSANA</p><p className="text-[9px] font-semibold tracking-[0.34em] text-white/70">PERFUMES</p></div>
           <button type="button" onClick={() => setMobileOpen(false)} className="p-2 rounded-lg text-white/70 hover:bg-white/10" aria-label="Close admin navigation"><X className="w-5 h-5" /></button>
