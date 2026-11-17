@@ -64,7 +64,7 @@ async function saveMine(ctx, slug, body) {
     try { review = (await Review.create({ productId: p._id, customerId: ctx.customer._id, orderId, ...fields })).toObject(); }
     catch (e) { if (e && e.code === 11000) throw E.conflict('You have already reviewed this perfume.'); throw e; }
   }
-  await Notification.create({ type: 'new_review', title: 'New review to approve', body: `${p.name} · ${fields.rating}/5`, link: '/admin/reviews', forPermission: 'reviews.view' }).catch(() => {});
+  await notifyAdmin({ type: 'new_review', title: 'New review to approve', body: `${p.name} · ${fields.rating}/5`, link: '/admin/reviews', forPermission: 'reviews.view' });
   return { review: R.ownShape(review) };
 }
 async function removeMine(ctx, slug) {
