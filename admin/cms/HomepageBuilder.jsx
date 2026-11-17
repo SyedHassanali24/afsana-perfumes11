@@ -36,7 +36,7 @@ const parseItems = (text) => String(text || '').split('\n').map((x) => x.trim())
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
   return { title: title.trim(), text: textValue.trim(), image: image.trim(), link: link.trim() };
 });
-const parseTestimonialItems = (text) => String(text || '').split('\\n').map((line) => line.trim()).filter(Boolean).map((line) => {
+const parseTestimonialItems = (text) => String(text || '').split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
   const [name = '', rating = '0', title = '', textValue = '', product = '', sample = ''] = line.split('|');
   return { name: name.trim(), rating: Number(rating) || 0, title: title.trim(), text: textValue.trim(), product: product.trim(), sample: /^(sample|demo|true|yes)$/i.test(sample.trim()) };
 });
@@ -62,7 +62,8 @@ export default function HomepageBuilder() {
   const open = (item) => {
     if (item) {
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
-      if (item.type === 'testimonials') cfg.items = Array.isArray(cfg.items) ? cfg.items : parseTestimonialItems(cfg.items);\n      else cfg.items = itemText(cfg.items);
+      if (item.type === 'testimonials') cfg.items = Array.isArray(cfg.items) ? cfg.items : parseTestimonialItems(cfg.items);
+      else cfg.items = itemText(cfg.items);
       setForm({ type: item.type, title: item.title || '', config: cfg, isEnabled: item.isEnabled !== false });
     } else setForm({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
     setDrawer({ open: true, item: item || null });
