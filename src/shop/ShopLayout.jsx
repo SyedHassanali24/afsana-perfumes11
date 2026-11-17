@@ -12,7 +12,7 @@ import { cmsPublicApi, productsApi } from '../services';
 import useShopSettings from './useShopSettings';
 
 const ManagedCmsPage = lazy(() => import('./AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
-const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting']];
+const defaultNav=[['/','Home'],['/shop','Collection'],['/discover','Scent finder'],['/journal','Journal'],['/about','The house'],['/gifting','Gifting'],['/contact','Contact']];
 
 function CmsBannerCarousel({ banners = [] }) {
  const items = Array.isArray(banners) ? banners.filter((banner) =>
@@ -82,6 +82,7 @@ export default function ShopLayout(){
  const nav = Array.isArray(navigation) && navigation.length
    ? navigation.map((item) => [item.text || '/', item.title || '']).filter(([to,label]) => to.startsWith('/') && label)
    : defaultNav;
+ const contactNav = nav.some(([to]) => to === '/contact') ? nav : [...nav, ['/contact', 'Contact']];
  const logoUrl = String(navConfig.logoUrl || '').trim();
  const brandName = navConfig.brandName || 'AFSANA';
  const brandTagline = navConfig.tagline || 'THE ART OF SCENT';
@@ -131,7 +132,7 @@ export default function ShopLayout(){
       <span className="block font-display text-[20px] leading-none tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[5px] block font-mono text-[7px] font-semibold tracking-[.34em] text-[#80798f]">{brandTagline}</small></span>
     </Link>
     <nav className="storefront-main-nav hidden lg:flex items-center gap-1 rounded-full border border-[#e8e2ef] bg-white/80 p-1 shadow-[0_5px_20px_rgba(23,17,47,.055)]" aria-label="Main navigation">
-      {nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/'} className={({isActive})=>'storefront-nav-link '+(isActive?'is-active':'')}>{label}</NavLink>)}
+      {contactNav.map(([to,label])=><NavLink key={to} to={to} end={to==='/'} className={({isActive})=>'storefront-nav-link '+(isActive?'is-active':'')}>{label}</NavLink>)}
     </nav>
     <div className="header-actions storefront-header-actions ml-auto flex shrink-0 items-center gap-2">
       <button className="storefront-header-action storefront-search-trigger" onClick={()=>setSearch(true)} aria-label="Search fragrances" aria-expanded={search}><Search className="h-[17px] w-[17px]"/></button>
@@ -184,8 +185,8 @@ export default function ShopLayout(){
         </div>
       </div>}
       <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr] py-14">
-        <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/account" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#d9ff55]">Customer care ↗</Link></div>
-        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link></div></div>
+        <div><div className="text-[9px] uppercase tracking-[.3em] text-white/35">Afsana / Contact</div><p className="mt-5 text-sm leading-7 text-white/55">For fragrance questions, gifting help and order support, visit your account or explore the collection.</p><Link to="/contact" className="inline-flex mt-6 text-[10px] uppercase tracking-[.2em] text-[#d9ff55]">Contact the house ↗</Link></div>
+        <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Explore</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/shop">Collection</Link><Link className="block hover:text-white transition" to="/about">The House</Link><Link className="block hover:text-white transition" to="/journal">Journal</Link><Link className="block hover:text-white transition" to="/gifting">Gifting</Link><Link className="block hover:text-white transition" to="/contact">Contact us</Link></div></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Customer</h4><div className="mt-5 space-y-3 text-sm text-white/55"><Link className="block hover:text-white transition" to="/track">Track order</Link><Link className="block hover:text-white transition" to="/account">Account</Link><Link className="block hover:text-white transition" to="/shop">Fragrance care</Link><Link className="block hover:text-white transition" to="/gifting">Gift guide</Link></div></div>
         <div><h4 className="text-[9px] uppercase tracking-[.28em] text-[#d9ff55]">Follow the house</h4><div className="mt-5 flex flex-wrap gap-2">{socialLinks.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-[#d9ff55] hover:border-[#d9ff55] hover:bg-white/10 transition">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-white/35">{Icon?<Icon className="h-4 w-4"/>:<span className="text-sm font-bold">𝕏</span>}</span>)}</div><p className="mt-2 text-[9px] text-white/35">Official links can be connected in the Footer settings in CMS.</p></div>
       </div>

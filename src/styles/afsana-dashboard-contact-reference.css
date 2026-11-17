@@ -1,0 +1,154 @@
+/* AFSANA reference styling: clean green/white dashboard + neon-green dark dashboard.
+   Scoped to admin pages and the dedicated Contact page only. */
+.admin-shell{
+  --admin-bg:#f2f5f2;--admin-surface:#fff;--admin-raised:#f8faf8;--admin-border:#e5ebe6;
+  --admin-ink:#151d19;--admin-muted:#78827c;--admin-accent:#176b4c;--admin-accent-soft:#e5f3eb;
+  background:linear-gradient(145deg,#f3f6f3 0%,#edf2ef 55%,#f7f9f7 100%)!important;
+  color:var(--admin-ink)!important;
+}
+.admin-shell:before{background:radial-gradient(circle at 80% 8%,rgba(32,132,91,.08),transparent 35%)!important;opacity:1}
+.admin-shell .admin-card,
+.admin-shell .dashboard-stat-card{
+  background:var(--admin-surface)!important;border:1px solid var(--admin-border)!important;border-radius:17px!important;
+  box-shadow:0 3px 14px rgba(23,54,38,.045),0 14px 30px rgba(23,54,38,.035)!important;
+  color:var(--admin-ink)!important;backdrop-filter:none!important;
+}
+.admin-shell .admin-card:hover{transform:translateY(-1px);border-color:#cbdcd1!important;box-shadow:0 10px 26px rgba(23,54,38,.08)!important}
+.admin-shell .dashboard-stat-card{padding:17px!important;min-height:126px}
+.admin-shell .admin-glass-header{background:rgba(255,255,255,.88)!important;border-bottom:1px solid var(--admin-border)!important;box-shadow:0 5px 18px rgba(25,60,42,.035)!important;backdrop-filter:blur(18px)!important}
+.admin-shell .admin-glass-control{background:#f7f9f7!important;border:1px solid #e7ece8!important;color:#18221c!important;box-shadow:none!important}
+.admin-shell .admin-cache-control,.admin-shell .cache-clear,.admin-shell .admin-topbar-icon{color:#536259!important}
+.admin-shell .admin-profile-name{color:#18221c!important}
+.admin-shell .admin-profile-role,.admin-shell .admin-profile-chevron{color:#7b877f!important}
+.admin-shell .admin-topbar-icon:hover,.admin-shell .admin-profile-control:hover{background:#edf5ef!important}
+.afsana-admin-sidebar{background:#fff!important;border-right:1px solid #e5ebe6!important;box-shadow:5px 0 22px rgba(22,54,38,.035)!important;color:#27352d}
+.afsana-admin-sidebar .border-b{border-color:#edf1ed!important}
+.afsana-admin-sidebar .text-white{color:#1b2b22!important}
+.afsana-admin-sidebar .text-white\/70,.afsana-admin-sidebar .text-white\/65,.afsana-admin-sidebar .text-white\/60,.afsana-admin-sidebar .text-white\/45{color:#839087!important}
+.afsana-admin-sidebar .bg-white\/10,.afsana-admin-sidebar .bg-white\/15{background:transparent!important}
+.afsana-admin-sidebar .afsana-admin-nav-item{color:#65736a!important;border-radius:10px!important}
+.afsana-admin-sidebar .afsana-admin-nav-item:hover{background:#f1f6f2!important;color:#176b4c!important}
+.afsana-admin-sidebar .afsana-admin-nav-item.is-active{background:#e6f3eb!important;color:#176b4c!important;box-shadow:inset 3px 0 #176b4c!important;font-weight:700}
+.afsana-admin-sidebar .afsana-admin-nav-item.is-active svg{color:#176b4c!important}
+.afsana-admin-sidebar .bg-white\/15{background:#eaf4ed!important}
+.afsana-admin-mobile-trigger{background:#176b4c!important}
+.admin-shell [class*="text-[#172033]"],.admin-shell [class*="text-[#182308]"],.admin-shell [class*="text-[#24152b]"],.admin-shell [class*="text-[#1e1b4b]"]{color:var(--admin-ink)!important}
+.admin-shell [class*="text-[#64748b]"],.admin-shell [class*="text-[#5f654f]"],.admin-shell [class*="text-[#76677b]"]{color:var(--admin-muted)!important}
+.admin-shell [class*="bg-[#ffffff]"],.admin-shell [class*="bg-white"]{background-color:#fff}
+.admin-shell [class*="border-[#1e1b4b]"],.admin-shell [class*="border-[#263e0e]"],.admin-shell [class*="border-[#7357ff]"]{border-color:var(--admin-border)!important}
+.admin-shell button:focus-visible,.admin-shell a:focus-visible,.admin-shell input:focus-visible,.admin-shell select:focus-visible,.admin-shell textarea:focus-visible{outline:2px solid #2a9569;outline-offset:2px}
+.admin-shell .recharts-cartesian-grid line{stroke:#e8eee9!important}
+.admin-shell .recharts-text{fill:#77847b!important}
+.admin-shell .recharts-tooltip-wrapper .recharts-default-tooltip{background:#fff!important;border:1px solid #e1e9e3!important;border-radius:12px!important;color:#17251c!important}
+:root[data-theme="dark"] .admin-shell{
+  --admin-bg:#0b100d;--admin-surface:#151b17;--admin-raised:#1b241e;--admin-border:#2b3a30;
+  --admin-ink:#f1f7f2;--admin-muted:#9ba99f;--admin-accent:#b7f34b;--admin-accent-soft:#25351b;
+  background:radial-gradient(900px 540px at 82% -5%,rgba(50,100,61,.18),transparent 58%),linear-gradient(145deg,#090d0b 0%,#111713 52%,#090d0b 100%)!important;
+  color:var(--admin-ink)!important;
+}
+:root[data-theme="dark"] .admin-shell:before{background:radial-gradient(circle at 75% 24%,rgba(183,243,75,.055),transparent 36%)!important}
+:root[data-theme="dark"] .admin-shell .admin-card,
+:root[data-theme="dark"] .admin-shell .dashboard-stat-card{
+  background:linear-gradient(145deg,#171e19,#121814)!important;border-color:#29372e!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.025)!important;color:#f1f7f2!important;
+}
+:root[data-theme="dark"] .admin-shell .admin-card:hover{border-color:#526b3b!important;box-shadow:0 16px 38px rgba(0,0,0,.34),0 0 0 1px rgba(183,243,75,.035)!important}
+:root[data-theme="dark"] .admin-shell .admin-glass-header{background:rgba(12,17,14,.92)!important;border-color:#26352b!important;box-shadow:0 8px 24px rgba(0,0,0,.24)!important}
+:root[data-theme="dark"] .admin-shell .admin-glass-control{background:#171f19!important;border-color:#2c3a30!important;color:#f1f7f2!important}
+:root[data-theme="dark"] .admin-shell .admin-cache-control,
+:root[data-theme="dark"] .admin-shell .cache-clear,
+:root[data-theme="dark"] .admin-shell .admin-topbar-icon{color:#bdc9bf!important}
+:root[data-theme="dark"] .admin-shell .admin-profile-name{color:#f1f7f2!important}
+:root[data-theme="dark"] .admin-shell .admin-profile-role,
+:root[data-theme="dark"] .admin-shell .admin-profile-chevron{color:#9ba99f!important}
+:root[data-theme="dark"] .admin-shell .admin-topbar-icon:hover,
+:root[data-theme="dark"] .admin-shell .admin-profile-control:hover{background:#202b23!important}
+:root[data-theme="dark"] .afsana-admin-sidebar{background:#101612!important;border-color:#26352b!important;box-shadow:5px 0 24px rgba(0,0,0,.25)!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .text-white{color:#eef6ef!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .text-white\/70,
+:root[data-theme="dark"] .afsana-admin-sidebar .text-white\/65,
+:root[data-theme="dark"] .afsana-admin-sidebar .text-white\/60,
+:root[data-theme="dark"] .afsana-admin-sidebar .text-white\/45{color:#8f9e93!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .border-b{border-color:#29372e!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .afsana-admin-nav-item{color:#a6b2a9!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .afsana-admin-nav-item:hover{background:#1b271e!important;color:#c6ff64!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .afsana-admin-nav-item.is-active{background:#b7f34b!important;color:#152015!important;box-shadow:inset 3px 0 #e3ff9b!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .afsana-admin-nav-item.is-active svg{color:#152015!important}
+:root[data-theme="dark"] .afsana-admin-sidebar .bg-white\/10,
+:root[data-theme="dark"] .afsana-admin-sidebar .bg-white\/15{background:#1b271e!important}
+:root[data-theme="dark"] .afsana-admin-mobile-trigger{background:#b7f34b!important;color:#152015!important}
+:root[data-theme="dark"] .admin-shell [class*="text-[#172033]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#182308]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#24152b]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#1e1b4b]"],
+:root[data-theme="dark"] .admin-shell [class*="text-black"],
+:root[data-theme="dark"] .admin-shell [class*="text-gray-900"],
+:root[data-theme="dark"] .admin-shell [class*="text-slate-900"]{color:#f1f7f2!important}
+:root[data-theme="dark"] .admin-shell [class*="text-[#64748b]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#5f654f]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#76677b]"],
+:root[data-theme="dark"] .admin-shell [class*="text-gray-600"],
+:root[data-theme="dark"] .admin-shell [class*="text-gray-700"],
+:root[data-theme="dark"] .admin-shell [class*="text-slate-600"],
+:root[data-theme="dark"] .admin-shell [class*="text-slate-700"]{color:#9ba99f!important}
+:root[data-theme="dark"] .admin-shell [class*="bg-white"],
+:root[data-theme="dark"] .admin-shell [class*="bg-[#ffffff]"]{background-color:#171e19!important}
+:root[data-theme="dark"] .admin-shell [class*="bg-[#eef2ff]"],
+:root[data-theme="dark"] .admin-shell [class*="bg-[#f3f4f9]"],
+:root[data-theme="dark"] .admin-shell [class*="bg-[#f7f5ee]"]{background-color:#1b241e!important}
+:root[data-theme="dark"] .admin-shell [class*="border-[#1e1b4b]"],
+:root[data-theme="dark"] .admin-shell [class*="border-[#263e0e]"],
+:root[data-theme="dark"] .admin-shell [class*="border-[#7357ff]"]{border-color:#2b3a30!important}
+:root[data-theme="dark"] .admin-shell .recharts-cartesian-grid line{stroke:#2a372e!important}
+:root[data-theme="dark"] .admin-shell .recharts-text{fill:#aab8ad!important}
+:root[data-theme="dark"] .admin-shell .recharts-tooltip-wrapper .recharts-default-tooltip{background:#151d18!important;border:1px solid #344637!important;color:#f1f7f2!important}
+:root[data-theme="dark"] .admin-shell input,
+:root[data-theme="dark"] .admin-shell select,
+:root[data-theme="dark"] .admin-shell textarea{background:#151d18!important;border-color:#344637!important;color:#f1f7f2!important}
+:root[data-theme="dark"] .admin-shell table thead{background:#1b241e!important}
+:root[data-theme="dark"] .admin-shell table tbody tr{border-color:#29372e!important}
+:root[data-theme="dark"] .admin-shell table tbody tr:hover{background:#1b271e!important}
+
+/* AFSANA Contact page — architecture-reference composition, perfume-house identity. */
+.afsana-contact-page{background:#fff;color:#1a211d}
+.afsana-contact-hero{background:#214b3d;color:#fff;min-height:188px;display:grid;place-items:center;text-align:center;padding:42px 20px}
+.afsana-contact-hero-inner>p{font-size:9px;letter-spacing:.28em;color:#d9bd68;font-weight:700}
+.afsana-contact-hero h1{font-size:clamp(30px,4vw,44px);font-weight:600;letter-spacing:-.035em;margin-top:10px}
+.afsana-contact-hero-inner>div{display:flex;justify-content:center;gap:11px;margin-top:8px;font-size:11px;color:rgba(255,255,255,.7)}
+.afsana-contact-hero-inner>div span:last-child{color:#e2c86d}
+.afsana-contact-hero a{color:inherit}
+.afsana-contact-main{max-width:1240px;margin:0 auto;padding:64px 28px 72px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.82fr);gap:48px;align-items:center}
+.afsana-contact-eyebrow{display:flex;align-items:center;gap:10px;font-size:10px;font-weight:700;letter-spacing:.3em;color:#314f43}
+.afsana-contact-eyebrow i{width:13px;height:1px;background:#c7a64d}
+.afsana-contact-form-wrap h2{font-size:clamp(25px,3vw,34px);line-height:1.2;letter-spacing:-.035em;font-weight:650;margin-top:12px;color:#202722}
+.afsana-contact-form-wrap h2 em{font-family:Georgia,serif;font-weight:500;color:#c4a24b}
+.afsana-contact-intro{margin-top:10px;max-width:620px;font-size:13px;line-height:1.8;color:#737d76}
+.afsana-contact-form{margin-top:24px;display:grid;gap:16px}
+.afsana-contact-form label{display:grid;gap:7px;font-size:11px;font-weight:650;color:#26342b}
+.afsana-contact-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.afsana-contact-form input,.afsana-contact-form textarea{width:100%;border:1px solid #e5e9e6;background:#f7f8f7;border-radius:10px;padding:12px 14px;font-size:12px;font-weight:400;color:#1d2921;outline:none;transition:border-color .2s,box-shadow .2s}
+.afsana-contact-form textarea{resize:vertical;min-height:118px}
+.afsana-contact-form input:focus,.afsana-contact-form textarea:focus{border-color:#6a987f;box-shadow:0 0 0 3px rgba(38,107,76,.09)}
+.afsana-contact-form button{display:inline-flex;align-items:center;gap:10px;width:max-content;border:0;border-radius:999px;background:#e4bd46;color:#1d2a21;padding:7px 20px 7px 7px;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 5px 14px rgba(190,153,53,.15)}
+.afsana-contact-form button span{width:29px;height:29px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.afsana-contact-form button:disabled{opacity:.45;cursor:not-allowed}
+.afsana-contact-note{font-size:11px;color:#66746b;line-height:1.6}
+.afsana-contact-card{background:#214b3d;color:#fff;border-radius:24px 48px 24px 24px;padding:30px 28px;display:grid;gap:25px;min-height:365px;box-shadow:0 18px 38px rgba(24,66,49,.13)}
+.afsana-contact-card h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.afsana-contact-card p,.afsana-contact-card a{font-size:11px;line-height:1.8;color:rgba(255,255,255,.76);white-space:pre-line}
+.afsana-contact-card a{display:flex;align-items:center;gap:8px;width:max-content;max-width:100%;overflow-wrap:anywhere}
+.afsana-contact-card a:hover{color:#e7c858}
+.afsana-contact-socials{display:flex;flex-wrap:wrap;gap:10px}
+.afsana-contact-socials a{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#e4bd46;color:#17382b;transition:transform .2s,background .2s}
+.afsana-contact-socials a:hover{transform:translateY(-3px);background:#f0d36d;color:#17382b}
+.afsana-contact-map{height:300px;background:#f2f4f2}
+.afsana-contact-map iframe{width:100%;height:100%;border:0;filter:grayscale(1) contrast(.9) opacity(.78)}
+.afsana-contact-benefits{max-width:1180px;margin:0 auto;padding:32px 28px 42px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.afsana-contact-benefits>div{display:flex;align-items:center;gap:13px}
+.afsana-contact-benefits>div>span{width:42px;height:42px;flex:none;border-radius:13px;border:1px solid #d4dfd7;background:#f3f8f4;color:#1c6548;display:grid;place-items:center}
+.afsana-contact-benefits svg{width:21px;height:21px}
+.afsana-contact-benefits p{display:grid;gap:3px}
+.afsana-contact-benefits strong{font-size:12px;color:#222c25}
+.afsana-contact-benefits small{font-size:10px;color:#78827b}
+@media(max-width:760px){.afsana-contact-main{grid-template-columns:1fr;gap:28px;padding:42px 20px 48px}.afsana-contact-card{min-height:0}.afsana-contact-benefits{grid-template-columns:1fr;gap:17px;padding:26px 22px 34px}.afsana-contact-map{height:240px}}
+@media(max-width:480px){.afsana-contact-two{grid-template-columns:1fr}.afsana-contact-hero{min-height:160px}.afsana-contact-card{padding:25px 22px}.afsana-contact-form{gap:14px}}

@@ -11,6 +11,7 @@ import "./styles/tokens.css";
 import "./styles/luxury-v3.css";
 import "./styles/purple-restore.css";
 import "./styles/afsana-reference-storefront.css";
+import "./styles/afsana-dashboard-contact-reference.css";
 
 // HashRouter keeps every storefront/admin route working on GitHub Pages without server rewrites.
 const Router = import.meta.env.BASE_URL === "/" ? BrowserRouter : HashRouter;
