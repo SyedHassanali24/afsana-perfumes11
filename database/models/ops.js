@@ -27,6 +27,25 @@ const expenseSchema = new Schema({
 }, { timestamps: true });
 storeScoped(expenseSchema);
 
+const manualJournalLineSchema = new Schema({
+  account: { type: String, required: true, trim: true, maxlength: 100 },
+  accountType: { type: String, enum: ['asset', 'liability', 'equity', 'income', 'expense'], required: true },
+  debit: { type: Number, min: 0, default: 0 },
+  credit: { type: Number, min: 0, default: 0 },
+  note: { type: String, trim: true, maxlength: 200, default: '' },
+}, { _id: false });
+const manualJournalEntrySchema = new Schema({
+  date: { type: Date, required: true, index: true },
+  narration: { type: String, required: true, trim: true, maxlength: 300 },
+  lines: { type: [manualJournalLineSchema], required: true, validate: (v) => Array.isArray(v) && v.length >= 2 && v.length <= 30 },
+  totalDebit: { type: Number, required: true, min: 0 },
+  totalCredit: { type: Number, required: true, min: 0 },
+  createdBy: { type: ObjectId, ref: 'User' },
+}, { timestamps: true });
+storeScoped(manualJournalEntrySchema);
+manualJournalEntrySchema.index({ storeId: 1, date: -1 });
+
+
 // Raw storefront events; TTL keeps the collection small (aggregate into daily stats before expiry, Phase 9).
 const analyticsEventSchema = new Schema({
   event: { type: String, enum: ['page_view', 'product_view', 'add_to_cart', 'begin_checkout', 'purchase'], required: true },
@@ -61,7 +80,7 @@ settingSchema.index({ key: 1, storeId: 1 }, { unique: true });
 storeScoped(settingSchema);
 
 module.exports = {
-  Notification: model('Notification', notificationSchema), Expense: model('Expense', expenseSchema),
+  Notification: model('Notification', notificationSchema), Expense: model('Expense', expenseSchema), ManualJournalEntry: model('ManualJournalEntry', manualJournalEntrySchema),
   AnalyticsEvent: model('AnalyticsEvent', analyticsEventSchema), AuditLog: model('AuditLog', auditLogSchema),
   Setting: model('Setting', settingSchema), Media: model('Media', mediaSchema),
 };

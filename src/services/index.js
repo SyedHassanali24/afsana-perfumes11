@@ -95,7 +95,8 @@ export const growthApi = {
   updatePartner: (id, body) => api(`/growth/admin/partners/${id}`, { method: 'PATCH', body }),
 };
 export const accountantApi = {
-  report: (query) => api('/accountant/admin/report', { query, cacheTtl: 30000 }),
+  report: (query) => api('/accountant/admin/report', { query }),
+  createEntry: (body) => api('/accountant/admin/entries', { method: 'POST', body }),
 };
 export const notificationsApi = { // staff bell. list -> { notifications:[{id,type,title,body,link,createdAt,read}], unread }
   list: () => api('/notifications/admin'),

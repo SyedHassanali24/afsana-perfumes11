@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildJournal, trialBalance, totals } = require('../services/accountantRules');
+const { buildJournal, trialBalance, totals, manualEntriesToJournal, manualPeriodSummary, manualBalanceSheet } = require('../services/accountantRules');
 
 test('automatic sales, costs, payments, refunds and expenses create balanced journal batches', () => {
   const order = { _id: 'order-1', orderNumber: 'AFS-0001', subtotal: 5000, discount: 500, shipping: 200, total: 4700, createdAt: new Date('2026-11-01T05:00:00Z') };
@@ -36,4 +36,42 @@ test('roles that cannot see costs do not receive cost journal rows', () => {
   });
   assert.equal(journal.filter((entry) => entry.source === 'cost').length, 0);
   assert.ok(journal.every((entry) => entry.balanced));
+});
+
+
+test('manual journal lines join the general journal and calculate investment, income, expenses and closing balances', () => {
+  const entries = [
+    { _id: 'manual-000001', date: new Date('2026-11-02T05:00:00Z'), narration: 'Owner investment', lines: [
+      { account: 'Cash / Bank', accountType: 'asset', debit: 100000, credit: 0 },
+      { account: "Owner's Capital", accountType: 'equity', debit: 0, credit: 100000 },
+    ] },
+    { _id: 'manual-000002', date: new Date('2026-11-03T05:00:00Z'), narration: 'Advertising', lines: [
+      { account: 'Advertising expense', accountType: 'expense', debit: 10000, credit: 0 },
+      { account: 'Cash / Bank', accountType: 'asset', debit: 0, credit: 10000 },
+    ] },
+    { _id: 'manual-000003', date: new Date('2026-11-04T05:00:00Z'), narration: 'Other revenue', lines: [
+      { account: 'Cash / Bank', accountType: 'asset', debit: 5000, credit: 0 },
+      { account: 'Other income', accountType: 'income', debit: 0, credit: 5000 },
+    ] },
+  ];
+  const journal = manualEntriesToJournal(entries);
+  assert.equal(journal.length, 3);
+  assert.ok(journal.every((entry) => entry.source === 'manual' && entry.balanced));
+  assert.equal(totals(journal).debit, 115000);
+  assert.equal(totals(journal).credit, 115000);
+
+  const summary = manualPeriodSummary(entries);
+  assert.equal(summary.investment, 100000);
+  assert.equal(summary.income, 5000);
+  assert.equal(summary.expenses, 10000);
+
+  const balances = manualBalanceSheet([
+    { _id: { account: 'Cash / Bank', accountType: 'asset' }, debit: 105000, credit: 10000 },
+    { _id: { account: "Owner's Capital", accountType: 'equity' }, debit: 0, credit: 100000 },
+    { _id: { account: 'Advertising expense', accountType: 'expense' }, debit: 10000, credit: 0 },
+    { _id: { account: 'Other income', accountType: 'income' }, debit: 0, credit: 5000 },
+  ]);
+  assert.equal(balances.assets.total, 95000);
+  assert.equal(balances.equity.total, 95000);
+  assert.equal(balances.liabilities.total, 0);
 });
