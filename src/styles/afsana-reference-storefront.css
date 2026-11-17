@@ -948,3 +948,10 @@
 .storefront-theme.afsana-reference-storefront main .cinematic-grid a .text-\\[\\#b4bf41\\] {
   color:#fff!important;
 }
+
+
+/* Homepage scent-world cards: make every text label and link white only in this section. */
+.storefront-theme.afsana-reference-storefront .afsana-ref-worlds .afsana-ref-world-card,
+.storefront-theme.afsana-reference-storefront .afsana-ref-worlds .afsana-ref-world-card * {
+  color:#fff!important;
+}
