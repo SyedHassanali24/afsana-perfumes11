@@ -70,7 +70,7 @@ export function WishlistProvider({ children }) {
     }
   }, [status, ids]);
 
-  const value = useMemo(() => ({ has: (id) => ids.has(String(id)), toggle, count: ids.size }), [ids, toggle]);
+  const value = useMemo(() => ({ has: (id) => ids.has(String(id)), toggle, count: ids.size, ids: [...ids] }), [ids, toggle]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 export function useWishlist() {
