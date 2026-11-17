@@ -32,7 +32,7 @@ async function sendGmailOtp({ to, subject, html, env, fetchImpl }) {
 
   const sender = String(env.GMAIL_SENDER_EMAIL || env.OWNER_EMAIL || env.ADMIN_EMAIL || env.EASTWALA_EMAIL || to).trim();
   const headers = [];
-  if (validEmail(sender)) headers.push('From: AFSANA Security <' + sender + '>');
+  if (validEmail(sender)) headers.push('From: AFSANA Perfumes <' + sender + '>');
   headers.push('To: ' + to, 'Subject: ' + subject, 'MIME-Version: 1.0', 'Content-Type: text/html; charset=UTF-8');
   const mime = headers.concat('', html).join('\r\n');
   const sent = await fetchImpl('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
@@ -96,4 +96,10 @@ async function sendOtpWithFallback({ to, subject, purpose, otp, env = process.en
     : 'Email OTP is not configured. Add EmailJS, Gmail OAuth, or Resend credentials to the Cloudflare Worker.');
 }
 
-module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendResendOtp };
+async function sendGmailTemplate({ to, subject, html, text = '' }, { env = process.env, fetchImpl = globalThis.fetch } = {}) {
+  const recipient = String(to || '').trim().toLowerCase();
+  if (!validEmail(recipient)) throw new Error('Email recipient is invalid.');
+  if (!env.GMAIL_CLIENT_ID || !env.GMAIL_CLIENT_SECRET || !env.GMAIL_REFRESH_TOKEN) throw new Error('Gmail OAuth is not configured for transactional email.');
+  return sendGmailOtp({ to: recipient, subject, html: String(html || ''), text, env, fetchImpl });
+}
+module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendResendOtp };
