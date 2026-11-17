@@ -111,7 +111,7 @@ async function forgotPassword({ email }) {
       $unset: { resetOtpHash: '', resetOtpExpires: '' },
     });
     console.error('[customer-password-reset] email delivery failed');
-    throw E.serviceUnavailable('We could not send the verification email. Please try again later.');
+    throw new ApiError(503, 'EMAIL_UNAVAILABLE', 'We could not send the verification email. Please try again later.');
   }
   return generic;
 }
