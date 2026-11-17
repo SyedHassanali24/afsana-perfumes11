@@ -37,6 +37,22 @@ const campaignSchema = new Schema({
 }, { timestamps: true });
 storeScoped(campaignSchema);
 
+const offerLeadSchema = new Schema({
+  email: { type: String, required: true, lowercase: true, trim: true },
+  phone: { type: String, required: true, trim: true },
+  source: { type: String, default: 'welcome-offer-popup' },
+  campaign: { type: String, default: 'WELCOME10' },
+  couponCode: { type: String, required: true, uppercase: true, trim: true },
+  couponId: { type: ObjectId, ref: 'Coupon', required: true },
+  marketingConsent: { type: Boolean, required: true, default: false },
+  marketingConsentAt: { type: Date, required: true },
+  status: { type: String, enum: ['New', 'Contacted', 'Converted', 'Unsubscribed'], default: 'New', index: true },
+}, { timestamps: true });
+offerLeadSchema.index({ email: 1, storeId: 1 }, { unique: true });
+offerLeadSchema.index({ phone: 1, storeId: 1 }, { unique: true });
+offerLeadSchema.index({ status: 1, createdAt: -1 });
+storeScoped(offerLeadSchema); softDelete(offerLeadSchema);
+
 const giftCardSchema = new Schema({
   code: { type: String, required: true, unique: true, uppercase: true },
   initialValue: Number, balance: Number, expiresAt: Date, isActive: { type: Boolean, default: true },
@@ -71,7 +87,7 @@ affiliatePartnerSchema.index({ userId: 1, isActive: 1 });
 storeScoped(affiliatePartnerSchema); softDelete(affiliatePartnerSchema);
 
 module.exports = {
-  Coupon: model('Coupon', couponSchema), AffiliatePartner: model('AffiliatePartner', affiliatePartnerSchema), FlashSale: model('FlashSale', flashSaleSchema),
+  Coupon: model('Coupon', couponSchema), OfferLead: model('OfferLead', offerLeadSchema), AffiliatePartner: model('AffiliatePartner', affiliatePartnerSchema), FlashSale: model('FlashSale', flashSaleSchema),
   Campaign: model('Campaign', campaignSchema), GiftCard: model('GiftCard', giftCardSchema),
   LoyaltyTransaction: model('LoyaltyTransaction', loyaltyTxSchema),
 };
