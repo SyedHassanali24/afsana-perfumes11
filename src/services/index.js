@@ -112,6 +112,7 @@ export const reviewsApi = { // public list: { summary:{avg,count,breakdown}, rev
 };
 export const customersApi = { // staff. list query { q, segment, page, limit } -> { customers, counts, pagination }; get -> { customer, orders, hidden }; update body { segment?, notes? }
   list: (query) => api('/customers/admin', { query }),
+  leads: (query) => api('/customers/admin/leads', { query }),
   get: (id) => api(`/customers/admin/${id}`),
   update: (id, body) => api(`/customers/admin/${id}`, { method: 'PATCH', body }),
 };
@@ -153,8 +154,10 @@ export const accountApi = {
   me: () => api('/account/me'),
   updateProfile: (body) => api('/account/me', { method: 'PATCH', body }),
   changePassword: (currentPassword, newPassword) => api('/account/change-password', { method: 'POST', body: { currentPassword, newPassword } }),
-  forgotPassword: (identifier) => api('/account/forgot-password', { method: 'POST', body: { identifier } }),
-  resetPassword: (token, newPassword) => api('/account/reset-password', { method: 'POST', body: { token, newPassword } }),
+  forgotPassword: (email) => api('/account/forgot-password', { method: 'POST', body: { email } }),
+  verifyForgotPassword: (email, otp) => api('/account/forgot-password/verify', { method: 'POST', body: { email, otp } }),
+  resetPassword: (resetToken, newPassword) => api('/account/reset-password', { method: 'POST', body: { resetToken, newPassword } }),
+  captureOfferLead: (body) => api('/account/offer-lead', { method: 'POST', body }),
   // Phase 6
   orders: (query) => api('/account/orders', { query }),
   order: (orderNumber) => api(`/account/orders/${encodeURIComponent(orderNumber)}`),
