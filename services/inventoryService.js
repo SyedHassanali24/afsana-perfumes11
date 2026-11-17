@@ -74,7 +74,7 @@ async function adjustStock(ctx, { variantId, type, quantity, reason }, scopes) {
     return inv;
   });
   if (result.current - result.reserved <= result.lowStockThreshold) {
-    await Notification.create({ type: 'low_stock', title: 'Low stock', body: `Variant ${variantId} is at ${result.current - result.reserved} available`, link: '/admin/inventory', forPermission: 'inventory.view' });
+    await notifyAdmin({ type: 'low_stock', title: 'Low stock', body: `Variant ${variantId} is at ${result.current - result.reserved} available`, link: '/admin/inventory', forPermission: 'inventory.view' });
   }
   return result;
 }
