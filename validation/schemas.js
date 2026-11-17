@@ -140,14 +140,26 @@ const auditQuery = z.object({
 const custPhone = z.string().trim().regex(/^[0-9+\-\s()]{10,18}$/, 'Enter a valid phone number').transform(normalizePhone);
 const registerBody = z.object({
   name: z.string().trim().min(2).max(100), phone: custPhone,
-  email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined),
+  email: z.string().trim().email().max(200),
   password: passwordRule(8),
 });
 const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(200), password: z.string().min(1).max(200) });
-const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined) }).partial();
+const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional() }).partial();
 const customerChangePassword = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordRule(8) });
-const forgotBody = z.object({ identifier: z.string().trim().min(3).max(200) });
-const resetBody = z.object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid link'), newPassword: passwordRule(8) });
+const forgotBody = z.object({ email: z.string().trim().email().max(200) });
+const verifyForgotBody = z.object({ email: z.string().trim().email().max(200), otp: z.string().regex(/^\d{6}$/, 'Enter the six-digit code from your email') });
+const resetBody = z.object({ resetToken: z.string().regex(/^[a-f\d]{64}$/i, 'Verify your email first'), newPassword: passwordRule(8) });
+const offerLeadBody = z.object({
+  email: z.string().trim().email().max(200),
+  phone: custPhone,
+  marketingConsent: z.literal(true),
+  source: z.string().trim().max(80).optional(),
+});
+const offerLeadQuery = z.object({
+  q: z.string().trim().max(80).optional(),
+  status: z.enum(['New', 'Contacted', 'Converted', 'Unsubscribed']).optional(),
+  ...paging,
+});
 
 // ---------- storefront: cart, wishlist, addresses, my orders ----------
 const cartItems = z.array(z.object({ variantId: objectId, quantity: z.number().int().min(1).max(20) })).max(30);
@@ -375,7 +387,7 @@ module.exports = {
   quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,
   taxonomyBody, taxonomyPatch, taxonomyQuery, supplierBody, supplierPatch, supplierQuery, poCreate, poPatch, poReceive, poQuery, thresholdBody,
   changePasswordBody, staffQuery, staffCreate, staffPatch, staffProfile, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
-  registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, resetBody,
+  registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, verifyForgotBody, resetBody, offerLeadBody, offerLeadQuery,
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,
   adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
 };

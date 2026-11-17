@@ -2,10 +2,13 @@ const { createHandler } = require('../../../middleware/withApi');
 const { redact } = require('../../../middleware/redact');
 const S = require('../../../validation/schemas');
 const C = require('../../../services/customerService');
+const L = require('../../../services/offerLeadService');
 
 // Staff-only. Shoppers manage their own profile through /api/account. Phone / address are removed server-side for roles that may not see them
 // (the service already leaves them out; redact() is a second, fail-closed pass).
 const routes = [
+  { method: 'GET', path: '/admin/leads', permission: ['customers', 'view'], query: S.offerLeadQuery,
+    handler: ({ query, scopes, ctx }) => L.list(query, scopes, ctx.user._id, ctx.perms.deniedFields) },
   { method: 'GET', path: '/admin', permission: ['customers', 'view'], query: S.customerQuery,
     handler: async ({ query, ctx, scopes }) => redact(await C.list(query, scopes, ctx.user._id, ctx.perms.deniedFields), ctx.perms.deniedFields) },
   { method: 'GET', path: '/admin/:id', permission: ['customers', 'view'],

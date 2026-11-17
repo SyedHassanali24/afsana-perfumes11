@@ -135,7 +135,7 @@ export default function App() {
             <Route path="/checkout" element={<><ManagedCmsPage pageKey="checkout_before" /><CheckoutPage /><ManagedCmsPage pageKey="checkout_after" /></>} />
             <Route path="/order-success/:orderNumber" element={<OrderSuccessPage />} />
             <Route path="/track" element={<><ManagedCmsPage pageKey="track_before" /><TrackOrderPage /><ManagedCmsPage pageKey="track_after" /></>} />
-            <Route path="/wishlist" element={mine(<WishlistPage />)} />
+            <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/account" element={mine(<AccountPage />)} />
             <Route path="/account/orders/:orderNumber" element={mine(<OrderDetailPage />)} />
             <Route path="*" element={<Navigate to="/" replace />} />

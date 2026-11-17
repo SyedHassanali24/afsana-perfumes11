@@ -94,7 +94,15 @@ export default function ProductPage(){
   return ()=>window.clearInterval(timer);
  },[offerEndAt]);
  const productMedia=useMemo(()=>normaliseProductMedia(p),[p]);
- const media=useMemo(()=>productMedia.filter((item)=>item.kind!=='model3d'&&!/\.(glb|gltf)(\?|$)/i.test(item.url)).sort((a,b)=>(a.kind==='main'?-1:b.kind==='main'?1:(a.sortOrder||0)-(b.sortOrder||0))),[productMedia]);
+ const media=useMemo(()=>productMedia
+  .filter((item)=>item.kind!=='model3d'&&!/\.(glb|gltf)(\?|$)/i.test(item.url))
+  .sort((a,b)=>{
+   const aVideo=a.kind==='video'||/\.(mp4|webm|mov|m4v)(\?|$)/i.test(a.url);
+   const bVideo=b.kind==='video'||/\.(mp4|webm|mov|m4v)(\?|$)/i.test(b.url);
+   if(aVideo!==bVideo)return aVideo?1:-1;
+   if((a.kind==='main')!==(b.kind==='main'))return a.kind==='main'?-1:1;
+   return Number(a.sortOrder||0)-Number(b.sortOrder||0);
+  }),[productMedia]);
  const product3dUrl=productMedia.find((item)=>item.kind==='model3d'||/\.(glb|gltf)(\?|$)/i.test(item.url))?.url || p?.model3dUrl || p?.modelUrl || referenceAssets.product3dModelUrl || '';
  useEffect(()=>{setMediaBroken(false);setModelViewerFailed(false);setImg(0)},[slug]);
  useEffect(()=>{if(!autoRotate || media.length<2)return;const id=window.setInterval(()=>{setImg(i=>(i+1)%media.length);setMediaBroken(false)},1400);return()=>window.clearInterval(id)},[autoRotate,media.length]);
