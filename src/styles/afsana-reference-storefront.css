@@ -1,0 +1,625 @@
+/* AFSANA full storefront reference system.
+   Adapted from the supplied Insightlancer furniture-commerce reference.
+   Storefront-only: no admin/dashboard tokens or components are styled here. */
+.storefront-theme.afsana-reference-storefront{
+  --ref-green:#194629;
+  --ref-green-deep:#153b23;
+  --ref-green-soft:#eaf1eb;
+  --ref-yellow:#ffbd37;
+  --ref-yellow-soft:#fff5dc;
+  --ref-ink:#242424;
+  --ref-muted:#777773;
+  --ref-line:#e8e8e5;
+  --ref-soft:#f4f4f2;
+  --ref-white:#fff;
+  --lux-forest:#194629;
+  --lux-forest-2:#153b23;
+  --lux-olive:#2f7044;
+  --lux-lime:#ffbd37;
+  --lux-amber:#ffbd37;
+  --lux-yellow:#ffbd37;
+  --lux-sky:#d9e5dc;
+  --lux-blue:#d9e5dc;
+  --lux-plum:#194629;
+  --lux-wine:#153b23;
+  --lux-ivory:#fff;
+  --lux-milk:#f4f4f2;
+  --lux-ink:#242424;
+  min-height:100vh;
+  background:#fff!important;
+  color:var(--ref-ink)!important;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  -webkit-font-smoothing:antialiased;
+}
+.storefront-theme.afsana-reference-storefront *{font-family:inherit}
+.storefront-theme.afsana-reference-storefront .font-display,
+.storefront-theme.afsana-reference-storefront [class*="font-display"]{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important
+}
+.storefront-theme.afsana-reference-storefront main{background:#fff!important;color:#242424}
+.storefront-theme.afsana-reference-storefront main:before{display:none!important}
+.storefront-theme.afsana-reference-storefront a{color:inherit}
+.storefront-theme.afsana-reference-storefront button{font-family:inherit}
+.storefront-theme.afsana-reference-storefront ::selection{background:#ffbd37;color:#194629}
+
+/* Re-map older AFSANA utility colours only inside the storefront. */
+.storefront-theme.afsana-reference-storefront [class*="bg-[#100d24]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#17112f]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#24152b]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#263e0e]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#182308]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#080a07]"]{background-color:#194629!important}
+.storefront-theme.afsana-reference-storefront [class*="bg-[#d9ff55]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#b4bf41]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#ffe500]"],
+.storefront-theme.afsana-reference-storefront [class*="bg-[#7357ff]"]{background-color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront [class*="text-[#100d24]"],
+.storefront-theme.afsana-reference-storefront [class*="text-[#17112f]"],
+.storefront-theme.afsana-reference-storefront [class*="text-[#24152b]"],
+.storefront-theme.afsana-reference-storefront [class*="text-[#263e0e]"],
+.storefront-theme.afsana-reference-storefront [class*="text-[#182308]"]{color:#194629!important}
+.storefront-theme.afsana-reference-storefront [class*="text-[#d9ff55]"],
+.storefront-theme.afsana-reference-storefront [class*="text-[#b4bf41]"],
+.storefront-theme.afsana-reference-storefront [class*="text-[#7357ff]"]{color:#d28d0b!important}
+.storefront-theme.afsana-reference-storefront [class*="border-[#263e0e]"],
+.storefront-theme.afsana-reference-storefront [class*="border-[#7357ff]"],
+.storefront-theme.afsana-reference-storefront [class*="border-[#d9ff55]"]{border-color:rgba(25,70,41,.2)!important}
+
+/* Top offer strip and primary navigation. */
+.afsana-reference-topbar{position:relative;z-index:41;background:#194629;color:#fff}
+.afsana-reference-topbar-inner{display:grid;grid-template-columns:1fr 1.5fr 1fr;align-items:center;gap:16px;min-height:32px;padding-top:4px;padding-bottom:4px}
+.afsana-reference-topbar-inner>span{font-size:10px;line-height:1.35;letter-spacing:.015em}
+.afsana-reference-topbar-inner>span:first-child{color:#fff}
+.afsana-reference-topbar-inner>span:first-child a{color:#fff;text-decoration:none}
+.afsana-reference-topbar-inner>span:first-child a:hover{color:#ffcf73}
+.afsana-reference-topbar-message{text-align:center;color:#fff4db}
+.afsana-reference-topbar-links{display:flex;align-items:center;justify-content:flex-end;gap:12px;color:#fff}
+.afsana-reference-topbar-links i{color:#ffbd37;font-style:normal}
+.afsana-reference-topbar-links a:hover{color:#ffcf73}
+.storefront-theme.afsana-reference-storefront .storefront-header{position:sticky;top:0;z-index:40;background:#fff}
+.storefront-theme.afsana-reference-storefront .storefront-header-surface{background:rgba(255,255,255,.98)!important;border-bottom:1px solid #ecece9!important;box-shadow:0 3px 14px rgba(0,0,0,.035)!important}
+.storefront-theme.afsana-reference-storefront .storefront-header-inner{height:76px!important;max-width:1320px!important;gap:24px}
+.storefront-theme.afsana-reference-storefront .storefront-brand{gap:10px;text-decoration:none}
+.storefront-theme.afsana-reference-storefront .storefront-brand-mark{width:38px!important;height:38px!important;border-radius:50%!important;background:#194629!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .storefront-brand-mark>span{color:#ffbd37!important;font-style:normal}
+.storefront-theme.afsana-reference-storefront .storefront-brand>span:last-child{color:#202020!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:17px!important;font-weight:700!important;letter-spacing:-.025em!important}
+.storefront-theme.afsana-reference-storefront .storefront-brand small{margin-top:4px!important;color:#777!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:7px!important;letter-spacing:.18em!important}
+.storefront-theme.afsana-reference-storefront .storefront-main-nav{gap:20px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .storefront-nav-link{min-height:42px!important;padding:0 3px!important;border-radius:0!important;background:transparent!important;color:#333!important;font-size:11px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .storefront-nav-link:hover,
+.storefront-theme.afsana-reference-storefront .storefront-nav-link.is-active{background:transparent!important;color:#194629!important;transform:none!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .storefront-nav-link.is-active:after{position:absolute;right:0;bottom:7px;left:0;display:block!important;height:2px;background:#ffbd37;content:""}
+.storefront-theme.afsana-reference-storefront .storefront-header-actions{gap:7px!important}
+.storefront-theme.afsana-reference-storefront .storefront-header-action{width:36px!important;min-width:36px!important;height:36px!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#333!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .storefront-header-action:hover{transform:translateY(-1px);background:#f5f6f2!important;color:#194629!important}
+.storefront-theme.afsana-reference-storefront .storefront-header-action svg{width:17px;height:17px;stroke-width:1.8}
+.storefront-theme.afsana-reference-storefront .storefront-cart-action{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .storefront-cart-action:hover{background:#153b23!important;color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .storefront-cart-count,
+.storefront-theme.afsana-reference-storefront .storefront-header-count{position:absolute;top:-4px;right:-4px;display:grid;min-width:17px;height:17px;place-items:center;padding:0 4px;border:1px solid #fff;border-radius:99px;background:#ffbd37;color:#194629;font-size:9px;font-weight:800;line-height:1}
+.storefront-theme.afsana-reference-storefront .storefront-mobile-toggle{color:#194629}
+.storefront-theme.afsana-reference-storefront .storefront-mobile-menu{border-top:1px solid #eee;background:#fff}
+.storefront-theme.afsana-reference-storefront .storefront-mobile-nav-link{border:1px solid #e9e9e5;border-radius:6px;background:#fff;color:#333}
+.storefront-theme.afsana-reference-storefront .storefront-mobile-nav-link.is-active{border-color:#194629;background:#194629;color:#fff}
+.storefront-theme.afsana-reference-storefront>div.border-b{background:#194629!important;color:#fff!important;border-color:#194629!important}
+.storefront-theme.afsana-reference-storefront>div.border-b span{color:#ffbd37!important}
+
+/* Shared service promises just above the footer. */
+.afsana-reference-benefits{background:#fff;border-top:1px solid #f0f0ed}
+.afsana-reference-benefits-inner{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px;padding-top:22px;padding-bottom:22px}
+.afsana-reference-benefits-inner>div{display:flex;min-width:0;align-items:center;gap:12px}
+.afsana-reference-benefits-inner>div>span{display:grid;width:42px;height:42px;flex:none;place-items:center;border:1px solid #e5e8e0;border-radius:9px;background:#fafbf7;color:#194629}
+.afsana-reference-benefits-inner svg{width:21px;height:21px;stroke-width:1.8}
+.afsana-reference-benefits-inner p{display:flex;min-width:0;flex-direction:column;gap:4px;margin:0}
+.afsana-reference-benefits-inner strong{color:#292929;font-size:12px;font-weight:700}
+.afsana-reference-benefits-inner small{color:#858580;font-size:10px;line-height:1.45}
+
+/* Footer: forest green surface, simple columns and a yellow lower edge. */
+.storefront-theme.afsana-reference-storefront footer{position:relative;overflow:hidden;background:#194629!important;border:0!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront footer>div:first-child{display:none!important}
+.storefront-theme.afsana-reference-storefront footer .relative{background:transparent!important}
+.storefront-theme.afsana-reference-storefront footer .container-xl{padding-top:38px!important;padding-bottom:0!important}
+.storefront-theme.afsana-reference-storefront footer h2,
+.storefront-theme.afsana-reference-storefront footer h3,
+.storefront-theme.afsana-reference-storefront footer h4{color:#fff!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront footer p,
+.storefront-theme.afsana-reference-storefront footer a{color:rgba(255,255,255,.78)!important}
+.storefront-theme.afsana-reference-storefront footer a:hover{color:#ffbd37!important;transform:none!important}
+.storefront-theme.afsana-reference-storefront footer [class*="text-[#d9ff55]"],
+.storefront-theme.afsana-reference-storefront footer [class*="text-[#b4bf41]"]{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront footer [class*="border-white"]{border-color:rgba(255,255,255,.16)!important}
+.storefront-theme.afsana-reference-storefront footer .grid.gap-10{padding-top:28px!important;padding-bottom:30px!important}
+.storefront-theme.afsana-reference-storefront footer .grid.gap-10>div:first-child>div:first-child{color:#ffcf73!important}
+.storefront-theme.afsana-reference-storefront footer .grid.gap-10 h4{font-size:11px!important;letter-spacing:.035em!important;text-transform:none!important}
+.storefront-theme.afsana-reference-storefront footer .grid.gap-10 a{font-size:12px!important}
+.storefront-theme.afsana-reference-storefront footer .grid.gap-10 a.grid{border-color:rgba(255,255,255,.22)!important;color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront footer .grid.gap-10 a.grid:hover{background:rgba(255,255,255,.1)!important}
+.storefront-theme.afsana-reference-storefront footer .container-xl>div:last-child{margin-left:-24px;margin-right:-24px;padding:13px 24px 15px!important;border-top:0!important;background:#ffbd37;color:#1b1b1b!important}
+.storefront-theme.afsana-reference-storefront footer .container-xl>div:last-child span,
+.storefront-theme.afsana-reference-storefront footer .container-xl>div:last-child a{color:#262626!important;font-size:9px!important}
+.storefront-theme.afsana-reference-storefront footer .container-xl>div:last-child a:hover{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-intro{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-intro-mark span{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-intro-line{background:#ffbd37!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-intro-copy{color:#ffdb99!important}
+
+/* Common content width, headings, breadcrumbs and controls across shopper routes. */
+.storefront-theme.afsana-reference-storefront .container-xl{max-width:1320px!important}
+.storefront-theme.afsana-reference-storefront main h1,
+.storefront-theme.afsana-reference-storefront main h2,
+.storefront-theme.afsana-reference-storefront main h3{font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;letter-spacing:-.025em}
+.storefront-theme.afsana-reference-storefront main h1{color:#242424!important;font-size:clamp(27px,3.2vw,40px)!important;font-weight:700!important;line-height:1.15!important}
+.storefront-theme.afsana-reference-storefront main h2{color:#194629}
+.storefront-theme.afsana-reference-storefront main p{line-height:1.65}
+.storefront-theme.afsana-reference-storefront main .mb-6 h1{margin:0!important;color:#242424!important;font-size:clamp(28px,3vw,36px)!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront main .mb-6 p{margin-top:6px!important;color:#858580!important;font-size:12px!important}
+.storefront-theme.afsana-reference-storefront main input,
+.storefront-theme.afsana-reference-storefront main select,
+.storefront-theme.afsana-reference-storefront main textarea{border-color:#e5e5e1!important;border-radius:6px!important;background:#fff!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront main input:focus,
+.storefront-theme.afsana-reference-storefront main select:focus,
+.storefront-theme.afsana-reference-storefront main textarea:focus{border-color:#194629!important;box-shadow:0 0 0 3px rgba(25,70,41,.08)!important;outline:none}
+.storefront-theme.afsana-reference-storefront main button[class*="bg-[#263e0e]"],
+.storefront-theme.afsana-reference-storefront main a[class*="bg-[#263e0e]"],
+.storefront-theme.afsana-reference-storefront main button[class*="bg-[#182308]"],
+.storefront-theme.afsana-reference-storefront main a[class*="bg-[#182308]"]{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront main button[class*="bg-[#b4bf41]"],
+.storefront-theme.afsana-reference-storefront main a[class*="bg-[#b4bf41]"]{background:#ffbd37!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront main button:disabled{cursor:not-allowed}
+
+/* Home page — light editorial structure, green headings and restrained amber accents. */
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero{
+  min-height:610px!important;background:#f4f4f2!important;color:#242424!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero:before{
+  background:linear-gradient(110deg,rgba(244,244,242,.98) 0%,rgba(244,244,242,.93) 45%,rgba(244,244,242,.25) 100%)!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero:after{color:rgba(25,70,41,.035)!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero-grid{min-height:610px!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero h1{color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:clamp(48px,6.5vw,86px)!important;font-weight:700!important;line-height:.98!important;letter-spacing:-.055em!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero h1 em{color:#194629!important;background:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-eyebrow,
+.storefront-theme.afsana-reference-storefront .afsana-ref-tag{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-eyebrow:before{background:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero-sub{color:#6e716d!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-meta strong,
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero-meta strong{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-meta span,
+.storefront-theme.afsana-reference-storefront .afsana-ref-hero-meta span{color:#7b7c76!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-btn{border-radius:5px!important;background:#194629!important;color:#fff!important;box-shadow:none!important;text-transform:none!important;letter-spacing:.01em!important;font-size:12px!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-btn:hover{background:#153b23!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-btn-ghost{border:1px solid #194629!important;background:transparent!important;color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-orbit{border-color:rgba(25,70,41,.15)!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-orbit:before,
+.storefront-theme.afsana-reference-storefront .afsana-ref-orbit:after{border-color:rgba(25,70,41,.14)!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-orbit i{background:#ffbd37!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-glow{background:rgba(255,189,55,.18)!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-sticker{border-color:#194629!important;background:#fff!important;color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-section-head h2,
+.storefront-theme.afsana-reference-storefront .afsana-journal-heading h2{color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:clamp(30px,4vw,46px)!important;font-weight:700!important;letter-spacing:-.035em!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-section-head h2 em,
+.storefront-theme.afsana-reference-storefront .afsana-journal-heading h2 em{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-section-head>p,
+.storefront-theme.afsana-reference-storefront .afsana-journal-intro{color:#74746e!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-worlds,
+.storefront-theme.afsana-reference-storefront .afsana-ref-films,
+.storefront-theme.afsana-reference-storefront .afsana-ref-journal,
+.storefront-theme.afsana-reference-storefront .afsana-journal-pro{background:#fff!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-world-card,
+.storefront-theme.afsana-reference-storefront .afsana-ref-film-card,
+.storefront-theme.afsana-reference-storefront .afsana-journal-feature,
+.storefront-theme.afsana-reference-storefront .afsana-journal-side-card{border:1px solid #e8e8e5!important;border-radius:7px!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-world-info h3,
+.storefront-theme.afsana-reference-storefront .afsana-ref-film-card h3,
+.storefront-theme.afsana-reference-storefront .afsana-journal-side-copy h3{color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-world-info small,
+.storefront-theme.afsana-reference-storefront .afsana-ref-film-card small,
+.storefront-theme.afsana-reference-storefront .afsana-journal-side-copy small{color:#777!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-world-arrow{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-film-play{border-color:#fff!important;background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-journal-kicker,
+.storefront-theme.afsana-reference-storefront .afsana-journal-feature-copy>p,
+.storefront-theme.afsana-reference-storefront .afsana-journal-feature-copy>span{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-journal-all{background:#194629!important;color:#fff!important;border-radius:5px!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-inner-hero{background:#f4f4f2!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-inner-overlay{background:linear-gradient(90deg,rgba(25,70,41,.78),rgba(25,70,41,.1))!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-inner-hero h1{color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-inner-hero h1 em{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-collection-hero{background:#f4f4f2!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-collection-hero:after{background:linear-gradient(90deg,rgba(25,70,41,.82),rgba(25,70,41,.12))!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-collection-hero h1{color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-collection-hero h1 em{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-story{background:#f4f4f2!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-story-copy h2{color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-story-copy h2 em{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-banner{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-banner:before,
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-banner:after{opacity:.08!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-inner h2{color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-inner h2 em{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-inner .afsana-ref-eyebrow{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-inner>div:first-child>a{border-radius:5px!important;background:#ffbd37!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-stamp{border-color:#ffbd37!important;background:#fff!important;color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-stamp b,
+.storefront-theme.afsana-reference-storefront .afsana-ref-offer-stamp strong{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-finder{background:#f5f5f2!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-finder-grid>div:first-child h2{color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-finder-grid>div:first-child h2 em{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-finder-box{border:1px solid #e5e5e1!important;border-radius:7px!important;background:#fff!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-ref-finder-box button:hover,
+.storefront-theme.afsana-reference-storefront .afsana-ref-finder-box button.selected{border-color:#194629!important;background:#f1f6f1!important;color:#194629!important}
+
+/* Collection page / search results. */
+.storefront-theme.afsana-reference-storefront .afsana-shop-page{background:#fff!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-page>section{background:#f4f4f2!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-page>section .pointer-events-none{display:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-page>section h1{color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:clamp(38px,5vw,64px)!important;font-weight:700!important;letter-spacing:-.05em!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-page>section h1 em{color:#194629!important;background:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-page>section p{color:#74746f!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-toolbar{border-color:#e8e8e5!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-category-heading>div:first-child span{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-category-heading>div:first-child strong{color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-filter{border:1px solid #e7e7e3!important;border-radius:5px!important;background:#fff!important;color:#54544e!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-filter.active{border-color:#194629!important;background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-filter.active>span{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .afsana-shop-sort-wrap>span{color:#777!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-card{position:relative;overflow:hidden;border:1px solid #ededeb;border-radius:7px!important;background:#fff!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-card:hover{transform:translateY(-3px);border-color:#d9dfd8!important;box-shadow:0 10px 28px rgba(25,70,41,.08)!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-image{position:relative;overflow:hidden;border-radius:6px!important;background:#f4f4f2!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-img{object-fit:contain!important;transition:transform .35s ease}
+.storefront-theme.afsana-reference-storefront .afsana-product-image-mark{color:rgba(25,70,41,.42)!important;font-size:8px!important;letter-spacing:.22em}
+.storefront-theme.afsana-reference-storefront .afsana-product-stock{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-info{padding:12px 12px 14px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-category{color:#878781!important;font-size:9px!important;letter-spacing:.03em!important;text-transform:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-name{color:#272727!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:13px!important;font-weight:600!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-price{color:#242424!important;font-size:12px!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-open{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-wishlist{top:10px!important;right:10px!important;width:30px!important;height:30px!important;border:1px solid #e4e4df!important;border-radius:50%!important;background:#fff!important;color:#194629!important}
+.storefront-theme.afsana-reference-storefront .product-grid{gap:18px!important}
+.storefront-theme.afsana-reference-storefront .product-card-stage{border-radius:7px!important;background:#f4f4f2!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .product-grid>div:hover .product-card-stage{box-shadow:0 10px 28px rgba(25,70,41,.09)!important}
+
+/* Product details — the reference's square gallery / compact purchase panel. */
+.storefront-theme.afsana-reference-storefront .afsana-product-page{
+  width:100%;max-width:1280px!important;padding-top:24px!important;padding-bottom:50px!important;
+  color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page>div:first-child{
+  display:flex;align-items:center;gap:8px;min-height:33px;padding:0 0 11px!important;
+  border-bottom:1px solid #ededeb;color:#858580!important;font-size:10px!important;letter-spacing:.015em!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page>div:first-child a{color:#777!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page>div:first-child a:hover{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-detail-grid{
+  display:grid!important;grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr)!important;
+  align-items:start!important;gap:clamp(24px,4vw,56px)!important;margin-top:24px!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-gallery{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto!important;
+  gap:10px!important;min-width:0!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage{
+  grid-column:1!important;grid-row:1!important;position:relative!important;width:100%!important;
+  height:auto!important;min-height:0!important;max-height:620px!important;aspect-ratio:1/1!important;
+  overflow:hidden!important;border:1px solid #ececea!important;border-radius:8px!important;
+  background:#f4f4f2!important;box-shadow:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage:after,
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-stage-glow{display:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-shadow{bottom:10%!important;background:rgba(0,0,0,.11)!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .gallery-thumbs{
+  grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:row!important;gap:9px!important;
+  width:100%!important;max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;padding:0 0 5px!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .gallery-thumbs button{
+  width:68px!important;min-width:68px!important;aspect-ratio:1/1!important;border:1px solid #e1e1dd!important;
+  border-radius:7px!important;background:#f4f4f2!important;box-shadow:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .gallery-thumbs button:has(span){border-color:#194629!important;box-shadow:0 0 0 1px #194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage>[class*="top-"]{color:#777!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage>[class*="top-"][class*="right-"]{border-color:#e8e8e5!important;background:rgba(255,255,255,.88)!important;color:#5d5d58!important}
+.afsana-gallery-arrow{position:absolute;z-index:12;top:50%;display:grid;width:34px;height:34px;place-items:center;transform:translateY(-50%);border:0;border-radius:7px;background:#194629;color:#fff;font:400 24px/1 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.12);transition:background .2s,transform .2s}
+.afsana-gallery-arrow:hover{background:#153b23;transform:translateY(-50%) scale(1.04)}
+.afsana-gallery-arrow-prev{left:12px}.afsana-gallery-arrow-next{right:12px}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-info.product-info-standard{
+  margin:0!important;padding:10px 0 0!important;border:0!important;border-radius:0!important;
+  background:#fff!important;box-shadow:none!important;overflow:visible!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-info-header{
+  display:flex!important;align-items:center!important;gap:9px!important;min-height:20px!important;
+  padding:0!important;border:0!important;background:transparent!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-brand-label{
+  padding:0!important;border:0!important;border-radius:0!important;background:none!important;
+  color:#7f807b!important;font-size:9px!important;font-weight:500!important;letter-spacing:.04em!important;text-transform:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-brand-label:before{display:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-concentration-label{color:#8a8b85!important;font-size:9px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-edition-label{color:#999!important;font-size:8px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-standard-title{
+  margin:9px 0 0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;
+  color:#222!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;
+  font-size:clamp(27px,3vw,36px)!important;font-weight:650!important;line-height:1.12!important;letter-spacing:-.035em!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-review-summary{
+  display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:7px!important;margin-top:10px!important;
+  color:#777!important;font-size:10px!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-review-summary a{margin-left:5px;color:#194629!important;font-size:10px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-standard-description{
+  max-width:560px!important;margin:13px 0 0!important;color:#7c7c77!important;font-size:11px!important;line-height:1.75!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-offer-card{
+  margin-top:15px!important;padding:12px 14px!important;border:1px solid #f0dfba!important;border-radius:7px!important;background:#fff9e9!important;box-shadow:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-offer-topline{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-offer-topline strong{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-purchase-standard{
+  margin-top:15px!important;padding:0!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-price-row-standard{align-items:end!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-price-stack strong{
+  color:#222!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:23px!important;font-weight:700!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-price-stack del{color:#a4a49e!important;font-size:11px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-price-caption{color:#888!important;font-size:8px!important;letter-spacing:.1em!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-stock-standard{
+  padding:7px 9px!important;border:1px solid #dce9dc!important;border-radius:30px!important;background:#f3f8f1!important;color:#30653d!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-stock-standard strong{font-size:8px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-stock-standard small{font-size:7px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-standard-divider{height:1px!important;margin:14px 0!important;background:#ecece8!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-size-heading{
+  color:#34342f!important;font-size:10px!important;font-weight:700!important;letter-spacing:.015em!important;text-transform:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-size-heading small{color:#888!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-size-options{display:flex!important;gap:7px!important;margin-top:9px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-size-option{
+  min-width:66px!important;padding:8px 10px!important;gap:4px!important;border:1px solid #e2e2dd!important;
+  border-radius:5px!important;background:#fff!important;color:#4b4b46!important;font-size:9px!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-size-option span{font-size:6px!important;color:#93938d!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-size-option.is-selected{
+  border-color:#194629!important;background:#f1f6f1!important;color:#194629!important;box-shadow:inset 0 0 0 1px #194629!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-size-option.is-unavailable{opacity:.45}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-actions{
+  display:grid!important;grid-template-columns:74px minmax(0,1fr) minmax(0,1fr) 38px!important;
+  align-items:end!important;gap:6px!important;margin-top:17px!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-quantity-wrap{gap:5px!important;min-width:0!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-quantity-wrap>span{color:#8b8b85!important;font-size:7px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-quantity-wrap [role="group"]{min-height:40px!important;border-color:#e4e4df!important;border-radius:5px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-quantity-wrap [role="group"] button{padding:7px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-add-to-bag,
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-buy-now{
+  display:flex!important;min-width:0!important;min-height:40px!important;align-items:center!important;justify-content:center!important;
+  gap:7px!important;padding:0 10px!important;border:1px solid #194629!important;border-radius:22px!important;
+  background:#194629!important;color:#fff!important;font-size:8px!important;font-weight:700!important;letter-spacing:.02em!important;text-transform:uppercase!important;box-shadow:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-add-to-bag:hover:not(:disabled){background:#153b23!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-buy-now{border-color:#ffbd37!important;background:#ffbd37!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-buy-now:hover:not(:disabled){background:#f2ad22!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-wishlist-button{
+  min-height:40px!important;border:1px solid #e3e3df!important;border-radius:50%!important;background:#fff!important;color:#54544e!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-taxonomy{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;margin-top:13px;padding-top:10px;
+  border-top:1px solid #ecece8;color:#80807a;font-size:9px;line-height:1.5
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-taxonomy b{color:#4a4a44;font-weight:700}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-share{display:inline-flex;align-items:center;gap:6px}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-share a{
+  display:grid;min-width:19px;height:19px;place-items:center;padding:0 4px;border-radius:50%;background:#194629;color:#fff!important;font-size:8px;font-weight:700;text-decoration:none
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-share a:hover{background:#ffbd37;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-perks-standard,
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-specs-standard{display:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-reference-tabs{
+  margin-top:36px!important;padding:0!important;border:0!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-list{
+  display:flex!important;justify-content:center!important;flex-wrap:wrap!important;gap:clamp(22px,5vw,58px)!important;
+  border-bottom:1px solid #e8e8e4!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-list button{
+  position:relative!important;padding:0 0 13px!important;border:0!important;background:none!important;
+  color:#777!important;font-size:11px!important;font-weight:500!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-list button.is-active{color:#194629!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-list button.is-active:after{
+  position:absolute;right:0;bottom:-1px;left:0;height:2px;background:#194629;content:""
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-panel{
+  min-height:120px!important;padding:20px 0 24px!important;color:#686862!important;font-size:11px!important;line-height:1.75!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-panel>p{max-width:900px!important;margin:0 auto!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;width:100%!important;
+  overflow:hidden;border:1px solid #ededeb;border-radius:8px
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div{
+  display:grid!important;grid-template-columns:minmax(150px,25%) minmax(0,1fr)!important;gap:14px!important;
+  padding:10px 14px!important;border:0!important;border-bottom:1px solid #ecece8!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div:first-child{
+  background:#ffbd37!important;color:#242424!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div:nth-child(even){background:#f2f2f0!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div:nth-child(odd):not(:first-child){background:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info strong{color:#45453f!important;font-size:10px!important;font-weight:600!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info span{color:#6d6d67!important;font-size:10px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div:first-child strong,
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div:first-child span{color:#242424!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story{margin-top:30px!important;padding-top:30px!important;border-top:0!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-head{
+  display:flex!important;flex-direction:column!important;align-items:center!important;gap:10px!important;margin-bottom:22px!important;text-align:center!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-head h2{
+  margin-top:8px!important;color:#194629!important;font-size:clamp(25px,3vw,34px)!important;font-weight:700!important;line-height:1.12!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-head h2 em{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-aside{max-width:520px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-aside p{color:#777!important;font-size:11px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-link{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-note-story,
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-rituals{display:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .product-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-related-item .product-card-stage{border-radius:7px!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-related-item .product-card-stage:after{background:#194629!important}
+
+/* Cart page: same yellow table heading, compact rows and green order-summary CTA. */
+.storefront-theme.afsana-reference-storefront .afsana-cart-page{background:#fff!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-title-band{background:#f4f4f2!important;border:0!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-title-inner h1{color:#222!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:clamp(28px,3vw,36px)!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-title-inner p{color:#777!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-title-inner p a{color:#555!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-table-head{background:#ffbd37!important;color:#242424!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-summary{border:1px solid #e8e8e5!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-checkout,
+.storefront-theme.afsana-reference-storefront .afsana-cart-coupon button{border-radius:24px!important;background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-checkout:hover:not(.is-disabled),
+.storefront-theme.afsana-reference-storefront .afsana-cart-coupon button:hover{background:#153b23!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-clear,
+.storefront-theme.afsana-reference-storefront .afsana-cart-continue{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-benefits{display:none!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-benefits>div>span{color:#194629!important;background:#fafbf7!important}
+.storefront-theme.afsana-reference-storefront .afsana-cart-primary-link{border-radius:24px!important;background:#194629!important;color:#fff!important}
+
+/* Checkout, payment, bank details and order summary retain every existing action. */
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference{
+  min-height:70vh!important;padding:30px 0 56px!important;background:#fff!important;color:#242424!important;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-section,
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-summary{
+  padding:20px!important;border:1px solid #e8e8e5!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-heading,
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-summary h2{
+  margin:0 0 4px!important;color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:15px!important;font-weight:700!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-signin{border:1px solid #dce8dc!important;border-radius:6px!important;background:#f5f9f4!important;color:#4f6250!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-signin a{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-payment label{
+  border:1px solid #e9e9e5!important;border-radius:7px!important;background:#fff!important;color:#333!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-payment label:has(input:checked){
+  border-color:#194629!important;background:#f3f8f2!important;box-shadow:0 0 0 1px #194629!important
+}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-payment input{accent-color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-payment-copy{color:#777!important;font-size:11px!important;line-height:1.5}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-submit{border-radius:24px!important;background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-submit:hover{background:#153b23!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-summary .font-display{font-family:Inter,ui-sans-serif,system-ui,sans-serif!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-summary{position:sticky;top:100px}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-note{color:#777!important;font-size:10px!important}
+.storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-error{color:#a13d36!important}
+
+/* Order completion, tracking, wishlist and account pages share the same system. */
+.storefront-theme.afsana-reference-storefront main .max-w-xl,
+.storefront-theme.afsana-reference-storefront main .max-w-4xl{max-width:1080px!important}
+.storefront-theme.afsana-reference-storefront main .max-w-xl form,
+.storefront-theme.afsana-reference-storefront main .max-w-xl .mt-8>div,
+.storefront-theme.afsana-reference-storefront main .max-w-4xl li a,
+.storefront-theme.afsana-reference-storefront main .max-w-4xl ul{border-color:#e8e8e5!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront main .max-w-xl form label{color:#444!important}
+.storefront-theme.afsana-reference-storefront main .max-w-xl form button,
+.storefront-theme.afsana-reference-storefront main .max-w-xl .flex.flex-col button,
+.storefront-theme.afsana-reference-storefront main .max-w-4xl>div>button{border-radius:24px!important;background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront main .max-w-xl .text-center h1{color:#194629!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl [role="tablist"]{border-color:#e8e8e5!important;border-radius:7px!important;background:#f6f6f3!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl [role="tab"]{border-radius:5px!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl [role="tab"][aria-selected="true"]{background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .rounded-2xl{border-radius:8px!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .border{border-color:#e8e8e5!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .bg-\[\#faf8f4\]{background:#fff!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .font-display{font-family:Inter,ui-sans-serif,system-ui,sans-serif!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .text-ink-muted,
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .text-\[\#5f654f\]{color:#777!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .text-\[\#3d6b3d\]{color:#194629!important}
+.storefront-theme.afsana-reference-storefront main .max-w-4xl .bg-\[\#263e0e\]{background:#194629!important}
+
+/* About, journal, gifting and CMS-managed inner pages inherit the same light commerce language. */
+.storefront-theme.afsana-reference-storefront .private-banner{background:#194629!important}
+.storefront-theme.afsana-reference-storefront .private-banner:before{background:linear-gradient(90deg,rgba(25,70,41,.82),rgba(25,70,41,.12))!important}
+.storefront-theme.afsana-reference-storefront .private-banner .text-\[\#b4bf41\],
+.storefront-theme.afsana-reference-storefront .private-banner .text-\[\#d9ff55\]{color:#ffbd37!important}
+.storefront-theme.afsana-reference-storefront .about-copy-large,
+.storefront-theme.afsana-reference-storefront .story-grid h2,
+.storefront-theme.afsana-reference-storefront .story-grid p{color:#292929!important}
+.storefront-theme.afsana-reference-storefront .editorial-grid{gap:18px!important}
+.storefront-theme.afsana-reference-storefront .editorial-card{border:1px solid #e8e8e5!important;border-radius:7px!important;background:#fff!important;box-shadow:none!important}
+.storefront-theme.afsana-reference-storefront .editorial-meta h2{color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-size:19px!important;font-weight:700!important}
+.storefront-theme.afsana-reference-storefront .editorial-meta p{color:#777!important}
+.storefront-theme.afsana-reference-storefront .eyebrow{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .section-title{color:#242424!important;font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;font-weight:700!important;letter-spacing:-.04em!important}
+.storefront-theme.afsana-reference-storefront .section-title em{color:#194629!important}
+.storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+
+/* Customer login, registration and password pages now sit inside the same shop shell. */
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center{
+  min-height:620px!important;padding:52px 16px!important;background:#f4f4f2!important
+}
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center>div.relative{
+  max-width:480px!important;padding:30px!important;border:1px solid #e7e7e3!important;border-radius:9px!important;
+  background:#fff!important;box-shadow:0 12px 38px rgba(0,0,0,.06)!important
+}
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center>div.absolute{display:none!important}
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center>div.relative>div:first-child>div{
+  border-radius:50%!important;background:#194629!important;color:#ffbd37!important
+}
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center h1{color:#242424!important}
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center button[type="submit"]{border-radius:24px!important;background:#194629!important;color:#fff!important}
+.storefront-theme.afsana-reference-storefront main .min-h-screen.flex.items-center.justify-center a{color:#194629!important}
+
+/* Mobile and tablet behavior for all redesigned storefront routes. */
+@media(max-width:1100px){
+  .storefront-theme.afsana-reference-storefront .storefront-header-inner{gap:12px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-main-nav{gap:12px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-nav-link{font-size:10px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-detail-grid{gap:24px!important}
+}
+@media(max-width:900px){
+  .afsana-reference-topbar-inner{grid-template-columns:1fr 1fr;min-height:31px}
+  .afsana-reference-topbar-message{display:none}
+  .afsana-reference-benefits-inner{gap:16px}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-gallery{max-width:650px;margin:0 auto}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-info{max-width:720px;margin:0 auto!important}
+  .storefront-theme.afsana-reference-storefront .afsana-checkout-reference .afsana-checkout-summary{position:static!important}
+}
+@media(max-width:640px){
+  .afsana-reference-topbar-inner{display:flex;justify-content:space-between;gap:8px;min-height:30px}
+  .afsana-reference-topbar-inner>span{font-size:8px}
+  .afsana-reference-topbar-links{gap:6px}
+  .storefront-theme.afsana-reference-storefront .storefront-header-inner{height:64px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-brand-mark{width:32px!important;height:32px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-brand>span:last-child{font-size:15px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-brand small{font-size:6px!important;letter-spacing:.13em!important}
+  .storefront-theme.afsana-reference-storefront .storefront-header-actions{gap:2px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-header-action{width:32px!important;min-width:32px!important;height:32px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-header-action svg{width:15px;height:15px}
+  .afsana-reference-benefits-inner{grid-template-columns:1fr;gap:14px;padding-top:19px;padding-bottom:19px}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page{padding-top:16px!important;padding-bottom:34px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-detail-grid{margin-top:16px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage{width:100%!important;aspect-ratio:1/1!important;min-height:0!important;max-height:520px!important;border-radius:7px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .gallery-thumbs button{width:58px!important;min-width:58px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-info{padding:4px 0 0!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-standard-title{font-size:28px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-actions{grid-template-columns:62px minmax(0,1fr) minmax(0,1fr) 35px!important;gap:4px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-add-to-bag,
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-buy-now{padding:0 6px!important;font-size:7px!important;letter-spacing:0!important}
+  .storefront-theme.afsana-reference-storefront .afsana-gallery-arrow{width:30px;height:30px;font-size:21px}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-tab-list{gap:23px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-additional-info>div{grid-template-columns:110px minmax(0,1fr)!important;padding:9px 10px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-grid,
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-complete-story-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-cart-content{padding-top:22px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-cart-summary{padding:16px!important}
+  .storefront-theme.afsana-reference-storefront .afsana-checkout-reference{padding-top:22px!important}
+  .storefront-theme.afsana-reference-storefront footer .container-xl{padding-top:28px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .storefront-theme.afsana-reference-storefront *{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
