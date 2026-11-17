@@ -130,10 +130,24 @@ export default {
 
     const asset = await env.ASSETS.fetch(request);
     const headers = new Headers(asset.headers);
-    if (u.pathname.startsWith("/assets/")) {
+    const contentType = headers.get("Content-Type") || "";
+
+    // A missing hashed Vite asset must never fall through to SPA index.html.
+    // Browsers then receive a real 404 instead of a misleading HTML MIME response.
+    if (u.pathname.startsWith("/assets/") && contentType.toLowerCase().includes("text/html")) {
+      return new Response("Asset not found", {
+        status: 404,
+        headers: securityHeaders({ "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "X-Afsana-Backend": "cloudflare-assets" }),
+      });
+    }
+
+    // Do not let browsers/CDNs keep an old index.html pointing at removed hashed chunks.
+    if (contentType.toLowerCase().includes("text/html")) {
+      headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
+      headers.set("Pragma", "no-cache");
+      headers.set("Expires", "0");
+    } else if (u.pathname.startsWith("/assets/")) {
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    } else if (u.pathname === "/" || u.pathname.endsWith(".html")) {
-      headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     }
     headers.set("X-Afsana-Backend", "cloudflare-assets");
     return new Response(asset.body, { status: asset.status, headers: securityHeaders(Object.fromEntries(headers.entries())) });
