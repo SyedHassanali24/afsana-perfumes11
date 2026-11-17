@@ -638,3 +638,205 @@
 .storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] > .container-xl > div:first-child > a{
   color:#fff!important;
 }
+
+/* AFSANA top strip: animated 15-day returns message and clear utility actions */
+.afsana-reference-topbar-inner{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:18px!important;
+  min-height:42px!important;
+  align-items:center!important;
+}
+.afsana-return-policy-marquee{
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+  color:#fff;
+  mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+}
+.afsana-return-policy-track{
+  display:flex;
+  width:max-content;
+  align-items:center;
+  animation:afsanaReturnsMarquee 23s linear infinite;
+}
+.afsana-return-policy-track>span{
+  display:inline-flex;
+  align-items:center;
+  gap:18px;
+  padding-right:36px;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.19em;
+  line-height:1.2;
+}
+.afsana-return-policy-track i{
+  color:#ffbd37;
+  font-style:normal;
+}
+@keyframes afsanaReturnsMarquee{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+.afsana-reference-topbar-links{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  white-space:nowrap;
+}
+.afsana-reference-topbar-links .afsana-topbar-action{
+  display:inline-flex;
+  min-height:30px;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 12px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;
+  background:rgba(255,255,255,.07);
+  color:#fff!important;
+  font-size:9px;
+  font-weight:750;
+  letter-spacing:.04em;
+  text-decoration:none;
+  transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;
+}
+.afsana-reference-topbar-links .afsana-topbar-action svg{
+  display:block;
+  width:13px;
+  height:13px;
+  flex:none;
+  stroke-width:2;
+}
+.afsana-reference-topbar-links .afsana-topbar-action:hover{
+  transform:translateY(-1px);
+  border-color:#ffbd37;
+  background:#ffbd37;
+  color:#194629!important;
+}
+.afsana-reference-topbar-links .afsana-topbar-account{
+  border-color:#ffbd37;
+  background:#ffbd37;
+  color:#194629!important;
+}
+.afsana-reference-topbar-links .afsana-topbar-account:hover{
+  border-color:#fff;
+  background:#fff;
+  color:#194629!important;
+}
+
+/* Search stays visible and legible across narrow navbar widths. */
+.storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger{
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  flex:none!important;
+  place-items:center!important;
+  border:1px solid #dfe5db!important;
+  background:#f4f7f2!important;
+  color:#194629!important;
+  box-shadow:none!important;
+}
+.storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger svg{
+  display:block!important;
+  visibility:visible!important;
+  width:18px!important;
+  height:18px!important;
+  opacity:1!important;
+  stroke:#194629!important;
+  stroke-width:2.2!important;
+}
+.storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger:hover{
+  border-color:#194629!important;
+  background:#194629!important;
+  color:#fff!important;
+}
+.storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger:hover svg{
+  stroke:#fff!important;
+}
+
+/* Mobile product gallery: keep the real fragrance image in a visible, full-width stage. */
+@media(max-width:640px){
+  .afsana-reference-topbar-inner{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:7px!important;
+    min-height:36px!important;
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+  }
+  .afsana-return-policy-track{animation-duration:18s}
+  .afsana-return-policy-track>span{gap:10px;padding-right:22px;font-size:8px;letter-spacing:.13em}
+  .afsana-reference-topbar-links{gap:5px!important}
+  .afsana-reference-topbar-links .afsana-topbar-action{
+    min-height:27px;
+    gap:4px;
+    padding:0 7px;
+    font-size:8px;
+    letter-spacing:0;
+  }
+  .afsana-reference-topbar-links .afsana-topbar-action svg{width:11px;height:11px}
+  .storefront-theme.afsana-reference-storefront .storefront-header-actions{gap:3px!important}
+  .storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger{
+    display:grid!important;
+    width:34px!important;
+    min-width:34px!important;
+    height:34px!important;
+  }
+  .storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger svg{width:18px!important;height:18px!important}
+  .afsana-product-page .product-gallery{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    gap:10px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .afsana-product-page .main-product-stage{
+    display:flex!important;
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    max-width:100%!important;
+    max-height:none!important;
+    min-height:0!important;
+    height:auto!important;
+    aspect-ratio:1/1!important;
+    overflow:hidden!important;
+  }
+  .afsana-product-page .main-product-stage .product-3d{
+    display:block!important;
+    width:88%!important;
+    height:88%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:100%!important;
+    max-height:100%!important;
+  }
+  .afsana-product-page .main-product-stage .product-3d img{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:100%!important;
+    max-height:100%!important;
+    object-fit:contain!important;
+  }
+  .afsana-product-page .gallery-thumbs{
+    display:flex!important;
+    grid-column:1!important;
+    grid-row:2!important;
+    flex-direction:row!important;
+    width:100%!important;
+    max-width:100%!important;
+    max-height:none!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .afsana-return-policy-track{animation:none!important}
+}
