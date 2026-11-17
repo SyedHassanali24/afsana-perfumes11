@@ -60,7 +60,6 @@ export default function ShopLayout(){
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
- const supportPhone=String(footerConfig.phone||shopSettings?.store?.phone||'').trim();
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const siteFooterSections=cmsData?.pageSections?.site_footer||[];
  const footerCms=siteFooterSections.find((s)=>s?.type==='footer_showcase')?.config||{};
