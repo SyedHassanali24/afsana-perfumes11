@@ -46,6 +46,8 @@ async function sendEmailJsOtp({ to, subject, purpose, otp }, { config, fetchImpl
         expiry_minutes: expiryMinutes,
         expiry: expiryMinutes,
         app_name: 'AFSANA Perfumes',
+        brand_logo_url: 'https://afsanaperfumes.store/afsana-email-logo.jpg',
+        regards: 'Regards, AFSANA Perfumes Team',
       },
     }),
   });
@@ -95,7 +97,7 @@ async function sendEmailJsTemplate({ to, subject, templateId, params = {} }, { c
       template_id: selectedTemplate,
       user_id: config.publicKey,
       accessToken: config.privateKey,
-      template_params: { ...params, to_email: recipient, email_subject: String(subject || 'AFSANA notification'), app_name: 'AFSANA Perfumes' },
+      template_params: { ...params, to_email: recipient, email_subject: String(subject || 'AFSANA notification'), app_name: 'AFSANA Perfumes', brand_logo_url: 'https://afsanaperfumes.store/afsana-email-logo.jpg', regards: 'Regards, AFSANA Perfumes Team' },
     }),
   });
   if (!response || !response.ok) {
