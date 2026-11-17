@@ -728,6 +728,13 @@
 }
 
 /* Search stays visible and legible across narrow navbar widths. */
+.storefront-theme.afsana-reference-storefront .storefront-header-actions{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  align-items:center!important;
+  flex:none!important;
+}
 .storefront-theme.afsana-reference-storefront .storefront-header-actions .storefront-search-trigger{
   display:grid!important;
   visibility:visible!important;
