@@ -10,10 +10,16 @@ function ProfileForm() {
   const [msg, setMsg] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
   useEffect(() => { setF({ name: customer?.name || '', city: customer?.city || '', email: customer?.email || '' }); }, [customer?.name, customer?.city]);
   const submit = async (e) => {
-    e.preventDefault(); setMsg(''); setError(''); setBusy(true);
-    try { if (!f.name.trim()) { setError('Name is required.'); setBusy(false); return; }\n    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(f.email.trim())) { setError('A valid email address is required for password recovery.'); setBusy(false); return; }
-    await accountApi.updateProfile({ name: f.name.trim(), city: f.city.trim(), email: f.email.trim() }); await refresh(); setMsg('Saved.'); }
-    catch (err) { setError(err.message); } finally { setBusy(false); }
+    e.preventDefault(); setMsg(''); setError('');
+    if (!f.name.trim()) { setError('Name is required.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) { setError('A valid email address is required for password recovery.'); return; }
+    setBusy(true);
+    try {
+      await accountApi.updateProfile({ name: f.name.trim(), city: f.city.trim(), email: f.email.trim() });
+      await refresh();
+      setMsg('Saved.');
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
   };
   return (
     <form onSubmit={submit} className="rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] shadow-[0_18px_50px_rgba(24,35,8,.06)] p-5 space-y-4">
