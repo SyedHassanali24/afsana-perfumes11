@@ -9,6 +9,34 @@ const memoryGets = new Map();
 const CACHE_EVENT = 'afsana:cache-change';
 const PERSIST_PREFIX = 'afsana-api-cache:';
 
+// Short, browser-local GET caching prevents repeated admin reads when navigating the dashboard.
+// Identity-bound routes are deliberately excluded; the cache is cleared on every auth transition.
+const NEVER_CACHE_PATHS = [
+  /^\\/auth(?:\\/|$)/,
+  /^\\/account(?:\\/|$)/,
+  /^\\/cart(?:\\/|$)/,
+  /^\\/wishlist(?:\\/|$)/,
+  /^\\/returns\\/mine(?:\\/|$)/,
+  /^\\/orders\\/track(?:\\/|$)/,
+  /^\\/growth\\/me(?:\\/|$)/,
+  /^\\/reviews\\/mine(?:\\/|$)/,
+  /^\\/backup(?:\\/|$)/,
+  /^\\/analytics\\/security(?:\\/|$)/,
+  /^\\/staff\\/[^/]+\\/sessions(?:\\/|$)/,
+];
+
+function defaultCacheTtl(path) {
+  const p = String(path || '').split('?')[0];
+  if (NEVER_CACHE_PATHS.some((pattern) => pattern.test(p))) return 0;
+  if (p === '/analytics/dashboard') return 10000;
+  if (p === '/analytics/sources') return 60000;
+  if (p === '/accountant/admin/report') return 30000;
+  if (p === '/products' || (p.startsWith('/products/') && !p.startsWith('/products/admin/'))) return 15000;
+  if (p === '/cms/public' || p === '/settings/public' || p.startsWith('/taxonomy/public/') || p.startsWith('/reviews/product/')) return 30000;
+  if (p.includes('/admin/') || p.startsWith('/inventory') || p.startsWith('/staff') || p.startsWith('/roles') || p.startsWith('/customers') || p.startsWith('/finance') || p.startsWith('/shipping') || p.startsWith('/analytics/')) return 3000;
+  return 0;
+}
+
 function loadPersistent(key) {
   try {
     const raw = sessionStorage.getItem(PERSIST_PREFIX + key);
@@ -84,6 +112,7 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
   Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
 
   if (method === 'GET') {
+    const effectiveCacheTtl = Math.max(Number(cacheTtl) || 0, defaultCacheTtl(path));
     const key = url.toString();
     const now = Date.now();
     const cached = memoryGets.get(key) || loadPersistent(key);
@@ -94,8 +123,8 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
 
     const request = executeRequest(url, path, { method, body, idempotencyKey })
       .then((data) => {
-        if (cacheTtl > 0) {
-          const entry = { data, expiresAt: Date.now() + cacheTtl };
+        if (effectiveCacheTtl > 0) {
+          const entry = { data, expiresAt: Date.now() + effectiveCacheTtl };
           memoryGets.set(key, entry);
           persistCache(key, entry);
           emitCacheChange();
@@ -109,6 +138,6 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
 
   const result = await executeRequest(url, path, { method, body, idempotencyKey });
   // Mutations can make cached GET data stale. Keep the UI correct and still fast.
-  if (memoryGets.size) clearApiCache();
+  clearApiCache();
   return result;
 }
