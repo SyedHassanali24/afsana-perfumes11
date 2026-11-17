@@ -6,6 +6,7 @@ import { productsApi, cmsPublicApi } from '../../services';
 import { Container, StateBox, QtyStepper, Placeholder } from '../ui';
 import ProductCard from '../ProductCard';
 import ReviewsSection, { Stars } from '../ReviewsSection';
+import CmsTestimonials, { sampleTestimonialsSection } from '../CmsTestimonials';
 import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
@@ -63,6 +64,7 @@ export default function ProductPage(){
  const {data,loading,error,reload}=useApi(()=>productsApi.bySlug(slug),[slug]);
  const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
  const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
+ const brandTestimonialsSection=(cmsContent?.homepageSections||[]).find((item)=>item.type==='testimonials')||sampleTestimonialsSection;
  const activeOffer=useMemo(()=>(
   (cmsContent?.homepageSections||[]).find((section)=>{
    const endAt=section?.config?.endAt;
@@ -75,7 +77,7 @@ export default function ProductPage(){
  const [tilt,setTilt]=useState({x:0,y:0});
  const [offerRemaining,setOfferRemaining]=useState(0);
  const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false),[autoRotate,setAutoRotate]=useState(false),[dragX,setDragX]=useState(null);
- const [mediaBroken,setMediaBroken]=useState(false),[modelViewerReady,setModelViewerReady]=useState(false),[modelViewerFailed,setModelViewerFailed]=useState(false);
+ const [mediaBroken,setMediaBroken]=useState(false),[modelViewerReady,setModelViewerReady]=useState(false),[modelViewerFailed,setModelViewerFailed]=useState(false),[lightboxOpen,setLightboxOpen]=useState(false);
  const stageRef=useRef(null),modelViewerRef=useRef(null);
  const p=data?.product, variants=data?.variants||[];
  const productCategory=typeof p?.category==='string'?p.category:(p?.category?.name||p?.categoryId?.name||p?.fragrance?.family||p?.fragrance?.gender||'AFSANA');
@@ -134,6 +136,25 @@ export default function ProductPage(){
  const beginDrag=(e)=>setDragX(e.clientX ?? e.touches?.[0]?.clientX ?? null);
  const moveDrag=(e)=>{if(dragX==null)return;const x=e.clientX ?? e.touches?.[0]?.clientX ?? dragX;if(Math.abs(x-dragX)>28){selectMedia(img+(x<dragX?1:-1));setDragX(x)}};
  const endDrag=()=>setDragX(null);
+ const activeImageIndex=imageMedia.findIndex((item)=>item.url===activeMedia?.url);
+ const shiftLightbox=(direction)=>{
+  if(!imageMedia.length)return;
+  const next=(activeImageIndex+direction+imageMedia.length)%imageMedia.length;
+  const mediaIndex=media.findIndex((item)=>item.url===imageMedia[next].url);
+  if(mediaIndex>=0)selectMedia(mediaIndex);
+ };
+ useEffect(()=>{
+  if(!lightboxOpen)return;
+  const previousOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  const onKey=(event)=>{
+   if(event.key==='Escape')setLightboxOpen(false);
+   if(event.key==='ArrowRight')shiftLightbox(1);
+   if(event.key==='ArrowLeft')shiftLightbox(-1);
+  };
+  document.addEventListener('keydown',onKey);
+  return ()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=previousOverflow;};
+ },[lightboxOpen,img,imageMedia.length]);
  return <Container className="afsana-product-page pt-8 sm:pt-10 pb-24">
   <style>{`
    .product-detail-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(360px,.88fr);gap:clamp(28px,4.8vw,76px);align-items:start}
@@ -395,7 +416,9 @@ export default function ProductPage(){
             <div className="absolute inset-[4%] rounded-[32%] border border-[#7357ff]/15 opacity-60" style={{transform:'translateZ(-28px) rotateY(5deg)'}}/>
             <div className="absolute inset-0 flex items-center justify-center" style={{transform:'translateZ(42px)'}}>
              <div className="absolute inset-[12%] rounded-full bg-[#b7a0da]/20 blur-3xl"/>
-             <div key={img} className="media-transition h-full w-full"><Media item={activeMedia} alt={p.name} onError={()=>setMediaBroken(true)} className="max-h-full max-w-full w-full h-full object-contain drop-shadow-[0_38px_48px_rgba(25,13,44,.28)]"/></div>
+             <button type="button" key={img} className="media-transition block h-full w-full cursor-zoom-in border-0 bg-transparent p-0" onClick={(event)=>{event.stopPropagation();setLightboxOpen(true);}} aria-label={`Open ${p.name} image full size`} aria-haspopup="dialog">
+              <Media item={activeMedia} alt={p.name} onError={()=>setMediaBroken(true)} className="max-h-full max-w-full w-full h-full pointer-events-none object-contain drop-shadow-[0_38px_48px_rgba(25,13,44,.28)]"/>
+             </button>
             </div>
            </div>
          : <BottlePreview name={p.name} style={{transform:`perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out'}}/>}
@@ -504,7 +527,7 @@ export default function ProductPage(){
    <section className="afsana-product-rituals py-16 sm:py-20"><div className="afsana-product-rituals-head mb-10 sm:mb-12"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">Inside the bottle</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">More than<br/><em className="text-[#263e0e]">a fragrance.</em></h2></div><div className="product-banner-grid">{banners.map((src,i)=><article key={i} className="product-banner relative"><img src={src} className="w-full h-full object-cover" alt=""/><div className="absolute inset-0 bg-gradient-to-t from-[#182308]/85 to-transparent"/><div className="product-banner-copy absolute bottom-0 p-7 text-white"><div className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1} — {['The Opening','The Heart','The Memory','Your Ritual'][i]}</div><h3 className="mt-2 font-display text-3xl">{['First impressions matter.','Where the story unfolds.','What remains after you leave.','Make it unmistakably yours.'][i]}</h3><p className="mt-2 text-xs text-white/60">Spray. Layer. Wear. Remember.</p></div></article>)}</div></section>
    <section className="afsana-product-tabs afsana-product-reference-tabs">
     <div className="afsana-product-tab-list" role="tablist" aria-label="Product information">
-     {[['description','Description'],['details','Additional Information'],['reviews','Review']].map(([id,label])=><button type="button" key={id} role="tab" aria-selected={tab===id} onClick={()=>setTab(id)} className={tab===id?'is-active':''}>{label}</button>)}
+     {[['description','Description'],['details','Additional Information']].map(([id,label])=><button type="button" key={id} role="tab" aria-selected={tab===id} onClick={()=>setTab(id)} className={tab===id?'is-active':''}>{label}</button>)}
     </div>
     <div className="afsana-product-tab-panel" role="tabpanel">
      {tab==='description'&&<p>{p.content?.fullDescription||p.content?.shortDescription||'A fragrance composed by AFSANA. Explore its character, composition and the way it unfolds on the skin.'}</p>}
@@ -521,9 +544,13 @@ export default function ProductPage(){
        ['Base Notes',Array.isArray(p.notes?.base)?p.notes.base.join(', '):p.notes?.base]
       ].filter(([,value])=>value).map(([label,value])=><div key={label}><strong>{label}</strong><span>{value}</span></div>)}
      </div>}
-     {tab==='reviews'&&<ReviewsSection slug={slug}/>}
+
     </div>
    </section>
+   <section className="afsana-product-customer-reviews mt-14" aria-label="Product reviews and feedback">
+    <ReviewsSection slug={slug}/>
+   </section>
+   <CmsTestimonials section={brandTestimonialsSection} compact/>
    {data.related?.length>0&&<section className="afsana-complete-story">
      <div className="afsana-complete-story-head">
       <div>
@@ -538,5 +565,12 @@ export default function ProductPage(){
      <div className="product-grid afsana-complete-story-grid">{data.related.map((r,i)=><div className="afsana-related-item" key={r.id||r._id}><span className="afsana-related-number">0{i+1}</span><ProductCard product={r}/></div>)}</div>
     </section>}
   </>}</StateBox>
+  {lightboxOpen && activeMedia?.url && activeImageIndex>=0 && <div className="fixed inset-0 z-[140] flex items-center justify-center bg-[#080a07]/95 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label={p?.name+' product image viewer'} onClick={()=>setLightboxOpen(false)}>
+   <button type="button" className="absolute right-4 top-4 z-[2] grid h-11 w-11 place-items-center rounded-full border border-white/25 bg-white/10 text-2xl text-white hover:bg-white/20" onClick={(event)=>{event.stopPropagation();setLightboxOpen(false);}} aria-label="Close image viewer">×</button>
+   {imageMedia.length>1&&<button type="button" className="absolute left-3 top-1/2 z-[2] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 text-3xl text-white hover:bg-white/20 sm:left-7" onClick={(event)=>{event.stopPropagation();shiftLightbox(-1);}} aria-label="Previous image">‹</button>}
+   <img src={activeMedia.url} alt={activeMedia.alt||p?.name||'AFSANA fragrance'} className="max-h-[86vh] max-w-[88vw] select-none object-contain drop-shadow-2xl" onClick={(event)=>event.stopPropagation()} />
+   {imageMedia.length>1&&<button type="button" className="absolute right-3 top-1/2 z-[2] grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-white/10 text-3xl text-white hover:bg-white/20 sm:right-7" onClick={(event)=>{event.stopPropagation();shiftLightbox(1);}} aria-label="Next image">›</button>}
+   <p className="absolute bottom-5 left-1/2 -translate-x-1/2 text-center text-[10px] uppercase tracking-[.24em] text-white/75">{p?.name} · {String(activeImageIndex+1).padStart(2,'0')} / {String(imageMedia.length).padStart(2,'0')}</p>
+  </div>}
  </Container>;
 }
