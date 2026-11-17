@@ -219,6 +219,7 @@ async function captureOfferLead(body) {
       if (currentCoupon) {
         return { couponCode: currentCoupon.code, expiresAt: currentCoupon.expiresAt, reused: true };
       }
+      throw E.conflict('This email or phone number has already claimed its welcome offer.');
     }
 
     let code;
