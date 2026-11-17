@@ -289,6 +289,27 @@ const expenseShape = z.object({
 const expenseBody = expenseShape;
 const expensePatch = expenseShape.partial().refine((v) => Object.keys(v).length > 0, 'Nothing to change');
 const expenseQuery = z.object({ category: z.enum(FIN.CATEGORIES).optional(), from: dayKey.optional(), to: dayKey.optional(), ...paging });
+const manualJournalLine = z.object({
+  account: z.string().trim().min(2).max(100),
+  accountType: z.enum(['asset', 'liability', 'equity', 'income', 'expense']),
+  debit: num(z.number().min(0).max(100000000).default(0)),
+  credit: num(z.number().min(0).max(100000000).default(0)),
+  note: z.string().trim().max(200).optional(),
+}).superRefine((line, ctx) => {
+  const debit = Number(line.debit) || 0;
+  const credit = Number(line.credit) || 0;
+  if ((debit > 0) === (credit > 0)) ctx.addIssue({ code: 'custom', path: ['debit'], message: 'Enter an amount on either Debit or Credit, not both.' });
+});
+const manualJournalEntryBody = z.object({
+  date: dayKey,
+  narration: z.string().trim().min(2).max(300),
+  lines: z.array(manualJournalLine).min(2).max(30),
+}).superRefine((entry, ctx) => {
+  const debit = entry.lines.reduce((sum, line) => sum + (Number(line.debit) || 0), 0);
+  const credit = entry.lines.reduce((sum, line) => sum + (Number(line.credit) || 0), 0);
+  if (Math.abs(debit - credit) >= 0.005) ctx.addIssue({ code: 'custom', path: ['lines'], message: 'Total Debit and Credit must be equal before saving.' });
+});
+
 
 // ---- referral partners ----
 const referralPartnerFields = {
@@ -380,7 +401,7 @@ module.exports = {
   uploadBody,
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
   couponBody, couponPatch, couponActiveBody, couponQuery,
-  financeQuery, expenseBody, expensePatch, expenseQuery, referralPartnerBody, referralPartnerPatch,
+  financeQuery, expenseBody, expensePatch, expenseQuery, manualJournalEntryBody, referralPartnerBody, referralPartnerPatch,
   customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
   courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
