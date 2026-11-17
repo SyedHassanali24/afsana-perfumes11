@@ -629,3 +629,12 @@
 .storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] h2{
   color:#fffaf0!important;
 }
+
+
+/* AFSANA Selection: change only the requested text to white. */
+.storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] > .container-xl > div:first-child > p:first-child,
+.storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] h2,
+.storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] h2 em,
+.storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] > .container-xl > div:first-child > a{
+  color:#fff!important;
+}
