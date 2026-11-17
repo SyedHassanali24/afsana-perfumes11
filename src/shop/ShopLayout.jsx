@@ -4,6 +4,7 @@ import { Menu, Search, ShoppingBag, User, X, Heart, Truck, CreditCard, Headphone
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
+import WelcomeOfferPopup from './WelcomeOfferPopup';
 import { useWishlist } from './WishlistContext';
 import { Container } from './ui';
 import useApi from '../hooks/useApi';
@@ -111,11 +112,15 @@ export default function ShopLayout(){
 
   {cmsData?.announcement?.text && <div className="border-b border-[#100d24]/10 bg-[#d9ff55] px-4 py-2.5 text-center text-[9px] font-semibold uppercase tracking-[.22em] text-[#100d24]">AFSANA <span className="mx-2 text-[#7357ff]">•</span>{cmsData.announcement.text}</div>}
 
-  <div className="afsana-reference-topbar">
+  <div className="afsana-reference-topbar" aria-label="AFSANA return policy and account links">
     <Container className="afsana-reference-topbar-inner">
-      <span>{supportPhone?<a href={'tel:'+supportPhone}>Call Us: {supportPhone}</a>:'AFSANA · THE ART OF SCENT'}</span>
-      <span className="afsana-reference-topbar-message">Complimentary delivery on orders above PKR 7,500</span>
-      <span className="afsana-reference-topbar-links"><Link to="/track">Track order</Link><i>·</i><Link to={status==='authed'?'/account':'/login'}>{status==='authed'?'My account':'Sign in'}</Link></span>
+      <div className="afsana-return-policy-marquee" aria-label="15 days return policy">
+        <div className="afsana-return-policy-track"><span>15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i> 15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i></span><span aria-hidden="true">15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i> 15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i></span></div>
+      </div>
+      <span className="afsana-reference-topbar-links">
+        <Link to="/track" className="afsana-topbar-action"><Truck aria-hidden="true"/>Track order</Link>
+        <Link to={status==='authed'?'/account':'/login'} className="afsana-topbar-action afsana-topbar-account"><User aria-hidden="true"/>{status==='authed'?'My account':'Sign in'}</Link>
+      </span>
     </Container>
   </div>
   <header className="storefront-header sticky top-0 z-40 text-[#100d24]">
@@ -243,6 +248,7 @@ export default function ShopLayout(){
     </div>
   </div>}
 
+  <WelcomeOfferPopup/>
   <CartDrawer/>
  </div>;
 }
