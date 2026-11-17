@@ -12,7 +12,8 @@ export default function useApi(fn, deps = []) {
       const data = await fn();
       if (id === seq.current) setState({ data, error: null, loading: false });
     } catch (error) {
-      if (id === seq.current) setState({ data: null, error, loading: false });
+      // Keep the last successful data visible when a background refresh fails.
+      if (id === seq.current) setState((s) => ({ ...s, error, loading: false }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);

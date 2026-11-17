@@ -5,7 +5,7 @@ const { createHandler } = require('../../../middleware/withApi');
 const S = require('../../../validation/schemas');
 const Settings = require('../../../services/settingsService');
 
-const save = (key, schema) => ({ method: 'PUT', path: `/admin/${key}`, permission: ['settings', 'edit'], body: schema, reauth: true,
+const save = (key, schema) => ({ method: 'PUT', path: `/admin/${key}`, invalidateTags: ['settings'], permission: ['settings', 'edit'], body: schema, reauth: true,
   handler: async ({ ctx, body, scopes }) => { const { confirmPassword, ...value } = body; return Settings.update(ctx, key, value, scopes); } });
 exports.handler = createHandler('settings', [
   { method: 'GET', path: '/public', public: true, cache: 300, cacheTags: ['settings'], handler: () => Settings.getPublic() },

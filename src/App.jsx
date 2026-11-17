@@ -55,7 +55,9 @@ const mine = (el) => <RequireCustomer>{el}</RequireCustomer>;
 function AfsanaLoader({ suspense = false }) {
   const [visible, setVisible] = useState(true);
   useEffect(() => {
-    const timer = window.setTimeout(() => setVisible(false), suspense ? 650 : 1500);
+    // A Suspense fallback must remain visible until its lazy page actually loads.
+    if (suspense) return undefined;
+    const timer = window.setTimeout(() => setVisible(false), 300);
     return () => window.clearTimeout(timer);
   }, [suspense]);
   if (!visible) return null;

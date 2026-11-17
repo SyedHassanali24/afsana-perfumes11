@@ -56,13 +56,13 @@ const routes = [
       ]);
       return { history: rows.map((t) => ({ id: t._id, type: t.type, delta: t.delta, before: t.before, after: t.after, reason: t.reason, productName: t.productId && t.productId.name, sku: t.variantId && t.variantId.sku, by: t.by && t.by.email, at: t.createdAt })), pagination: pageMeta(total, page, limit) };
     } },
-  { method: 'POST', path: '/adjust', permission: ['inventory', 'manageStock'], body: S.adjustBody, reauth: true,
+  { method: 'POST', path: '/adjust', invalidateTags: ['products'], permission: ['inventory', 'manageStock'], body: S.adjustBody, reauth: true,
     async handler({ body, ctx, scopes }) {
       const inv = await adjustStock(ctx, body, scopes);
       return { stock: { current: inv.current, reserved: inv.reserved, available: inv.current - inv.reserved, damaged: inv.damaged } };
     } },
 ];
-routes.push({ method: 'PATCH', path: '/:variantId/threshold', permission: ['inventory', 'edit'], body: S.thresholdBody,
+routes.push({ method: 'PATCH', path: '/:variantId/threshold', invalidateTags: ['products'], permission: ['inventory', 'edit'], body: S.thresholdBody,
   async handler({ params, body, ctx, scopes }) {
     const inv = await Inventory.findOneAndUpdate({ variantId: params.variantId, ...scopeFilter(scopes, ctx.user._id, SCOPE_MAP) }, { $set: { lowStockThreshold: body.lowStockThreshold } }, { new: false });
     if (!inv) throw E.notFound('No inventory record for this size.');
