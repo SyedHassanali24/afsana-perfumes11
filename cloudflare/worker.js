@@ -50,8 +50,8 @@ function isPublicCacheableResponse(request, response) {
   const vary = response.headers.get("Vary") || "";
   return request.method === "GET"
     && response.status === 200
-    && /\\bpublic\\b/i.test(policy)
-    && !/\\b(?:private|no-store)\\b/i.test(policy)
+    && /\bpublic\b/i.test(policy)
+    && !/\b(?:private|no-store)\b/i.test(policy)
     && !response.headers.has("Set-Cookie")
     && vary.trim() !== "*";
 }
