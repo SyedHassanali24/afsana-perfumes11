@@ -741,7 +741,6 @@ export default function AfsanaSignatureHome(){
   const preview = readCmsPreview();
   const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
-  const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
   const homeSections = sections.some((item) => item?.type === 'testimonials')
     ? sections
     : (() => {
