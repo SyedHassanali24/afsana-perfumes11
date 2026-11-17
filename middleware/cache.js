@@ -1,7 +1,7 @@
 // Public API cache policy. Authenticated/admin responses remain no-store at the Worker.
 function cacheHeaders(ttl, swr = Math.max(ttl, 60), cacheTags = []) {
-  // Cloudflare Workers Cache uses max-age + stale-while-revalidate. Do not add s-maxage:
-  // it disables stale serving in Workers Cache and would increase perceived latency.
+  // Cloudflare Workers Cache uses max-age + stale-while-revalidate. Do not add s-maxage,
+  // must-revalidate, proxy-revalidate, or stale-if-error: these disable background stale serving.
   const seconds = Math.min(60, Math.max(1, Number(ttl) || 1));
   const stale = Math.min(60, Math.max(0, Number(swr) || 0));
   const tags = [...new Set((Array.isArray(cacheTags) ? cacheTags : [])
@@ -9,7 +9,7 @@ function cacheHeaders(ttl, swr = Math.max(ttl, 60), cacheTags = []) {
     .filter((tag) => /^[a-z0-9_-]{1,40}$/i.test(tag)))];
 
   return {
-    'Cache-Control': `public, max-age=${seconds}, stale-while-revalidate=${stale}, stale-if-error=300`,
+    'Cache-Control': `public, max-age=${seconds}, stale-while-revalidate=${stale}`,
     ...(tags.length ? { 'Cache-Tag': tags.join(',') } : {}),
   };
 }
