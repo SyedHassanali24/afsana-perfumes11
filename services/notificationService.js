@@ -1,6 +1,7 @@
 const { Notification } = require('../database/models');
 const { E } = require('../middleware/errors');
 const R = require('./notificationRules');
+const { getEmailJsConfig, sendEmailJsTemplate } = require('./emailjs');
 
 const ID = /^[a-f\d]{24}$/i;
 const recent = () => Notification.find({}).sort({ createdAt: -1 }).limit(R.SCAN_LIMIT).lean();
@@ -22,9 +23,27 @@ async function markAllRead(ctx) {
   return { marked: ids.length };
 }
 async function notifyAdmin({ type = 'security_alert', title, body = '', link = '/admin', forPermission }) {
-  return Notification.create({ type, title, body, link: R.safeLink(link), ...(forPermission ? { forPermission } : {}) }).catch((err) => {
+  let notification = null;
+  try {
+    notification = await Notification.create({ type, title, body, link: R.safeLink(link), ...(forPermission ? { forPermission } : {}) });
+  } catch (err) {
     console.error('Admin notification failed:', err?.message || err);
-    return null;
-  });
+  }
+  // Email is best-effort: never block the dashboard bell or the business action.
+  const to = String(process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL || '').trim();
+  const templateId = String(process.env.EMAILJS_NOTIFICATION_TEMPLATE_ID || '').trim();
+  if (to && templateId) {
+    try {
+      const config = getEmailJsConfig();
+      if (config) await sendEmailJsTemplate({
+        to, subject: 'AFSANA alert: ' + String(title || 'Dashboard notification'),
+        templateId,
+        params: { notification_type: String(type), email_title: String(title || 'AFSANA notification'), email_body: String(body || ''), dashboard_url: 'https://afsanaperfumes.store/admin', notification_link: 'https://afsanaperfumes.store' + R.safeLink(link) },
+      }, { config });
+    } catch (err) {
+      console.error('[admin-email] notification delivery failed:', err?.message || err);
+    }
+  }
+  return notification;
 }
 module.exports = { list, markRead, markAllRead, notifyAdmin };
