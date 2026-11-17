@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Heart, ArrowRight, Rotate3D } from 'lucide-react';
+import { Heart, ArrowRight } from 'lucide-react';
 import useApi from '../../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../../services';
 import { Container, StateBox, QtyStepper, Placeholder } from '../ui';
@@ -76,7 +76,7 @@ export default function ProductPage(){
  const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('description');
  const [tilt,setTilt]=useState({x:0,y:0});
  const [offerRemaining,setOfferRemaining]=useState(0);
- const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false),[autoRotate,setAutoRotate]=useState(false),[dragX,setDragX]=useState(null);
+ const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false),[dragX,setDragX]=useState(null);
  const [mediaBroken,setMediaBroken]=useState(false),[modelViewerReady,setModelViewerReady]=useState(false),[modelViewerFailed,setModelViewerFailed]=useState(false),[lightboxOpen,setLightboxOpen]=useState(false);
  const stageRef=useRef(null),modelViewerRef=useRef(null);
  const p=data?.product, variants=data?.variants||[];
@@ -105,7 +105,6 @@ export default function ProductPage(){
   }),[productMedia]);
  const product3dUrl=productMedia.find((item)=>item.kind==='model3d'||/\.(glb|gltf)(\?|$)/i.test(item.url))?.url || p?.model3dUrl || p?.modelUrl || referenceAssets.product3dModelUrl || '';
  useEffect(()=>{setMediaBroken(false);setModelViewerFailed(false);setImg(0)},[slug]);
- useEffect(()=>{if(!autoRotate || media.length<2)return;const id=window.setInterval(()=>{setImg(i=>(i+1)%media.length);setMediaBroken(false)},1400);return()=>window.clearInterval(id)},[autoRotate,media.length]);
  useEffect(()=>{
   if(!product3dUrl || typeof window==='undefined' || !window.customElements) { setModelViewerReady(false); return; }
   let active=true;
