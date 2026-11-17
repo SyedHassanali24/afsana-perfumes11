@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import cache from '../middleware/cache.js';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const cache = require('../middleware/cache');
 
 test('public cache headers are capped and tagged for edge caching', () => {
   const headers = cache.cacheHeaders(300, 300, ['cms', 'products', 'cms', 'not a tag']);
