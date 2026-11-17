@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, User, X, Heart, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
+import { Menu, Search, ShoppingBag, User, X, Heart, Truck, CreditCard, Headphones, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
@@ -59,6 +59,7 @@ export default function ShopLayout(){
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
+ const supportPhone=String(footerConfig.phone||shopSettings?.store?.phone||'').trim();
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const siteFooterSections=cmsData?.pageSections?.site_footer||[];
  const footerCms=siteFooterSections.find((s)=>s?.type==='footer_showcase')?.config||{};
@@ -112,8 +113,8 @@ export default function ShopLayout(){
 
   <div className="afsana-reference-topbar">
     <Container className="afsana-reference-topbar-inner">
-      <span>AFSANA <i>·</i> THE ART OF SCENT</span>
-      <span className="afsana-reference-topbar-message">A fragrance for every chapter.</span>
+      <span>{supportPhone?<a href={'tel:'+supportPhone}>Call Us: {supportPhone}</a>:'AFSANA · THE ART OF SCENT'}</span>
+      <span className="afsana-reference-topbar-message">Complimentary delivery on orders above PKR 7,500</span>
       <span className="afsana-reference-topbar-links"><Link to="/track">Track order</Link><i>·</i><Link to={status==='authed'?'/account':'/login'}>{status==='authed'?'My account':'Sign in'}</Link></span>
     </Container>
   </div>
@@ -152,6 +153,14 @@ export default function ShopLayout(){
       <path fill="currentColor" d="M20.52 3.48A11.77 11.77 0 0 0 12.15 0C5.64 0 .34 5.3.34 11.81c0 2.08.54 4.12 1.57 5.91L.25 24l6.45-1.69a11.8 11.8 0 0 0 5.45 1.31h.01c6.51 0 11.81-5.3 11.81-11.81 0-3.15-1.23-6.11-3.45-8.33ZM12.16 21.6h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.83 1 1.02-3.73-.23-.38a9.77 9.77 0 0 1-1.5-5.1c0-5.42 4.41-9.83 9.84-9.83 2.63 0 5.1 1.03 6.96 2.89a9.78 9.78 0 0 1 2.88 6.97c0 5.42-4.41 9.83-9.78 9.83Zm5.39-7.36c-.29-.15-1.7-.84-1.97-.94-.26-.1-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.2-.34.22-.63.08-.29-.15-1.22-.45-2.32-1.43-.86-.76-1.44-1.7-1.61-1.99-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.3-.49.1-.19.05-.36-.02-.51-.08-.15-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49l-.55-.01c-.2 0-.51.08-.78.37-.27.29-1.03 1.01-1.03 2.47 0 1.46 1.05 2.87 1.2 3.07.15.2 2.07 3.16 5.01 4.43.7.3 1.25.49 1.68.63.71.23 1.36.2 1.87.12.57-.09 1.7-.7 1.94-1.38.24-.68.24-1.26.17-1.38-.08-.12-.27-.2-.56-.34Z"/>
     </svg>
   </a>}
+
+  <section className="afsana-reference-benefits" aria-label="AFSANA customer benefits">
+    <Container className="afsana-reference-benefits-inner">
+      <div><span><Truck aria-hidden="true"/></span><p><strong>Complimentary Delivery</strong><small>On qualifying orders above PKR 7,500</small></p></div>
+      <div><span><CreditCard aria-hidden="true"/></span><p><strong>Flexible Payment</strong><small>Cash on Delivery and Bank Transfer</small></p></div>
+      <div><span><Headphones aria-hidden="true"/></span><p><strong>Customer Support</strong><small>Help with your fragrance and order</small></p></div>
+    </Container>
+  </section>
 
   {hasManagedFooter ? <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer" /></Suspense> :
   <footer className="relative overflow-hidden bg-[#100d24] text-white border-t border-[#d9ff55]/20">
