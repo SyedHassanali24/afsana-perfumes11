@@ -167,7 +167,7 @@ export default function TrackOrderPage() {
               <div className='overflow-x-auto pb-2'>
                 <ol className='flex min-w-[650px] items-start'>
                   {ORDER_STEPS.map((step, index) => {
-                    const done = !isTerminal && currentStep >= index;
+                    const done = status !== 'Cancelled' && currentStep >= index;
                     const current = !isTerminal && currentStep === index;
                     const event = milestoneEvent(res.timeline, step.statuses);
                     const Icon = step.Icon;
