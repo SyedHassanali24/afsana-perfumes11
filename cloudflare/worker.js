@@ -42,7 +42,7 @@ export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
-    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: securityHeaders(cors(origin)) });
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: securityHeaders({ ...cors(origin), "Cache-Control": "no-store" }) });
 
     if (u.pathname === "/api/health/mongodb" && request.method === "GET") {
       try {
@@ -63,7 +63,7 @@ export default {
         if (mode === "subscribe" && env.WHATSAPP_VERIFY_TOKEN && token === env.WHATSAPP_VERIFY_TOKEN && challenge) {
           return new Response(challenge, { status: 200, headers: securityHeaders({ "Content-Type": "text/plain", "Cache-Control": "no-store" }) });
         }
-        return new Response("Forbidden", { status: 403, headers: securityHeaders() });
+        return new Response("Forbidden", { status: 403, headers: securityHeaders({ "Cache-Control": "no-store" }) });
       }
       if (request.method === "POST") {
         const rawBody = await request.text();
@@ -73,7 +73,7 @@ export default {
         }
         let payload;
         try { payload = JSON.parse(rawBody); }
-        catch { return json({ success: false, error: "INVALID_JSON" }, 400); }
+        catch { return json({ success: false, error: "INVALID_JSON" }, 400, { "Cache-Control": "no-store" }); }
         try {
           const db = await connectMongo(env);
           await db.collection("whatsapp_webhook_events").insertOne({
@@ -86,7 +86,7 @@ export default {
           return json({ success: false, error: "WEBHOOK_STORAGE_UNAVAILABLE" }, 503, { "Cache-Control": "no-store" });
         }
       }
-      return new Response("Method Not Allowed", { status: 405, headers: securityHeaders({ Allow: "GET, POST" }) });
+      return new Response("Method Not Allowed", { status: 405, headers: securityHeaders({ Allow: "GET, POST", "Cache-Control": "no-store" }) });
     }
 
     if (u.pathname.startsWith("/api/")) {
@@ -133,7 +133,7 @@ export default {
     if (u.pathname.startsWith("/assets/")) {
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
     } else if (u.pathname === "/" || u.pathname.endsWith(".html")) {
-      headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+      headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300, stale-if-error=300");
     }
     headers.set("X-Afsana-Backend", "cloudflare-assets");
     return new Response(asset.body, { status: asset.status, headers: securityHeaders(Object.fromEntries(headers.entries())) });
