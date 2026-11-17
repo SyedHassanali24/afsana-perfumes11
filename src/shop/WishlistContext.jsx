@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import { wishlistApi } from '../services';
 
@@ -15,8 +14,6 @@ function writeLocal(ids) {
 
 export function WishlistProvider({ children }) {
   const { status } = useCustomer();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [ids, setIds] = useState(() => readLocal());
 
   useEffect(() => {
@@ -33,11 +30,12 @@ export function WishlistProvider({ children }) {
             catch { /* keep an unsynced guest favourite locally for the next login */ }
           }
           if (active) {
-            setIds(merged);
-            writeLocal([...localIds].filter((id) => !merged.has(id)));
+            const allSaved = new Set([...merged, ...localIds]);
+            setIds(allSaved);
+            writeLocal(allSaved);
           }
         } catch {
-          if (active) setIds(new Set([...localIds, ...ids]));
+          if (active) setIds(localIds);
         }
       })();
       return () => { active = false; };
@@ -55,7 +53,7 @@ export function WishlistProvider({ children }) {
     const flip = (on) => setIds((current) => {
       const next = new Set(current);
       if (on) next.add(id); else next.delete(id);
-      if (status !== 'authed') writeLocal(next);
+      writeLocal(next);
       return next;
     });
 
