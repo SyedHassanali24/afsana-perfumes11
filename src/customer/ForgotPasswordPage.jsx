@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
 
   const savePassword = async (event) => {
     event.preventDefault(); setError("");
-    if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\\d/.test(newPassword)) {
+    if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
       setError("Use at least 8 characters, including letters and numbers."); return;
     }
     if (newPassword !== confirmPassword) { setError("The passwords do not match."); return; }
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
       {step === "done" ? (
         <div role="status" className="space-y-4">
           <p className="text-sm leading-6 text-[#3d6b3d]">Your password has been changed successfully. You can now sign in with your new password.</p>
-          <Button type="button" className="w-full rounded-xl min-h-11" onClick={() => { window.location.href = "/login"; }}>Go to sign in</Button>
+          <Link to="/login" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#194629] px-4 text-sm font-semibold text-white">Go to sign in</Link>
         </div>
       ) : step === "email" ? (
         <form onSubmit={sendCode} className="space-y-5">
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
       ) : step === "otp" ? (
         <form onSubmit={verifyCode} className="space-y-5">
           <p className="text-sm leading-6 text-[#6b7167]">Enter the six-digit code sent to <strong className="break-all text-[#263e0e]">{email}</strong>. The code expires in 10 minutes.</p>
-          <Field label="Email verification code"><Input required inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\\D/g, "").slice(0, 6))} placeholder="000000"/></Field>
+          <Field label="Email verification code"><Input required inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000"/></Field>
           {error && <p role="alert" className="rounded-xl bg-[#9b3f3f]/10 px-3 py-2 text-sm text-[#9b3f3f]">{error}</p>}
           <Button type="submit" className="w-full rounded-xl min-h-11" disabled={busy || otp.length !== 6}>{busy ? "Verifying…" : "Verify email"}</Button>
           <button type="button" onClick={sendCode} disabled={busy} className="w-full text-center text-xs text-[#5f654f] underline disabled:opacity-50">Resend code</button>
