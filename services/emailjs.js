@@ -77,4 +77,33 @@ async function sendEmailJsOtp({ to, subject, purpose, otp }, { config, fetchImpl
   }
 }
 
-module.exports = { getEmailJsConfig, sendEmailJsOtp, EMAILJS_SEND_URL };
+/**
+ * General transactional email. Uses a dedicated template so security OTP
+ * messages keep their existing template and delivery behaviour unchanged.
+ */
+async function sendEmailJsTemplate({ to, subject, templateId, params = {} }, { config, fetchImpl = globalThis.fetch } = {}) {
+  if (!config) throw new Error('EmailJS configuration is missing.');
+  const recipient = String(to || '').trim().toLowerCase();
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient)) throw new Error('EmailJS recipient address is invalid.');
+  const selectedTemplate = String(templateId || '').trim();
+  if (!selectedTemplate) throw new Error('EmailJS notification template is not configured.');
+  const response = await fetchImpl(EMAILJS_SEND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      service_id: config.serviceId,
+      template_id: selectedTemplate,
+      user_id: config.publicKey,
+      accessToken: config.privateKey,
+      template_params: { ...params, to_email: recipient, email_subject: String(subject || 'AFSANA notification'), app_name: 'AFSANA Perfumes' },
+    }),
+  });
+  if (!response || !response.ok) {
+    const status = Number(response && response.status) || 0;
+    console.error('[emailjs] transactional email failed' + (status ? ' HTTP ' + status : ''));
+    throw new Error(status ? 'EmailJS could not deliver the notification email (HTTP ' + status + ').' : 'EmailJS could not deliver the notification email.');
+  }
+  return { sent: true };
+}
+
+module.exports = { getEmailJsConfig, sendEmailJsOtp, sendEmailJsTemplate, EMAILJS_SEND_URL };
