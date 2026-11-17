@@ -133,8 +133,9 @@ async function report(query, scopes, denied, now = new Date()) {
     missingCost: statement.missingCost,
     truncated: orders.length >= 3000,
     accountingNotes: [
-      'Journal is generated from recorded orders, confirmed payments, refunds and entered expenses; it does not post or alter financial records.',
+      'Automatic journal rows come from recorded orders, confirmed payments, refunds and Finance expenses; manual entries are stored separately and do not alter orders or payments.',
       'Expense payment account is shown as clearing because the current expense form does not record whether it was paid by cash or bank.',
+      'Month-end asset, liability and equity balances include manual ledger entries only. Enter opening balances once for assets and liabilities that existed before using this journal.',
       'Net profit is an estimate when product cost snapshots are missing. Add cost prices to product variants to improve accuracy.',
     ],
   };
