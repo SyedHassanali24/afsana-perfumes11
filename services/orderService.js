@@ -224,7 +224,17 @@ async function trackOrder(orderNumber, phone) {
   // The phone is compared by its digits (0300 1234567 = 03001234567 = +92 300 1234567), not as typed. Wrong number and unknown order give the same answer.
   const o = await Order.findOne({ orderNumber: orderNumber.toUpperCase() }).select('_id orderNumber status timeline createdAt paymentStatus customer.phone').lean();
   if (!o || !samePhone(o.customer && o.customer.phone, phone)) throw E.notFound('We could not find an order with those details.');
-  return { order: { orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, placedAt: o.createdAt, timeline: o.timeline.map((t) => ({ event: t.event, at: t.at })), shipment: await publicShipment(o._id) } };
+  // Only disclose the customer's purchased item snapshots after the order number + checkout phone are verified.
+  const [items, shipment] = await Promise.all([
+    OrderItem.find({ orderId: o._id }).select('name image quantity').lean(),
+    publicShipment(o._id),
+  ]);
+  return { order: {
+    orderNumber: o.orderNumber, status: o.status, paymentStatus: o.paymentStatus, placedAt: o.createdAt,
+    timeline: (o.timeline || []).map((t) => ({ event: t.event, status: t.status, at: t.at })),
+    items: items.map((item) => ({ name: item.name || '', image: item.image || '', quantity: item.quantity || 0 })),
+    shipment,
+  } };
 }
 
 // ---------------- logged-in shopper: own orders only (filtered by customerId, never by URL alone) ----------------
