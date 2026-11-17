@@ -133,7 +133,7 @@ export default {
     if (u.pathname.startsWith("/assets/")) {
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
     } else if (u.pathname === "/" || u.pathname.endsWith(".html")) {
-      headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300, stale-if-error=300");
+      headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     }
     headers.set("X-Afsana-Backend", "cloudflare-assets");
     return new Response(asset.body, { status: asset.status, headers: securityHeaders(Object.fromEntries(headers.entries())) });
