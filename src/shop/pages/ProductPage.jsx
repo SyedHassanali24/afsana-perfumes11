@@ -78,6 +78,9 @@ export default function ProductPage(){
  const [mediaBroken,setMediaBroken]=useState(false),[modelViewerReady,setModelViewerReady]=useState(false),[modelViewerFailed,setModelViewerFailed]=useState(false);
  const stageRef=useRef(null),modelViewerRef=useRef(null);
  const p=data?.product, variants=data?.variants||[];
+ const productCategory=typeof p?.category==='string'?p.category:(p?.category?.name||p?.categoryId?.name||p?.fragrance?.family||p?.fragrance?.gender||'AFSANA');
+ const productTags=Array.isArray(p?.tags)?p.tags.filter(Boolean).slice(0,4):[];
+ const productShareUrl=typeof window!=='undefined'?window.location.href:'';
  useTitle(p?.seo?.title||p?.name);
  useEffect(()=>{if(variants.length){setVid((variants.find(v=>v.available>0)||variants[0]).id);setQty(1);setImg(0)}},[data]);
  useEffect(()=>{
@@ -376,6 +379,10 @@ export default function ProductPage(){
       {media.length>1&&<div className="gallery-thumbs">{media.map((m,i)=><button type="button" key={m.url+'-'+i} onClick={()=>selectMedia(i)} aria-label={'View product media '+(i+1)} className={'group relative w-[72px] aspect-square overflow-hidden border '+(i===img?'border-[#7357ff] shadow-[0_8px_25px_rgba(50,26,90,.18)]':'border-[#7357ff]/15')}><Media item={m} alt="" className="w-full h-full object-cover transition duration-500 group-hover:scale-105"/>{i===img&&<span className="absolute inset-x-0 bottom-0 h-0.5 bg-[#7357ff]"/>}</button>)}</div>}
       <div ref={stageRef} onPointerMove={(e)=>{onMove(e);moveDrag(e)}} onPointerDown={beginDrag} onPointerUp={endDrag} onPointerLeave={()=>{resetTilt();endDrag()}} onTouchStart={beginDrag} onTouchMove={moveDrag} onTouchEnd={endDrag} className="main-product-stage relative overflow-hidden flex items-center justify-center">
        <div className="afsana-product-stage-glow"/>
+       {media.length>1&&<>
+        <button type="button" className="afsana-gallery-arrow afsana-gallery-arrow-prev" onClick={()=>selectMedia(img-1)} aria-label="Previous product image">‹</button>
+        <button type="button" className="afsana-gallery-arrow afsana-gallery-arrow-next" onClick={()=>selectMedia(img+1)} aria-label="Next product image">›</button>
+       </>}
        <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#665d79]">AFSANA / {String(img+1).padStart(2,"0")}</div>
        <div className="absolute top-5 right-5 z-10 flex items-center gap-2 border border-[#7357ff]/15 bg-white/70 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.18em] text-[#46375f]"><Rotate3D className="w-3.5 h-3.5"/> {showRealModel?'Interactive 3D bottle':product3dUrl?'Loading 3D preview':media.length?'Interactive product view':'Bottle preview'}</div>
        {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-5 z-10 border border-[#7357ff]/15 bg-white/75 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.18em] text-[#392650]">{autoRotate?'Stop gallery':'Auto gallery'}</button>}
@@ -397,7 +404,7 @@ export default function ProductPage(){
     </div>
     <div className="afsana-product-info product-info-standard">
       <div className="product-info-header">
-       <span className="product-brand-label">{p.fragrance?.gender||'Signature'} fragrance</span>
+       <span className="product-brand-label">{productCategory}</span>
        {p.fragrance?.concentration&&<span className="product-concentration-label">{p.fragrance.concentration}</span>}
        <span className="product-edition-label">AFSANA / 01</span>
       </div>
@@ -450,6 +457,11 @@ export default function ProductPage(){
         <button type="button" disabled={soldOut} onClick={buyNow} className="afsana-buy-now">Buy now</button>
         <button type="button" onClick={()=>toggle(p.id||p._id)} aria-label={has(p.id||p._id)?'Remove from wishlist':'Add to wishlist'} aria-pressed={has(p.id||p._id)} className="afsana-wishlist-button"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4 h-4"/></button>
        </div>
+      </div>
+      <div className="afsana-product-taxonomy">
+       <span><b>SKU:</b> {p.sku||p.slug?.toUpperCase()||'AFSANA'}</span>
+       {productTags.length>0&&<span><b>Tags:</b> {productTags.join(', ')}</span>}
+       <span className="afsana-product-share"><b>Share:</b> <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productShareUrl)}`} target="_blank" rel="noreferrer" aria-label="Share on Facebook">f</a><a href={`https://wa.me/?text=${encodeURIComponent((p.name||'AFSANA fragrance')+' '+productShareUrl)}`} target="_blank" rel="noreferrer" aria-label="Share on WhatsApp">wa</a></span>
       </div>
       <div className="product-perks-standard">
        <div><span>01</span><p><strong>Premium oils</strong><small>Carefully composed</small></p></div>
@@ -516,7 +528,7 @@ export default function ProductPage(){
      <div className="afsana-complete-story-head">
       <div>
        <p className="afsana-complete-kicker">CURATED FOR YOU / 0{Math.min(data.related.length,9)}</p>
-       <h2>Complete<br/><em>the story.</em></h2>
+       <h2>Explore related<br/><em>fragrances.</em></h2>
       </div>
       <div className="afsana-complete-story-aside">
        <p>Another scent. Another chapter. Discover a fragrance that feels unmistakably yours.</p>

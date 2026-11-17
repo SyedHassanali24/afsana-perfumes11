@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Search, ShoppingBag, User, X, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
+import { Menu, Search, ShoppingBag, User, X, Heart, Truck, CreditCard, Headphones, Instagram, Facebook, Youtube, Music2, Pin } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useCustomer } from '../customer/CustomerAuthContext';
 import CartDrawer from './CartDrawer';
+import { useWishlist } from './WishlistContext';
 import { Container } from './ui';
 import useApi from '../hooks/useApi';
 import { cmsPublicApi, productsApi } from '../services';
@@ -54,10 +55,11 @@ function CmsBannerCarousel({ banners = [] }) {
 
 export default function ShopLayout(){
  const [showIntro,setShowIntro]=useState(false);
- const {count}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
+ const {count}=useCart(),{count:wishlistCount}=useWishlist(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
+ const supportPhone=String(footerConfig.phone||shopSettings?.store?.phone||'').trim();
  const socialLinks=[['Instagram',footerConfig.instagramUrl||shopSettings?.store?.instagram,Instagram],['Facebook',footerConfig.facebookUrl||shopSettings?.store?.facebook,Facebook],['TikTok',footerConfig.tiktokUrl,Music2],['YouTube',footerConfig.youtubeUrl,Youtube],['Pinterest',footerConfig.pinterestUrl,Pin],['X',footerConfig.xUrl,null]];
  const siteFooterSections=cmsData?.pageSections?.site_footer||[];
  const footerCms=siteFooterSections.find((s)=>s?.type==='footer_showcase')?.config||{};
@@ -103,12 +105,19 @@ export default function ShopLayout(){
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
 
- return <div className="storefront-theme min-h-screen bg-[#f7f4ed] text-[#100d24]" data-storefront-route={location.pathname}>
+ return <div className="storefront-theme afsana-reference-storefront min-h-screen bg-white text-[#242424]" data-storefront-design="green-yellow" data-storefront-route={location.pathname}>
    {isCmsPreview && <div className="relative z-[60] bg-[#7357ff] px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[.18em] text-white">Preview only — this design is not live. Return to Admin CMS and click Confirm &amp; Publish after checking.</div>}
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
   {cmsData?.announcement?.text && <div className="border-b border-[#100d24]/10 bg-[#d9ff55] px-4 py-2.5 text-center text-[9px] font-semibold uppercase tracking-[.22em] text-[#100d24]">AFSANA <span className="mx-2 text-[#7357ff]">•</span>{cmsData.announcement.text}</div>}
 
+  <div className="afsana-reference-topbar">
+    <Container className="afsana-reference-topbar-inner">
+      <span>{supportPhone?<a href={'tel:'+supportPhone}>Call Us: {supportPhone}</a>:'AFSANA · THE ART OF SCENT'}</span>
+      <span className="afsana-reference-topbar-message">Complimentary delivery on orders above PKR 7,500</span>
+      <span className="afsana-reference-topbar-links"><Link to="/track">Track order</Link><i>·</i><Link to={status==='authed'?'/account':'/login'}>{status==='authed'?'My account':'Sign in'}</Link></span>
+    </Container>
+  </div>
   <header className="storefront-header sticky top-0 z-40 text-[#100d24]">
    <div className="storefront-header-surface absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/95 backdrop-blur-xl shadow-[0_10px_36px_rgba(16,13,36,.08)]"/>
    <Container className="container-xl storefront-header-inner relative flex h-[82px] items-center justify-between gap-4">
@@ -121,9 +130,10 @@ export default function ShopLayout(){
       {nav.map(([to,label])=><NavLink key={to} to={to} end={to==='/'} className={({isActive})=>'storefront-nav-link '+(isActive?'is-active':'')}>{label}</NavLink>)}
     </nav>
     <div className="header-actions storefront-header-actions ml-auto flex shrink-0 items-center gap-2">
-      <button className="storefront-header-action storefront-search-trigger" onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="h-[17px] w-[17px]"/><span className="hidden 2xl:inline">Search</span></button>
-      <Link className="storefront-header-action" to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Login / register'} title={status==='authed'?'My account':'Login / register'}><User className="h-[17px] w-[17px]"/></Link>
-      <Link className="storefront-header-action storefront-cart-action relative" to="/cart" aria-label="Open shopping cart" title="Shopping cart"><ShoppingBag className="h-[17px] w-[17px]"/>{count>0&&<span className="storefront-cart-count absolute -right-1 -top-1 min-w-[18px] h-[18px] rounded-full bg-[#d9ff55] px-1 text-[#100d24] text-[9px] leading-[18px] text-center">{count}</span>}</Link>
+      <button className="storefront-header-action storefront-search-trigger" onClick={()=>setSearch(true)} aria-label="Search fragrances" aria-expanded={search}><Search className="h-[17px] w-[17px]"/></button>
+      <Link className="storefront-header-action relative" to="/wishlist" aria-label="Wishlist" title="Wishlist"><Heart className="h-[17px] w-[17px]"/>{wishlistCount>0&&<span className="storefront-header-count">{wishlistCount}</span>}</Link>
+      <Link className="storefront-header-action" to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Sign in'} title={status==='authed'?'My account':'Sign in'}><User className="h-[17px] w-[17px]"/></Link>
+      <Link className="storefront-header-action storefront-cart-action relative" to="/cart" aria-label="Open shopping cart" title="Shopping cart"><ShoppingBag className="h-[17px] w-[17px]"/>{count>0&&<span className="storefront-cart-count absolute -right-1 -top-1 min-w-[18px] h-[18px] rounded-full bg-[#ffbd37] px-1 text-[#194629] text-[9px] leading-[18px] text-center">{count}</span>}</Link>
     </div>
    </Container>
    {menu&&<div id="mobile-navigation" className="storefront-mobile-menu relative lg:hidden">
@@ -143,6 +153,14 @@ export default function ShopLayout(){
       <path fill="currentColor" d="M20.52 3.48A11.77 11.77 0 0 0 12.15 0C5.64 0 .34 5.3.34 11.81c0 2.08.54 4.12 1.57 5.91L.25 24l6.45-1.69a11.8 11.8 0 0 0 5.45 1.31h.01c6.51 0 11.81-5.3 11.81-11.81 0-3.15-1.23-6.11-3.45-8.33ZM12.16 21.6h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.83 1 1.02-3.73-.23-.38a9.77 9.77 0 0 1-1.5-5.1c0-5.42 4.41-9.83 9.84-9.83 2.63 0 5.1 1.03 6.96 2.89a9.78 9.78 0 0 1 2.88 6.97c0 5.42-4.41 9.83-9.78 9.83Zm5.39-7.36c-.29-.15-1.7-.84-1.97-.94-.26-.1-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.2-.34.22-.63.08-.29-.15-1.22-.45-2.32-1.43-.86-.76-1.44-1.7-1.61-1.99-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.3-.49.1-.19.05-.36-.02-.51-.08-.15-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49l-.55-.01c-.2 0-.51.08-.78.37-.27.29-1.03 1.01-1.03 2.47 0 1.46 1.05 2.87 1.2 3.07.15.2 2.07 3.16 5.01 4.43.7.3 1.25.49 1.68.63.71.23 1.36.2 1.87.12.57-.09 1.7-.7 1.94-1.38.24-.68.24-1.26.17-1.38-.08-.12-.27-.2-.56-.34Z"/>
     </svg>
   </a>}
+
+  <section className="afsana-reference-benefits" aria-label="AFSANA customer benefits">
+    <Container className="afsana-reference-benefits-inner">
+      <div><span><Truck aria-hidden="true"/></span><p><strong>Complimentary Delivery</strong><small>On qualifying orders above PKR 7,500</small></p></div>
+      <div><span><CreditCard aria-hidden="true"/></span><p><strong>Flexible Payment</strong><small>Cash on Delivery and Bank Transfer</small></p></div>
+      <div><span><Headphones aria-hidden="true"/></span><p><strong>Customer Support</strong><small>Help with your fragrance and order</small></p></div>
+    </Container>
+  </section>
 
   {hasManagedFooter ? <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer" /></Suspense> :
   <footer className="relative overflow-hidden bg-[#100d24] text-white border-t border-[#d9ff55]/20">
