@@ -54,7 +54,7 @@ function CmsBannerCarousel({ banners = [] }) {
 
 export default function ShopLayout(){
  const [showIntro,setShowIntro]=useState(false);
- const {count,openDrawer}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
+ const {count}=useCart(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
  const footerConfig=(cmsData?.pageSections?.site_footer||[]).find((s)=>s.type==='custom_footer')?.config||{};
@@ -103,7 +103,7 @@ export default function ShopLayout(){
  const submit=e=>{e.preventDefault();navigate(q.trim()?'/shop?q='+encodeURIComponent(q.trim()):'/shop');setSearch(false)};
  const icon='icon-btn grid h-10 w-10 place-items-center text-[#100d24]/85 hover:text-[#7357ff] transition focus:outline-none';
 
- return <div className="storefront-theme min-h-screen bg-[#f7f4ed] text-[#100d24]">
+ return <div className="storefront-theme min-h-screen bg-[#f7f4ed] text-[#100d24]" data-storefront-route={location.pathname}>
    {isCmsPreview && <div className="relative z-[60] bg-[#7357ff] px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[.18em] text-white">Preview only — this design is not live. Return to Admin CMS and click Confirm &amp; Publish after checking.</div>}
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
@@ -123,7 +123,7 @@ export default function ShopLayout(){
     <div className="header-actions storefront-header-actions ml-auto flex shrink-0 items-center gap-2">
       <button className="storefront-header-action storefront-search-trigger" onClick={()=>setSearch(true)} aria-label="Search" aria-expanded={search}><Search className="h-[17px] w-[17px]"/><span className="hidden 2xl:inline">Search</span></button>
       <Link className="storefront-header-action" to={status==='authed'?'/account':'/login'} aria-label={status==='authed'?'My account':'Login / register'} title={status==='authed'?'My account':'Login / register'}><User className="h-[17px] w-[17px]"/></Link>
-      <button className="storefront-header-action storefront-cart-action relative" onClick={openDrawer} aria-label="Cart"><ShoppingBag className="h-[17px] w-[17px]"/>{count>0&&<span className="storefront-cart-count absolute -right-1 -top-1 min-w-[18px] h-[18px] rounded-full bg-[#d9ff55] px-1 text-[#100d24] text-[9px] leading-[18px] text-center">{count}</span>}</button>
+      <Link className="storefront-header-action storefront-cart-action relative" to="/cart" aria-label="Open shopping cart" title="Shopping cart"><ShoppingBag className="h-[17px] w-[17px]"/>{count>0&&<span className="storefront-cart-count absolute -right-1 -top-1 min-w-[18px] h-[18px] rounded-full bg-[#d9ff55] px-1 text-[#100d24] text-[9px] leading-[18px] text-center">{count}</span>}</Link>
     </div>
    </Container>
    {menu&&<div id="mobile-navigation" className="storefront-mobile-menu relative lg:hidden">
