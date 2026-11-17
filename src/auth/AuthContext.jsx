@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { authApi } from '../services';
+import { clearApiCache } from '../services/api';
 import { can as canFn } from './permissions';
 
 const AuthContext = createContext(null);
@@ -37,6 +38,7 @@ export function AuthProvider({ children }) {
       const { user, permissions, mustChangePassword } = await authApi.me();
       setState({ status: 'authed', user, permissions, mustChangePassword: !!mustChangePassword });
     } catch {
+      clearApiCache();
       setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
     }
   }, []);
@@ -45,7 +47,10 @@ export function AuthProvider({ children }) {
 
   // Any API call that comes back 401 anywhere in the app -> back to login.
   useEffect(() => {
-    const onUnauthorized = () => setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
+    const onUnauthorized = () => {
+      clearApiCache();
+      setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
+    };
     const onMustChange = () => setState((s) => ({ ...s, mustChangePassword: true }));
     window.addEventListener('afsana:unauthorized', onUnauthorized);
     window.addEventListener('afsana:must-change-password', onMustChange);
@@ -53,6 +58,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password, turnstileToken) => {
+    clearApiCache();
     if (DEMO_ADMIN && email.toLowerCase() === DEMO_USER.email && password === 'AfsanaDemo123!') {
       localStorage.setItem(DEMO_SESSION_KEY, '1');
       setState({ status: 'authed', user: DEMO_USER, permissions: DEMO_PERMISSIONS, mustChangePassword: false });
@@ -65,13 +71,16 @@ export function AuthProvider({ children }) {
   }, [refresh]);
 
   const completeTwoFactor = useCallback(async (email, challengeId, otp, turnstileToken) => {
+    clearApiCache();
     await authApi.verifyLoginOtp(email, challengeId, otp, getStaffDeviceId(), turnstileToken);
     await refresh();
   }, [refresh]);
 
   const logout = useCallback(async () => {
+    clearApiCache();
     if (DEMO_ADMIN) localStorage.removeItem(DEMO_SESSION_KEY);
     try { await authApi.logout(); } catch { /* cookie may already be gone */ }
+    clearApiCache();
     setState({ status: 'guest', user: null, permissions: null, mustChangePassword: false });
   }, []);
 
