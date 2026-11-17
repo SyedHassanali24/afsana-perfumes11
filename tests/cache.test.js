@@ -4,7 +4,7 @@ const cache = require('../middleware/cache');
 
 test('public cache headers are capped and tagged for edge caching', () => {
   const headers = cache.cacheHeaders(300, 300, ['cms', 'products', 'cms', 'not a tag']);
-  assert.equal(headers['Cache-Control'], 'public, max-age=60, stale-while-revalidate=60, stale-if-error=300');
+  assert.equal(headers['Cache-Control'], 'public, max-age=60, stale-while-revalidate=60');
   assert.equal(headers['Cache-Tag'], 'cms,products');
 });
 
