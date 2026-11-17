@@ -152,3 +152,40 @@
 .afsana-contact-benefits small{font-size:10px;color:#78827b}
 @media(max-width:760px){.afsana-contact-main{grid-template-columns:1fr;gap:28px;padding:42px 20px 48px}.afsana-contact-card{min-height:0}.afsana-contact-benefits{grid-template-columns:1fr;gap:17px;padding:26px 22px 34px}.afsana-contact-map{height:240px}}
 @media(max-width:480px){.afsana-contact-two{grid-template-columns:1fr}.afsana-contact-hero{min-height:160px}.afsana-contact-card{padding:25px 22px}.afsana-contact-form{gap:14px}}
+
+
+/* Normalize remaining legacy admin accents across every admin route. */
+.admin-shell [class*="text-[#4f46e5]"],
+.admin-shell [class*="text-[#7357ff]"],
+.admin-shell [class*="text-[#8b5cf6]"],
+.admin-shell [class*="text-indigo-600"],
+.admin-shell [class*="text-indigo-700"]{color:var(--admin-accent)!important}
+.admin-shell [class*="text-indigo-900"]{color:var(--admin-ink)!important}
+.admin-shell [class*="text-[#334155]"],
+.admin-shell [class*="text-slate-500"]{color:var(--admin-muted)!important}
+.admin-shell [class*="bg-[#4f46e5]"],
+.admin-shell [class*="bg-[#7357ff]"],
+.admin-shell [class*="bg-[#8b5cf6]"],
+.admin-shell [class*="bg-indigo-50"]{background-color:var(--admin-accent-soft)!important}
+.admin-shell [class*="border-indigo-100"],
+.admin-shell [class*="border-[#4f46e5]"],
+.admin-shell [class*="border-[#7357ff]"]{border-color:var(--admin-border)!important}
+.admin-shell .admin-profile-control [class*="bg-gradient-to-br"]{
+  background:linear-gradient(135deg,#174b3c,#147b57)!important;
+  box-shadow:0 5px 16px rgba(23,107,76,.22)!important;
+}
+.admin-shell .admin-glass-header [class*="bg-[#1e1b4b]"]{background-color:var(--admin-border)!important}
+.admin-shell .admin-glass-header input:focus{--tw-ring-color:var(--admin-accent)!important}
+:root[data-theme="dark"] .admin-shell [class*="bg-slate-100"],
+:root[data-theme="dark"] .admin-shell [class*="bg-slate-50"]{background-color:var(--admin-raised)!important}
+:root[data-theme="dark"] .admin-shell [class*="border-slate-"]{border-color:var(--admin-border)!important}
+:root[data-theme="dark"] .admin-shell [class*="text-indigo-600"],
+:root[data-theme="dark"] .admin-shell [class*="text-indigo-700"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#4f46e5]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#7357ff]"],
+:root[data-theme="dark"] .admin-shell [class*="text-[#8b5cf6]"]{color:var(--admin-accent)!important}
+:root[data-theme="dark"] .admin-shell .admin-profile-control [class*="bg-gradient-to-br"]{
+  background:linear-gradient(135deg,#26391f,#b7f34b)!important;
+  color:#152015!important;
+  box-shadow:0 0 0 2px rgba(183,243,75,.18),0 8px 22px rgba(0,0,0,.32)!important;
+}
