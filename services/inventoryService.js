@@ -3,6 +3,7 @@ const { E } = require('../middleware/errors');
 const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const { scopeFilter } = require('../middleware/permissions');
+const { notifyAdmin } = require('./notificationService');
 
 const SCOPE_MAP = { stores: 'storeId' };
 
