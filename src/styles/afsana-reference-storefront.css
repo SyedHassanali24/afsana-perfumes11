@@ -623,3 +623,9 @@
 @media(prefers-reduced-motion:reduce){
   .storefront-theme.afsana-reference-storefront *{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* Keep the AFSANA Selection heading light against its dark campaign background. */
+.storefront-theme.afsana-reference-storefront main section[aria-label="The Afsana Selection"] h2{
+  color:#fffaf0!important;
+}
