@@ -86,7 +86,7 @@ async function sendEmailJsOtp({ to, subject, purpose, otp }, { config, fetchImpl
 async function sendEmailJsTemplate({ to, subject, templateId, params = {} }, { config, fetchImpl = globalThis.fetch } = {}) {
   if (!config) throw new Error('EmailJS configuration is missing.');
   const recipient = String(to || '').trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient)) throw new Error('EmailJS recipient address is invalid.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) throw new Error('EmailJS recipient address is invalid.');
   const selectedTemplate = String(templateId || '').trim();
   if (!selectedTemplate) throw new Error('EmailJS notification template is not configured.');
   const response = await fetchImpl(EMAILJS_SEND_URL, {
