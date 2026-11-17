@@ -39,7 +39,7 @@ export const sampleTestimonialsSection = {
 
 export default function CmsTestimonials({ section = sampleTestimonialsSection, compact = false }) {
   const config = section?.config || {};
-  const items = Array.isArray(config.items) && config.items.length ? config.items : SAMPLE_ITEMS;
+  const items = Array.isArray(config.items) ? config.items : SAMPLE_ITEMS;
   const heading = section?.title || 'Words from the AFSANA circle.';
   return (
     <section className={`afsana-cms-reviews ${compact ? 'afsana-cms-reviews-compact' : ''}`} aria-label="AFSANA customer reviews">
@@ -49,7 +49,7 @@ export default function CmsTestimonials({ section = sampleTestimonialsSection, c
           <h2>{heading}</h2>
           {config.subtitle && <span>{config.subtitle}</span>}
         </div>
-        <div className="afsana-cms-reviews-grid">
+        {items.length > 0 ? <div className="afsana-cms-reviews-grid">
           {items.map((item, index) => {
             const rating = Math.max(0, Math.min(5, Math.round(Number(item.rating) || 0)));
             const isSample = item.sample === true || item.isSample === true || String(item.label || '').toLowerCase() === 'sample';
@@ -69,7 +69,7 @@ export default function CmsTestimonials({ section = sampleTestimonialsSection, c
               </article>
             );
           })}
-        </div>
+        </div> : <p className="afsana-cms-reviews-empty">Customer stories will appear here once approved.</p>}
       </div>
     </section>
   );
