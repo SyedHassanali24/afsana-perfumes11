@@ -26,7 +26,9 @@ const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|
 const isDisplayImage = (media) => {
   const url = String(media?.url || '').trim();
   const kind = String(media?.kind || '').toLowerCase();
-  return !!url && !['video', 'media360', 'model3d'].includes(kind) && !/\\.(mp4|webm|mov|m4v|glb|gltf)(?:[?#]|$)/i.test(url);
+  const pathname = url.toLowerCase().split(/[?#]/, 1)[0];
+  const isNonImageFile = ['.mp4', '.webm', '.mov', '.m4v', '.glb', '.gltf'].some((ext) => pathname.endsWith(ext));
+  return !!url && !isNonImageFile && !['video', 'media360', 'model3d'].includes(kind);
 };
 const primaryDisplayImage = (media) => {
   const rows = Array.isArray(media) ? media : [];
