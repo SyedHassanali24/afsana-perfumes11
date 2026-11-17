@@ -6,6 +6,7 @@ export class ApiError extends Error {
 const API_ORIGIN = (import.meta.env.VITE_API_ORIGIN || window.location.origin).replace(/\/$/, "");
 const inflightGets = new Map();
 const memoryGets = new Map();
+let cacheGeneration = 0;
 const CACHE_EVENT = 'afsana:cache-change';
 const PERSIST_PREFIX = 'afsana-api-cache:';
 
@@ -25,9 +26,14 @@ const NEVER_CACHE_PATHS = [
   /^\/staff\/[^/]+\/sessions(?:\/|$)/,
 ];
 
+function isNeverCachePath(path) {
+  const p = String(path || '').split('?')[0];
+  return NEVER_CACHE_PATHS.some((pattern) => pattern.test(p));
+}
+
 function defaultCacheTtl(path) {
   const p = String(path || '').split('?')[0];
-  if (NEVER_CACHE_PATHS.some((pattern) => pattern.test(p))) return 0;
+  if (isNeverCachePath(p)) return 0;
   if (p === '/analytics/dashboard') return 10000;
   if (p === '/analytics/sources') return 60000;
   if (p === '/accountant/admin/report') return 30000;
@@ -68,6 +74,8 @@ export function getApiCacheStats() {
   return { entries: memoryGets.size, active, bytes: cacheBytes() };
 }
 export function clearApiCache() {
+  cacheGeneration += 1;
+  inflightGets.clear();
   memoryGets.clear();
   try {
     for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
@@ -112,10 +120,11 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
   Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
 
   if (method === 'GET') {
-    const effectiveCacheTtl = Math.max(Number(cacheTtl) || 0, defaultCacheTtl(path));
+    const effectiveCacheTtl = isNeverCachePath(path) ? 0 : Math.max(Number(cacheTtl) || 0, defaultCacheTtl(path));
     const key = url.toString();
+    const generation = cacheGeneration;
     const now = Date.now();
-    const cached = memoryGets.get(key) || loadPersistent(key);
+    const cached = effectiveCacheTtl > 0 ? (memoryGets.get(key) || loadPersistent(key)) : null;
     if (cached && cached.expiresAt > now) return Promise.resolve(cached.data);
 
     const existing = inflightGets.get(key);
@@ -123,7 +132,7 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
 
     const request = executeRequest(url, path, { method, body, idempotencyKey })
       .then((data) => {
-        if (effectiveCacheTtl > 0) {
+        if (effectiveCacheTtl > 0 && generation === cacheGeneration) {
           const entry = { data, expiresAt: Date.now() + effectiveCacheTtl };
           memoryGets.set(key, entry);
           persistCache(key, entry);
@@ -131,7 +140,7 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
         }
         return data;
       })
-      .finally(() => inflightGets.delete(key));
+      .finally(() => { if (inflightGets.get(key) === request) inflightGets.delete(key); });
     inflightGets.set(key, request);
     return request;
   }
