@@ -83,7 +83,7 @@ export default function CheckoutPage() {
   if (items.length === 0) return <Container><div className="py-16 text-center space-y-4"><p className="afsana-checkout-muted">Your cart is empty.</p><Link to="/shop"><Button>Browse perfumes</Button></Link></div></Container>;
 
   return (
-    <div className="afsana-checkout">
+    <div className="afsana-checkout afsana-checkout-reference">
     <Container>
       <PageTitle title="Checkout" subtitle="Securely complete your fragrance order." />
       <StateBox loading={loading && !q} error={error} onRetry={reload}>
