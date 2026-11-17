@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Heart, ArrowRight, Rotate3D } from 'lucide-react';
 import useApi from '../../hooks/useApi';
 import { productsApi, cmsPublicApi } from '../../services';
@@ -59,6 +59,7 @@ function BottlePreview({name,style}) {
 
 export default function ProductPage(){
  const {slug}=useParams();
+ const navigate=useNavigate();
  const {data,loading,error,reload}=useApi(()=>productsApi.bySlug(slug),[slug]);
  const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
  const referenceAssets=(cmsContent?.homepageSections||[]).find((item)=>item.type==='reference_assets')?.config||{};
@@ -70,7 +71,7 @@ export default function ProductPage(){
  ),[cmsContent]);
  const offerEndAt=activeOffer?.config?.endAt||null;
  const {add,openDrawer}=useCart(); const {has,toggle}=useWishlist();
- const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('story');
+ const [vid,setVid]=useState(null),[qty,setQty]=useState(1),[img,setImg]=useState(0),[tab,setTab]=useState('description');
  const [tilt,setTilt]=useState({x:0,y:0});
  const [offerRemaining,setOfferRemaining]=useState(0);
  const [stagePulse,setStagePulse]=useState(false),[adding,setAdding]=useState(false),[autoRotate,setAutoRotate]=useState(false),[dragX,setDragX]=useState(null);
@@ -118,6 +119,7 @@ export default function ProductPage(){
  const ratingAvg=Number(p?.ratingAvg||0),ratingCount=Number(p?.ratingCount||0);
  const v=variants.find(x=>x.id===vid), hasSalePrice=Boolean(v&&v.salePrice>0&&v.salePrice<v.price), price=v&&(hasSalePrice?v.salePrice:v.price), discountPct=hasSalePrice?Math.round((1-v.salePrice/v.price)*100):0, soldOut=!v||v.available<=0, ns=notes(p);
  const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);openDrawer();window.setTimeout(()=>setAdding(false),650)}};
+ const buyNow=()=>{if(v&&!soldOut){add(v.id,qty);navigate('/checkout')}};
  const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
  const activeMedia=media[img]||media[0]||null;
  const hasProductVisual=!!(activeMedia?.url&&!mediaBroken);
@@ -444,7 +446,8 @@ export default function ProductPage(){
        <div className="afsana-size-options">{variants.map(x=><button type="button" key={x.id} onClick={()=>{setVid(x.id);setQty(1)}} aria-pressed={x.id===vid} disabled={x.available<=0} className={'afsana-size-option '+(x.id===vid?'is-selected':'')+(x.available<=0?' is-unavailable':'')}>{x.label||x.sizeMl+' ML'}<span>{x.id===vid?'SELECTED':x.available<=0?'SOLD OUT':'CHOOSE'}</span></button>)}</div>
        <div className="afsana-product-actions">
         <div className="afsana-quantity-wrap"><span>QTY</span><QtyStepper value={qty} onChange={setQty} max={v?.available||1}/></div>
-        <button disabled={soldOut} onClick={addToCart} className={"afsana-add-to-bag "+(adding?"add-bag-success":"")}>{adding ? "Added to bag" : <>Add to bag <span>↗</span></>}</button>
+        <button disabled={soldOut} onClick={addToCart} className={"afsana-add-to-bag "+(adding?"add-bag-success":"")}>{adding ? "Added to bag" : <>Add to cart <span>↗</span></>}</button>
+        <button type="button" disabled={soldOut} onClick={buyNow} className="afsana-buy-now">Buy now</button>
         <button type="button" onClick={()=>toggle(p.id||p._id)} aria-label={has(p.id||p._id)?'Remove from wishlist':'Add to wishlist'} aria-pressed={has(p.id||p._id)} className="afsana-wishlist-button"><Heart fill={has(p.id||p._id)?'currentColor':'none'} className="w-4 h-4"/></button>
        </div>
       </div>
@@ -459,7 +462,6 @@ export default function ProductPage(){
       </div>
      </div>
    </div>
-   <ReviewsSection slug={slug}/>
    <section className="notes-section afsana-note-story mt-24">
     <div className="afsana-note-story-inner">
      <header className="afsana-note-story-head">
@@ -488,7 +490,28 @@ export default function ProductPage(){
     </div>
    </section>
    <section className="afsana-product-rituals py-16 sm:py-20"><div className="afsana-product-rituals-head mb-10 sm:mb-12"><div className="text-[9px] uppercase tracking-[.35em] text-[#263e0e]">Inside the bottle</div><h2 className="mt-5 font-display text-5xl sm:text-7xl">More than<br/><em className="text-[#263e0e]">a fragrance.</em></h2></div><div className="product-banner-grid">{banners.map((src,i)=><article key={i} className="product-banner relative"><img src={src} className="w-full h-full object-cover" alt=""/><div className="absolute inset-0 bg-gradient-to-t from-[#182308]/85 to-transparent"/><div className="product-banner-copy absolute bottom-0 p-7 text-white"><div className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1} — {['The Opening','The Heart','The Memory','Your Ritual'][i]}</div><h3 className="mt-2 font-display text-3xl">{['First impressions matter.','Where the story unfolds.','What remains after you leave.','Make it unmistakably yours.'][i]}</h3><p className="mt-2 text-xs text-white/60">Spray. Layer. Wear. Remember.</p></div></article>)}</div></section>
-   <section className="afsana-product-tabs py-12 sm:py-14 border-y"><div className="tabs flex flex-wrap gap-6 text-[10px] uppercase tracking-[.22em]">{[['story','The Story'],['details','Details']].map(([id,label])=><button key={id} onClick={()=>setTab(id)} aria-pressed={tab===id} className={tab===id?'tab active text-[#263e0e] border-b border-[#263e0e] pb-3':'tab text-[#5f654f] pb-3'}>{label}</button>)}</div><div className="afsana-product-tab-content mt-8 max-w-3xl text-sm leading-8 text-[#5f654f]">{tab==='story'&&'A fragrance composed to become part of your identity. Spray it close to the skin, let it warm naturally, and allow each layer to reveal itself in its own time.'}{tab==='details'&&(p.content?.fullDescription||'Premium fragrance oils, carefully composed and designed for an evolving trail.')}</div></section>
+   <section className="afsana-product-tabs afsana-product-reference-tabs">
+    <div className="afsana-product-tab-list" role="tablist" aria-label="Product information">
+     {[['description','Description'],['details','Additional Information'],['reviews','Review']].map(([id,label])=><button type="button" key={id} role="tab" aria-selected={tab===id} onClick={()=>setTab(id)} className={tab===id?'is-active':''}>{label}</button>)}
+    </div>
+    <div className="afsana-product-tab-panel" role="tabpanel">
+     {tab==='description'&&<p>{p.content?.fullDescription||p.content?.shortDescription||'A fragrance composed by AFSANA. Explore its character, composition and the way it unfolds on the skin.'}</p>}
+     {tab==='details'&&<div className="afsana-product-additional-info">
+      {[
+       ['Concentration',p.fragrance?.concentration],
+       ['Gender',p.fragrance?.gender],
+       ['Longevity',p.fragrance?.longevity],
+       ['Projection',p.fragrance?.projection],
+       ['Season',Array.isArray(p.fragrance?.seasons)?p.fragrance.seasons.join(', '):p.fragrance?.seasons],
+       ['Occasion',Array.isArray(p.fragrance?.occasions)?p.fragrance.occasions.join(', '):p.fragrance?.occasions],
+       ['Top Notes',Array.isArray(p.notes?.top)?p.notes.top.join(', '):p.notes?.top],
+       ['Heart Notes',Array.isArray(p.notes?.heart)?p.notes.heart.join(', '):p.notes?.heart],
+       ['Base Notes',Array.isArray(p.notes?.base)?p.notes.base.join(', '):p.notes?.base]
+      ].filter(([,value])=>value).map(([label,value])=><div key={label}><strong>{label}</strong><span>{value}</span></div>)}
+     </div>}
+     {tab==='reviews'&&<ReviewsSection slug={slug}/>}
+    </div>
+   </section>
    {data.related?.length>0&&<section className="afsana-complete-story">
      <div className="afsana-complete-story-head">
       <div>
