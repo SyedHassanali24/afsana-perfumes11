@@ -127,6 +127,14 @@ test('finance schemas: dates must be real, amount a positive whole number (text 
   assert.equal(S.financeQuery.safeParse({ period: 'custom', from: '2026-10-01', to: '2026-10-31' }).success, true);
   assert.equal(S.financeQuery.safeParse({ period: 'forever' }).success, false);
   assert.equal(S.expenseQuery.parse({ page: '2' }).limit, 20);
+  const manual = { date: '2026-10-20', narration: 'Owner investment', lines: [
+    { account: 'Cash / Bank', accountType: 'asset', debit: 50000, credit: 0 },
+    { account: "Owner's Capital", accountType: 'equity', debit: 0, credit: 50000 },
+  ] };
+  assert.equal(S.manualJournalEntryBody.safeParse(manual).success, true);
+  assert.equal(S.manualJournalEntryBody.safeParse({ ...manual, lines: manual.lines.map((line) => ({ ...line, credit: 0 })) }).success, false, 'unbalanced entry refused');
+  assert.equal(S.manualJournalEntryBody.safeParse({ ...manual, lines: [{ ...manual.lines[0], debit: 1, credit: 1 }, manual.lines[1]] }).success, false, 'a line cannot debit and credit together');
+
 });
 
 test('finance handler: summary needs finance.view; expenses need expenses.view/create/edit/delete', () => {
