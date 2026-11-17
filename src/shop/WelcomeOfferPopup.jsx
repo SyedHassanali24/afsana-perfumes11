@@ -19,15 +19,13 @@ export default function WelcomeOfferPopup() {
   const location = useLocation();
 
   useEffect(() => {
+    if (['/login', '/register', '/forgot-password', '/reset-password', '/checkout'].includes(location.pathname)) return undefined;
     try {
-      if (localStorage.getItem(CLAIMED_KEY) === '1' || localStorage.getItem(DISMISSED_KEY) === '1') return;
-      const timer = window.setTimeout(() => setOpen(true), 1100);
-      return () => window.clearTimeout(timer);
-    } catch {
-      const timer = window.setTimeout(() => setOpen(true), 1100);
-      return () => window.clearTimeout(timer);
-    }
-  }, []);
+      if (localStorage.getItem(CLAIMED_KEY) === '1' || localStorage.getItem(DISMISSED_KEY) === '1') return undefined;
+    } catch {}
+    const timer = window.setTimeout(() => setOpen(true), 1100);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname]);
 
   const dismiss = () => {
     setOpen(false);
