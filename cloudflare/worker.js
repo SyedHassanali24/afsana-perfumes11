@@ -37,6 +37,25 @@ function addCors(headers, origin) {
   return headers;
 }
 
+function edgeCacheBinding() {
+  try {
+    return typeof caches !== "undefined" && caches.default ? caches.default : null;
+  } catch {
+    return null;
+  }
+}
+
+function isPublicCacheableResponse(request, response) {
+  const policy = response.headers.get("Cache-Control") || "";
+  const vary = response.headers.get("Vary") || "";
+  return request.method === "GET"
+    && response.status === 200
+    && /\\bpublic\\b/i.test(policy)
+    && !/\\b(?:private|no-store)\\b/i.test(policy)
+    && !response.headers.has("Set-Cookie")
+    && vary.trim() !== "*";
+}
+
 export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
@@ -90,14 +109,55 @@ export default {
 
     if (u.pathname.startsWith("/api/")) {
       const path = u.pathname.slice("/api/".length).split("/").filter(Boolean);
+      const edgeCache = request.method === "GET" ? edgeCacheBinding() : null;
+
+      // Public GETs may be served directly from the nearest Cloudflare edge.
+      // Only responses explicitly marked "public" by a public API route can enter this cache.
+      if (edgeCache) {
+        try {
+          const cached = await edgeCache.match(request);
+          if (cached) {
+            const headers = new Headers(cached.headers);
+            headers.set("X-Afsana-Edge-Cache", "HIT");
+            headers.set("X-Afsana-Backend", "cloudflare-mongodb-api");
+            addCors(headers, origin);
+            return new Response(cached.body, {
+              status: cached.status,
+              statusText: cached.statusText,
+              headers: securityHeaders(Object.fromEntries(headers.entries())),
+            });
+          }
+        } catch (cacheError) {
+          console.warn("[afsana-cache] read skipped:", cacheError?.message || cacheError);
+        }
+      }
+
       try {
-        const response = await handleApiRequest({ request, params: { path }, env });
+        const response = await handleApiRequest({ request, params: { path }, env, ctx });
         const headers = new Headers(response.headers);
-        // Keep API reads fresh during restoration; no old proxy/cache responses.
-        headers.set("Cache-Control", "no-store, private");
+        const cacheable = isPublicCacheableResponse(request, response);
+
+        // Do not let an authenticated/admin response enter a shared cache.
+        // Preserve the API route's explicit public TTL for anonymous catalogue/CMS/settings/media reads.
+        if (!cacheable) headers.set("Cache-Control", "no-store, private");
+        headers.set("X-Afsana-Edge-Cache", cacheable ? (edgeCache ? "MISS" : "BYPASS") : "BYPASS");
         headers.set("X-Afsana-Backend", "cloudflare-mongodb-api");
         addCors(headers, origin);
-        return new Response(response.body, { status: response.status, statusText: response.statusText, headers: securityHeaders(Object.fromEntries(headers.entries())) });
+
+        const outgoing = new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: securityHeaders(Object.fromEntries(headers.entries())),
+        });
+
+        if (cacheable && edgeCache) {
+          const write = edgeCache.put(request, outgoing.clone()).catch((cacheError) => {
+            console.warn("[afsana-cache] write skipped:", cacheError?.message || cacheError);
+          });
+          if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(write);
+          else await write;
+        }
+        return outgoing;
       } catch (error) {
         console.error("[afsana-api] request failed:", error?.message || error);
         return json({ success: false, error: { code: "INTERNAL", message: "Backend request failed." } }, 500,
