@@ -74,7 +74,8 @@ export default function HomepageBuilder() {
     try {
       const cfg = { ...form.config };
       const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse'];
-      if (form.type === 'testimonials' && typeof cfg.items === 'string') cfg.items = parseTestimonialItems(cfg.items);\n      else if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
+      if (form.type === 'testimonials' && typeof cfg.items === 'string') cfg.items = parseTestimonialItems(cfg.items);
+      else if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
       const payload = { type: form.type, title: form.title.trim(), config: cfg, sortOrder: drawer.item?.sortOrder ?? rows.length, isEnabled: !!form.isEnabled };
       if (drawer.item) await api.update(drawer.item.id, payload); else await api.create(payload);
       close(); setNotice('Section saved.'); reload();
