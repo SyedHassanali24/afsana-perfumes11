@@ -8,10 +8,11 @@ function otpContent({ purpose, otp }) {
   const minutes = purpose === 'admin login verification' ? 5 : 10;
   const text = 'Your AFSANA ' + purpose + ' code is ' + otp + '. It expires in ' + minutes + ' minutes. If you did not request this code, ignore this email.';
   const html = '<div style="font-family:Arial,sans-serif;color:#24183e;max-width:520px;margin:auto;padding:28px">' +
-    '<p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold">AFSANA · THE ART OF SCENT</p>' +
+    '<div style="text-align:center;margin:0 0 22px"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="display:block;width:150px;max-width:100%;height:auto;margin:auto;border:0"></div>' +
+    '<p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold;text-align:center">AFSANA · THE ART OF SCENT</p>' +
     '<h2 style="font-size:24px">Security verification</h2><p>Your ' + purpose + ' code is:</p>' +
     '<div style="font-size:32px;letter-spacing:9px;font-weight:bold;background:#f3efff;padding:18px;text-align:center;border-radius:12px">' + otp + '</div>' +
-    '<p style="color:#746b83;font-size:13px">' + text + '</p></div>';
+    '<p style="color:#746b83;font-size:13px">' + text + '</p>' + '<p style="margin-top:28px;color:#746b83;font-size:13px">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
   return { text, html, minutes };
 }
 
