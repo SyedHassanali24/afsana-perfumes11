@@ -23,6 +23,15 @@ const ensureCatalogScope = async (data, storeId) => {
   if (results.some((ok) => !ok)) throw E.badRequest('One of the selected catalog entries is not available in this store.');
 };
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const isDisplayImage = (media) => {
+  const url = String(media?.url || '').trim();
+  const kind = String(media?.kind || '').toLowerCase();
+  return !!url && !['video', 'media360', 'model3d'].includes(kind) && !/\\.(mp4|webm|mov|m4v|glb|gltf)(?:[?#]|$)/i.test(url);
+};
+const primaryDisplayImage = (media) => {
+  const rows = Array.isArray(media) ? media : [];
+  return rows.find((item) => item?.kind === 'main' && isDisplayImage(item)) || rows.find(isDisplayImage) || null;
+};
 
 async function uniqueSlug(base, excludeId) {
   let slug = slugify(base), n = 1;
@@ -62,7 +71,7 @@ async function listPublic(q) {
   return {
     products: rows.map((p) => ({
       id: p._id, name: p.name, slug: p.slug, priceFrom: p.priceFrom, tags: p.tags, ratingAvg: p.ratingAvg, ratingCount: p.ratingCount,
-      gender: p.fragrance && p.fragrance.gender, image: (p.media || []).find((m) => m.kind === 'main') || (p.media || [])[0] || null,
+      gender: p.fragrance && p.fragrance.gender, image: primaryDisplayImage(p.media),
       inStock: ((stock.get(String(p._id)) || {}).available || 0) > 0,
     })),
     pagination: pageMeta(total, page, limit),
