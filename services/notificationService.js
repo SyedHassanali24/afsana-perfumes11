@@ -1,7 +1,9 @@
 const { Notification } = require('../database/models');
 const { E } = require('../middleware/errors');
 const R = require('./notificationRules');
-const { getEmailJsConfig, sendEmailJsTemplate } = require('./emailjs');
+const { sendGmailTemplate } = require('./otpMailer');
+const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const emailShell = (title, body) => '<div style="max-width:620px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:32px;border:1px solid #b99552"><div style="text-align:center"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="max-width:150px;height:auto"></div><p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p><h2 style="color:#e6c77e">'+escapeHtml(title)+'</h2><div style="line-height:1.7">'+body+'</div><p style="margin-top:32px;color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p><a style="color:#e6c77e" href="https://afsanaperfumes.store/admin">Open dashboard</a></div>';
 
 const ID = /^[a-f\d]{24}$/i;
 const recent = () => Notification.find({}).sort({ createdAt: -1 }).limit(R.SCAN_LIMIT).lean();
@@ -31,18 +33,15 @@ async function notifyAdmin({ type = 'security_alert', title, body = '', link = '
   }
   // Email is best-effort: never block the dashboard bell or the business action.
   const to = String(process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL || '').trim();
-  const templateId = String(process.env.EMAILJS_NOTIFICATION_TEMPLATE_ID || '').trim();
-  if (to && templateId) {
+  if (to) {
     try {
-      const config = getEmailJsConfig();
-      if (config) await sendEmailJsTemplate({
+      const safeLink = R.safeLink(link);
+      await sendGmailTemplate({
         to, subject: 'AFSANA alert: ' + String(title || 'Dashboard notification'),
-        templateId,
-        params: { notification_type: String(type), email_title: String(title || 'AFSANA notification'), email_body: String(body || ''), dashboard_url: 'https://afsanaperfumes.store/admin', notification_link: 'https://afsanaperfumes.store' + R.safeLink(link) },
-      }, { config });
-    } catch (err) {
-      console.error('[admin-email] notification delivery failed:', err?.message || err);
-    }
+        text: String(title || 'AFSANA notification') + '\n' + String(body || '') + '\nhttps://afsanaperfumes.store' + safeLink,
+        html: emailShell(title || 'AFSANA notification', '<p>'+escapeHtml(body || '').replace(/\n/g, '<br>')+'</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store'+safeLink+'">View notification</a></p>'),
+      });
+    } catch (err) { console.error('[admin-email] notification delivery failed:', err?.message || err); }
   }
   return notification;
 }
