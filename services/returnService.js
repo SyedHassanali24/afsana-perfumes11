@@ -9,6 +9,7 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const { receiveReturnedItems } = require('./inventoryService');
 const R = require('./returnRules');
+const { notifyAdmin } = require('./notificationService');
 
 const RETURN_SCOPE = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'city', stores: 'storeId' };
 const ORDER_SCOPE = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
