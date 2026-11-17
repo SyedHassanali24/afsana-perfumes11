@@ -95,19 +95,23 @@ function manualPeriodSummary(entries = []) {
 }
 function manualBalanceSheet(rows = []) {
   const groups = { assets: [], liabilities: [], equity: [] };
+  let income = 0;
+  let expenses = 0;
   for (const row of rows) {
     const type = row.accountType || row._id?.accountType;
     const account = row.account || row._id?.account;
     const debit = Number(row.debit) || 0;
     const credit = Number(row.credit) || 0;
+    if (type === 'income') income += credit - debit;
+    if (type === 'expense') expenses += debit - credit;
     const group = type === 'asset' ? 'assets' : type === 'liability' ? 'liabilities' : type === 'equity' ? 'equity' : null;
     if (!group || !account) continue;
     const balance = Math.round((type === 'asset' ? debit - credit : credit - debit) * 100) / 100;
     groups[group].push({ account, balance });
   }
-  for (const key of Object.keys(groups)) {
-    groups[key].sort((a, b) => a.account.localeCompare(b.account));
-  }
+  const accumulated = Math.round((income - expenses) * 100) / 100;
+  if (Math.abs(accumulated) >= 0.005) groups.equity.push({ account: 'Accumulated manual profit / loss', balance: accumulated });
+  for (const key of Object.keys(groups)) groups[key].sort((a, b) => a.account.localeCompare(b.account));
   const total = (items) => Math.round(items.reduce((sum, row) => sum + row.balance, 0) * 100) / 100;
   return {
     assets: { total: total(groups.assets), accounts: groups.assets },
