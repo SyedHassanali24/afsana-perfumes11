@@ -9,6 +9,7 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const { receiveReturnedItems } = require('./inventoryService');
 const R = require('./returnRules');
+const { notifyAdmin } = require('./notificationService');
 
 const RETURN_SCOPE = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'city', stores: 'storeId' };
 const ORDER_SCOPE = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
@@ -94,7 +95,7 @@ async function createReturn({ orderFilter, body, source, ctx, cfg }) {
     if (ctx && ctx.user) await audit(ctx, { action: 'return.created', module: 'returns', recordId: doc._id, newValue: { returnNumber, orderNumber: order.orderNumber, reason: body.reason, source } }, session);
     return doc;
   });
-  await Notification.create({ type: 'return_request', title: 'New return request', body: `${created.returnNumber} · ${created.orderNumber}`, link: '/admin/returns', forPermission: 'returns.view' }).catch(() => {});
+  await notifyAdmin({ type: 'return_request', title: 'New return request', body: `${created.returnNumber} · ${created.orderNumber}`, link: '/admin/returns', forPermission: 'returns.view' });
   return created;
 }
 

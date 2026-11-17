@@ -8,10 +8,11 @@ function otpContent({ purpose, otp }) {
   const minutes = purpose === 'admin login verification' ? 5 : 10;
   const text = 'Your AFSANA ' + purpose + ' code is ' + otp + '. It expires in ' + minutes + ' minutes. If you did not request this code, ignore this email.';
   const html = '<div style="font-family:Arial,sans-serif;color:#24183e;max-width:520px;margin:auto;padding:28px">' +
-    '<p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold">AFSANA · THE ART OF SCENT</p>' +
+    '<div style="text-align:center;margin:0 0 22px"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="display:block;width:150px;max-width:100%;height:auto;margin:auto;border:0"></div>' +
+    '<p style="font-size:11px;letter-spacing:3px;color:#7958c9;font-weight:bold;text-align:center">AFSANA · THE ART OF SCENT</p>' +
     '<h2 style="font-size:24px">Security verification</h2><p>Your ' + purpose + ' code is:</p>' +
     '<div style="font-size:32px;letter-spacing:9px;font-weight:bold;background:#f3efff;padding:18px;text-align:center;border-radius:12px">' + otp + '</div>' +
-    '<p style="color:#746b83;font-size:13px">' + text + '</p></div>';
+    '<p style="color:#746b83;font-size:13px">' + text + '</p>' + '<p style="margin-top:28px;color:#746b83;font-size:13px">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
   return { text, html, minutes };
 }
 
@@ -31,7 +32,7 @@ async function sendGmailOtp({ to, subject, html, env, fetchImpl }) {
 
   const sender = String(env.GMAIL_SENDER_EMAIL || env.OWNER_EMAIL || env.ADMIN_EMAIL || env.EASTWALA_EMAIL || to).trim();
   const headers = [];
-  if (validEmail(sender)) headers.push('From: AFSANA Security <' + sender + '>');
+  if (validEmail(sender)) headers.push('From: AFSANA Perfumes <' + sender + '>');
   headers.push('To: ' + to, 'Subject: ' + subject, 'MIME-Version: 1.0', 'Content-Type: text/html; charset=UTF-8');
   const mime = headers.concat('', html).join('\r\n');
   const sent = await fetchImpl('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
@@ -95,4 +96,10 @@ async function sendOtpWithFallback({ to, subject, purpose, otp, env = process.en
     : 'Email OTP is not configured. Add EmailJS, Gmail OAuth, or Resend credentials to the Cloudflare Worker.');
 }
 
-module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendResendOtp };
+async function sendGmailTemplate({ to, subject, html, text = '' }, { env = process.env, fetchImpl = globalThis.fetch } = {}) {
+  const recipient = String(to || '').trim().toLowerCase();
+  if (!validEmail(recipient)) throw new Error('Email recipient is invalid.');
+  if (!env.GMAIL_CLIENT_ID || !env.GMAIL_CLIENT_SECRET || !env.GMAIL_REFRESH_TOKEN) throw new Error('Gmail OAuth is not configured for transactional email.');
+  return sendGmailOtp({ to: recipient, subject, html: String(html || ''), text, env, fetchImpl });
+}
+module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendResendOtp };
