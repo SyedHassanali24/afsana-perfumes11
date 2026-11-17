@@ -37,24 +37,6 @@ function addCors(headers, origin) {
   return headers;
 }
 
-function edgeCacheBinding() {
-  try {
-    return typeof caches !== "undefined" && caches.default ? caches.default : null;
-  } catch {
-    return null;
-  }
-}
-
-function isPublicCacheableResponse(request, response) {
-  const policy = response.headers.get("Cache-Control") || "";
-  const vary = response.headers.get("Vary") || "";
-  return request.method === "GET"
-    && response.status === 200
-    && /\bpublic\b/i.test(policy)
-    && !/\b(?:private|no-store)\b/i.test(policy)
-    && !response.headers.has("Set-Cookie")
-    && vary.trim() !== "*";
-}
 
 export default {
   async fetch(request, env, ctx) {
@@ -109,55 +91,36 @@ export default {
 
     if (u.pathname.startsWith("/api/")) {
       const path = u.pathname.slice("/api/".length).split("/").filter(Boolean);
-      const edgeCache = request.method === "GET" ? edgeCacheBinding() : null;
-
-      // Public GETs may be served directly from the nearest Cloudflare edge.
-      // Only responses explicitly marked "public" by a public API route can enter this cache.
-      if (edgeCache) {
-        try {
-          const cached = await edgeCache.match(request);
-          if (cached) {
-            const headers = new Headers(cached.headers);
-            headers.set("X-Afsana-Edge-Cache", "HIT");
-            headers.set("X-Afsana-Backend", "cloudflare-mongodb-api");
-            addCors(headers, origin);
-            return new Response(cached.body, {
-              status: cached.status,
-              statusText: cached.statusText,
-              headers: securityHeaders(Object.fromEntries(headers.entries())),
-            });
-          }
-        } catch (cacheError) {
-          console.warn("[afsana-cache] read skipped:", cacheError?.message || cacheError);
-        }
-      }
-
       try {
         const response = await handleApiRequest({ request, params: { path }, env, ctx });
         const headers = new Headers(response.headers);
-        const cacheable = isPublicCacheableResponse(request, response);
+        const policy = headers.get("Cache-Control") || "";
+        const vary = headers.get("Vary") || "";
+        const publicCacheable = request.method === "GET"
+          && response.status === 200
+          && /\\bpublic\\b/i.test(policy)
+          && !/\\b(?:private|no-store)\\b/i.test(policy)
+          && !headers.has("Set-Cookie")
+          && vary.trim() !== "*";
 
-        // Do not let an authenticated/admin response enter a shared cache.
-        // Preserve the API route's explicit public TTL for anonymous catalogue/CMS/settings/media reads.
-        if (!cacheable) headers.set("Cache-Control", "no-store, private");
-        headers.set("X-Afsana-Edge-Cache", cacheable ? (edgeCache ? "MISS" : "BYPASS") : "BYPASS");
+        // Workers Cache is enabled in wrangler.toml. Preserve cache policy only for
+        // explicitly public GET routes; keep every admin/authenticated API private.
+        if (publicCacheable) {
+          const varyValues = new Set(vary.split(",").map((value) => value.trim()).filter(Boolean));
+          varyValues.add("Origin");
+          headers.set("Vary", [...varyValues].join(", "));
+          headers.set("X-Afsana-Cache-Policy", "public");
+        } else {
+          headers.set("Cache-Control", "no-store, private");
+          headers.set("X-Afsana-Cache-Policy", "private");
+        }
         headers.set("X-Afsana-Backend", "cloudflare-mongodb-api");
         addCors(headers, origin);
-
-        const outgoing = new Response(response.body, {
+        return new Response(response.body, {
           status: response.status,
           statusText: response.statusText,
           headers: securityHeaders(Object.fromEntries(headers.entries())),
         });
-
-        if (cacheable && edgeCache) {
-          const write = edgeCache.put(request, outgoing.clone()).catch((cacheError) => {
-            console.warn("[afsana-cache] write skipped:", cacheError?.message || cacheError);
-          });
-          if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(write);
-          else await write;
-        }
-        return outgoing;
       } catch (error) {
         console.error("[afsana-api] request failed:", error?.message || error);
         return json({ success: false, error: { code: "INTERNAL", message: "Backend request failed." } }, 500,
