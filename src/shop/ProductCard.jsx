@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ArrowUpRight } from 'lucide-react';
 import { useWishlist } from './WishlistContext';
@@ -8,18 +9,28 @@ export default function ProductCard({ product }) {
   const p = cardOf(product);
   const { has, toggle } = useWishlist();
   const liked = has(p.id);
-  const secondary = product?.media?.find?.((m) => m?.url && m?.url !== p.image?.url && m?.kind !== 'video');
+  const [brokenImage, setBrokenImage] = useState('');
+  const imageUrl = p.image?.url || '';
+  const showImage = !!imageUrl && brokenImage !== imageUrl;
+  const secondary = product?.media?.find?.((m) => {
+    const url = String(m?.url || '').trim();
+    const kind = String(m?.kind || '').toLowerCase();
+    const pathname = url.toLowerCase().split(/[?#]/, 1)[0];
+    const isNonImageFile = ['.mp4', '.webm', '.mov', '.m4v', '.glb', '.gltf'].some((ext) => pathname.endsWith(ext));
+    return url && url !== imageUrl && !isNonImageFile && !['video', 'media360', 'model3d'].includes(kind);
+  });
 
   return (
     <article className="afsana-product-card group relative">
       <Link to={`/product/${p.slug}`} className="afsana-product-link block">
         <div className="afsana-product-image">
-          {p.image?.url ? (
+          {showImage ? (
             <>
               <img
-                src={p.image.url}
+                src={imageUrl}
                 alt={p.image.alt || p.name}
                 loading="lazy"
+                onError={() => setBrokenImage(imageUrl)}
                 className={secondary?.url ? 'afsana-product-img afsana-product-img-primary has-secondary' : 'afsana-product-img afsana-product-img-primary'}
               />
               {secondary?.url ? (
@@ -27,6 +38,7 @@ export default function ProductCard({ product }) {
                   src={secondary.url}
                   alt=""
                   loading="lazy"
+                  onError={(event) => { event.currentTarget.style.display = 'none'; }}
                   className="afsana-product-img afsana-product-img-secondary"
                 />
               ) : null}

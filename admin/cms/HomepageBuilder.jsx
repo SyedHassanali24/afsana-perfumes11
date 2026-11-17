@@ -18,6 +18,11 @@ const defaults = (type) => ({
   autoplay: true, muted: true, controls: false, overlay: true, background: '',
   items: '',
   ...(type === 'video_grid' ? { columns: 4, items: 'Atmosphere|The first impression|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=75\nIngredient|Dark woods|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=900&q=75\nCraft|Made by hand|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=75\nEmotion|Leave a trace|https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4|https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=75' } : {}),
+  ...(type === 'testimonials' ? { eyebrow: 'THE AFSANA CIRCLE', subtitle: 'Sample cards are labelled. Replace them with approved customer feedback before presenting them as real reviews.', items: [
+    { name: 'Sample customer 01', rating: 5, title: 'An elegant first impression', text: 'Illustrative sample copy. Replace this with feedback approved by a real AFSANA customer.', product: 'Sample fragrance', sample: true },
+    { name: 'Sample customer 02', rating: 5, title: 'A scent with character', text: 'Illustrative sample copy. Replace this with feedback approved by a real AFSANA customer.', product: 'Sample fragrance', sample: true },
+    { name: 'Sample customer 03', rating: 5, title: 'Made for memorable moments', text: 'Illustrative sample copy. Replace this with feedback approved by a real AFSANA customer.', product: 'Sample fragrance', sample: true },
+  ] } : {}),
   ...(type === 'post_grid' ? { columns: 4, items: 'Find your signature scent|A guide to choosing your next fragrance|https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=900&q=80|/journal\nThe world of oud|The mysterious world of oud|https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=900&q=80|/journal\nThe psychology of scent|Why fragrance becomes memory|https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=80|/journal\nThe Afsana ritual|Make your fragrance yours|https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=80|/journal' } : {}),
   ...(type === 'promo_timer' || type === 'offer_timer' ? { endAt: '2026-11-05T23:59', label: 'PRIVATE COLLECTION OFFER', offerText: 'A special AFSANA offer ends soon.', buttonText: 'Shop the offer', buttonLink: '/shop' } : {}),
   ...(type === 'community_pulse' ? { eyebrow: 'THE AFSANA CIRCLE', subtitle: 'Use only verified brand numbers. Non-numeric values are treated as editorial labels.', disclaimer: 'Only publish verified numbers here.', items: 'Verified Reviews|0|Real customer feedback|/journal\nAfsana Circle|0|Community members|/account\nSignature Scents|0|Fragrances discovered|/shop\nGift Moments|0|Gifts created|/gifting' } : {}),
@@ -30,6 +35,10 @@ const defaults = (type) => ({
 const parseItems = (text) => String(text || '').split('\n').map((x) => x.trim()).filter(Boolean).map((x) => {
   const [title = '', textValue = '', image = '', link = ''] = x.split('|');
   return { title: title.trim(), text: textValue.trim(), image: image.trim(), link: link.trim() };
+});
+const parseTestimonialItems = (text) => String(text || '').split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
+  const [name = '', rating = '0', title = '', textValue = '', product = '', sample = ''] = line.split('|');
+  return { name: name.trim(), rating: Number(rating) || 0, title: title.trim(), text: textValue.trim(), product: product.trim(), sample: /^(sample|demo|true|yes)$/i.test(sample.trim()) };
 });
 const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
 
@@ -47,10 +56,14 @@ export default function HomepageBuilder() {
   const preview = () => { try { localStorage.setItem('afsana_cms_preview_v1', JSON.stringify({ sections: sorted })); window.open('/?afsanaPreview=1', '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
+  const updateTestimonial = (index, key, value) => setConfig('items', (Array.isArray(form.config.items) ? form.config.items : []).map((item, i) => i === index ? { ...item, [key]: value } : item));
+  const addTestimonial = () => setConfig('items', [...(Array.isArray(form.config.items) ? form.config.items : []), { name: 'AFSANA customer', rating: 0, title: '', text: '', product: '', sample: false }]);
+  const removeTestimonial = (index) => setConfig('items', (Array.isArray(form.config.items) ? form.config.items : []).filter((_, i) => i !== index));
   const open = (item) => {
     if (item) {
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
-      cfg.items = itemText(cfg.items);
+      if (item.type === 'testimonials') cfg.items = Array.isArray(cfg.items) ? cfg.items : parseTestimonialItems(cfg.items);
+      else cfg.items = itemText(cfg.items);
       setForm({ type: item.type, title: item.title || '', config: cfg, isEnabled: item.isEnabled !== false });
     } else setForm({ type: 'hero', title: '', config: defaults('hero'), isEnabled: true });
     setDrawer({ open: true, item: item || null });
@@ -61,7 +74,8 @@ export default function HomepageBuilder() {
     try {
       const cfg = { ...form.config };
       const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid','community_pulse'];
-      if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
+      if (form.type === 'testimonials' && typeof cfg.items === 'string') cfg.items = parseTestimonialItems(cfg.items);
+      else if (itemTypes.includes(form.type) && typeof cfg.items === 'string') cfg.items = parseItems(cfg.items);
       const payload = { type: form.type, title: form.title.trim(), config: cfg, sortOrder: drawer.item?.sortOrder ?? rows.length, isEnabled: !!form.isEnabled };
       if (drawer.item) await api.update(drawer.item.id, payload); else await api.create(payload);
       close(); setNotice('Section saved.'); reload();
@@ -161,7 +175,28 @@ export default function HomepageBuilder() {
         {['video_banner','video_grid'].includes(form.type) && <><Field label="Video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="https://…/video.mp4" /></Field><Field label="Poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} placeholder="Optional video poster image" /><div className="mt-2"><ImageUploadButton label="Upload poster image" onUploaded={(url) => setConfig('posterUrl', url)} /></div></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
         {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-2 gap-3"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
         {['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','blog_grid'].includes(form.type) && <><Field label="Collection / query hint"><Input value={form.config.query || ''} onChange={(e) => setConfig('query', e.target.value)} placeholder="Optional category / collection / query" /></Field><Field label="Number of items"><Input type="number" min="1" max="12" value={form.config.limit ?? 4} onChange={(e) => setConfig('limit', Number(e.target.value))} /></Field></>}
-        {itemTypes.includes(form.type) && <Field label="Items" hint="One per line: Title|Description|Image URL|Link. Video grid uses Title|Description|Video URL|Poster URL."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
+        {form.type === 'testimonials' && <>
+          <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#f4f6eb] p-4 space-y-3">
+            <Field label="Section eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field>
+            <Field label="Intro text"><Textarea rows={2} value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field>
+            <p className="text-xs leading-5 text-[#5f654f]">These same AFSANA review cards appear on the homepage and every product page. Demo cards are visibly marked SAMPLE. Only remove that mark for customer feedback you have permission to publish.</p>
+          </div>
+          {(Array.isArray(form.config.items) ? form.config.items : []).map((item, index) => (
+            <div key={index} className="rounded-2xl border border-[#263e0e]/15 bg-white p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3"><strong className="text-sm text-[#263e0e]">Review {index + 1}</strong><button type="button" onClick={() => removeTestimonial(index)} className="text-xs font-semibold text-[#9b3f3f] underline">Remove</button></div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Display name"><Input value={item.name || ''} onChange={(e) => updateTestimonial(index, 'name', e.target.value)} placeholder="e.g. Ayesha K." /></Field>
+                <Field label="Star rating"><Select value={String(item.rating ?? 0)} onChange={(e) => updateTestimonial(index, 'rating', Number(e.target.value))}>{[0,1,2,3,4,5].map((n) => <option key={n} value={n}>{n === 0 ? 'No rating' : `${n} / 5 stars`}</option>)}</Select></Field>
+              </div>
+              <Field label="Review heading"><Input value={item.title || ''} onChange={(e) => updateTestimonial(index, 'title', e.target.value)} placeholder="A memorable fragrance" /></Field>
+              <Field label="Customer comment"><Textarea rows={3} value={item.text || ''} onChange={(e) => updateTestimonial(index, 'text', e.target.value)} placeholder="Write the customer feedback here…" /></Field>
+              <Field label="Perfume / product label"><Input value={item.product || ''} onChange={(e) => updateTestimonial(index, 'product', e.target.value)} placeholder="Perfume name (optional)" /></Field>
+              <Check label="Show SAMPLE badge on this card" checked={!!item.sample} onChange={(v) => updateTestimonial(index, 'sample', v)} />
+            </div>
+          ))}
+          <button type="button" onClick={addTestimonial} className="w-full rounded-xl border border-dashed border-[#263e0e]/35 px-4 py-3 text-sm font-semibold text-[#263e0e] hover:bg-[#f4f6eb]">+ Add another review card</button>
+        </>}
+        {itemTypes.includes(form.type) && form.type !== 'testimonials' && <Field label="Items" hint="One per line: Title|Description|Image URL|Link. Video grid uses Title|Description|Video URL|Poster URL."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
         {['promo_timer','offer_timer'].includes(form.type) && <><Field label="Offer label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Offer end (ISO/date-time)"><Input type="datetime-local" value={form.config.endAt || ''} onChange={(e) => setConfig('endAt', e.target.value)} /></Field><Field label="Offer text"><Textarea rows={3} value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></>}
         {form.type === 'muse_scene' && <><Field label="Character image URL"><Input value={form.config.characterImageUrl || ''} onChange={(e) => setConfig('characterImageUrl', e.target.value)} placeholder="Upload/host an editorial character image" /></Field><p className="text-xs text-[#5f654f]">Best result: transparent PNG/WebP of the AFSANA Muse. The storefront adds cinematic glow and motion.</p></>}
         {form.type === 'product_3d_showcase' && <><Field label="Product slug (optional)"><Input value={form.config.productSlug || ''} onChange={(e) => setConfig('productSlug', e.target.value)} placeholder="e.g. signature-oud" /></Field><Field label="Fallback bottle image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The homepage theatre uses the product media already stored in Products. Add multiple product images in Admin → Products for the strongest 360° effect.</p></>}
