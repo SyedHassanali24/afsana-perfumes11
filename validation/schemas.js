@@ -137,7 +137,7 @@ const auditQuery = z.object({
 });
 
 // ---------- customer accounts ----------
-const custPhone = z.string().trim().regex(/^[0-9+\\-\\s()]{10,18}$/, 'Enter a valid phone number').transform(normalizePhone);
+const custPhone = z.string().trim().regex(/^[0-9+\-\s()]{10,18}$/, 'Enter a valid phone number').transform(normalizePhone);
 const registerBody = z.object({
   name: z.string().trim().min(2).max(100), phone: custPhone,
   email: z.string().trim().email().max(200),
@@ -147,8 +147,8 @@ const customerLoginBody = z.object({ identifier: z.string().trim().min(3).max(20
 const profilePatch = z.object({ name: z.string().trim().min(2).max(100), city: z.string().trim().max(80), email: z.string().trim().email().max(200).optional().or(z.literal('')).transform((v) => v || undefined) }).partial();
 const customerChangePassword = z.object({ currentPassword: z.string().min(1).max(200), newPassword: passwordRule(8) });
 const forgotBody = z.object({ email: z.string().trim().email().max(200) });
-const verifyForgotBody = z.object({ email: z.string().trim().email().max(200), otp: z.string().regex(/^\\d{6}$/, 'Enter the six-digit code from your email') });
-const resetBody = z.object({ resetToken: z.string().regex(/^[a-f\\d]{64}$/i, 'Verify your email first'), newPassword: passwordRule(8) });
+const verifyForgotBody = z.object({ email: z.string().trim().email().max(200), otp: z.string().regex(/^\d{6}$/, 'Enter the six-digit code from your email') });
+const resetBody = z.object({ resetToken: z.string().regex(/^[a-f\d]{64}$/i, 'Verify your email first'), newPassword: passwordRule(8) });
 const offerLeadBody = z.object({
   email: z.string().trim().email().max(200),
   phone: custPhone,
