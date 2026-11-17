@@ -18,7 +18,7 @@ import { toDashboard, money, HIDDEN } from "../../src/services/mappers/dashboard
 
 const DASHBOARD_ORDER_KEY = "afsana-dashboard-stat-order-v1";
 const Hidden = () => <p className="text-sm text-[#64748b]">{HIDDEN} — your role cannot see this part.</p>;
-const STATUS_COLORS = ["#4f46e5", "#16a34a", "#4f46e5", "#8b5cf6", "#e11d48", "#4f46e5"];
+const STATUS_COLORS = ["#147b57", "#16845a", "#147b57", "#a5d94b", "#e11d48", "#147b57"];
 const STATUS_LABELS = {
   pending: "Pending",
   processing: "Processing",
@@ -38,23 +38,23 @@ const STAT_STYLES = [
   { icon: TrendingUp, tone: "indigo" },
 ];
 
-const Pulse = ({ className = "" }) => <div className={`rounded-xl bg-[#1e1b4b]/10 animate-pulse ${className}`} />;
+const Pulse = ({ className = "" }) => <div className={`rounded-xl bg-[#174b3c]/10 animate-pulse ${className}`} />;
 
 const toneClasses = {
-  blue: "bg-[#4f46e5]/10 text-[#4f46e5] ring-[#4f46e5]/10",
-  green: "bg-[#16a34a]/10 text-[#16a34a] ring-[#16a34a]/10",
-  purple: "bg-[#4f46e5]/10 text-[#4f46e5] ring-[#4f46e5]/10",
-  orange: "bg-[#8b5cf6]/15 text-[#4f46e5] ring-[#8b5cf6]/15",
+  blue: "bg-[#147b57]/10 text-[#147b57] ring-[#147b57]/10",
+  green: "bg-[#16845a]/10 text-[#16845a] ring-[#16845a]/10",
+  purple: "bg-[#147b57]/10 text-[#147b57] ring-[#147b57]/10",
+  orange: "bg-[#a5d94b]/15 text-[#147b57] ring-[#a5d94b]/15",
   red: "bg-[#fff1f2] text-[#e11d48] ring-[#e11d48]/10",
-  indigo: "bg-[#1e1b4b]/10 text-[#1e1b4b] ring-[#1e1b4b]/10",
+  indigo: "bg-[#174b3c]/10 text-[#174b3c] ring-[#174b3c]/10",
 };
 
 function Header() {
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4f46e5]">Store overview</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#147b57]">Store overview</p>
       <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.04em] text-[#172033]">Dashboard</h1>
-      <p className="text-sm text-[#64748b]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p><span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#8b5cf6]/35 bg-[#eef2ff] px-2.5 py-1 text-[10px] font-semibold text-[#1e1b4b]"><Zap className="h-3 w-3" /> Fast mode · cached dashboard</span>
+      <p className="text-sm text-[#64748b]">Welcome back. Here&apos;s what&apos;s happening with your store today.</p><span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-[#a5d94b]/35 bg-[#eef2ff] px-2.5 py-1 text-[10px] font-semibold text-[#174b3c]"><Zap className="h-3 w-3" /> Fast mode · cached dashboard</span>
     </div>
   );
 }
@@ -66,7 +66,7 @@ function SectionTitle({ title, subtitle, href, action = "View all" }) {
         <h2 className="text-[16px] font-semibold text-[#172033]">{title}</h2>
         {subtitle && <p className="text-xs text-[#64748b] mt-1">{subtitle}</p>}
       </div>
-      {href && <Link to={href} className="inline-flex items-center gap-1 text-xs font-semibold text-[#1e1b4b] hover:text-[#4f46e5]">{action}<ChevronRight className="w-3.5 h-3.5" /></Link>}
+      {href && <Link to={href} className="inline-flex items-center gap-1 text-xs font-semibold text-[#174b3c] hover:text-[#147b57]">{action}<ChevronRight className="w-3.5 h-3.5" /></Link>}
     </div>
   );
 }
@@ -78,13 +78,13 @@ function StatCard({ card, index }) {
   const isUp = hasChange && card.changePct >= 0;
 
   return (
-    <div className="dashboard-stat-card rounded-2xl border border-[#1e1b4b]/10 bg-[#ffffff] p-4 sm:p-5 shadow-xl">
+    <div className="dashboard-stat-card rounded-2xl border border-[#174b3c]/10 bg-[#ffffff] p-4 sm:p-5 shadow-xl">
       <div className="flex items-start justify-between gap-3">
         <div className={`grid h-11 w-11 place-items-center rounded-xl ring-1 ${toneClasses[style.tone]}`}>
           <Icon className="w-5 h-5" />
         </div>
         {hasChange && (
-          <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 text-[10px] font-bold ${isUp ? "bg-[#16a34a]/10 text-[#16a34a]" : "bg-[#fff1f2] text-[#e11d48]"}`}>
+          <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-1 text-[10px] font-bold ${isUp ? "bg-[#16845a]/10 text-[#16845a]" : "bg-[#fff1f2] text-[#e11d48]"}`}>
             <ArrowUpRight className="w-3 h-3" />
             {Math.abs(card.changePct)}%
           </span>
@@ -99,13 +99,13 @@ function StatCard({ card, index }) {
 
 function QuickLink({ href, icon: Icon, title, text, tone }) {
   return (
-    <Link to={href} className="group flex items-center gap-3 min-w-0 rounded-xl px-3 py-2 transition-colors hover:bg-[#1e1b4b]/5">
+    <Link to={href} className="group flex items-center gap-3 min-w-0 rounded-xl px-3 py-2 transition-colors hover:bg-[#174b3c]/5">
       <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[tone]}`}><Icon className="w-4.5 h-4.5" /></span>
       <span className="min-w-0">
         <span className="block text-xs font-semibold text-[#172033]">{title}</span>
         <span className="block truncate text-[11px] text-[#64748b]">{text}</span>
       </span>
-      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#64748b] group-hover:text-[#4f46e5]" />
+      <ChevronRight className="ml-auto w-4 h-4 shrink-0 text-[#64748b] group-hover:text-[#147b57]" />
     </Link>
   );
 }
@@ -241,12 +241,12 @@ export default function Dashboard() {
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={vm.series} margin={{ left: -16, right: 8, top: 6, bottom: 0 }}>
-                  <defs><linearGradient id="revenueFillDashboard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4f46e5" stopOpacity={0.24} /><stop offset="100%" stopColor="#4f46e5" stopOpacity={0} /></linearGradient></defs>
-                  <CartesianGrid stroke="#1e1b4b1a" vertical={false} strokeDasharray="3 5" />
+                  <defs><linearGradient id="revenueFillDashboard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#147b57" stopOpacity={0.24} /><stop offset="100%" stopColor="#147b57" stopOpacity={0} /></linearGradient></defs>
+                  <CartesianGrid stroke="#174b3c1a" vertical={false} strokeDasharray="3 5" />
                   <XAxis dataKey="date" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={24} />
                   <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} width={54} tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 100) / 10}k` : v)} />
-                  <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #1e1b4b1a", borderRadius: 12, fontSize: 12, color: "#172033", boxShadow: "0 20px 50px rgba(24,35,8,.12)" }} formatter={(v) => [money(v), "Revenue"]} />
-                  <Area type="monotone" dataKey="revenue" stroke="#4f46e5" strokeWidth={3} fill="url(#revenueFillDashboard)" dot={false} activeDot={{ r: 5 }} />
+                  <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #174b3c1a", borderRadius: 12, fontSize: 12, color: "#172033", boxShadow: "0 20px 50px rgba(24,35,8,.12)" }} formatter={(v) => [money(v), "Revenue"]} />
+                  <Area type="monotone" dataKey="revenue" stroke="#147b57" strokeWidth={3} fill="url(#revenueFillDashboard)" dot={false} activeDot={{ r: 5 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -255,13 +255,13 @@ export default function Dashboard() {
 
         <Card className="rounded-2xl bg-gradient-to-br from-[#eef2ff] via-[#ffffff] to-[#f3f4f9]">
           <SectionTitle title="Store snapshot" subtitle="Your latest activity at a glance" />
-          <div className="rounded-2xl border border-[#1e1b4b]/10 bg-[#ffffff]/80 p-5">
-            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#1e1b4b] to-[#4f46e5] text-white shadow-lg shadow-[#1e1b4b]/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#172033]">Afsana Perfumes</p><p className="text-xs text-[#64748b]">Luxury in every scent</p></div></div>
+          <div className="rounded-2xl border border-[#174b3c]/10 bg-[#ffffff]/80 p-5">
+            <div className="flex items-center gap-4"><div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#174b3c] to-[#147b57] text-white shadow-lg shadow-[#174b3c]/20"><Sparkles className="w-6 h-6" /></div><div><p className="text-sm font-semibold text-[#172033]">Afsana Perfumes</p><p className="text-xs text-[#64748b]">Luxury in every scent</p></div></div>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#64748b]">Recent orders</p><p className="mt-1 text-xl font-semibold text-[#172033]">{vm.recentOrders ? vm.recentOrders.length : HIDDEN}</p></div>
               <div className="rounded-xl bg-white/80 p-3"><p className="text-[11px] text-[#64748b]">Low stock</p><p className="mt-1 text-xl font-semibold text-[#172033]">{vm.lowStock ? vm.lowStock.count : HIDDEN}</p></div>
             </div>
-            <Link to="/admin/products" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#1e1b4b] hover:text-[#4f46e5]">Manage products <ArrowUpRight className="w-3.5 h-3.5" /></Link>
+            <Link to="/admin/products" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#174b3c] hover:text-[#147b57]">Manage products <ArrowUpRight className="w-3.5 h-3.5" /></Link>
           </div>
         </Card>
       </div>
@@ -272,7 +272,7 @@ export default function Dashboard() {
           {statusBreakdown.length ? (
             <>
               <div className="h-48 relative">
-                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #1e1b4b1a", borderRadius: 10, fontSize: 12, color: "#172033" }} /></PieChart></ResponsiveContainer>
+                <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={76} paddingAngle={3} stroke="none">{statusBreakdown.map((entry, index) => <Cell key={entry.name} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #174b3c1a", borderRadius: 10, fontSize: 12, color: "#172033" }} /></PieChart></ResponsiveContainer>
                 <div className="absolute inset-0 grid place-items-center pointer-events-none"><div className="text-center"><p className="text-2xl font-semibold text-[#172033]">{(vm.recentOrders || []).length}</p><p className="text-[10px] text-[#64748b]">Recent</p></div></div>
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">{statusBreakdown.map((s, i) => <span key={s.name} className="inline-flex items-center gap-2 text-[11px] text-[#64748b]"><i className="h-2 w-2 rounded-full" style={{ background: STATUS_COLORS[i % STATUS_COLORS.length] }} />{s.name}<b className="ml-auto text-[#172033]">{s.value}</b></span>)}</div>
@@ -283,7 +283,7 @@ export default function Dashboard() {
         <Card className="xl:col-span-2 rounded-2xl" padded={false}>
           <div className="px-5 pt-5"><SectionTitle title="Recent orders" subtitle="Latest customer activity" href="/admin/orders" /></div>
           {!vm.recentOrders ? <div className="px-5 pb-5"><Hidden /></div> : vm.recentOrders.length === 0 ? <p className="px-5 pb-6 text-sm text-[#64748b]">No orders yet.</p> : (
-            <div className="divide-y divide-[#1e1b4b]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#1e1b4b]/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#1e1b4b]/10 text-[#1e1b4b]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#172033] truncate">{order.id}</span><span className="block text-[11px] text-[#64748b] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#172033]">{order.total}</span></Link>)}</div>
+            <div className="divide-y divide-[#174b3c]/10">{vm.recentOrders.slice(0, 5).map((order) => <Link key={order.id} to="/admin/orders" className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#174b3c]/[0.03] transition-colors"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#174b3c]/10 text-[#174b3c]"><ShoppingBag className="w-4 h-4" /></span><span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-[#172033] truncate">{order.id}</span><span className="block text-[11px] text-[#64748b] truncate">{order.customer} · {order.date}</span></span><StatusPill status={order.status} /><span className="hidden sm:block w-24 text-right text-xs font-semibold text-[#172033]">{order.total}</span></Link>)}</div>
           )}
         </Card>
       </div>
@@ -292,14 +292,14 @@ export default function Dashboard() {
         <Card className="xl:col-span-2 rounded-2xl">
           <SectionTitle title="Top selling products" subtitle={`Last ${vm.topProducts ? vm.topProducts.days : 30} days, by units sold`} href="/admin/products" />
           {!vm.topProducts ? <Hidden /> : vm.topProducts.rows.length === 0 ? <p className="text-sm text-[#64748b] py-8">No sales yet.</p> : (
-            <div className="grid sm:grid-cols-2 gap-3">{vm.topProducts.rows.slice(0, 6).map((product, index) => <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#1e1b4b]/10 bg-[#ffffff] p-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[STAT_STYLES[index % STAT_STYLES.length].tone]}`}><Box className="w-4.5 h-4.5" /></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-[#172033]">{product.name}</p><p className="mt-0.5 text-[11px] text-[#64748b]">{product.units} units · {product.revenue}</p></div><span className="text-[11px] font-semibold text-[#172033]">{product.profit === HIDDEN ? HIDDEN : product.profit}</span></div>)}</div>
+            <div className="grid sm:grid-cols-2 gap-3">{vm.topProducts.rows.slice(0, 6).map((product, index) => <div key={product.id} className="flex items-center gap-3 rounded-xl border border-[#174b3c]/10 bg-[#ffffff] p-3"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClasses[STAT_STYLES[index % STAT_STYLES.length].tone]}`}><Box className="w-4.5 h-4.5" /></div><div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-[#172033]">{product.name}</p><p className="mt-0.5 text-[11px] text-[#64748b]">{product.units} units · {product.revenue}</p></div><span className="text-[11px] font-semibold text-[#172033]">{product.profit === HIDDEN ? HIDDEN : product.profit}</span></div>)}</div>
           )}
         </Card>
 
         <Card className="rounded-2xl">
           <SectionTitle title="Low stock alert" subtitle="Products that need attention" href="/admin/inventory" />
-          {!vm.lowStock ? <Hidden /> : vm.lowStock.items.length === 0 ? <div className="rounded-xl bg-[#16a34a]/10 p-4 text-sm text-[#16a34a]">All products are well stocked.</div> : (
-            <div className="space-y-3">{vm.lowStock.items.slice(0, 5).map((product) => <div key={product.id} className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#8b5cf6]/15 text-[#4f46e5]"><AlertTriangle className="w-4 h-4" /></span><span className="min-w-0 flex-1 truncate text-xs font-medium text-[#172033]">{product.name}</span><span className="shrink-0 text-[11px] font-semibold text-[#d97706]">{product.stock} / {product.threshold}</span></div>)}{vm.lowStock.count > 5 && <Link to="/admin/inventory" className="inline-flex items-center gap-1 text-xs font-semibold text-[#1e1b4b]">View all {vm.lowStock.count}<ChevronRight className="w-3 h-3" /></Link>}</div>
+          {!vm.lowStock ? <Hidden /> : vm.lowStock.items.length === 0 ? <div className="rounded-xl bg-[#16845a]/10 p-4 text-sm text-[#16845a]">All products are well stocked.</div> : (
+            <div className="space-y-3">{vm.lowStock.items.slice(0, 5).map((product) => <div key={product.id} className="flex items-center gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#a5d94b]/15 text-[#147b57]"><AlertTriangle className="w-4 h-4" /></span><span className="min-w-0 flex-1 truncate text-xs font-medium text-[#172033]">{product.name}</span><span className="shrink-0 text-[11px] font-semibold text-[#d97706]">{product.stock} / {product.threshold}</span></div>)}{vm.lowStock.count > 5 && <Link to="/admin/inventory" className="inline-flex items-center gap-1 text-xs font-semibold text-[#174b3c]">View all {vm.lowStock.count}<ChevronRight className="w-3 h-3" /></Link>}</div>
           )}
         </Card>
       </div>
@@ -317,20 +317,20 @@ export default function Dashboard() {
           ) : securityData?.security ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <div className="rounded-xl border border-[#1e1b4b]/10 bg-[#eef2ff] p-4"><p className="text-[11px] text-[#64748b]">Active staff sessions</p><p className="mt-1 text-2xl font-semibold text-[#1e1b4b]">{securityData.security.activeSessions}</p></div>
-                <div className="rounded-xl border border-[#1e1b4b]/10 bg-white p-4"><p className="text-[11px] text-[#64748b]">Locked accounts</p><p className="mt-1 text-2xl font-semibold text-[#1e1b4b]">{securityData.security.lockedAccounts.length}</p></div>
-                <div className="rounded-xl border border-[#1e1b4b]/10 bg-white p-4"><p className="text-[11px] text-[#64748b]">Accounts with failed attempts</p><p className="mt-1 text-2xl font-semibold text-[#1e1b4b]">{securityData.security.failedAccounts.length}</p></div>
+                <div className="rounded-xl border border-[#174b3c]/10 bg-[#eef2ff] p-4"><p className="text-[11px] text-[#64748b]">Active staff sessions</p><p className="mt-1 text-2xl font-semibold text-[#174b3c]">{securityData.security.activeSessions}</p></div>
+                <div className="rounded-xl border border-[#174b3c]/10 bg-white p-4"><p className="text-[11px] text-[#64748b]">Locked accounts</p><p className="mt-1 text-2xl font-semibold text-[#174b3c]">{securityData.security.lockedAccounts.length}</p></div>
+                <div className="rounded-xl border border-[#174b3c]/10 bg-white p-4"><p className="text-[11px] text-[#64748b]">Accounts with failed attempts</p><p className="mt-1 text-2xl font-semibold text-[#174b3c]">{securityData.security.failedAccounts.length}</p></div>
               </div>
               <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
                 <div>
                   <h3 className="text-xs font-semibold text-[#172033] mb-3">Recent staff sessions</h3>
-                  {securityData.security.recentSessions.length ? <div className="space-y-3">{securityData.security.recentSessions.slice(0,5).map((session,index)=><div key={session.email+session.lastActiveAt+index} className="flex items-center justify-between gap-3 border-b border-[#1e1b4b]/10 pb-2"><div className="min-w-0"><p className="text-xs font-medium text-[#172033] truncate">{session.email}</p><p className="text-[10px] text-[#64748b] truncate">{session.device}</p></div><span className="shrink-0 text-[10px] text-[#64748b]">{session.lastActiveAt ? new Date(session.lastActiveAt).toLocaleString() : "—"}</span></div>)}</div> : <p className="text-xs text-[#64748b]">No active staff sessions.</p>}
+                  {securityData.security.recentSessions.length ? <div className="space-y-3">{securityData.security.recentSessions.slice(0,5).map((session,index)=><div key={session.email+session.lastActiveAt+index} className="flex items-center justify-between gap-3 border-b border-[#174b3c]/10 pb-2"><div className="min-w-0"><p className="text-xs font-medium text-[#172033] truncate">{session.email}</p><p className="text-[10px] text-[#64748b] truncate">{session.device}</p></div><span className="shrink-0 text-[10px] text-[#64748b]">{session.lastActiveAt ? new Date(session.lastActiveAt).toLocaleString() : "—"}</span></div>)}</div> : <p className="text-xs text-[#64748b]">No active staff sessions.</p>}
                 </div>
                 <div>
                   <h3 className="text-xs font-semibold text-[#172033] mb-3">Login protection</h3>
                   {securityData.security.lockedAccounts.length || securityData.security.failedAccounts.length ? <div className="space-y-3">
                     {securityData.security.lockedAccounts.map((account)=><div key={account.email} className="rounded-xl bg-[#fff1f2] p-3"><p className="text-xs font-semibold text-[#be123c]">Temporarily locked: {account.email}</p><p className="mt-1 text-[10px] text-[#9f1239]">Unlocks {new Date(account.lockedUntil).toLocaleString()}</p></div>)}
-                    {securityData.security.failedAccounts.map((account)=><div key={account.email} className="rounded-xl bg-[#eef2ff] p-3"><p className="text-xs font-semibold text-[#1e1b4b]">{account.email}</p><p className="mt-1 text-[10px] text-[#64748b]">{account.failedAttempts} failed attempt(s) currently recorded</p></div>)}
+                    {securityData.security.failedAccounts.map((account)=><div key={account.email} className="rounded-xl bg-[#eef2ff] p-3"><p className="text-xs font-semibold text-[#174b3c]">{account.email}</p><p className="mt-1 text-[10px] text-[#64748b]">{account.failedAttempts} failed attempt(s) currently recorded</p></div>)}
                   </div> : <p className="text-xs text-[#64748b]">No failed login attempts or locked accounts are currently recorded.</p>}
                 </div>
               </div>
