@@ -95,10 +95,10 @@ export default function ProductPage(){
  },[offerEndAt]);
  const productMedia=useMemo(()=>normaliseProductMedia(p),[p]);
  const media=useMemo(()=>productMedia
-  .filter((item)=>item.kind!=='model3d'&&!/\\.(glb|gltf)(\\?|$)/i.test(item.url))
+  .filter((item)=>item.kind!=='model3d'&&!/\.(glb|gltf)(\?|$)/i.test(item.url))
   .sort((a,b)=>{
-   const aVideo=a.kind==='video'||/\\.(mp4|webm|mov|m4v)(\\?|$)/i.test(a.url);
-   const bVideo=b.kind==='video'||/\\.(mp4|webm|mov|m4v)(\\?|$)/i.test(b.url);
+   const aVideo=a.kind==='video'||/\.(mp4|webm|mov|m4v)(\?|$)/i.test(a.url);
+   const bVideo=b.kind==='video'||/\.(mp4|webm|mov|m4v)(\?|$)/i.test(b.url);
    if(aVideo!==bVideo)return aVideo?1:-1;
    if((a.kind==='main')!==(b.kind==='main'))return a.kind==='main'?-1:1;
    return Number(a.sortOrder||0)-Number(b.sortOrder||0);
