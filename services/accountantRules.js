@@ -51,7 +51,8 @@ function buildJournal({ orders = [], itemsByOrder = new Map(), payments = [], re
 function trialBalance(journal) {
   const accounts = new Map();
   for (const entry of journal) for (const row of entry.lines) {
-    const current = accounts.get(row.account) || { account: row.account, debit: 0, credit: 0 };
+    const current = accounts.get(row.account) || { account: row.account, accountType: row.accountType || null, debit: 0, credit: 0 };
+    if (!current.accountType && row.accountType) current.accountType = row.accountType;
     current.debit += row.debit;
     current.credit += row.credit;
     accounts.set(row.account, current);
@@ -61,4 +62,57 @@ function trialBalance(journal) {
 function totals(journal) {
   return journal.reduce((out, entry) => ({ debit: out.debit + entry.debit, credit: out.credit + entry.credit }), { debit: 0, credit: 0 });
 }
-module.exports = { line, batch, buildJournal, trialBalance, totals };
+
+function manualEntriesToJournal(entries = []) {
+  return entries.map((entry) => {
+    const lines = (entry.lines || []).map((row) => ({
+      account: row.account, accountType: row.accountType,
+      debit: Math.max(0, Number(row.debit) || 0),
+      credit: Math.max(0, Number(row.credit) || 0),
+      ...(row.note ? { note: row.note } : {}),
+    }));
+    const debit = lines.reduce((sum, row) => sum + row.debit, 0);
+    const credit = lines.reduce((sum, row) => sum + row.credit, 0);
+    const id = String(entry._id || entry.id || '').slice(-6).toUpperCase();
+    return {
+      date: entry.date, reference: entry.reference || ('MAN-' + id),
+      narration: entry.narration || 'Manual journal entry', source: 'manual',
+      lines, debit, credit, balanced: Math.abs(debit - credit) < 0.005,
+    };
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+function manualPeriodSummary(entries = []) {
+  const result = { investment: 0, income: 0, expenses: 0 };
+  for (const entry of entries) for (const row of entry.lines || []) {
+    const debit = Number(row.debit) || 0;
+    const credit = Number(row.credit) || 0;
+    if (row.accountType === 'income') result.income += credit - debit;
+    if (row.accountType === 'expense') result.expenses += debit - credit;
+    if (row.accountType === 'equity' && /capital|investment/i.test(String(row.account || ''))) result.investment += credit - debit;
+  }
+  for (const key of Object.keys(result)) result[key] = Math.round(result[key] * 100) / 100;
+  return result;
+}
+function manualBalanceSheet(rows = []) {
+  const groups = { assets: [], liabilities: [], equity: [] };
+  for (const row of rows) {
+    const type = row.accountType || row._id?.accountType;
+    const account = row.account || row._id?.account;
+    const debit = Number(row.debit) || 0;
+    const credit = Number(row.credit) || 0;
+    const group = type === 'asset' ? 'assets' : type === 'liability' ? 'liabilities' : type === 'equity' ? 'equity' : null;
+    if (!group || !account) continue;
+    const balance = Math.round((type === 'asset' ? debit - credit : credit - debit) * 100) / 100;
+    groups[group].push({ account, balance });
+  }
+  for (const key of Object.keys(groups)) {
+    groups[key].sort((a, b) => a.account.localeCompare(b.account));
+  }
+  const total = (items) => Math.round(items.reduce((sum, row) => sum + row.balance, 0) * 100) / 100;
+  return {
+    assets: { total: total(groups.assets), accounts: groups.assets },
+    liabilities: { total: total(groups.liabilities), accounts: groups.liabilities },
+    equity: { total: total(groups.equity), accounts: groups.equity },
+  };
+}
+module.exports = { line, batch, buildJournal, trialBalance, totals, manualEntriesToJournal, manualPeriodSummary, manualBalanceSheet };
