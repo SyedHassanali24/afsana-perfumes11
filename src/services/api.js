@@ -12,17 +12,17 @@ const PERSIST_PREFIX = 'afsana-api-cache:';
 // Short, browser-local GET caching prevents repeated admin reads when navigating the dashboard.
 // Identity-bound routes are deliberately excluded; the cache is cleared on every auth transition.
 const NEVER_CACHE_PATHS = [
-  /^\\/auth(?:\\/|$)/,
-  /^\\/account(?:\\/|$)/,
-  /^\\/cart(?:\\/|$)/,
-  /^\\/wishlist(?:\\/|$)/,
-  /^\\/returns\\/mine(?:\\/|$)/,
-  /^\\/orders\\/track(?:\\/|$)/,
-  /^\\/growth\\/me(?:\\/|$)/,
-  /^\\/reviews\\/mine(?:\\/|$)/,
-  /^\\/backup(?:\\/|$)/,
-  /^\\/analytics\\/security(?:\\/|$)/,
-  /^\\/staff\\/[^/]+\\/sessions(?:\\/|$)/,
+  /^\/auth(?:\/|$)/,
+  /^\/account(?:\/|$)/,
+  /^\/cart(?:\/|$)/,
+  /^\/wishlist(?:\/|$)/,
+  /^\/returns\/mine(?:\/|$)/,
+  /^\/orders\/track(?:\/|$)/,
+  /^\/growth\/me(?:\/|$)/,
+  /^\/reviews\/mine(?:\/|$)/,
+  /^\/backup(?:\/|$)/,
+  /^\/analytics\/security(?:\/|$)/,
+  /^\/staff\/[^/]+\/sessions(?:\/|$)/,
 ];
 
 function defaultCacheTtl(path) {
