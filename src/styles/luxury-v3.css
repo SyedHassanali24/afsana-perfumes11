@@ -3104,3 +3104,78 @@
   .afsana-collection-campaign-bottle{transform:scale(.74)}
   .afsana-collection-campaign-index{right:6px;bottom:6px;font-size:4px}
 }
+
+
+/* AFSANA private offer countdown — restrained, responsive luxury treatment. */
+.afsana-private-offer-panel{
+  position:relative;display:flex;min-width:0;align-items:center;justify-content:center;
+  overflow:hidden;padding:clamp(24px,3.8vw,48px);color:#f5eee3;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(92,43,103,.20),transparent 42%),
+    radial-gradient(ellipse at 100% 100%,rgba(76,36,88,.16),transparent 38%),
+    linear-gradient(145deg,#160e19 0%,#100b12 58%,#191020 100%);
+}
+.afsana-private-offer-inner{position:relative;width:100%;max-width:590px;margin:auto}
+.afsana-private-offer-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.afsana-private-offer-brand{
+  display:inline-flex;align-items:center;gap:10px;color:#e4c58f;
+  font:600 10px/1.4 system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase
+}
+.afsana-private-offer-brand>span{font-size:19px;line-height:1}
+.afsana-private-offer-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;
+  border:1px solid rgba(207,167,119,.3);border-radius:999px;
+  background:rgba(83,30,87,.44);color:#f0e6dc;
+  font:500 10px/1.2 system-ui,sans-serif;letter-spacing:.08em
+}
+.afsana-private-offer-badge>span{font-size:15px;line-height:1}
+.afsana-private-offer-heading{
+  display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.5vw,20px);
+  margin:25px 0 0;color:#f6efe5;text-align:center;white-space:nowrap;
+  font:400 clamp(25px,3.2vw,43px)/1.12 Georgia,'Times New Roman',serif;
+  letter-spacing:-.025em
+}
+.afsana-private-offer-heading:before,.afsana-private-offer-heading:after{
+  content:"";flex:1;min-width:16px;height:1px;background:rgba(220,190,151,.62)
+}
+.afsana-private-offer-heading em{color:#d9b77f;font-weight:400}
+.afsana-private-offer-countdown-wrap{margin-top:27px}
+.afsana-private-offer-countdown{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(7px,1.2vw,14px);width:100%
+}
+.afsana-private-offer-unit{
+  display:flex;min-width:0;min-height:clamp(88px,10vw,125px);flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;padding:12px 4px;
+  border:1px solid rgba(211,177,132,.58);border-radius:18px;
+  background:rgba(8,6,10,.18)
+}
+.afsana-private-offer-number{
+  color:#f4ede3;font:400 clamp(35px,4.5vw,62px)/.95 Georgia,'Times New Roman',serif;
+  font-variant-numeric:tabular-nums;letter-spacing:-.035em
+}
+.afsana-private-offer-unit-label{
+  color:#d9b77f;font:600 9px/1 system-ui,sans-serif;letter-spacing:.19em;text-transform:uppercase
+}
+.afsana-private-offer-footer{
+  display:flex;align-items:center;justify-content:center;gap:clamp(9px,1.4vw,18px);
+  margin-top:24px;color:#e8dfd3;font:400 clamp(11px,1.15vw,15px)/1.3 Georgia,'Times New Roman',serif;
+  letter-spacing:.025em;white-space:nowrap
+}
+.afsana-private-offer-footer:before,.afsana-private-offer-footer:after{
+  content:"";flex:1;min-width:12px;height:1px;background:rgba(220,190,151,.48)
+}
+.afsana-private-offer-footer span:last-child{color:#d9b77f;letter-spacing:.12em}
+@media(max-width:520px){
+  .afsana-private-offer-panel{padding:26px 18px}
+  .afsana-private-offer-topline{gap:10px}
+  .afsana-private-offer-brand{font-size:8px;letter-spacing:.16em;gap:7px}
+  .afsana-private-offer-brand>span{font-size:16px}
+  .afsana-private-offer-badge{padding:7px 10px;font-size:8px}
+  .afsana-private-offer-heading{gap:8px;margin-top:23px;font-size:clamp(23px,6.3vw,31px)}
+  .afsana-private-offer-countdown-wrap{margin-top:23px}
+  .afsana-private-offer-countdown{gap:6px}
+  .afsana-private-offer-unit{min-height:82px;padding:10px 2px;border-radius:12px;gap:7px}
+  .afsana-private-offer-number{font-size:clamp(29px,8vw,40px)}
+  .afsana-private-offer-unit-label{font-size:7px;letter-spacing:.13em}
+  .afsana-private-offer-footer{gap:8px;margin-top:20px;font-size:10px}
+}
