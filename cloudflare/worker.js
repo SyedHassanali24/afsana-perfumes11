@@ -98,8 +98,8 @@ export default {
         const vary = headers.get("Vary") || "";
         const publicCacheable = request.method === "GET"
           && response.status === 200
-          && /\\bpublic\\b/i.test(policy)
-          && !/\\b(?:private|no-store)\\b/i.test(policy)
+          && /\bpublic\b/i.test(policy)
+          && !/\b(?:private|no-store)\b/i.test(policy)
           && !headers.has("Set-Cookie")
           && vary.trim() !== "*";
 
