@@ -8,7 +8,7 @@ const L = require('../../../services/offerLeadService');
 // (the service already leaves them out; redact() is a second, fail-closed pass).
 const routes = [
   { method: 'GET', path: '/admin/leads', permission: ['customers', 'view'], query: S.offerLeadQuery,
-    handler: ({ query, scopes, ctx }) => L.list(query, scopes, ctx.user._id) },
+    handler: ({ query, scopes, ctx }) => L.list(query, scopes, ctx.user._id, ctx.perms.deniedFields) },
   { method: 'GET', path: '/admin', permission: ['customers', 'view'], query: S.customerQuery,
     handler: async ({ query, ctx, scopes }) => redact(await C.list(query, scopes, ctx.user._id, ctx.perms.deniedFields), ctx.perms.deniedFields) },
   { method: 'GET', path: '/admin/:id', permission: ['customers', 'view'],
