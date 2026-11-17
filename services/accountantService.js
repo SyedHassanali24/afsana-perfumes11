@@ -1,10 +1,11 @@
 'use strict';
 
-const { Order, OrderItem, Payment, Refund, Expense } = require('../database/models');
+const { Order, OrderItem, Payment, Refund, Expense, ManualJournalEntry } = require('../database/models');
 const { E } = require('../middleware/errors');
 const D = require('./dashboardRules');
 const FR = require('./financeRules');
 const R = require('./accountantRules');
+const { audit } = require('./audit');
 
 const needAll = (scopes) => { if (!scopes || !scopes.some((s) => s.kind === 'all')) throw E.forbidden('Virtual Accountant needs full finance access.'); };
 const isDate = (value) => value instanceof Date && Number.isFinite(value.getTime());
@@ -73,11 +74,17 @@ async function report(query, scopes, denied, now = new Date()) {
     .select('_id orderNumber subtotal shipping discount total couponCode paymentMethod paymentStatus status createdAt')
     .sort({ createdAt: -1 }).limit(3000).lean();
   const orderIds = orders.map((order) => order._id);
-  const [refunds, items, expenses, payments] = await Promise.all([
+  const [refunds, items, expenses, payments, manualEntries, manualBalances] = await Promise.all([
     orderIds.length ? Refund.find({ storeId: 'main', orderId: { $in: orderIds } }).select('_id orderId orderNumber amount method createdAt').lean() : [],
     orderIds.length && !hideProfit ? OrderItem.find({ orderId: { $in: orderIds } }).select('orderId costPrice quantity').lean() : [],
     Expense.find({ storeId: 'main', date: { $gte: range.from, $lt: range.to } }).select('_id category amount date description').lean(),
     orderIds.length ? Payment.find({ orderId: { $in: orderIds }, status: { $in: ['Paid', 'Partially Refunded'] } }).select('orderId orderNumber method amount status receivedAt createdAt updatedAt').lean() : [],
+    ManualJournalEntry.find({ storeId: 'main', date: { $gte: range.from, $lt: range.to } }).sort({ date: -1, createdAt: -1 }).lean(),
+    ManualJournalEntry.aggregate([
+      { $match: { storeId: 'main', date: { $lt: range.to } } },
+      { $unwind: '$lines' },
+      { $group: { _id: { account: '$lines.account', accountType: '$lines.accountType' }, debit: { $sum: '$lines.debit' }, credit: { $sum: '$lines.credit' } } },
+    ]),
   ]);
   const orderNumberById = new Map(orders.map((order) => [String(order._id), order.orderNumber]));
   const journalPayments = payments.map((payment) => ({ ...payment, orderNumber: orderNumberById.get(String(payment.orderId)) || String(payment.orderId) }));
@@ -91,15 +98,32 @@ async function report(query, scopes, denied, now = new Date()) {
     list.push(item);
     itemsByOrder.set(key, list);
   }
-  const journal = R.buildJournal({ orders, itemsByOrder, payments: journalPayments, refunds, expenses, hideProfit });
+  const automaticJournal = R.buildJournal({ orders, itemsByOrder, payments: journalPayments, refunds, expenses, hideProfit });
+  const manualJournal = R.manualEntriesToJournal(manualEntries);
+  const journal = [...automaticJournal, ...manualJournal].sort((a, b) => new Date(b.date) - new Date(a.date));
   const journalTotals = R.totals(journal);
   const trial = R.trialBalance(journal);
-  const statement = summarize({ orders: preparedOrders, refunds, items, expenses, hideProfit });
+  const baseStatement = summarize({ orders: preparedOrders, refunds, items, expenses, hideProfit });
+  const manualSummary = R.manualPeriodSummary(manualEntries);
+  const statement = {
+    ...baseStatement,
+    otherIncome: manualSummary.income,
+    manualExpenses: manualSummary.expenses,
+    operatingExpenses: round(baseStatement.operatingExpenses + manualSummary.expenses),
+    netProfit: hideProfit || baseStatement.netProfit == null ? null : round(baseStatement.netProfit + manualSummary.income - manualSummary.expenses),
+  };
+  const balanceSheet = R.manualBalanceSheet(manualBalances);
+  const cumulativeInvestment = Math.round(manualBalances
+    .filter((row) => (row._id?.accountType === 'equity') && /capital|investment/i.test(String(row._id?.account || '')))
+    .reduce((sum, row) => sum + (Number(row.credit) || 0) - (Number(row.debit) || 0), 0) * 100) / 100;
   const trend = await monthlyTrend(now);
   const allBalanced = journal.every((entry) => entry.balanced);
   return {
     range: { key: range.key, from: D.pktDateKey(range.from), to: D.pktDateKey(new Date(range.to.getTime() - 1)) },
     incomeStatement: statement,
+    manualSummary: { ...manualSummary, investmentToDate: cumulativeInvestment },
+    balanceSheet,
+    manualJournalCount: manualJournal.length,
     monthlyTrend: trend,
     journal: journal.slice(0, 4000),
     journalCount: journal.length,
@@ -115,4 +139,34 @@ async function report(query, scopes, denied, now = new Date()) {
     ],
   };
 }
-module.exports = { report, monthlyTrend, summarize };
+
+async function createManualEntry(ctx, body, scopes) {
+  needAll(scopes);
+  const lines = body.lines.map((row) => ({
+    account: String(row.account).trim(),
+    accountType: row.accountType,
+    debit: round(row.debit),
+    credit: round(row.credit),
+    note: String(row.note || '').trim(),
+  }));
+  const totalDebit = round(lines.reduce((sum, row) => sum + row.debit, 0));
+  const totalCredit = round(lines.reduce((sum, row) => sum + row.credit, 0));
+  if (lines.length < 2 || Math.abs(totalDebit - totalCredit) >= 0.005) {
+    throw E.badRequest('Manual journal must have at least two lines and equal total debits and credits.');
+  }
+  if (lines.some((row) => !row.account || ((row.debit > 0) === (row.credit > 0)))) {
+    throw E.badRequest('Each journal line needs an account and an amount on either Debit or Credit.');
+  }
+  const entry = await ManualJournalEntry.create({
+    date: FR.dayStart(body.date), narration: body.narration.trim(), lines,
+    totalDebit, totalCredit, createdBy: ctx.user._id,
+  });
+  const shaped = {
+    _id: String(entry._id), date: D.pktDateKey(new Date(entry.date)),
+    narration: entry.narration, lines, totalDebit, totalCredit,
+  };
+  await audit(ctx, { action: 'accountant.manual_entry.created', module: 'finance', recordId: entry._id, newValue: shaped });
+  return { entry: shaped };
+}
+
+module.exports = { report, monthlyTrend, summarize, createManualEntry };
