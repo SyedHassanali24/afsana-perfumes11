@@ -11,8 +11,8 @@ function ProfileForm() {
   useEffect(() => { setF({ name: customer?.name || '', city: customer?.city || '', email: customer?.email || '' }); }, [customer?.name, customer?.city]);
   const submit = async (e) => {
     e.preventDefault(); setMsg(''); setError(''); setBusy(true);
-    try { if (!f.name.trim()) { setError('Name is required.'); setBusy(false); return; }
-    await accountApi.updateProfile({ name: f.name.trim(), city: f.city.trim(), email: f.email.trim() || undefined }); await refresh(); setMsg('Saved.'); }
+    try { if (!f.name.trim()) { setError('Name is required.'); setBusy(false); return; }\n    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(f.email.trim())) { setError('A valid email address is required for password recovery.'); setBusy(false); return; }
+    await accountApi.updateProfile({ name: f.name.trim(), city: f.city.trim(), email: f.email.trim() }); await refresh(); setMsg('Saved.'); }
     catch (err) { setError(err.message); } finally { setBusy(false); }
   };
   return (
@@ -20,7 +20,7 @@ function ProfileForm() {
       <h2 className="font-display text-xl">Your details</h2>
       <Field label="Name"><Input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
       <div className="grid gap-4 sm:grid-cols-2">
-      <Field label="Email"><Input type="email" autoComplete="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="you@example.com" /></Field>
+      <Field label="Email" hint="Required to verify your identity when resetting your password."><Input type="email" required autoComplete="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="you@example.com" /></Field>
       <Field label="City"><Input value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} /></Field>
     </div>
       <p className="text-xs text-[#5f654f]">Phone: {customer?.phone || '—'}{customer?.email ? ` · Email: ${customer.email}` : ''}</p>
