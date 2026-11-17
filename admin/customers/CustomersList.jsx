@@ -55,7 +55,7 @@ export default function CustomersList() {
   ];
   const leadColumns = [
     { key: "email", header: "Email" },
-    { key: "phone", header: "Phone" },
+    { key: "phone", header: "Phone", render: (r) => r.hidden?.phone ? <span className="text-[#182308]-muted">Hidden</span> : r.phone || "—" },
     { key: "couponCode", header: "10% coupon", render: (r) => <span className="rounded-md bg-[#f3f5ef] px-2 py-1 font-mono text-xs font-bold text-[#194629]">{r.couponCode}</span> },
     { key: "source", header: "Source" },
     { key: "status", header: "Status", render: (r) => <StatusPill status={r.status} /> },
