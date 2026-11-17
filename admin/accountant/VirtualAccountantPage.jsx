@@ -5,6 +5,7 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import useApi from '../../src/hooks/useApi';
 import { accountantApi } from '../../src/services';
+import { useAuth } from '../../src/auth/AuthContext';
 
 const money = (value) => 'PKR ' + Number(value || 0).toLocaleString('en-PK', { maximumFractionDigits: 2 });
 const dateTime = (value) => value ? new Date(value).toLocaleString('en-PK', { timeZone: 'Asia/Karachi', dateStyle: 'medium', timeStyle: 'short' }) : '—';
@@ -84,6 +85,7 @@ function StatementRow({ label, value, emphasis = false, muted = false }) {
 function TableHead({ children }) { return <th className="whitespace-nowrap px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">{children}</th>; }
 
 export default function VirtualAccountantPage() {
+  const { can } = useAuth();
   const [period, setPeriod] = useState('this_month');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -106,13 +108,22 @@ export default function VirtualAccountantPage() {
   const toggle = (id) => setOpenEntries((old) => ({ ...old, [id]: !old[id] }));
   const manualDebit = manualLines.reduce((sum, row) => sum + (Number(row.debit) || 0), 0);
   const manualCredit = manualLines.reduce((sum, row) => sum + (Number(row.credit) || 0), 0);
-  const updateManualLine = (index, key, value) => setManualLines((old) => old.map((row, i) => {
-    if (i !== index) return row;
-    const next = { ...row, [key]: value };
-    if (key === 'debit' && Number(value) > 0) next.credit = '';
-    if (key === 'credit' && Number(value) > 0) next.debit = '';
+  const updateManualLine = (index, key, value) => setManualLines((old) => {
+    const next = old.map((row, i) => {
+      if (i !== index) return row;
+      const updated = { ...row, [key]: value };
+      if (key === 'debit' && Number(value) > 0) updated.credit = '';
+      if (key === 'credit' && Number(value) > 0) updated.debit = '';
+      return updated;
+    });
+    // Quick templates contain two sides of the same transaction: enter the amount once.
+    if (old.length === 2 && (key === 'debit' || key === 'credit')) {
+      const other = index === 0 ? 1 : 0;
+      const matchingSide = key === 'debit' ? 'credit' : 'debit';
+      next[other] = { ...next[other], [matchingSide]: value, [key]: '' };
+    }
     return next;
-  }));
+  });
   const chooseManualAccount = (index, value) => setManualLines((old) => old.map((row, i) => {
     if (i !== index) return row;
     if (value === '__custom__') return { ...row, account: '', custom: true };
@@ -150,17 +161,17 @@ export default function VirtualAccountantPage() {
 
   return <div className="space-y-5">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-indigo-600">Automated bookkeeping</p><h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Virtual Accountant</h1><p className="mt-1 text-sm text-slate-500">Sales, payments, refunds and expenses assembled into a general journal and income statement.</p></div>
+      <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-indigo-600">Automated bookkeeping</p><h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Virtual Accountant</h1><p className="mt-1 text-sm text-slate-500">Automatic business activity plus your own journal entries, month-end balances and income statement.</p></div>
       <div className="flex flex-wrap items-center gap-2"><select aria-label="Accounting period" className={fieldClass} value={period} onChange={(e)=>setPeriod(e.target.value)}>{Object.entries(periodNames).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select><Button variant="secondary" icon={RefreshCw} onClick={reload} disabled={loading}>Refresh</Button></div>
     </div>
     {period === 'custom' && <Card><div className="grid gap-3 sm:grid-cols-2"><label className="text-xs font-medium text-slate-600">From (Pakistan date)<input type="date" className={fieldClass + ' mt-1.5 block w-full'} value={from} onChange={(e)=>setFrom(e.target.value)}/></label><label className="text-xs font-medium text-slate-600">To (Pakistan date)<input type="date" className={fieldClass + ' mt-1.5 block w-full'} value={to} onChange={(e)=>setTo(e.target.value)}/></label></div></Card>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div><h2 className="text-base font-semibold text-slate-900">Manual general journal</h2><p className="mt-1 text-xs text-slate-500">Investment, assets, income, expenses, loans aur custom entries yahan record karein.</p></div>
-      <Button icon={Plus} onClick={() => { setManualError(''); setManualNotice(''); setManualOpen((v) => !v); }}>{manualOpen ? 'Close entry' : 'New journal entry'}</Button>
+      {can('finance.create') && <Button icon={Plus} onClick={() => { setManualError(''); setManualNotice(''); setManualOpen((v) => !v); }}>{manualOpen ? 'Close entry' : 'New journal entry'}</Button>}
     </div>
     {manualNotice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">{manualNotice}</div>}
     {manualOpen && <Card>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-sm font-semibold text-slate-900">Create journal entry</h3><p className="mt-1 text-xs text-slate-500">Quick template choose karein ya Custom se apni entries banayein.</p></div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h3 className="text-sm font-semibold text-slate-900">Create journal entry</h3><p className="mt-1 text-xs text-slate-500">Quick template mein amount ek side par enter karein; doosri side automatically balance ho jayegi. Custom mein apni multiple lines add karein.</p></div>
         <div className="w-full sm:w-56"><select aria-label="Entry template" className={fieldClass + ' w-full'} value={manualTemplate} onChange={(e) => { setManualTemplate(e.target.value); setManualLines(templateLines(e.target.value)); }}><option value="investment">Owner investment</option><option value="expense">Business expense</option><option value="revenue">Other revenue</option><option value="asset">Asset purchase</option><option value="loan">Loan received</option><option value="withdrawal">Owner withdrawal</option><option value="custom">Custom journal</option></select></div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -199,7 +210,7 @@ export default function VirtualAccountantPage() {
       <div className="mt-4 flex justify-end gap-2"><Button variant="secondary" onClick={() => setManualOpen(false)}>Cancel</Button><Button icon={Save} onClick={saveManualEntry} disabled={manualBusy || Math.abs(manualDebit - manualCredit) >= 0.005 || manualDebit <= 0}>{manualBusy ? 'Saving…' : 'Save journal entry'}</Button></div>
     </Card>}
 
-    <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs leading-5 text-indigo-900"><strong>Read-only auto-ledger:</strong> this page derives journal entries from existing sales, recorded payments, refunds and expenses. It does not place payments, alter orders, or post data back to your books.</div>
+    <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs leading-5 text-indigo-900"><strong>Automatic + manual ledger:</strong> existing sales, payments, refunds and Finance expenses remain automatically generated and read-only here. Your manual journal entries are stored separately and never change orders or payments.</div>
     {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error.message || 'Accountant report could not be loaded.'} <button className="ml-2 underline" onClick={reload}>Try again</button></div>}
     {loading && !data ? <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[0,1,2,3].map((x)=><div key={x} className="h-28 animate-pulse rounded-2xl bg-slate-100"/>)}</div> : data && <>
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500"><span>{periodNames[report.range?.key] || 'Selected period'} · {report.range?.from} to {report.range?.to} · Asia/Karachi</span><span className={'rounded-full px-3 py-1 font-semibold ' + (report.journalBalanced ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700')}>{report.journalBalanced ? 'Journal balanced' : 'Journal needs review'}</span></div>
