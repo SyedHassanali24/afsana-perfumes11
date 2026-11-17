@@ -847,3 +847,89 @@
 @media(prefers-reduced-motion:reduce){
   .afsana-return-policy-track{animation:none!important}
 }
+
+
+/* Mobile refinements requested from the AFSANA storefront screenshots.
+   Keep campaign-card typography readable and scope all purchase/gallery
+   adjustments to the customer-facing product page only. */
+.storefront-theme.afsana-reference-storefront .cinematic-grid>a>div:last-child,
+.storefront-theme.afsana-reference-storefront .cinematic-grid>a>div:last-child *{
+  color:#fff!important;
+}
+.storefront-theme.afsana-reference-storefront .cinematic-grid>a>div:last-child p{
+  color:#fff!important;
+}
+@media(max-width:640px){
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage{
+    aspect-ratio: .94 / 1!important;
+    max-height:none!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage .product-3d{
+    width:94%!important;
+    height:96%!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .main-product-stage .product-3d img{
+    transform:scale(1.14)!important;
+    transform-origin:center center!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-price-row-standard{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:14px!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-price-stack{
+    align-items:flex-start!important;
+    width:100%!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .product-stock-standard{
+    display:grid!important;
+    grid-template-columns:9px minmax(0,1fr)!important;
+    width:100%!important;
+    max-width:none!important;
+    justify-self:stretch!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-product-actions{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    align-items:stretch!important;
+    gap:9px!important;
+    width:100%!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-quantity-wrap{
+    grid-column:1!important;
+    grid-row:1!important;
+    min-width:0!important;
+    width:100%!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-add-to-bag{
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:46px!important;
+    padding:0 10px!important;
+    white-space:nowrap!important;
+    font-size:8px!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-buy-now{
+    grid-column:1!important;
+    grid-row:2!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:46px!important;
+    padding:0 10px!important;
+    white-space:nowrap!important;
+    font-size:8px!important;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-product-page .afsana-wishlist-button{
+    grid-column:2!important;
+    grid-row:2!important;
+    width:100%!important;
+    min-height:46px!important;
+  }
+}
