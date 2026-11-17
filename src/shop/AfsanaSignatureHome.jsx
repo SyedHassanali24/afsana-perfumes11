@@ -6,6 +6,7 @@ import { productsApi, cmsPublicApi, reviewsApi } from '../services';
 import useShopSettings from './useShopSettings';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
+import CmsTestimonials, { sampleTestimonialsSection } from './CmsTestimonials';
 import { Container } from './ui';
 
 const img={
@@ -123,9 +124,9 @@ function SelectionBanner(){return <section aria-label="The Afsana Selection" cla
   <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-[.13] [background-image:repeating-linear-gradient(118deg,rgba(255,255,255,.12)_0px,rgba(255,255,255,.12)_1px,transparent_1px,transparent_88px)]"/>
   <div className="container-xl mx-auto grid min-h-[290px] max-w-[1320px] grid-cols-1 items-center gap-8 px-6 py-14 sm:px-10 md:grid-cols-[1fr_auto] md:gap-12 md:py-16 lg:px-14">
     <div className="max-w-3xl">
-      <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.34em] text-[#d4bd91] sm:text-[10px]"><span className="h-px w-8 bg-[#c5a878]"/>THE AFSANA SELECTION</p>
-      <h2 className="mt-5 font-display text-[clamp(2.8rem,7vw,5.8rem)] font-medium leading-[.9] tracking-[-.055em] text-[#fffaf0]">Objects of <em className="text-[#d8c39e]">desire.</em></h2>
-      <p className="mt-5 max-w-xl text-sm leading-7 text-[#f7f2e8]/75 sm:text-base">Discover the fragrances that define the house.</p>
+      <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.34em] text-[#ffe500] sm:text-[10px]"><span className="h-px w-8 bg-[#c5a878]"/>THE AFSANA SELECTION</p>
+      <h2 className="mt-5 font-sans text-[clamp(2.8rem,7vw,5.8rem)] font-semibold leading-[.92] tracking-[-.045em] text-white">Objects of <em className="text-[#ffe500]">desire.</em></h2>
+      <p className="mt-5 max-w-xl text-sm leading-7 text-white sm:text-base">Discover the fragrances that define the house.</p>
       <Link to="/shop" className="group mt-8 inline-flex min-h-12 items-center gap-8 rounded-full border border-[#d4bd91] bg-[#d4bd91] px-6 py-3 text-[10px] font-bold uppercase tracking-[.19em] text-[#1d2a22] shadow-[0_12px_30px_rgba(0,0,0,.22)] transition duration-300 hover:-translate-y-1 hover:border-[#ead8b7] hover:bg-[#ead8b7] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ead8b7] sm:text-[11px]">View full collection <span aria-hidden="true" className="text-base transition-transform duration-300 group-hover:translate-x-1">↗</span></Link>
     </div>
     <div aria-hidden="true" className="relative mx-auto hidden h-44 w-44 items-center justify-center md:flex lg:mr-8 lg:h-52 lg:w-52">
@@ -598,7 +599,8 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     const worlds = cmsItems(c.items).map((item, i) => ({ ...item, image: item.image || assetImages[i] || '' }));
     return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>{section.pageKey === 'gifting' ? 'Give them a feeling.' : section.pageKey === 'discover' ? 'Choose a feeling.' : <>Enter a scent <em>world.</em></>}</h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image && <img src={x.image} alt={x.title} onError={(e)=>{e.currentTarget.style.display='none';}}/>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {section.pageKey === 'gifting' ? ['THE PERSONAL TOUCH','THE FIRST CHAPTER','THE LITTLE EXTRA'][i] : section.pageKey === 'discover' ? ['THE ENERGY SEEKER','THE SOFT ROMANTIC','THE NIGHT THINKER'][i] : ['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
   }
-  if (['benefits','trust_grid','values_grid','testimonials'].includes(section.type)) return <section className={section.type === 'testimonials' ? 'bg-[#263e0e] text-white' : 'bg-[#faf8f4]'}><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).map((x,i)=><article key={i} className="rounded-2xl border border-[#263e0e]/10 bg-white p-6"><span className="text-2xl text-[#748e40]">✦</span><h3 className="mt-5 font-display text-2xl">{x.title}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.text}</p>{x.link && <Link to={x.link} className="mt-5 inline-block text-[9px] uppercase tracking-[.2em] text-[#263e0e]">Discover ↗</Link>}</article>)}</div></div></section>;
+  if (section.type === 'testimonials') return <CmsTestimonials section={section}/>;
+  if (['benefits','trust_grid','values_grid'].includes(section.type)) return <section className="bg-[#faf8f4]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).map((x,i)=><article key={i} className="rounded-2xl border border-[#263e0e]/10 bg-white p-6"><span className="text-2xl text-[#748e40]">✦</span><h3 className="mt-5 font-display text-2xl">{x.title}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.text}</p>{x.link && <Link to={x.link} className="mt-5 inline-block text-[9px] uppercase tracking-[.2em] text-[#263e0e]">Discover ↗</Link>}</article>)}</div></div></section>;
   if (section.type === 'marquee') return <section className="overflow-hidden bg-[#b4bf41] text-[#263e0e]"><div className="marquee-track flex gap-12 py-4 text-[10px] font-bold uppercase tracking-[.25em]">{cmsItems(c.items).concat(cmsItems(c.items)).map((x,i)=><span key={i}>{x.title || x.text || 'THE ART OF SCENT'} ✦</span>)}</div></section>;
   if (section.type === 'rich_text') return <section className="bg-[#faf8f4]"><div className={`container-xl flex flex-col ${align}`} style={style}><Eyebrow>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2><p className="mt-6 max-w-3xl text-sm leading-7 opacity-70">{c.body}</p>{btn}</div></section>;
   if (section.type === 'cinematic_statement') { const instagramMatch = String(c.videoUrl || '').match(/^https?:\/\/(?:www\.)?instagram\.com\/(?:reel|p|tv)\/([\w-]+)/i); const instagramEmbed = instagramMatch ? `https://www.instagram.com/${String(c.videoUrl).match(/instagram\.com\/(reel|p|tv)\//i)?.[1]}/${instagramMatch[1]}/embed/` : ''; return <section className="relative isolate overflow-hidden bg-[#10150a] text-white">{instagramEmbed ? <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(180,191,65,.18),transparent_65%)]"/> : c.videoUrl ? <video key={c.videoUrl} className="absolute inset-0 -z-20 h-full w-full object-cover" src={c.videoUrl} poster={c.posterUrl || undefined} autoPlay={c.autoplay !== false} muted={c.muted !== false} loop playsInline controls={!!c.controls} preload="metadata" onError={(e)=>{e.currentTarget.style.display='none';}}/> : null}<div className={`container-xl relative flex min-h-[520px] flex-col items-center justify-center py-12 ${align}`} style={style}><Eyebrow light>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2>{c.body && <p className="mt-6 max-w-3xl text-sm leading-7 text-white/75">{c.body}</p>}{instagramEmbed && <iframe title="AFSANA Instagram Reel" src={instagramEmbed} className="mt-8 h-[620px] w-full max-w-[420px] rounded-xl border-0 bg-black" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen loading="lazy"/>}{btn}</div></section>; }
@@ -740,15 +742,19 @@ export default function AfsanaSignatureHome(){
   const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
   const previewHome = preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home';
-  if (sections.length || previewHome) {
-    return <CmsDrivenHome
-      sections={sections}
-      faq={data?.faqs || []}
-      referenceAssets={(data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {}}
-    />;
-  }
-  // No CMS layout: render nothing rather than resurrecting the previous home design.
-  return <CmsDrivenHome sections={[]} faq={data?.faqs || []} />;
+  const homeSections = sections.some((item) => item?.type === 'testimonials')
+    ? sections
+    : (() => {
+        const next = [...sections];
+        const before = next.findIndex((item) => ['newsletter', 'footer_showcase'].includes(item?.type));
+        next.splice(before < 0 ? next.length : before, 0, sampleTestimonialsSection);
+        return next;
+      })();
+  return <CmsDrivenHome
+    sections={homeSections}
+    faq={data?.faqs || []}
+    referenceAssets={(data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {}}
+  />;
 }
 
 // Cloudflare deploy trigger: video-grid upload playback and per-card mute controls.
