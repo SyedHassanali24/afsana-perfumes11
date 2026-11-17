@@ -19,3 +19,15 @@ test('cache tags are omitted when a route has no tags', () => {
   assert.equal(headers['Cache-Control'], 'public, max-age=15, stale-while-revalidate=15, stale-if-error=300');
   assert.equal(Object.hasOwn(headers, 'Cache-Tag'), false);
 });
+
+test('successful writes purge only valid unique cache tags', async () => {
+  let received = null;
+  const context = { ctx: { cache: { purge: async (value) => { received = value; } } } };
+  await cache.invalidateForGroup('catalog', context, ['products', 'bad tag', 'products', 'taxonomy']);
+  assert.deepEqual(received, { tags: ['products', 'taxonomy'] });
+});
+
+test('cache purge errors never fail a successful database write', async () => {
+  const context = { ctx: { cache: { purge: async () => { throw new Error('cache unavailable'); } } } };
+  await assert.doesNotReject(() => cache.invalidateForGroup('catalog', context, ['products']));
+});
