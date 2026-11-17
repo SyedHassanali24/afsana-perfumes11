@@ -12,6 +12,7 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const R = require('./orderRules');
 const { normalizeCode, validatePartner, discountFor } = require('./affiliateRules');
+const { getEmailJsConfig, sendEmailJsTemplate } = require('./emailjs');
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
 
@@ -215,7 +216,46 @@ async function placeOrder(input, cust, idempotencyKey) {
     throw err;
   }
   if (cust) await Cart.deleteOne({ customerId: customer._id }).catch(() => {}); // saved cart is emptied once the order exists
-  if (order && order.orderNumber === orderNumber) await Notification.create({ type: 'new_order', title: 'New order', body: `${order.orderNumber} · ${order.total}`, link: '/admin/orders', forPermission: 'orders.view' }).catch(() => {});
+  if (order && order.orderNumber === orderNumber) {
+    const summary = `${order.orderNumber} · PKR ${Number(total).toLocaleString('en-PK')}`;
+    const { notifyAdmin } = require('./notificationService');
+    await notifyAdmin({ type: 'new_order', title: 'New order received', body: summary, link: '/admin/orders', forPermission: 'orders.view' });
+    // Customer receipt email is sent only after the order transaction commits.
+    const customerEmail = String(input.customer && input.customer.email || '').trim();
+    const templateId = String(process.env.EMAILJS_NOTIFICATION_TEMPLATE_ID || '').trim();
+    if (customerEmail && templateId) {
+      try {
+        const config = getEmailJsConfig();
+        if (config) await sendEmailJsTemplate({
+          to: customerEmail,
+          subject: 'Thank you for your AFSANA order ' + order.orderNumber,
+          templateId,
+          params: {
+            notification_type: 'customer_order_confirmation',
+            email_title: 'Thank you for your order',
+            customer_name: String(input.customer.name || 'Valued customer'),
+            order_number: order.orderNumber,
+            order_status: String(order.status || 'New'),
+            payment_method: String(order.paymentMethod || ''),
+            subtotal: 'PKR ' + Number(subtotal).toLocaleString('en-PK'),
+            shipping_fee: 'PKR ' + Number(shipping).toLocaleString('en-PK'),
+            discount: 'PKR ' + Number(discount).toLocaleString('en-PK'),
+            order_total: 'PKR ' + Number(total).toLocaleString('en-PK'),
+            order_items: lines.map((line) => line.name + ' × ' + line.quantity).join('\\n'),
+            tracking_id: 'Will be shared when your parcel is dispatched.',
+            tracking_url: 'https://afsanaperfumes.store/track-order',
+            delivery_name: String(input.shippingAddress && input.shippingAddress.name || input.customer.name || ''),
+            delivery_city: String(input.shippingAddress && input.shippingAddress.city || ''),
+            delivery_address: String(input.shippingAddress && input.shippingAddress.address || input.shippingAddress && input.shippingAddress.line1 || ''),
+            email_body: 'We have received your order and our team will process it shortly.',
+            dashboard_url: 'https://afsanaperfumes.store',
+          },
+        }, { config });
+      } catch (err) {
+        console.error('[customer-email] order confirmation delivery failed:', err?.message || err);
+      }
+    }
+  }
   return { orderNumber: order.orderNumber, total, subtotal, shipping, discount, status: order.status, paymentMethod: order.paymentMethod };
 }
 
