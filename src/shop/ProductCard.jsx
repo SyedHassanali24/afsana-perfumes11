@@ -15,7 +15,9 @@ export default function ProductCard({ product }) {
   const secondary = product?.media?.find?.((m) => {
     const url = String(m?.url || '').trim();
     const kind = String(m?.kind || '').toLowerCase();
-    return url && url !== imageUrl && !['video', 'media360', 'model3d'].includes(kind) && !/\\.(mp4|webm|mov|m4v|glb|gltf)(?:[?#]|$)/i.test(url);
+    const pathname = url.toLowerCase().split(/[?#]/, 1)[0];
+    const isNonImageFile = ['.mp4', '.webm', '.mov', '.m4v', '.glb', '.gltf'].some((ext) => pathname.endsWith(ext));
+    return url && url !== imageUrl && !isNonImageFile && !['video', 'media360', 'model3d'].includes(kind);
   });
 
   return (
