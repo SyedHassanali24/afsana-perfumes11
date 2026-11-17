@@ -179,10 +179,10 @@ function OfferCountdown({ endAt }) {
   const minutes = Math.floor((total % 3600) / 60);
   const seconds = total % 60;
   const units = [[days, 'DAYS'], [hours, 'HRS'], [minutes, 'MINS'], [seconds, 'SECS']];
-  return <div className="grid grid-cols-4 gap-2 sm:gap-3" role="timer" aria-live="off" aria-label={`Offer countdown: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`}>
-    {units.map(([value, label]) => <div key={label} className="min-w-0 rounded-xl border border-white/15 bg-gradient-to-b from-[#49316c] to-[#2b1a46] px-1.5 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,.1),0_9px_24px_rgba(13,6,25,.2)] sm:rounded-2xl sm:px-2 sm:py-4">
-      <span className="block font-mono text-[clamp(1.8rem,5.4vw,4.2rem)] font-bold leading-none tracking-[-.08em] text-[#fff1a6] tabular-nums drop-shadow-[0_0_16px_rgba(255,241,166,.18)]">{String(value).padStart(2, '0')}</span>
-      <span className="mt-2 block text-[7px] font-bold uppercase tracking-[.16em] text-white/65 sm:text-[9px] sm:tracking-[.22em]">{label}</span>
+  return <div className="afsana-private-offer-countdown" role="timer" aria-live="off" aria-label={`Offer countdown: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`}>
+    {units.map(([value, label]) => <div key={label} className="afsana-private-offer-unit">
+      <span className="afsana-private-offer-number">{String(value).padStart(2, '0')}</span>
+      <span className="afsana-private-offer-unit-label">{label}</span>
     </div>)}
   </div>;
 }
@@ -448,19 +448,15 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
         </div>
         <Link to={c.buttonLink || '/shop'} className="group mt-8 inline-flex min-h-12 items-center gap-5 rounded-full bg-gradient-to-r from-purple-700 via-violet-600 to-pink-500 px-6 py-3 text-[10px] font-bold uppercase tracking-[.16em] text-white shadow-[0_12px_28px_rgba(109,40,217,.2)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(109,40,217,.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400 sm:text-[11px]">{c.buttonText || 'Explore the private edit'}<span className="grid h-7 w-7 place-items-center rounded-full bg-[#ffe66d] text-base text-[#261638] transition-transform duration-300 group-hover:translate-x-1">↗</span></Link>
       </div>
-      <div className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-br from-[#382154] via-[#2a193f] to-[#20152f] p-7 text-white sm:p-10 lg:p-12">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10 shadow-[0_0_0_22px_rgba(255,255,255,.025),0_0_0_48px_rgba(255,255,255,.02)]"/>
-        <div aria-hidden="true" className="pointer-events-none absolute bottom-[-7rem] left-[-5rem] h-64 w-64 rounded-full bg-pink-500/10 blur-3xl"/>
-        <div className="relative">
-          <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[.22em] text-[#ffe66d] sm:text-[10px]"><span className="text-xl leading-none">✳</span> AFSANA PRIVATE OFFER</span>
-            <span className="rounded-full border border-pink-200/35 bg-pink-300/10 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[.16em] text-pink-100">Limited time</span>
+      <div className="afsana-private-offer-panel">
+        <div className="afsana-private-offer-inner">
+          <div className="afsana-private-offer-topline">
+            <span className="afsana-private-offer-brand"><span aria-hidden="true">✧</span> AFSANA PRIVATE OFFER</span>
+            <span className="afsana-private-offer-badge"><span aria-hidden="true">◷</span> Limited time</span>
           </div>
-          <h3 className="mt-8 font-sans text-xl font-semibold uppercase tracking-[.08em] text-white sm:text-2xl">Your offer window</h3>
-          <p className="mt-2 text-[10px] font-medium uppercase tracking-[.18em] text-white/55">Time remaining</p>
-          <div className="mt-5"><OfferCountdown endAt={c.endAt}/></div>
-          <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/15 pt-4 text-[8px] font-semibold uppercase tracking-[.13em] text-white/50 sm:text-[9px] sm:tracking-[.16em]"><span>Live digital countdown</span><span className="text-sky-200">D · H · M · S</span></div>
-          <p className="mt-3 text-[9px] leading-5 text-white/40">Uses the deadline set in the CMS. When no future deadline is set, the display counts down to the next daily reset.</p>
+          <h3 className="afsana-private-offer-heading"><span>Your</span> <em>offer</em> <span>window</span></h3>
+          <div className="afsana-private-offer-countdown-wrap"><OfferCountdown endAt={c.endAt}/></div>
+          <div className="afsana-private-offer-footer"><span>Live digital countdown</span><span>D · H · M · S</span></div>
         </div>
       </div>
     </div>
