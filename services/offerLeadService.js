@@ -4,8 +4,9 @@ const { scopeFilter } = require('../middleware/permissions');
 
 const SCOPE_MAP = { stores: 'storeId' };
 
-async function list(query, scopes, uid) {
+async function list(query, scopes, uid, deniedFields) {
   const { page, limit, skip } = paging(query);
+  const hiddenPhone = !!(deniedFields && (deniedFields.has ? deniedFields.has('customer.phone') : Array.isArray(deniedFields) && deniedFields.includes('customer.phone')));
   const and = [{ isDeleted: false }, scopeFilter(scopes, uid, SCOPE_MAP)];
   if (query.status) and.push({ status: query.status });
   if (query.q) {
@@ -21,7 +22,8 @@ async function list(query, scopes, uid) {
     leads: rows.map((lead) => ({
       id: String(lead._id),
       email: lead.email,
-      phone: lead.phone,
+      ...(hiddenPhone ? {} : { phone: lead.phone }),
+      hidden: { phone: hiddenPhone },
       couponCode: lead.couponCode,
       source: lead.source,
       campaign: lead.campaign,
