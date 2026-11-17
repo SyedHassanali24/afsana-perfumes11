@@ -37,6 +37,7 @@ const CartPage = lazy(() => import('./shop/pages/CartPage'));
 const CheckoutPage = lazy(() => import('./shop/pages/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('./shop/pages/OrderSuccessPage'));
 const TrackOrderPage = lazy(() => import('./shop/pages/TrackOrderPage'));
+const ContactPage = lazy(() => import('./shop/pages/ContactPage'));
 const AboutPage = lazy(() => import('./shop/pages/AboutPage'));
 const JournalPage = lazy(() => import('./shop/pages/JournalPage'));
 const GiftingPage = lazy(() => import('./shop/pages/GiftingPage'));
@@ -135,6 +136,7 @@ export default function App() {
             <Route path="/checkout" element={<><ManagedCmsPage pageKey="checkout_before" /><CheckoutPage /><ManagedCmsPage pageKey="checkout_after" /></>} />
             <Route path="/order-success/:orderNumber" element={<OrderSuccessPage />} />
             <Route path="/track" element={<><ManagedCmsPage pageKey="track_before" /><TrackOrderPage /><ManagedCmsPage pageKey="track_after" /></>} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/account" element={mine(<AccountPage />)} />
             <Route path="/account/orders/:orderNumber" element={mine(<OrderDetailPage />)} />
