@@ -118,12 +118,11 @@ export default function App() {
           <Route path="/admin/account" element={page(undefined, <MyAccountPage />)} />
           <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
 
-          <Route path="/login" element={<CustomerLoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-
           <Route element={<ShopLayout />}>
+            <Route path="/login" element={<CustomerLoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<><ManagedCmsPage pageKey="collection_before" /><ShopPage /><ManagedCmsPage pageKey="collection_after" /></>} />
             <Route path="/about" element={<ManagedCmsPage pageKey="house" fallback={<AboutPage />} />} />
