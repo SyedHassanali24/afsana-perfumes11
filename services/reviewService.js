@@ -6,6 +6,7 @@ const { scopeFilter } = require('../middleware/permissions');
 const PRODUCT_SCOPE = { stores: 'storeId' };
 const productStoreFilter = (scopes, uid) => scopes ? scopeFilter(scopes, uid, PRODUCT_SCOPE) : {};
 const R = require('./reviewRules');
+const { notifyAdmin } = require('./notificationService');
 
 const ID = /^[a-f\d]{24}$/i;
 
