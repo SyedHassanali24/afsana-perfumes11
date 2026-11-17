@@ -412,9 +412,6 @@ export default function ProductPage(){
         <button type="button" className="afsana-gallery-arrow afsana-gallery-arrow-prev" onClick={()=>selectMedia(img-1)} aria-label="Previous product image">‹</button>
         <button type="button" className="afsana-gallery-arrow afsana-gallery-arrow-next" onClick={()=>selectMedia(img+1)} aria-label="Next product image">›</button>
        </>}
-       <div className="absolute top-5 left-5 z-10 text-[8px] uppercase tracking-[.25em] text-[#665d79]">AFSANA / {String(img+1).padStart(2,"0")}</div>
-       <div className="absolute top-5 right-5 z-10 flex items-center gap-2 border border-[#7357ff]/15 bg-white/70 px-3 py-2 backdrop-blur-sm text-[8px] uppercase tracking-[.18em] text-[#46375f]"><Rotate3D className="w-3.5 h-3.5"/> {showRealModel?'Interactive 3D bottle':product3dUrl?'Loading 3D preview':media.length?'Interactive product view':'Bottle preview'}</div>
-       {media.length>1&&<button type="button" onClick={()=>setAutoRotate(v=>!v)} className="absolute top-16 right-5 z-10 border border-[#7357ff]/15 bg-white/75 px-3 py-2 backdrop-blur text-[8px] uppercase tracking-[.18em] text-[#392650]">{autoRotate?'Stop gallery':'Auto gallery'}</button>}
        <div className="afsana-product-shadow" style={{transform:`translateX(${tilt.y*1.4}px) scaleX(${1+Math.abs(tilt.y)/180})`}}/>
        {showRealModel
         ? <model-viewer ref={modelViewerRef} src={product3dUrl} poster={referenceAssets.product3dPosterUrl || imageMedia[0]?.url || undefined} alt={p.name+' 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.2" exposure="1.05" environment-image="neutral" interaction-prompt="auto" style={{width:'88%',height:'88%',background:'transparent','--poster-color':'transparent','--progress-bar-color':'#7357ff','--progress-mask':'#f2eef8'}}/>
@@ -430,7 +427,6 @@ export default function ProductPage(){
             </div>
            </div>
          : <BottlePreview name={p.name} style={{transform:`perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,transition:'transform .18s ease-out'}}/>}
-       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-10 text-center text-[8px] uppercase tracking-[.2em] text-[#665d79]/80">{showRealModel?'Drag to rotate · True 3D model':hasProductVisual?'Move or drag to explore the bottle image':product3dUrl&&!modelViewerFailed?'Preparing interactive model':'3D-style bottle preview · Add product photos or GLB in CMS'}</div>
       </div>
     </div>
     <div className="afsana-product-info product-info-standard">
