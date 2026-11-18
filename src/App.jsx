@@ -15,6 +15,7 @@ const CatalogPage = lazy(() => import('../admin/catalog/CatalogPage'));
 const ReturnsList = lazy(() => import('../admin/returns/ReturnsList'));
 const ShippingPage = lazy(() => import('../admin/shipping/ShippingPage'));
 const CustomersList = lazy(() => import('../admin/customers/CustomersList'));
+const EmailMarketingPage = lazy(() => import('../admin/email-marketing/EmailMarketingPage'));
 const ReviewsList = lazy(() => import('../admin/reviews/ReviewsList'));
 const FinancePage = lazy(() => import('../admin/finance/FinancePage'));
 const GrowthPage = lazy(() => import('../admin/growth/GrowthPage'));
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="/admin/returns" element={page('returns.view', <ReturnsList />)} />
           <Route path="/admin/shipping" element={page('shipping.view', <ShippingPage />)} />
           <Route path="/admin/customers" element={page('customers.view', <CustomersList />)} />
+          <Route path="/admin/email-marketing" element={page('campaigns.view', <EmailMarketingPage />)} />
           <Route path="/admin/reviews" element={page('reviews.view', <ReviewsList />)} />
           <Route path="/admin/finance" element={page('finance.view', <FinancePage />)} />
           <Route path="/admin/growth" element={page('dashboard.view', <GrowthPage />)} />
