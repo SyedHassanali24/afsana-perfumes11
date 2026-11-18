@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User, Customer } = require('../database/models');
+const { User, Customer, CustomerEmail } = require('../database/models');
 const { startSession } = require('../middleware/customerAuth');
 const { parseCookies, serializeCookie } = require('../middleware/http');
 const { secret, secure } = require('../middleware/auth');
@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 let oauthIndexesPromise;
 async function ensureOAuthIndexes() {
   if (!oauthIndexesPromise) {
-    oauthIndexesPromise = User.createIndexes().catch((error) => {
+    oauthIndexesPromise = Promise.all([User.createIndexes(), CustomerEmail.createIndexes()]).catch((error) => {
       oauthIndexesPromise = null;
       throw error;
     });
@@ -277,7 +277,31 @@ async function findOrCreateCustomer(provider, profile) {
   }
 
   if (!user || user.status !== 'Active') throw E.forbidden('This customer account is not active.');
-  await ensureCustomerProfile(user, profile);
+  const customer = await ensureCustomerProfile(user, profile);
+  // Keep the account email in the existing AFSANA customer backup. This does not
+  // grant promotional consent and never overrides an unsubscribe choice.
+  try {
+    const now = new Date();
+    await CustomerEmail.updateOne(
+      { storeId: 'main', email, isDeleted: false },
+      {
+        $set: {
+          name: customer.name || profile.name || '',
+          customerId: customer._id,
+          lastSeenAt: now,
+        },
+        $setOnInsert: {
+          source: 'customer-account',
+          consentStatus: 'not_consented',
+          firstSeenAt: now,
+          orderCount: 0,
+        },
+      },
+      { upsert: true },
+    );
+  } catch (error) {
+    console.warn('[customer-oauth] email archive update unavailable');
+  }
   user.failedLoginCount = 0;
   user.lockedUntil = undefined;
   user.lastLoginAt = new Date();
