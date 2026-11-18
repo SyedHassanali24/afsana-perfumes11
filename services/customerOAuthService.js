@@ -2,9 +2,9 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User, Customer } = require('../database/models');
-const { startSession, secure } = require('../middleware/customerAuth');
+const { startSession } = require('../middleware/customerAuth');
 const { parseCookies, serializeCookie } = require('../middleware/http');
-const { secret } = require('../middleware/auth');
+const { secret, secure } = require('../middleware/auth');
 const { ApiError, E } = require('../middleware/errors');
 const { withTx } = require('./tx');
 
