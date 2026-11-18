@@ -136,7 +136,8 @@ export async function onRequest(context) {
   process.env.JWT_SECRET = env.JWT_SECRET || "";
   process.env.SITE_URL = env.SITE_URL || new URL(request.url).origin;
   process.env.ALLOWED_ORIGINS = env.ALLOWED_ORIGINS || new URL(request.url).origin;
-  process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
+  process.env.EASTWALA_EMAIL = env.EASTWALA_EMAIL || "eastwala@gmail.com";
+  process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.EASTWALA_EMAIL || env.OWNER_EMAIL || process.env.EASTWALA_EMAIL;
   process.env.OWNER_EMAIL = env.OWNER_EMAIL || process.env.OWNER_EMAIL || "";
   process.env.TURNSTILE_SECRET_KEY = env.TURNSTILE_SECRET_KEY || "";
   process.env.EMAILJS_SERVICE_ID = env.EMAILJS_SERVICE_ID || "";
@@ -144,7 +145,6 @@ export async function onRequest(context) {
   process.env.EMAILJS_NOTIFICATION_TEMPLATE_ID = env.EMAILJS_NOTIFICATION_TEMPLATE_ID || "";
   process.env.EMAILJS_PUBLIC_KEY = env.EMAILJS_PUBLIC_KEY || "";
   process.env.EMAILJS_PRIVATE_KEY = env.EMAILJS_PRIVATE_KEY || "";
-  process.env.ADMIN_EMAIL = env.ADMIN_EMAIL || env.OWNER_EMAIL || process.env.ADMIN_EMAIL || "";
   process.env.GMAIL_CLIENT_ID = env.GMAIL_CLIENT_ID || "";
   process.env.GMAIL_CLIENT_SECRET = env.GMAIL_CLIENT_SECRET || "";
   process.env.GMAIL_REFRESH_TOKEN = env.GMAIL_REFRESH_TOKEN || "";
