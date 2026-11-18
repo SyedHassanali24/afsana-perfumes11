@@ -39,7 +39,7 @@ async function archiveEmailRows(rows, source) {
             source,
             consentStatus: 'not_consented',
             firstSeenAt: row.firstSeenAt || row.lastSeenAt || new Date(),
-            orderCount: Number(row.orderCount || 0),
+            ...(!row.orderCount ? { orderCount: 0 } : {}),
           },
           ...(row.orderCount ? { $max: { orderCount: Number(row.orderCount) } } : {}),
         },
