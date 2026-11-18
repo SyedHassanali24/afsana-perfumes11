@@ -16,16 +16,18 @@ function oauthLoginUrl(status, provider) {
   return url.toString();
 }
 
-function oauthRedirect(location, cookies = []) {
-  const response = res(302, {}, { Location: location, 'Cache-Control': 'no-store' });
-  if (cookies.length) response.multiValueHeaders = { 'Set-Cookie': cookies };
-  return response;
+function oauthRedirect(location, cookie) {
+  return res(302, {}, {
+    Location: location,
+    'Cache-Control': 'no-store',
+    ...(cookie ? { 'Set-Cookie': cookie } : {}),
+  });
 }
 
 function startCustomerOAuth(provider, query) {
   try {
     const auth = OAuth.begin(provider, query?.returnTo);
-    return oauthRedirect(auth.location, [auth.cookie]);
+    return oauthRedirect(auth.location, auth.cookie);
   } catch (error) {
     const status = error?.code === 'OAUTH_NOT_CONFIGURED' ? 'not_configured' : 'failed';
     return oauthRedirect(oauthLoginUrl(status, provider));
@@ -36,12 +38,13 @@ async function finishCustomerOAuth(provider, { req, query, ip }) {
   try {
     const auth = await OAuth.complete(provider, query || {}, req.headers.cookie, meta(req, ip));
     const destination = new URL(auth.returnTo, process.env.SITE_URL || 'https://afsanaperfumes.store').toString();
-    return oauthRedirect(destination, [auth.cookie, auth.clearCookie]);
+    // OAuth state cookie is short-lived (10 minutes) and expires naturally. Set only the customer session cookie here.
+    return oauthRedirect(destination, auth.cookie);
   } catch (error) {
     const status = error?.code === 'OAUTH_CANCELLED' ? 'cancelled'
       : error?.code === 'OAUTH_NOT_CONFIGURED' ? 'not_configured' : 'failed';
     console.warn('[customer-oauth] sign-in callback rejected:', status);
-    return oauthRedirect(oauthLoginUrl(status, provider), [OAuth.clearStateCookie(provider)]);
+    return oauthRedirect(oauthLoginUrl(status, provider), OAuth.clearStateCookie(provider));
   }
 }
 
