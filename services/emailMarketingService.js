@@ -1,6 +1,6 @@
 'use strict';
 
-const { CustomerEmail, Campaign, CampaignRecipient, Order, Setting } = require('../database/models');
+const { CustomerEmail, Campaign, CampaignRecipient, Order, Customer, User, Setting } = require('../database/models');
 const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { E } = require('../middleware/errors');
 const { sendOpenMail } = require('./otpMailer');
@@ -9,7 +9,53 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const cleanEmail = (value) => String(value || '').trim().toLowerCase();
 
+let indexesReady;
+async function ensureIndexes() {
+  if (!indexesReady) {
+    indexesReady = Promise.all([
+      CustomerEmail.createIndexes(),
+      Campaign.createIndexes(),
+      CampaignRecipient.createIndexes(),
+    ]).catch((error) => { indexesReady = null; throw error; });
+  }
+  return indexesReady;
+}
+
+async function archiveEmailRows(rows, source) {
+  let imported = 0;
+  for (let i = 0; i < rows.length; i += 500) {
+    const batch = rows.slice(i, i + 500).filter((row) => EMAIL_RE.test(cleanEmail(row.email))).map((row) => ({
+      updateOne: {
+        filter: { email: cleanEmail(row.email), storeId: 'main' },
+        update: {
+          $set: {
+            ...(row.name ? { name: String(row.name).trim().slice(0, 100) } : {}),
+            ...(row.customerId ? { customerId: row.customerId } : {}),
+            ...(row.lastSeenAt ? { lastSeenAt: row.lastSeenAt } : {}),
+            ...(row.lastOrderAt ? { lastOrderAt: row.lastOrderAt } : {}),
+          },
+          $setOnInsert: {
+            email: cleanEmail(row.email),
+            source,
+            consentStatus: 'not_consented',
+            firstSeenAt: row.firstSeenAt || row.lastSeenAt || new Date(),
+            orderCount: Number(row.orderCount || 0),
+          },
+          ...(row.orderCount ? { $max: { orderCount: Number(row.orderCount) } } : {}),
+        },
+        upsert: true,
+      },
+    }));
+    if (batch.length) {
+      await CustomerEmail.bulkWrite(batch, { ordered: false });
+      imported += batch.length;
+    }
+  }
+  return imported;
+}
+
 async function syncHistoricalEmails() {
+  await ensureIndexes();
   const key = 'customer_email_archive_backfill_v1';
   const marker = await Setting.findOne({ key, storeId: 'main' }).lean();
   if (marker?.value?.completedAt) return { alreadySynced: true, imported: Number(marker.value.imported || 0) };
@@ -31,34 +77,25 @@ async function syncHistoricalEmails() {
     } },
   ]);
 
-  let imported = 0;
-  for (let i = 0; i < rows.length; i += 500) {
-    const batch = rows.slice(i, i + 500).map((row) => ({
-      updateOne: {
-        filter: { email: row._id, storeId: 'main' },
-        update: {
-          $set: {
-            ...(row.name ? { name: row.name } : {}),
-            ...(row.customerId ? { customerId: row.customerId } : {}),
-            lastSeenAt: row.lastSeenAt || new Date(),
-            lastOrderAt: row.lastSeenAt || undefined,
-          },
-          $setOnInsert: {
-            email: row._id,
-            source: 'order-history',
-            consentStatus: 'not_consented',
-            firstSeenAt: row.firstSeenAt || row.lastSeenAt || new Date(),
-          },
-          $max: { orderCount: row.orderCount || 0 },
-        },
-        upsert: true,
-      },
-    }));
-    if (batch.length) {
-      await CustomerEmail.bulkWrite(batch, { ordered: false });
-      imported += batch.length;
-    }
-  }
+  const orderRows = rows.map((row) => ({
+    email: row._id, name: row.name, customerId: row.customerId,
+    firstSeenAt: row.firstSeenAt, lastSeenAt: row.lastSeenAt,
+    lastOrderAt: row.lastSeenAt, orderCount: row.orderCount,
+  }));
+  let imported = await archiveEmailRows(orderRows, 'order-history');
+
+  const [customers, users] = await Promise.all([
+    Customer.find({ storeId: 'main', isDeleted: false, email: { $type: 'string', $ne: '' } })
+      .select('name email _id').lean(),
+    User.find({ storeId: 'main', kind: 'customer', email: { $type: 'string', $ne: '' } })
+      .select('name email').lean(),
+  ]);
+  imported += await archiveEmailRows(customers.map((c) => ({
+    email: c.email, name: c.name, customerId: c._id, firstSeenAt: c.createdAt, lastSeenAt: c.updatedAt,
+  })), 'customer-account');
+  imported += await archiveEmailRows(users.map((u) => ({
+    email: u.email, name: u.name, firstSeenAt: u.createdAt, lastSeenAt: u.updatedAt,
+  })), 'customer-account');
 
   await Setting.updateOne(
     { key, storeId: 'main' },
@@ -69,6 +106,7 @@ async function syncHistoricalEmails() {
 }
 
 async function subscribe({ email, name }) {
+  await ensureIndexes();
   const normalized = cleanEmail(email);
   if (!EMAIL_RE.test(normalized)) throw E.badRequest('Enter a valid email address.');
   const now = new Date();
