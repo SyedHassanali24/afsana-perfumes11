@@ -5,12 +5,59 @@ const { Session } = require('../../../database/models');
 const S = require('../../../validation/schemas');
 const A = require('../../../services/accountService');
 const O = require('../../../services/orderService');
+const OAuth = require('../../../services/customerOAuthService');
 
 const meta = (req, ip) => ({ ip, userAgent: req.headers['user-agent'] });
 const customer = { audience: 'customer' };
+function oauthLoginUrl(status, provider) {
+  const url = new URL('/login', process.env.SITE_URL || 'https://afsanaperfumes.store');
+  url.searchParams.set('oauth', status);
+  url.searchParams.set('provider', provider);
+  return url.toString();
+}
+
+function oauthRedirect(location, cookies = []) {
+  const response = res(302, {}, { Location: location, 'Cache-Control': 'no-store' });
+  if (cookies.length) response.multiValueHeaders = { 'Set-Cookie': cookies };
+  return response;
+}
+
+function startCustomerOAuth(provider, query) {
+  try {
+    const auth = OAuth.begin(provider, query?.returnTo);
+    return oauthRedirect(auth.location, [auth.cookie]);
+  } catch (error) {
+    const status = error?.code === 'OAUTH_NOT_CONFIGURED' ? 'not_configured' : 'failed';
+    return oauthRedirect(oauthLoginUrl(status, provider));
+  }
+}
+
+async function finishCustomerOAuth(provider, { req, query, ip }) {
+  try {
+    const auth = await OAuth.complete(provider, query || {}, req.headers.cookie, meta(req, ip));
+    const destination = new URL(auth.returnTo, process.env.SITE_URL || 'https://afsanaperfumes.store').toString();
+    return oauthRedirect(destination, [auth.cookie, auth.clearCookie]);
+  } catch (error) {
+    const status = error?.code === 'OAUTH_CANCELLED' ? 'cancelled'
+      : error?.code === 'OAUTH_NOT_CONFIGURED' ? 'not_configured' : 'failed';
+    console.warn('[customer-oauth] sign-in callback rejected:', status);
+    return oauthRedirect(oauthLoginUrl(status, provider), [OAuth.clearStateCookie(provider)]);
+  }
+}
+
 
 // Storefront customer accounts (cookie: afsana_customer). Staff use /api/auth instead.
 const routes = [
+  { method: 'GET', path: '/oauth/providers', public: true, rateLimit: { limit: 30, windowMs: 60000 },
+    handler() { return OAuth.getProviders(); } },
+  { method: 'GET', path: '/oauth/google', public: true, rateLimit: { limit: 10, windowMs: 60000 },
+    handler({ query }) { return startCustomerOAuth('google', query); } },
+  { method: 'GET', path: '/oauth/google/callback', public: true, rateLimit: { limit: 20, windowMs: 60000 },
+    handler(args) { return finishCustomerOAuth('google', args); } },
+  { method: 'GET', path: '/oauth/facebook', public: true, rateLimit: { limit: 10, windowMs: 60000 },
+    handler({ query }) { return startCustomerOAuth('facebook', query); } },
+  { method: 'GET', path: '/oauth/facebook/callback', public: true, rateLimit: { limit: 20, windowMs: 60000 },
+    handler(args) { return finishCustomerOAuth('facebook', args); } },
   { method: 'POST', path: '/register', public: true, body: S.registerBody, rateLimit: { limit: 5, windowMs: 60 * 60000 },
     async handler({ body, req, ip }) { const { cookie, customer: c } = await A.register(body, meta(req, ip)); return res(201, { customer: c }, { 'Set-Cookie': cookie }); } },
   { method: 'POST', path: '/login', public: true, body: S.customerLoginBody, rateLimit: { limit: 10, windowMs: 15 * 60000 },
