@@ -81,9 +81,7 @@ function createHandler(group, routes) {
       if (!cacheable && !['GET', 'HEAD'].includes(method) && r.status >= 200 && r.status < 300) {
         await invalidateForGroup(group, context, route.invalidateTags || []);
       }
-      const response = json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
-      if (r.multiValueHeaders) response.multiValueHeaders = r.multiValueHeaders;
-      return response;
+      return json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
     } catch (err) {
       const r = toResponse(err);
       return json(r.status, r.body, cors);
