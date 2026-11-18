@@ -33,9 +33,40 @@ const campaignSchema = new Schema({
   name: { type: String, required: true }, type: { type: String, enum: ['email', 'whatsapp', 'banner', 'popup', 'newsletter'] },
   segment: String, content: Schema.Types.Mixed,
   status: { type: String, enum: ['Draft', 'Scheduled', 'Active', 'Completed', 'Cancelled'], default: 'Draft' },
+  recipientCount: { type: Number, default: 0 }, sentCount: { type: Number, default: 0 },
+  failedCount: { type: Number, default: 0 }, skippedCount: { type: Number, default: 0 },
+  startedAt: Date, completedAt: Date,
   startsAt: Date, endsAt: Date, createdBy: { type: ObjectId, ref: 'User' },
 }, { timestamps: true });
+campaignSchema.index({ status: 1, createdAt: -1 });
 storeScoped(campaignSchema);
+
+// A permanent email archive. Possessing an address is not the same as consenting to marketing.
+const customerEmailSchema = new Schema({
+  email: { type: String, required: true, lowercase: true, trim: true },
+  name: { type: String, default: '' },
+  customerId: { type: ObjectId, ref: 'Customer', index: true },
+  source: { type: String, enum: ['checkout', 'newsletter', 'order-history'], default: 'checkout' },
+  consentStatus: { type: String, enum: ['not_consented', 'subscribed', 'unsubscribed'], default: 'not_consented', index: true },
+  consentAt: Date, consentSource: String, unsubscribedAt: Date,
+  firstSeenAt: { type: Date, default: Date.now }, lastSeenAt: { type: Date, default: Date.now },
+  lastOrderAt: Date, orderCount: { type: Number, default: 0 },
+}, { timestamps: true });
+customerEmailSchema.index({ email: 1, storeId: 1 }, { unique: true });
+customerEmailSchema.index({ storeId: 1, consentStatus: 1, email: 1 });
+storeScoped(customerEmailSchema); softDelete(customerEmailSchema);
+
+// Recipient snapshots keep a campaign auditable even if a customer later changes their address or consent.
+const campaignRecipientSchema = new Schema({
+  campaignId: { type: ObjectId, ref: 'Campaign', required: true, index: true },
+  contactId: { type: ObjectId, ref: 'CustomerEmail', required: true },
+  email: { type: String, required: true, lowercase: true, trim: true },
+  name: String,
+  status: { type: String, enum: ['Pending', 'Sending', 'Sent', 'Failed', 'Skipped'], default: 'Pending', index: true },
+  attempts: { type: Number, default: 0 }, sentAt: Date, messageId: String, error: String,
+}, { timestamps: true });
+campaignRecipientSchema.index({ campaignId: 1, status: 1, createdAt: 1 });
+storeScoped(campaignRecipientSchema);
 
 const offerLeadSchema = new Schema({
   email: { type: String, required: true, lowercase: true, trim: true },
@@ -88,6 +119,7 @@ storeScoped(affiliatePartnerSchema); softDelete(affiliatePartnerSchema);
 
 module.exports = {
   Coupon: model('Coupon', couponSchema), OfferLead: model('OfferLead', offerLeadSchema), AffiliatePartner: model('AffiliatePartner', affiliatePartnerSchema), FlashSale: model('FlashSale', flashSaleSchema),
-  Campaign: model('Campaign', campaignSchema), GiftCard: model('GiftCard', giftCardSchema),
-  LoyaltyTransaction: model('LoyaltyTransaction', loyaltyTxSchema),
+  Campaign: model('Campaign', campaignSchema), CustomerEmail: model('CustomerEmail', customerEmailSchema),
+  CampaignRecipient: model('CampaignRecipient', campaignRecipientSchema),
+  GiftCard: model('GiftCard', giftCardSchema), LoyaltyTransaction: model('LoyaltyTransaction', loyaltyTxSchema),
 };
