@@ -161,6 +161,7 @@ export const auditApi = { list: (query) => api('/audit', { query }) };
 
 // ---- Storefront customer accounts (separate cookie from staff) ----
 export const accountApi = {
+  oauthProviders: () => api('/account/oauth/providers'),
   register: (body) => api('/account/register', { method: 'POST', body }),
   login: (identifier, password) => api('/account/login', { method: 'POST', body: { identifier, password } }),
   logout: () => api('/account/logout', { method: 'POST' }),
