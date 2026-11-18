@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Download, Mail, RefreshCw, Send, Users, ShieldCheck, UserRoundCheck, UserRoundX } from 'lucide-react';
+import { Download, Mail, RefreshCw, Send, Users, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import DataTable from '../components/DataTable';
@@ -134,9 +134,9 @@ export default function EmailMarketingPage() {
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <Metric icon={Users} label="Archived emails" value={summary.total ?? '—'} detail="Historical orders + new signups" />
-        <Metric icon={UserRoundCheck} label="Can receive offers" value={summary.subscribed ?? '—'} detail="Explicit email permission" />
+        <Metric icon={UserCheck} label="Can receive offers" value={summary.subscribed ?? '—'} detail="Explicit email permission" />
         <Metric icon={ShieldCheck} label="No marketing consent" value={summary.notConsented ?? '—'} detail="Saved for records only" />
-        <Metric icon={UserRoundX} label="Unsubscribed" value={summary.unsubscribed ?? '—'} detail="Excluded from campaigns" />
+        <Metric icon={UserX} label="Unsubscribed" value={summary.unsubscribed ?? '—'} detail="Excluded from campaigns" />
       </div>
 
       <Card padded={false}>
