@@ -86,6 +86,7 @@ function queueShipmentTrackingEmail(order, shipment, courier, scheduleBackground
   const work = sendTransactionalEmail({
     to,
     subject: 'AFSANA shipment tracking — order ' + orderNumber,
+    idempotencyKey: 'afsana-shipment-' + orderNumber + '-' + trackingNumber,
     text: 'Your AFSANA order ' + orderNumber + ' has a courier tracking number: ' + trackingNumber + '. Courier: ' + courierName + '. Status: ' + (shipment.status || 'Pending') + '. Track: ' + (trackingLink || trackPage),
     html,
     params: { order_number: orderNumber, tracking_number: trackingNumber, courier_name: courierName, shipment_status: shipment.status || 'Pending' },
