@@ -3,8 +3,8 @@ const { E } = require('../middleware/errors');
 const { audit } = require('./audit');
 const { scopeFilter } = require('../middleware/permissions');
 const Rules = require('./shippingRules');
+const { sendTransactionalEmail } = require('./otpMailer');
 const escapeEmailHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-const escapeEmailHtml = (value) => String(value == null ? '' : value).replace(/[&<>\"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[ch]));
 
 const SHIPMENT_STATUSES = Rules.SHIPMENT_STATUSES;
 const safeCourier = (c) => ({ _id: c._id, name: c.name, trackingUrlTemplate: c.trackingUrlTemplate || '', apiStatus: c.apiStatus, isActive: c.isActive });
