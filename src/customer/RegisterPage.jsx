@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useCustomer } from "./CustomerAuthContext";
 import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
@@ -7,7 +7,7 @@ import { Field, Input } from "../../admin/components/FormFields";
 import SocialSignInButtons from "./SocialSignInButtons";
 
 export default function RegisterPage() {
-  const {status,register}=useCustomer(); const navigate=useNavigate(); const location=useLocation(); const [f,setF]=useState({name:"",phone:"",email:"",password:""}); const [errors,setErrors]=useState({}); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
+  const {status,register}=useCustomer(); const navigate=useNavigate(); const [f,setF]=useState({name:"",phone:"",email:"",password:""}); const [errors,setErrors]=useState({}); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
   if(status==="loading") return <AuthCard title="Checking your account" subtitle="Please wait while we securely check your sign-in status." />;
   if(status==="authed") return <Navigate to="/account" replace />; const set=k=>e=>setF({...f,[k]:e.target.value});
   const submit=async e=>{e.preventDefault();setError("");setErrors({});const er={};if(f.name.trim().length<2)er.name="Please enter your name.";if(f.password.length<8||!/[A-Za-z]/.test(f.password)||!/\d/.test(f.password))er.password="At least 8 characters, with letters and numbers.";if(Object.keys(er).length)return setErrors(er);setBusy(true);try{await register({name:f.name.trim(),phone:f.phone.trim(),email:f.email.trim(),password:f.password});navigate("/account",{replace:true})}catch(err){const fe={};(err.details||[]).forEach(d=>{fe[d.path]=d.message});setErrors(fe);setError(err.code==="VALIDATION_ERROR"?"Please fix the highlighted fields.":err.status===429?"Too many attempts. Please try again later.":err.message)}finally{setBusy(false)}};
