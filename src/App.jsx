@@ -43,6 +43,7 @@ const AboutPage = lazy(() => import('./shop/pages/AboutPage'));
 const JournalPage = lazy(() => import('./shop/pages/JournalPage'));
 const GiftingPage = lazy(() => import('./shop/pages/GiftingPage'));
 const PrivacyPolicyPage = lazy(() => import('./shop/pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('./shop/pages/TermsOfServicePage'));
 const ManagedCmsPage = lazy(() => import('./shop/AfsanaSignatureHome').then((m) => ({ default: m.ManagedCmsPage })));
 const ScentFinderPage = lazy(() => import('./shop/AfsanaSignatureHome').then((m) => ({ default: m.ScentFinderPage })));
 const WishlistPage = lazy(() => import('./shop/account/WishlistPage'));
@@ -133,6 +134,8 @@ export default function App() {
             <Route path="/discover" element={<ManagedCmsPage pageKey="discover" fallback={<ScentFinderPage />} />} />
             <Route path="/gifting" element={<ManagedCmsPage pageKey="gifting" fallback={<GiftingPage />} />} />
             <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
             <Route path="/product/:slug" element={<><ManagedCmsPage pageKey="product_before" /><ProductPage /><ManagedCmsPage pageKey="product_after" /></>} />
             <Route path="/cart" element={<><ManagedCmsPage pageKey="cart_before" /><CartPage /><ManagedCmsPage pageKey="cart_after" /></>} />
             <Route path="/checkout" element={<><ManagedCmsPage pageKey="checkout_before" /><CheckoutPage /><ManagedCmsPage pageKey="checkout_after" /></>} />
