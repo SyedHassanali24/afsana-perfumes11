@@ -155,6 +155,7 @@ async function listCampaigns() {
 }
 
 async function createCampaign(ctx, body) {
+  await syncHistoricalEmails();
   const contacts = await CustomerEmail.find({
     storeId: 'main', isDeleted: false, consentStatus: 'subscribed',
     email: { $type: 'string', $ne: '' },
