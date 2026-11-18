@@ -39,7 +39,7 @@ async function shippingSettings() {
 
 // ---------------- checkout ----------------
 // `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
-async function placeOrder(input, cust, idempotencyKey) {
+async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = {}) {
   const key = String(idempotencyKey || '').trim();
   if (key && !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw E.badRequest('Invalid Idempotency-Key.');
   // 1. merge duplicate lines, load real data from DB
@@ -218,19 +218,43 @@ async function placeOrder(input, cust, idempotencyKey) {
   }
   if (cust) await Cart.deleteOne({ customerId: customer._id }).catch(() => {}); // saved cart is emptied once the order exists
   if (order && order.orderNumber === orderNumber) {
-    const summary = `${order.orderNumber} · PKR ${Number(total).toLocaleString('en-PK')}`;
-    const { notifyAdmin } = require('./notificationService');
-    await notifyAdmin({ type: 'new_order', title: 'New order received', body: summary, link: '/admin/orders', forPermission: 'orders.view' });
-    // Customer receipt email is sent only after the order transaction commits.
-    const customerEmail = String(input.customer && input.customer.email || '').trim();
-    if (customerEmail) {
+    // Notification and email are follow-up work: never make a committed order
+    // depend on Gmail availability or its response time.
+    const followUp = (async () => {
+      const summary = `${order.orderNumber} · PKR ${Number(total).toLocaleString('en-PK')}`;
+      try {
+        const { notifyAdmin } = require('./notificationService');
+        await notifyAdmin({ type: 'new_order', title: 'New order received', body: summary, link: '/admin/orders', forPermission: 'orders.view' });
+      } catch (err) {
+        console.error('[order-followup] admin notification failed:', err?.message || err);
+      }
+
+      const customerEmail = String(input.customer && input.customer.email || '').trim();
+      if (!customerEmail) return;
       try {
         const customerName = String(input.customer.name || 'Valued customer');
         const itemRows = lines.map((line) => '<tr><td style="padding:10px;border-bottom:1px solid #3b3325">'+escapeEmailHtml(line.name)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">× '+Number(line.quantity)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">PKR '+Number(line.lineTotal).toLocaleString('en-PK')+'</td></tr>').join('');
         const logo = '<div style="text-align:center"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="max-width:150px;height:auto"></div>';
         const html = '<div style="max-width:640px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:30px;border:1px solid #b99552">'+logo+'<p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p><h2 style="color:#e6c77e">Thank you for your order, '+escapeEmailHtml(customerName)+'!</h2><p>We have received your order and our team will process it shortly.</p><h3>Order '+escapeEmailHtml(order.orderNumber)+'</h3><p>Status: '+escapeEmailHtml(order.status || 'New')+' · Payment: '+escapeEmailHtml(order.paymentMethod || '')+'</p><table style="width:100%;border-collapse:collapse;color:#f6edda">'+itemRows+'</table><p>Subtotal: PKR '+Number(subtotal).toLocaleString('en-PK')+'<br>Delivery: PKR '+Number(shipping).toLocaleString('en-PK')+'<br>Discount: PKR '+Number(discount).toLocaleString('en-PK')+'<br><strong>Order total: PKR '+Number(total).toLocaleString('en-PK')+'</strong></p><h3>Delivery details</h3><p>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.name || customerName)+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.address || input.shippingAddress && input.shippingAddress.line1 || '')+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.city || '')+'</p><p>Tracking ID: will be shared when your parcel is dispatched.</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store/track-order">Track your order</a></p><p style="margin-top:30px;color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
-        await sendGmailTemplate({ to: customerEmail, subject: 'Thank you for your AFSANA order ' + order.orderNumber, text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Tracking details will be shared after dispatch. Regards, AFSANA Perfumes Team.', html });
-      } catch (err) { console.error('[customer-email] order confirmation delivery failed:', err?.message || err); }
+        await sendGmailTemplate({
+          to: customerEmail,
+          subject: 'Thank you for your AFSANA order ' + order.orderNumber,
+          text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Tracking details will be shared after dispatch. Regards, AFSANA Perfumes Team.',
+          html
+        });
+      } catch (err) {
+        console.error('[customer-email] order confirmation delivery failed:', err?.message || err);
+      }
+    })();
+
+    if (typeof scheduleBackground === 'function') {
+      try {
+        scheduleBackground(followUp);
+      } catch (err) {
+        followUp.catch((error) => console.error('[order-followup] scheduling failed:', err?.message || error));
+      }
+    } else {
+      followUp.catch((err) => console.error('[order-followup] background work failed:', err?.message || err));
     }
   }
   return { orderNumber: order.orderNumber, total, subtotal, shipping, discount, status: order.status, paymentMethod: order.paymentMethod };
