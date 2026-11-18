@@ -46,7 +46,7 @@ const customerEmailSchema = new Schema({
   email: { type: String, required: true, lowercase: true, trim: true },
   name: { type: String, default: '' },
   customerId: { type: ObjectId, ref: 'Customer', index: true },
-  source: { type: String, enum: ['checkout', 'newsletter', 'order-history'], default: 'checkout' },
+  source: { type: String, enum: ['checkout', 'newsletter', 'order-history', 'customer-account'], default: 'checkout' },
   consentStatus: { type: String, enum: ['not_consented', 'subscribed', 'unsubscribed'], default: 'not_consented', index: true },
   consentAt: Date, consentSource: String, unsubscribedAt: Date,
   firstSeenAt: { type: Date, default: Date.now }, lastSeenAt: { type: Date, default: Date.now },
