@@ -4,15 +4,18 @@ import { useCustomer } from "./CustomerAuthContext";
 import AuthCard from "../auth/AuthCard";
 import Button from "../../admin/components/Button";
 import { Field, Input } from "../../admin/components/FormFields";
+import SocialSignInButtons from "./SocialSignInButtons";
 
 export default function CustomerLoginPage() {
   const { status, login } = useCustomer();
-  const navigate = useNavigate(); const from = useLocation().state?.from || "/account";
+  const navigate = useNavigate(); const location = useLocation(); const from = location.state?.from || "/account";
+  const returnTo = typeof from === "string" ? from : `${from.pathname || "/account"}${from.search || ""}`;
   const [f,setF]=useState({identifier:"",password:""}); const [error,setError]=useState(""); const [busy,setBusy]=useState(false);
   if(status==="loading") return <AuthCard title="Checking your account" subtitle="Please wait while we securely check your sign-in status." />;
   if(status==="authed") return <Navigate to={from} replace />;
   const submit=async(e)=>{e.preventDefault();setError("");setBusy(true);try{await login(f.identifier.trim(),f.password);navigate(from,{replace:true});}catch(err){setError(err.status===429?"Too many attempts. Please wait a few minutes and try again.":err.message)}finally{setBusy(false)}};
   return <AuthCard title="Welcome back" subtitle="Sign in to track orders and check out faster." footer={<>New here? <Link to="/register" className="text-[#263e0e] underline">Create an account</Link></>}>
+    <SocialSignInButtons returnTo={returnTo} />
     <form onSubmit={submit} className="space-y-5">
       <Field label="Email or phone number"><Input required autoFocus autoComplete="username" value={f.identifier} onChange={e=>setF({...f,identifier:e.target.value})} placeholder="0300 1234567"/></Field>
       <Field label="Password"><Input type="password" required autoComplete="current-password" value={f.password} onChange={e=>setF({...f,password:e.target.value})}/></Field>

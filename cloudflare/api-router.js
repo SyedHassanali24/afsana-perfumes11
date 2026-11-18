@@ -154,6 +154,10 @@ export async function onRequest(context) {
   process.env.EMAIL_FROM = env.EMAIL_FROM || "";
   process.env.OPENMAIL_API_KEY = env.OPENMAIL_API_KEY || "";
   process.env.OPENMAIL_INBOX_ID = env.OPENMAIL_INBOX_ID || "94a826c9-b9b7-4f6f-a24d-7979b8981cb0";
+  process.env.GOOGLE_OAUTH_CLIENT_ID = env.GOOGLE_OAUTH_CLIENT_ID || "";
+  process.env.GOOGLE_OAUTH_CLIENT_SECRET = env.GOOGLE_OAUTH_CLIENT_SECRET || "";
+  process.env.FACEBOOK_APP_ID = env.FACEBOOK_APP_ID || "";
+  process.env.FACEBOOK_APP_SECRET = env.FACEBOOK_APP_SECRET || "";
 
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
