@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { emailMarketingApi } from '../../services';
 import { Mail, CheckCircle, ArrowRight, Loader2, Sparkles, Gift, ShieldCheck } from 'lucide-react';
 
 export default function NewsletterSubscription() {
@@ -7,7 +8,7 @@ export default function NewsletterSubscription() {
   const [errorMessage, setErrorMessage] = useState('');
   const [subscribedEmail, setSubscribedEmail] = useState('');
 
-  const validateEmail = (value) => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(value).trim().toLowerCase());
+  const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim().toLowerCase());
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -25,12 +26,7 @@ export default function NewsletterSubscription() {
     }
     setStatus('loading');
     try {
-      const existing = JSON.parse(localStorage.getItem('afsana_newsletter_subscribers') || '[]');
-      if (!existing.includes(trimmed.toLowerCase())) {
-        existing.push(trimmed.toLowerCase());
-        localStorage.setItem('afsana_newsletter_subscribers', JSON.stringify(existing));
-      }
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      await emailMarketingApi.subscribe({ email: trimmed });
       setSubscribedEmail(trimmed);
       setStatus('success');
       setEmail('');

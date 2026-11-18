@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Order, OrderItem, Payment, Customer, Coupon, AffiliatePartner, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
+const { Order, OrderItem, Payment, Customer, CustomerEmail, Coupon, AffiliatePartner, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { samePhone } = require('./phone');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
@@ -13,6 +13,14 @@ const { audit } = require('./audit');
 const R = require('./orderRules');
 const { normalizeCode, validatePartner, discountFor } = require('./affiliateRules');
 const { sendTransactionalEmail } = require('./otpMailer');
+
+let emailArchiveIndexesPromise;
+async function ensureEmailArchiveIndexes() {
+  if (!emailArchiveIndexesPromise) {
+    emailArchiveIndexesPromise = CustomerEmail.createIndexes().catch((error) => { emailArchiveIndexesPromise = null; throw error; });
+  }
+  return emailArchiveIndexesPromise;
+}
 const escapeEmailHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
@@ -40,6 +48,7 @@ async function shippingSettings() {
 // ---------------- checkout ----------------
 // `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
 async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = {}) {
+  await ensureEmailArchiveIndexes();
   const key = String(idempotencyKey || '').trim();
   if (key && !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw E.badRequest('Invalid Idempotency-Key.');
   // 1. merge duplicate lines, load real data from DB
@@ -204,6 +213,29 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
     }
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
     await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
+
+    // Keep every checkout email in the private archive. Marketing permission is only
+    // promoted when the shopper actively ticks the separate email-offers checkbox.
+    const archivedEmail = String(input.customer && input.customer.email || '').trim().toLowerCase();
+    if (archivedEmail) {
+      const seenAt = new Date();
+      const emailSet = { name: String(input.customer.name || '').trim(), customerId: txCustomer._id, lastSeenAt: seenAt, lastOrderAt: seenAt };
+      const emailOnInsert = { firstSeenAt: seenAt, source: 'checkout' };
+      if (input.emailMarketingOptIn === true) {
+        emailSet.consentStatus = 'subscribed';
+        emailSet.consentAt = seenAt;
+        emailSet.consentSource = 'checkout';
+        emailSet.unsubscribedAt = null;
+      } else {
+        emailOnInsert.consentStatus = 'not_consented';
+      }
+      await CustomerEmail.updateOne(
+        { email: archivedEmail, storeId: 'main' },
+        { $set: emailSet, $setOnInsert: emailOnInsert, $inc: { orderCount: 1 } },
+        { upsert: true, session },
+      );
+      await Customer.updateOne({ _id: txCustomer._id }, { $set: { email: archivedEmail } }, { session });
+    }
     return o;
     });
   } catch (err) {

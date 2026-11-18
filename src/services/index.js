@@ -117,6 +117,18 @@ export const customersApi = { // staff. list query { q, segment, page, limit } -
   get: (id) => api(`/customers/admin/${id}`),
   update: (id, body) => api(`/customers/admin/${id}`, { method: 'PATCH', body }),
 };
+
+export const emailMarketingApi = {
+  subscribe: (body) => api('/email-marketing/subscribe', { method: 'POST', body }),
+  summary: () => api('/email-marketing/admin/summary'),
+  contacts: (query) => api('/email-marketing/admin/contacts', { query }),
+  exportContacts: () => api('/email-marketing/admin/contacts/export'),
+  campaigns: () => api('/email-marketing/admin/campaigns'),
+  createCampaign: (body) => api('/email-marketing/admin/campaigns', { method: 'POST', body }),
+  startCampaign: (id) => api(`/email-marketing/admin/campaigns/${id}/start`, { method: 'POST', body: {} }),
+  processNext: (id) => api(`/email-marketing/admin/campaigns/${id}/process`, { method: 'POST', body: {} }),
+  getCampaign: (id) => api(`/email-marketing/admin/campaigns/${id}`),
+};
 export const shippingApi = { // Phase 9 (admin). admin() -> { couriers, rates, shipments }; create/update shipment -> { shipment, orderSync: { changed, message } }
   admin: () => api('/shipping/admin'),
   createCourier: (body) => api('/shipping/admin/couriers', { method: 'POST', body }),

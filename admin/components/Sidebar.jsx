@@ -3,7 +3,7 @@ import { useAuth } from "../../src/auth/AuthContext";
 import {
   LayoutDashboard, BarChart3, Package, Warehouse, Tags, ShoppingBag, Truck, RotateCcw,
   Users, Star, Megaphone, LayoutTemplate, Landmark, ShieldCheck, Settings, DatabaseBackup,
-  ChevronsLeft, ChevronsRight, Menu, X, Target, Calculator,
+  ChevronsLeft, ChevronsRight, Menu, X, Target, Calculator, Mail,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -25,6 +25,7 @@ const NAV_GROUPS = [
   ]},
   { label: "Growth", items: [
     { label: "Marketing", icon: Megaphone, href: "/admin/marketing", permission: "coupons.view" },
+    { label: "Email Marketing", icon: Mail, href: "/admin/email-marketing", permission: "campaigns.view" },
     { label: "Growth & referrals", icon: Target, href: "/admin/growth", permission: "dashboard.view" },
     { label: "CMS", icon: LayoutTemplate, href: "/admin/cms", permission: "homepage.view" },
   ]},
