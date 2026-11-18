@@ -18,6 +18,7 @@ const stub = (relative, exports) => {
 
 stub('database/models/index.js', {
   CustomerEmail: {
+    createIndexes: async () => [],
     updateOne: async (filter, update, options) => { captured.updates.push({ filter, update, options }); },
     find: (filter) => {
       captured.campaignFilter = filter;
@@ -31,9 +32,11 @@ stub('database/models/index.js', {
     },
   },
   Campaign: {
+    createIndexes: async () => [],
     create: async (data) => ({ _id: 'campaign-1', ...data }),
   },
   CampaignRecipient: {
+    createIndexes: async () => [],
     insertMany: async (rows) => { captured.recipientBatches.push(rows); return rows; },
   },
   Order: { aggregate: async () => [] },
