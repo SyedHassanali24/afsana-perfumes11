@@ -13,6 +13,14 @@ const { audit } = require('./audit');
 const R = require('./orderRules');
 const { normalizeCode, validatePartner, discountFor } = require('./affiliateRules');
 const { sendTransactionalEmail } = require('./otpMailer');
+
+let emailArchiveIndexesPromise;
+async function ensureEmailArchiveIndexes() {
+  if (!emailArchiveIndexesPromise) {
+    emailArchiveIndexesPromise = CustomerEmail.createIndexes().catch((error) => { emailArchiveIndexesPromise = null; throw error; });
+  }
+  return emailArchiveIndexesPromise;
+}
 const escapeEmailHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
@@ -40,6 +48,7 @@ async function shippingSettings() {
 // ---------------- checkout ----------------
 // `cust` = logged-in shopper context (optional). Guests are matched by phone; logged-in shoppers order on their own account.
 async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = {}) {
+  await ensureEmailArchiveIndexes();
   const key = String(idempotencyKey || '').trim();
   if (key && !/^[A-Za-z0-9._:-]{8,128}$/.test(key)) throw E.badRequest('Invalid Idempotency-Key.');
   // 1. merge duplicate lines, load real data from DB
@@ -211,14 +220,14 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
     if (archivedEmail) {
       const seenAt = new Date();
       const emailSet = { name: String(input.customer.name || '').trim(), customerId: txCustomer._id, lastSeenAt: seenAt, lastOrderAt: seenAt };
-      const emailOnInsert = { firstSeenAt: seenAt, source: 'checkout', consentStatus: input.emailMarketingOptIn === true ? 'subscribed' : 'not_consented' };
+      const emailOnInsert = { firstSeenAt: seenAt, source: 'checkout' };
       if (input.emailMarketingOptIn === true) {
         emailSet.consentStatus = 'subscribed';
         emailSet.consentAt = seenAt;
         emailSet.consentSource = 'checkout';
         emailSet.unsubscribedAt = null;
-        emailOnInsert.consentAt = seenAt;
-        emailOnInsert.consentSource = 'checkout';
+      } else {
+        emailOnInsert.consentStatus = 'not_consented';
       }
       await CustomerEmail.updateOne(
         { email: archivedEmail, storeId: 'main' },
