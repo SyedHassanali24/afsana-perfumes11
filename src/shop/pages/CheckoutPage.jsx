@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const { data: q, loading, error, reload } = useQuote(items, couponCode, f.city);
   const [pay, setPay] = useState('COD');
   const [whatsappMarketingOptIn, setWhatsappMarketingOptIn] = useState(false);
+  const [emailMarketingOptIn, setEmailMarketingOptIn] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -60,7 +61,7 @@ export default function CheckoutPage() {
     setErrors({}); setFormError('');
     const checkoutPayload = {
       items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,
-      whatsappMarketingOptIn, paymentMethod: pay, turnstileToken,
+      whatsappMarketingOptIn, emailMarketingOptIn, paymentMethod: pay, turnstileToken,
       customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
       shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
     };
@@ -102,6 +103,10 @@ export default function CheckoutPage() {
                 <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
                   <input type="checkbox" checked={whatsappMarketingOptIn} onChange={(e) => setWhatsappMarketingOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
                   <span><strong className="font-medium text-[#263e0e]">Send my Afsana first-purchase reward on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. You agree to receive your welcome coupon and occasional Afsana offers on this number. Contact Afsana support to withdraw consent.</span></span>
+                </label>
+                <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
+                  <input type="checkbox" checked={emailMarketingOptIn} onChange={(e) => setEmailMarketingOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
+                  <span><strong className="font-medium text-[#263e0e]">Email me AFSANA offers and new fragrance updates.</strong><span className="block mt-1 text-xs">Optional. Your order emails will still arrive either way. You can unsubscribe from promotional emails at any time.</span></span>
                 </label>
               </section>
               <section className="space-y-4 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-5 sm:p-6 shadow-[0_18px_50px_rgba(24,35,8,.06)]">
