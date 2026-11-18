@@ -8,7 +8,7 @@ export default function NewsletterSubscription() {
   const [errorMessage, setErrorMessage] = useState('');
   const [subscribedEmail, setSubscribedEmail] = useState('');
 
-  const validateEmail = (value) => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(value).trim().toLowerCase());
+  const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim().toLowerCase());
 
   const handleSubmit = async (event) => {
     event.preventDefault();
