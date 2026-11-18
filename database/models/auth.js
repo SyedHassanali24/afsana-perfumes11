@@ -11,6 +11,13 @@ const userSchema = new Schema({
   email: { type: String, lowercase: true, trim: true },
   phone: { type: String, trim: true },
   passwordHash: { type: String, required: true, select: false },
+  emailVerifiedAt: Date,
+  oauthProviders: [{
+    provider: { type: String, enum: ['google', 'facebook'], required: true },
+    providerUserId: { type: String, required: true },
+    email: { type: String, lowercase: true, trim: true },
+    linkedAt: { type: Date, default: Date.now },
+  }],
   status: { type: String, enum: ['Active', 'Suspended', 'Disabled'], default: 'Active' },
   failedLoginCount: { type: Number, default: 0 },
   lockedUntil: Date,
@@ -40,6 +47,7 @@ const userSchema = new Schema({
 }, { timestamps: true });
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ phone: 1 }, { unique: true, sparse: true });
+userSchema.index({ 'oauthProviders.provider': 1, 'oauthProviders.providerUserId': 1 }, { unique: true, sparse: true });
 storeScoped(userSchema);
 
 // ---- sessions: server-side record behind the HTTP-only cookie (listable, revocable) ----
