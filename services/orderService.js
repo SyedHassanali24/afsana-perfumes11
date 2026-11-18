@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { Order, OrderItem, Payment, Customer, Coupon, AffiliatePartner, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
+const { Order, OrderItem, Payment, Customer, CustomerEmail, Coupon, AffiliatePartner, Product, ProductVariant, Setting, Notification, Cart, nextNumber } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { samePhone } = require('./phone');
 const { paging: pg, pageMeta, escapeRegex } = require('../middleware/pagination');
@@ -204,6 +204,29 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
     }
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
     await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
+
+    // Keep every checkout email in the private archive. Marketing permission is only
+    // promoted when the shopper actively ticks the separate email-offers checkbox.
+    const archivedEmail = String(input.customer && input.customer.email || '').trim().toLowerCase();
+    if (archivedEmail) {
+      const seenAt = new Date();
+      const emailSet = { name: String(input.customer.name || '').trim(), customerId: txCustomer._id, lastSeenAt: seenAt, lastOrderAt: seenAt };
+      const emailOnInsert = { firstSeenAt: seenAt, source: 'checkout', consentStatus: input.emailMarketingOptIn === true ? 'subscribed' : 'not_consented' };
+      if (input.emailMarketingOptIn === true) {
+        emailSet.consentStatus = 'subscribed';
+        emailSet.consentAt = seenAt;
+        emailSet.consentSource = 'checkout';
+        emailSet.unsubscribedAt = null;
+        emailOnInsert.consentAt = seenAt;
+        emailOnInsert.consentSource = 'checkout';
+      }
+      await CustomerEmail.updateOne(
+        { email: archivedEmail, storeId: 'main' },
+        { $set: emailSet, $setOnInsert: emailOnInsert, $inc: { orderCount: 1 } },
+        { upsert: true, session },
+      );
+      await Customer.updateOne({ _id: txCustomer._id }, { $set: { email: archivedEmail } }, { session });
+    }
     return o;
     });
   } catch (err) {
