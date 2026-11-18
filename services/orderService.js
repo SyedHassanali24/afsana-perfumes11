@@ -12,7 +12,7 @@ const { withTx } = require('./tx');
 const { audit } = require('./audit');
 const R = require('./orderRules');
 const { normalizeCode, validatePartner, discountFor } = require('./affiliateRules');
-const { sendGmailTemplate } = require('./otpMailer');
+const { sendTransactionalEmail } = require('./otpMailer');
 const escapeEmailHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
 const SCOPE_MAP = { createdBy: 'createdBy', assignedTo: 'assignedTo', cities: 'shippingAddress.city', stores: 'storeId' };
@@ -222,9 +222,19 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
     // depend on Gmail availability or its response time.
     const followUp = (async () => {
       const summary = `${order.orderNumber} · PKR ${Number(total).toLocaleString('en-PK')}`;
+      const itemSummary = lines.map((line) => `${line.name} × ${line.quantity} — PKR ${Number(line.lineTotal).toLocaleString('en-PK')}`).join('\n');
+      const adminOrderDetails = [
+        summary,
+        'Customer: ' + String(input.customer && input.customer.name || '—'),
+        'Phone: ' + String(input.customer && input.customer.phone || '—'),
+        'Email: ' + String(input.customer && input.customer.email || 'Not provided'),
+        'Delivery address: ' + [input.shippingAddress && (input.shippingAddress.address || input.shippingAddress.line1), input.shippingAddress && input.shippingAddress.city].filter(Boolean).join(', '),
+        'Payment method: ' + String(input.paymentMethod || '—'),
+        'Items: ' + itemSummary,
+      ].join('\n');
       try {
         const { notifyAdmin } = require('./notificationService');
-        await notifyAdmin({ type: 'new_order', title: 'New order received', body: summary, link: '/admin/orders', forPermission: 'orders.view' });
+        await notifyAdmin({ type: 'new_order', title: 'New order received', body: adminOrderDetails, link: '/admin/orders', forPermission: 'orders.view' });
       } catch (err) {
         console.error('[order-followup] admin notification failed:', err?.message || err);
       }
@@ -235,11 +245,11 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
         const customerName = String(input.customer.name || 'Valued customer');
         const itemRows = lines.map((line) => '<tr><td style="padding:10px;border-bottom:1px solid #3b3325">'+escapeEmailHtml(line.name)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">× '+Number(line.quantity)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">PKR '+Number(line.lineTotal).toLocaleString('en-PK')+'</td></tr>').join('');
         const logo = '<div style="text-align:center"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="max-width:150px;height:auto"></div>';
-        const html = '<div style="max-width:640px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:30px;border:1px solid #b99552">'+logo+'<p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p><h2 style="color:#e6c77e">Thank you for your order, '+escapeEmailHtml(customerName)+'!</h2><p>We have received your order and our team will process it shortly.</p><h3>Order '+escapeEmailHtml(order.orderNumber)+'</h3><p>Status: '+escapeEmailHtml(order.status || 'New')+' · Payment: '+escapeEmailHtml(order.paymentMethod || '')+'</p><table style="width:100%;border-collapse:collapse;color:#f6edda">'+itemRows+'</table><p>Subtotal: PKR '+Number(subtotal).toLocaleString('en-PK')+'<br>Delivery: PKR '+Number(shipping).toLocaleString('en-PK')+'<br>Discount: PKR '+Number(discount).toLocaleString('en-PK')+'<br><strong>Order total: PKR '+Number(total).toLocaleString('en-PK')+'</strong></p><h3>Delivery details</h3><p>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.name || customerName)+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.address || input.shippingAddress && input.shippingAddress.line1 || '')+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.city || '')+'</p><p>Tracking ID: will be shared when your parcel is dispatched.</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store/track-order">Track your order</a></p><p style="margin-top:30px;color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
-        await sendGmailTemplate({
+        const html = '<div style="max-width:640px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:30px;border:1px solid #b99552">'+logo+'<p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p><h2 style="color:#e6c77e">Thank you for your order, '+escapeEmailHtml(customerName)+'!</h2><p>We have received your order and our team will process it shortly.</p><h3>Order '+escapeEmailHtml(order.orderNumber)+'</h3><p>Status: '+escapeEmailHtml(order.status || 'New')+' · Payment: '+escapeEmailHtml(order.paymentMethod || '')+'</p><table style="width:100%;border-collapse:collapse;color:#f6edda">'+itemRows+'</table><p>Subtotal: PKR '+Number(subtotal).toLocaleString('en-PK')+'<br>Delivery: PKR '+Number(shipping).toLocaleString('en-PK')+'<br>Discount: PKR '+Number(discount).toLocaleString('en-PK')+'<br><strong>Order total: PKR '+Number(total).toLocaleString('en-PK')+'</strong></p><h3>Delivery details</h3><p>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.name || customerName)+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.address || input.shippingAddress && input.shippingAddress.line1 || '')+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.city || '')+'</p><p>Order tracking reference: <strong>'+escapeEmailHtml(order.orderNumber)+'</strong></p><p>Your courier tracking number will be emailed separately as soon as your parcel is dispatched.</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store/track-order">Track your order</a></p><p style="margin-top:30px;color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
+        await sendTransactionalEmail({
           to: customerEmail,
           subject: 'Thank you for your AFSANA order ' + order.orderNumber,
-          text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Tracking details will be shared after dispatch. Regards, AFSANA Perfumes Team.',
+          text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Order tracking reference: '+order.orderNumber+'. Your courier tracking number will be emailed after dispatch. Track: https://afsanaperfumes.store/track-order. Regards, AFSANA Perfumes Team.',
           html
         });
       } catch (err) {
