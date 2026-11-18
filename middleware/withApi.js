@@ -53,7 +53,8 @@ function createHandler(group, routes) {
         try { if (siteUrl) hostname = new URL(siteUrl).hostname; } catch { /* invalid site URL will fail host validation */ }
         await verifyTurnstile({ token: rawBody?.turnstileToken, action: route.turnstileAction, hostname, remoteIp: ip });
       }
-      await connectDB();
+      // Public OAuth readiness/start routes are configuration-only and must not wait on MongoDB.
+      if (!route.skipDatabase) await connectDB();
       let ctx = null; let scopes = null;
       if (route.public && route.optionalCustomer) {
         try { ctx = await authenticateCustomer(req); } catch { ctx = null; }

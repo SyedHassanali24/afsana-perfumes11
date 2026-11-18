@@ -51,13 +51,13 @@ async function finishCustomerOAuth(provider, { req, query, ip }) {
 
 // Storefront customer accounts (cookie: afsana_customer). Staff use /api/auth instead.
 const routes = [
-  { method: 'GET', path: '/oauth/providers', public: true, rateLimit: { limit: 30, windowMs: 60000 },
+  { method: 'GET', path: '/oauth/providers', public: true, skipDatabase: true, rateLimit: { limit: 30, windowMs: 60000 },
     handler() { return OAuth.getProviders(); } },
-  { method: 'GET', path: '/oauth/google', public: true, rateLimit: { limit: 10, windowMs: 60000 },
+  { method: 'GET', path: '/oauth/google', public: true, skipDatabase: true, rateLimit: { limit: 10, windowMs: 60000 },
     handler({ query }) { return startCustomerOAuth('google', query); } },
   { method: 'GET', path: '/oauth/google/callback', public: true, rateLimit: { limit: 20, windowMs: 60000 },
     handler(args) { return finishCustomerOAuth('google', args); } },
-  { method: 'GET', path: '/oauth/facebook', public: true, rateLimit: { limit: 10, windowMs: 60000 },
+  { method: 'GET', path: '/oauth/facebook', public: true, skipDatabase: true, rateLimit: { limit: 10, windowMs: 60000 },
     handler({ query }) { return startCustomerOAuth('facebook', query); } },
   { method: 'GET', path: '/oauth/facebook/callback', public: true, rateLimit: { limit: 20, windowMs: 60000 },
     handler(args) { return finishCustomerOAuth('facebook', args); } },
