@@ -24,7 +24,7 @@ async function markAllRead(ctx) {
   if (ids.length) await Notification.updateMany({ _id: { $in: ids } }, { $addToSet: { readBy: ctx.user._id } });
   return { marked: ids.length };
 }
-async function notifyAdmin({ type = 'security_alert', title, body = '', link = '/admin', forPermission }) {
+async function notifyAdmin({ type = 'security_alert', title, body = '', link = '/admin', forPermission, idempotencyKey }) {
   let notification = null;
   try {
     notification = await Notification.create({ type, title, body, link: R.safeLink(link), ...(forPermission ? { forPermission } : {}) });
@@ -37,7 +37,7 @@ async function notifyAdmin({ type = 'security_alert', title, body = '', link = '
     try {
       const safeLink = R.safeLink(link);
       await sendTransactionalEmail({
-        to, subject: 'AFSANA alert: ' + String(title || 'Dashboard notification'),
+        to, subject: 'AFSANA alert: ' + String(title || 'Dashboard notification'), idempotencyKey,
         text: String(title || 'AFSANA notification') + '\n' + String(body || '') + '\nhttps://afsanaperfumes.store' + safeLink,
         html: emailShell(title || 'AFSANA notification', '<p>'+escapeHtml(body || '').replace(/\n/g, '<br>')+'</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store'+safeLink+'">View notification</a></p>'),
       });
