@@ -41,7 +41,7 @@ export default function SocialSignInButtons({ returnTo = "/account" }) {
   const start = (provider) => {
     setStarting(provider);
     const query = new URLSearchParams({ returnTo });
-    window.location.assign(\`/api/account/oauth/\${provider}?\${query.toString()}\`);
+    window.location.assign("/api/account/oauth/" + provider + "?" + query.toString());
   };
 
   return (
