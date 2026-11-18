@@ -188,7 +188,7 @@ async function sendOpenMail({ to, subject, html, text = '', idempotencyKey, env,
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const detail = String(data?.message || data?.error || ('HTTP ' + response.status)).replace(/[\\r\\n\\t]+/g, ' ').slice(0, 220);
+    const detail = String(data?.message || data?.error || ('HTTP ' + response.status)).replace(/[\r\n\t]+/g, ' ').slice(0, 220);
     throw new Error('OpenMail could not send the transactional email: ' + detail);
   }
   return { sent: true, provider: 'openmail', messageId: data.messageId || null, threadId: data.threadId || null, status: data.status || 'sent' };
