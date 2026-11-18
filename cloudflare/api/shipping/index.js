@@ -11,7 +11,7 @@ const routes = [
   { method: 'PATCH', path: '/admin/couriers/:id', permission: ['shipping', 'edit'], body: S.courierPatch, handler: ({ ctx, params, body }) => Sh.updateCourier(ctx, params.id, body) },
   { method: 'POST', path: '/admin/rates', permission: ['shipping', 'create'], body: S.shippingRateBody, handler: async ({ ctx, body }) => res(201, await Sh.createRate(ctx, body)) },
   { method: 'PATCH', path: '/admin/rates/:id', permission: ['shipping', 'edit'], body: S.shippingRatePatch, handler: ({ ctx, params, body }) => Sh.updateRate(ctx, params.id, body) },
-  { method: 'POST', path: '/admin/orders/:orderId/shipment', permission: ['shipping', 'create'], body: S.shipmentBody, handler: async ({ ctx, params, body, scopes }) => res(201, await Sh.createShipment(ctx, params.orderId, body, scopes)) },
-  { method: 'PATCH', path: '/admin/shipments/:id', permission: ['shipping', 'edit'], body: S.shipmentPatch, handler: ({ ctx, params, body, scopes }) => Sh.updateShipment(ctx, params.id, body, scopes) },
+  { method: 'POST', path: '/admin/orders/:orderId/shipment', permission: ['shipping', 'create'], body: S.shipmentBody, handler: async ({ ctx, params, body, scopes, scheduleBackground }) => res(201, await Sh.createShipment(ctx, params.orderId, body, scopes, scheduleBackground)) },
+  { method: 'PATCH', path: '/admin/shipments/:id', permission: ['shipping', 'edit'], body: S.shipmentPatch, handler: ({ ctx, params, body, scopes, scheduleBackground }) => Sh.updateShipment(ctx, params.id, body, scopes, scheduleBackground) },
 ];
 exports.handler = createHandler('shipping', routes);
