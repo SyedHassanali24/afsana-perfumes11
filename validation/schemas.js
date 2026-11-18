@@ -84,6 +84,7 @@ const checkoutBody = z.object({
   customer: z.object({ name: z.string().trim().min(2).max(100), phone, email: z.string().email().max(200) }),
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
+  emailMarketingOptIn: z.boolean().optional().default(false),
   couponCode: z.string().trim().max(40).optional(),
   referralCode: z.string().trim().max(30).optional(),
 });
@@ -278,6 +279,26 @@ const shipmentPatch = shipmentBody;
 // ---- customers (staff screen). Only notes and group can be changed. ----
 const { SEGMENTS: CUSTOMER_SEGMENTS } = require('../services/customerRules');
 const customerQuery = z.object({ q: z.string().trim().max(60).optional(), segment: z.enum(CUSTOMER_SEGMENTS).optional(), ...paging });
+
+// ---------- email archive and campaigns ----------
+const emailContactsQuery = z.object({
+  q: z.string().trim().max(100).optional(),
+  consentStatus: z.enum(['not_consented', 'subscribed', 'unsubscribed']).optional(),
+  ...paging,
+});
+const emailMarketingSubscribeBody = z.object({
+  email: z.string().trim().email().max(254),
+  name: z.string().trim().max(100).optional(),
+});
+const emailCampaignBody = z.object({
+  name: z.string().trim().min(2).max(100),
+  subject: z.string().trim().min(3).max(160),
+  message: z.string().trim().min(10).max(4000),
+  ctaText: z.string().trim().max(40).optional(),
+  ctaUrl: z.string().trim().url().max(500).refine((v) => v.startsWith('https://'), 'CTA link must use HTTPS').optional(),
+}).superRefine((v, ctx) => {
+  if (v.ctaUrl && !v.ctaText) ctx.addIssue({ code: 'custom', path: ['ctaText'], message: 'Add button text for the CTA link.' });
+});
 // ---- finance & expenses (dates are Pakistan calendar days written YYYY-MM-DD) ----
 const FIN = require('../services/financeRules');
 const dayKey = z.string().trim().refine(FIN.isRealDate, 'Use a real date like 2026-10-31');
@@ -402,7 +423,8 @@ module.exports = {
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery, manualJournalEntryBody, referralPartnerBody, referralPartnerPatch,
-  customerQuery, customerPatch, reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
+  customerQuery, customerPatch, emailContactsQuery, emailMarketingSubscribeBody, emailCampaignBody,
+  reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
   courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
   quoteBody, cartBody, addressBody, addressPatch, myOrdersQuery,
