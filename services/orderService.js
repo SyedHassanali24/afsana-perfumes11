@@ -234,7 +234,7 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
       ].join('\n');
       try {
         const { notifyAdmin } = require('./notificationService');
-        await notifyAdmin({ type: 'new_order', title: 'New order received', body: adminOrderDetails, link: '/admin/orders', forPermission: 'orders.view' });
+        await notifyAdmin({ type: 'new_order', title: 'New order received', body: adminOrderDetails, link: '/admin/orders', forPermission: 'orders.view', idempotencyKey: 'afsana-admin-order-' + order.orderNumber });
       } catch (err) {
         console.error('[order-followup] admin notification failed:', err?.message || err);
       }
@@ -249,6 +249,7 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
         await sendTransactionalEmail({
           to: customerEmail,
           subject: 'Thank you for your AFSANA order ' + order.orderNumber,
+          idempotencyKey: 'afsana-customer-order-' + order.orderNumber,
           text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Order tracking reference: '+order.orderNumber+'. Your courier tracking number will be emailed after dispatch. Track: https://afsanaperfumes.store/track-order. Regards, AFSANA Perfumes Team.',
           html
         });
