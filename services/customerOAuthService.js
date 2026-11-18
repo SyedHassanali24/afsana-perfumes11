@@ -12,6 +12,17 @@ const FACEBOOK_GRAPH_VERSION = 'v27.0';
 const OAUTH_COOKIE = (provider) => 'afsana_customer_oauth_' + provider;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+let oauthIndexesPromise;
+async function ensureOAuthIndexes() {
+  if (!oauthIndexesPromise) {
+    oauthIndexesPromise = User.createIndexes().catch((error) => {
+      oauthIndexesPromise = null;
+      throw error;
+    });
+  }
+  return oauthIndexesPromise;
+}
+
 function siteOrigin() {
   const raw = String(process.env.SITE_URL || 'https://afsanaperfumes.store').replace(/\/+$/, '');
   const url = new URL(raw);
@@ -203,6 +214,7 @@ async function ensureCustomerProfile(user, profile) {
 }
 
 async function findOrCreateCustomer(provider, profile) {
+  await ensureOAuthIndexes();
   const email = String(profile.email || '').trim().toLowerCase();
   const providerUserId = String(profile.id || '').trim();
   if (!EMAIL_RE.test(email) || !providerUserId) {
