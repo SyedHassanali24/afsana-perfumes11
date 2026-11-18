@@ -197,7 +197,7 @@ async function facebookProfile(code) {
   if (debug.data.user_id && String(debug.data.user_id) !== String(profile.id)) {
     throw new ApiError(401, 'OAUTH_IDENTITY_MISMATCH', 'Facebook sign-in could not be verified.');
   }
-  return { id: String(profile.id), email: profile.email, name: profile.name || '', emailVerified: true };
+  return { id: String(profile.id), email: profile.email, name: profile.name || '', emailVerified: false };
 }
 
 async function ensureCustomerProfile(user, profile) {
@@ -232,6 +232,9 @@ async function findOrCreateCustomer(provider, profile) {
       throw E.conflict('This email is already used by an AFSANA staff account. Use a different customer email.');
     }
     if (user) {
+      if (!profile.emailVerified) {
+        throw new ApiError(409, 'OAUTH_EMAIL_LINK_REQUIRES_VERIFICATION', 'An AFSANA account already uses this email. Sign in with its email and password instead.');
+      }
       const linked = (user.oauthProviders || []).find((item) => item.provider === provider);
       if (linked && String(linked.providerUserId) !== providerUserId) {
         throw E.conflict('Another social account is already linked to this email.');
@@ -262,6 +265,7 @@ async function findOrCreateCustomer(provider, profile) {
         if (error?.code !== 11000) throw error;
         user = await User.findOne({ email });
         if (!user || user.kind !== 'customer') throw E.conflict('An account already uses this email. Sign in with that account first.');
+        if (!profile.emailVerified) throw new ApiError(409, 'OAUTH_EMAIL_LINK_REQUIRES_VERIFICATION', 'An AFSANA account already uses this email. Sign in with its email and password instead.');
         const linked = (user.oauthProviders || []).find((item) => item.provider === provider);
         if (linked && String(linked.providerUserId) !== providerUserId) throw E.conflict('Another social account is already linked to this email.');
         user.oauthProviders = user.oauthProviders || [];
