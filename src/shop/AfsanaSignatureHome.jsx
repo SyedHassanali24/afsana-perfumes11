@@ -559,7 +559,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
             const second=media[1]?.url || '';
             return <Link key={p.id||i} to={`/product/${p.slug}`} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[.045] p-2 transition duration-500 hover:-translate-y-2 hover:border-[#d9ff55]/40 hover:bg-white/[.07]">
               <div className="relative aspect-[.82] overflow-hidden rounded-xl bg-[#f4f0e8]">
-                {image ? <><img src={image} alt={p.name||'AFSANA fragrance'} className={`absolute inset-0 h-full w-full object-cover transition duration-700 ${second?'group-hover:opacity-0 group-hover:scale-105':'group-hover:scale-105'}`}/>{second&&<img src={second} alt="" className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-700 group-hover:opacity-100 group-hover:scale-105"/>}</> : <div className="grid h-full place-items-center text-[#100d24] text-xs uppercase tracking-[.2em]">AFSANA</div>}
+                {image ? <><img src={image} alt={p.name||'AFSANA fragrance'} loading="lazy" decoding="async" className={`absolute inset-0 h-full w-full object-cover transition duration-700 ${second?'group-hover:opacity-0 group-hover:scale-105':'group-hover:scale-105'}`}/>{second&&<img src={second} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-700 group-hover:opacity-100 group-hover:scale-105"/>}</> : <div className="grid h-full place-items-center text-[#100d24] text-xs uppercase tracking-[.2em]">AFSANA</div>}
                 <span className="absolute left-3 top-3 rounded-full border border-[#100d24]/10 bg-white/90 px-3 py-1 text-[8px] font-semibold uppercase tracking-[.16em] text-[#100d24]">01 · Signature</span>
                 <span className="absolute bottom-3 right-3 rounded-full bg-[#d9ff55] px-3 py-1.5 text-[9px] font-bold tracking-[.08em] text-[#100d24]">View fragrance ↗</span>
               </div>
@@ -647,6 +647,8 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
 }
 function FilmCard({ film, index, autoplay = true }) {
   const [muted, setMuted] = useState(true);
+  const [nearViewport, setNearViewport] = useState(false);
+  const [visible, setVisible] = useState(false);
   const videoRef = useRef(null);
   const source = String(film.image || '').trim();
   const labels = ['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'];
@@ -658,13 +660,29 @@ function FilmCard({ film, index, autoplay = true }) {
   ];
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !source) return;
+    if (!video || !source) return undefined;
+    if (typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true);
+      setVisible(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setNearViewport(true);
+      setVisible(entry.isIntersecting);
+    }, { rootMargin: '240px 0px' });
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [source]);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !source || !nearViewport) return;
     video.muted = muted;
-    if (autoplay) video.play().catch(() => {});
-  }, [source, muted, autoplay]);
+    if (autoplay && visible) video.play().catch(() => {});
+    else video.pause();
+  }, [source, muted, autoplay, nearViewport, visible]);
   return <article className="group relative isolate min-h-[390px] aspect-[.78] overflow-hidden rounded-[22px] border border-purple-100 bg-[#201632] shadow-[0_18px_48px_rgba(42,27,70,.13)] transition duration-700 hover:-translate-y-2 hover:border-pink-200 hover:shadow-[0_28px_64px_rgba(96,52,148,.22)] sm:min-h-[440px] xl:min-h-[500px]">
     {source
-      ? <video ref={videoRef} key={source} src={source} poster={film.link || undefined} autoPlay={autoplay} muted={muted} loop playsInline preload="metadata" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
+      ? <video ref={videoRef} key={source} src={nearViewport ? source : undefined} poster={film.link || undefined} autoPlay={false} muted={muted} loop playsInline preload="none" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
       : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-purple-900 via-[#292044] to-sky-900 px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-white/70">Add a video in CMS</div>}
     <div aria-hidden="true" className={'pointer-events-none absolute inset-0 bg-gradient-to-br '+(accents[index] || accents[0])}/>
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#160d2d]/95 via-[#211638]/16 to-[#1d1230]/10"/>
@@ -680,15 +698,24 @@ function FilmCard({ film, index, autoplay = true }) {
   </article>;
 }
 function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
-  const { data } = useApi(() => productsApi.list({ sort: 'popular', limit: 12 }), []);
+  const source = Array.isArray(sections) ? sections : [];
+  // Fetch catalog data only for page sections that actually render products.
+  // CMS footer, banners and editorial-only pages should not open MongoDB reads.
+  const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'footer_showcase');
+  const needsProducts = safe.some((section) =>
+    ['featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'product_3d_showcase'].includes(section?.type) ||
+    (section?.type === 'hero' && ['reference', 'inner'].includes(section?.config?.layout))
+  );
+  const { data } = useApi(
+    () => needsProducts ? productsApi.list({ sort: 'popular', limit: 12 }) : Promise.resolve({ products: [] }),
+    [needsProducts]
+  );
   const shopSettings = useShopSettings();
   const products = data?.products || [];
-  const source = Array.isArray(sections) ? sections : [];
   // The public API sends only enabled and non-deleted CMS rows.
   // Do not require internal template/theme tags here: custom and older saved
   // sections are valid storefront content too.
   // The footer showcase is rendered once in the global footer by ShopLayout, not again in the homepage flow.
-  const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'footer_showcase');
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
