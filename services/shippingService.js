@@ -3,6 +3,8 @@ const { E } = require('../middleware/errors');
 const { audit } = require('./audit');
 const { scopeFilter } = require('../middleware/permissions');
 const Rules = require('./shippingRules');
+const { sendTransactionalEmail } = require('./otpMailer');
+const escapeEmailHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
 const SHIPMENT_STATUSES = Rules.SHIPMENT_STATUSES;
 const safeCourier = (c) => ({ _id: c._id, name: c.name, trackingUrlTemplate: c.trackingUrlTemplate || '', apiStatus: c.apiStatus, isActive: c.isActive });
@@ -64,7 +66,38 @@ async function syncOrder(ctx, orderId, shipmentStatus) {
   }
   return { changed, message: '' };
 }
-async function createShipment(ctx, orderId, body, scopes) {
+
+function queueShipmentTrackingEmail(order, shipment, courier, scheduleBackground) {
+  const to = String(order?.customer?.email || '').trim();
+  const trackingNumber = String(shipment?.trackingNumber || '').trim();
+  if (!to || !trackingNumber) return;
+  const orderNumber = String(order.orderNumber || '');
+  const courierName = String(courier?.name || 'Courier');
+  const trackingLink = Rules.trackingUrl(courier, trackingNumber);
+  const trackPage = 'https://afsanaperfumes.store/track-order';
+  const html = '<div style="max-width:620px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:30px;border:1px solid #b99552">' +
+    '<div style="text-align:center"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="max-width:150px;height:auto"></div>' +
+    '<p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p>' +
+    '<h2 style="color:#e6c77e">Your parcel tracking details</h2>' +
+    '<p>Your AFSANA order <strong>' + escapeEmailHtml(orderNumber) + '</strong> has been assigned a courier tracking number.</p>' +
+    '<p>Courier: ' + escapeEmailHtml(courierName) + '<br>Tracking number: <strong>' + escapeEmailHtml(trackingNumber) + '</strong><br>Shipment status: ' + escapeEmailHtml(shipment.status || 'Pending') + '</p>' +
+    '<p><a style="color:#e6c77e" href="' + escapeEmailHtml(trackingLink || trackPage) + '">' + (trackingLink ? 'Track your parcel with the courier' : 'View your AFSANA order') + '</a></p>' +
+    '<p style="color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
+  const work = sendTransactionalEmail({
+    to,
+    subject: 'AFSANA shipment tracking — order ' + orderNumber,
+    idempotencyKey: 'afsana-shipment-' + orderNumber + '-' + trackingNumber,
+    text: 'Your AFSANA order ' + orderNumber + ' has a courier tracking number: ' + trackingNumber + '. Courier: ' + courierName + '. Status: ' + (shipment.status || 'Pending') + '. Track: ' + (trackingLink || trackPage),
+    html,
+    params: { order_number: orderNumber, tracking_number: trackingNumber, courier_name: courierName, shipment_status: shipment.status || 'Pending' },
+  }).catch((err) => console.error('[shipment-email] tracking update delivery failed:', err?.message || err));
+  if (typeof scheduleBackground === 'function') {
+    try { scheduleBackground(work); }
+    catch (err) { work.catch((error) => console.error('[shipment-email] scheduling failed:', err?.message || error)); }
+  }
+}
+
+async function createShipment(ctx, orderId, body, scopes, scheduleBackground) {
   const order = await Order.findOne({ _id: orderId, ...scopeFilter(scopes, ctx.user._id, { cities: 'shippingAddress.city', stores: 'storeId', assignedTo: 'assignedTo', createdBy: 'createdBy' }) }).lean();
   if (!order) throw E.notFound('Order not found.');
   if (!Rules.canCreateShipment(order.status)) throw E.conflict('Confirm and pack the order before creating a shipment.');
@@ -72,16 +105,19 @@ async function createShipment(ctx, orderId, body, scopes) {
   if (existing) throw E.conflict('A shipment already exists for this order. Update the existing shipment instead.');
   if (body.courierId && !await Courier.exists({ _id: body.courierId, isActive: true })) throw E.badRequest('Choose an active courier.');
   const shipment = await Shipment.create({ orderId, courierId: body.courierId || undefined, trackingNumber: body.trackingNumber || '', status: body.status || 'Pending', events: [{ status: body.status || 'Pending', note: body.note || 'Shipment created' }] });
+  const courier = body.courierId ? await Courier.findById(body.courierId).select('name trackingUrlTemplate').lean() : null;
+  queueShipmentTrackingEmail(order, shipment, courier, scheduleBackground);
   await audit(ctx, { action: 'shipping.shipment_created', module: 'shipping', recordId: shipment._id, newValue: { orderNumber: order.orderNumber, status: shipment.status, trackingNumber: shipment.trackingNumber } });
   const orderSync = shipment.status !== 'Pending' ? await syncOrder(ctx, orderId, shipment.status) : { changed: [], message: '' };
   return { shipment, orderSync };
 }
-async function updateShipment(ctx, id, body, scopes) {
+async function updateShipment(ctx, id, body, scopes, scheduleBackground) {
   const shipment = await Shipment.findById(id); if (!shipment) throw E.notFound('Shipment not found.');
   const permittedOrder = await Order.exists({ _id: shipment.orderId, ...scopeFilter(scopes, ctx.user._id, { cities: 'shippingAddress.city', stores: 'storeId', assignedTo: 'assignedTo', createdBy: 'createdBy' }) });
   if (!permittedOrder) throw E.notFound('Shipment not found.');
   if (body.courierId && !await Courier.exists({ _id: body.courierId, isActive: true })) throw E.badRequest('Choose an active courier.');
   const oldStatus = shipment.status;
+  const oldTrackingNumber = String(shipment.trackingNumber || '');
   for (const key of ['courierId', 'trackingNumber']) if (body[key] !== undefined) shipment[key] = body[key] || undefined;
   if (body.status && body.status !== oldStatus) {
     if (Rules.isShipmentTerminal(oldStatus)) throw E.conflict('A completed shipment cannot be changed. Contact an administrator if it needs correction.');
@@ -89,7 +125,11 @@ async function updateShipment(ctx, id, body, scopes) {
     shipment.events.push({ status: body.status, note: body.note || '', at: new Date() });
   } else if (body.note) shipment.events.push({ status: shipment.status, note: body.note, at: new Date() });
   await shipment.save();
-  await audit(ctx, { action: 'shipping.shipment_updated', module: 'shipping', recordId: id, oldValue: { status: oldStatus }, newValue: { status: shipment.status, trackingNumber: shipment.trackingNumber } });
+  if (shipment.trackingNumber && String(shipment.trackingNumber) !== oldTrackingNumber) {
+    const [order, savedShipment] = await Promise.all([Order.findById(shipment.orderId).lean(), loadShipment(shipment.orderId)]);
+    if (order && savedShipment) queueShipmentTrackingEmail(order, savedShipment, savedShipment.courierId, scheduleBackground);
+  }
+  await audit(ctx, { action: 'shipping.shipment_updated', module: 'shipping', recordId: id, oldValue: { status: oldStatus, trackingNumber: oldTrackingNumber }, newValue: { status: shipment.status, trackingNumber: shipment.trackingNumber } });
   const orderSync = shipment.status !== oldStatus ? await syncOrder(ctx, shipment.orderId, shipment.status) : { changed: [], message: '' };
   return { shipment, orderSync };
 }

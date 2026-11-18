@@ -1,6 +1,6 @@
 'use strict';
 
-const { getEmailJsConfig, sendEmailJsOtp } = require('./emailjs');
+const { getEmailJsConfig, sendEmailJsOtp, sendEmailJsTemplate } = require('./emailjs');
 
 const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
 
@@ -102,4 +102,96 @@ async function sendGmailTemplate({ to, subject, html, text = '' }, { env = proce
   if (!env.GMAIL_CLIENT_ID || !env.GMAIL_CLIENT_SECRET || !env.GMAIL_REFRESH_TOKEN) throw new Error('Gmail OAuth is not configured for transactional email.');
   return sendGmailOtp({ to: recipient, subject, html: String(html || ''), text, env, fetchImpl });
 }
-module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendResendOtp };
+
+/**
+ * Send a customer/admin transactional email using the configured provider chain.
+ * A separate EmailJS template is optional; Gmail OAuth and Resend remain fallbacks.
+ */
+async function sendTransactionalEmail({ to, subject, html, text = '', params = {}, idempotencyKey }, { env = process.env, fetchImpl = globalThis.fetch } = {}) {
+  const recipient = String(to || '').trim().toLowerCase();
+  if (!validEmail(recipient)) throw new Error('Transactional email recipient is invalid.');
+  if (typeof fetchImpl !== 'function') throw new Error('Email network client is unavailable.');
+
+  // When configured, OpenMail is the primary transactional mail server.
+  // Do not silently switch providers after an ambiguous network failure: OpenMail
+  // may already have accepted the idempotent send.
+  if (env.OPENMAIL_API_KEY && env.OPENMAIL_INBOX_ID) {
+    return sendOpenMail({ to: recipient, subject, html, text, idempotencyKey, env, fetchImpl });
+  }
+
+  const failures = [];
+  if (env.EMAILJS_NOTIFICATION_TEMPLATE_ID) {
+    try {
+      const config = getEmailJsConfig(env);
+      if (!config) throw new Error('EmailJS credentials are not configured.');
+      await sendEmailJsTemplate({
+        to: recipient,
+        subject,
+        templateId: env.EMAILJS_NOTIFICATION_TEMPLATE_ID,
+        params: {
+          ...params,
+          message_html: String(html || ''),
+          message_text: String(text || ''),
+          html_content: String(html || ''),
+          text_content: String(text || ''),
+        },
+      }, { config, fetchImpl });
+      return { sent: true, provider: 'emailjs' };
+    } catch (error) {
+      failures.push('emailjs');
+      console.error('[transactional-email] EmailJS provider failed:', error?.message || error);
+    }
+  }
+
+  if (env.GMAIL_CLIENT_ID && env.GMAIL_CLIENT_SECRET && env.GMAIL_REFRESH_TOKEN) {
+    try {
+      await sendGmailOtp({ to: recipient, subject, html: String(html || ''), text, env, fetchImpl });
+      return { sent: true, provider: 'gmail' };
+    } catch (error) {
+      failures.push('gmail');
+      console.error('[transactional-email] Gmail provider failed:', error?.message || error);
+    }
+  }
+
+  if (env.RESEND_API_KEY && env.EMAIL_FROM) {
+    try {
+      await sendResendOtp({ to: recipient, subject, html: String(html || ''), text, env, fetchImpl });
+      return { sent: true, provider: 'resend' };
+    } catch (error) {
+      failures.push('resend');
+      console.error('[transactional-email] Resend provider failed:', error?.message || error);
+    }
+  }
+
+  throw new Error(failures.length
+    ? 'All configured transactional email providers failed: ' + failures.join(', ')
+    : 'Transactional email is not configured. Add valid Gmail OAuth, EmailJS notification-template, or Resend credentials.');
+}
+
+
+async function sendOpenMail({ to, subject, html, text = '', idempotencyKey, env, fetchImpl }) {
+  const apiKey = String(env.OPENMAIL_API_KEY || '').trim();
+  const inboxId = String(env.OPENMAIL_INBOX_ID || '').trim();
+  if (!apiKey || !inboxId) throw new Error('OpenMail is not configured: add OPENMAIL_API_KEY and OPENMAIL_INBOX_ID to the Worker.');
+  const response = await fetchImpl('https://api.openmail.sh/v1/inboxes/' + encodeURIComponent(inboxId) + '/send', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + apiKey,
+      'Content-Type': 'application/json',
+      ...(idempotencyKey ? { 'Idempotency-Key': String(idempotencyKey).slice(0, 200) } : {}),
+    },
+    body: JSON.stringify({
+      to: String(to || '').trim().toLowerCase(),
+      subject: String(subject || 'AFSANA notification'),
+      body: String(html || text || ''),
+    }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = String(data?.message || data?.error || ('HTTP ' + response.status)).replace(/[\r\n\t]+/g, ' ').slice(0, 220);
+    throw new Error('OpenMail could not send the transactional email: ' + detail);
+  }
+  return { sent: true, provider: 'openmail', messageId: data.messageId || null, threadId: data.threadId || null, status: data.status || 'sent' };
+}
+
+module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendTransactionalEmail, sendResendOtp, sendOpenMail };

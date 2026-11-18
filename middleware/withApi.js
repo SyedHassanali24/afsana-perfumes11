@@ -70,7 +70,10 @@ function createHandler(group, routes) {
       const query = route.query ? route.query.parse(rawQuery) : rawQuery;
       const body = route.body ? route.body.parse(rawBody === undefined ? {} : rawBody) : rawBody;
       if (route.reauth) await ctx.reauth(rawBody && rawBody.confirmPassword);
-      const out = await route.handler({ req, params, query, body, ctx, scopes, ip });
+      const scheduleBackground = typeof context?.ctx?.waitUntil === 'function'
+        ? (task) => context.ctx.waitUntil(Promise.resolve(task))
+        : undefined;
+      const out = await route.handler({ req, params, query, body, ctx, scopes, ip, scheduleBackground });
       const r = out && out.__res ? out : { status: 200, data: out || {}, headers: {} };
       const cacheable = route.cache && route.public && !route.optionalCustomer &&
         ['GET', 'HEAD'].includes(method) && r.status >= 200 && r.status < 300;

@@ -23,12 +23,17 @@ async function invalidateForGroup(group, context, tags = []) {
   const purge = context?.ctx?.cache?.purge;
   if (!validTags.length || typeof purge !== 'function') return;
 
-  try {
-    await purge.call(context.ctx.cache, { tags: validTags });
-  } catch (error) {
-    // A cache purge failure must never roll back a successful database write.
-    console.warn(`[afsana-cache] ${group} tag purge skipped:`, error?.message || error);
+  const task = Promise.resolve()
+    .then(() => purge.call(context.ctx.cache, { tags: validTags }))
+    .catch((error) => {
+      // A cache purge failure must never roll back a successful database write.
+      console.warn(`[afsana-cache] ${group} tag purge skipped:`, error?.message || error);
+    });
+  if (typeof context?.ctx?.waitUntil === 'function') {
+    context.ctx.waitUntil(task);
+    return;
   }
+  await task;
 }
 
 module.exports = { cacheHeaders, invalidateForGroup };

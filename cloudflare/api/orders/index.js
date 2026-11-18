@@ -7,7 +7,9 @@ const O = require('../../../services/orderService');
 const routes = [
   // ---- public ----
   { method: 'POST', path: '/', public: true, optionalCustomer: true, invalidateTags: ['products'], body: S.checkoutBody, rateLimit: { limit: 10, windowMs: 10 * 60000 },
-    handler: async ({ body, ctx, req }) => res(201, { order: await O.placeOrder(body, ctx, req.headers['idempotency-key']) }) },
+    handler: async ({ body, ctx, req, scheduleBackground }) => res(201, {
+      order: await O.placeOrder(body, ctx, req.headers['idempotency-key'], { scheduleBackground })
+    }) },
   { method: 'GET', path: '/track/:orderNumber', public: true, query: S.trackQuery, rateLimit: { limit: 20, windowMs: 10 * 60000 },
     handler: ({ params, query }) => O.trackOrder(params.orderNumber, query.phone) },
 
