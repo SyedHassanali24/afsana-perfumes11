@@ -114,6 +114,7 @@ export default function PrivacyPolicyPage() {
             <PolicySection id="your-choices" number="07" title="Your choices and requests">
               <p>You may contact us to request access to, correction of or deletion of personal information associated with your account. We may ask for information to verify your identity before acting on a request. Some transaction, security or business records may need to be retained where required or reasonably necessary.</p>
               <p>You can also choose not to provide optional information. Certain details, such as delivery contact information, are necessary to complete an order.</p>
+              <p>For instructions on requesting deletion of your AFSANA customer account and associated data, see our <Link to="/data-deletion" className="font-semibold text-[#7357ff] underline underline-offset-4">User Data Deletion</Link> page.</p>
             </PolicySection>
 
             <PolicySection id="children-and-changes" number="08" title="Children and policy updates">
