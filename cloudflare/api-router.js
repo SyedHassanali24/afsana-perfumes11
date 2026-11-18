@@ -16,6 +16,7 @@ const handlerLoaders = {
   media: () => import("./api/media/index.js"),
   notifications: () => import("./api/notifications/index.js"),
   orders: () => import("./api/orders/index.js"),
+  "email-marketing": () => import("./api/email-marketing/index.js"),
   permissions: () => import("./api/permissions/index.js"),
   products: () => import("./api/products/index.js"),
   "purchase-orders": () => import("./api/purchase-orders/index.js"),
