@@ -193,4 +193,5 @@ async function sendOpenMail({ to, subject, html, text = '', idempotencyKey, env,
   }
   return { sent: true, provider: 'openmail', messageId: data.messageId || null, threadId: data.threadId || null, status: data.status || 'sent' };
 }
-\nmodule.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendTransactionalEmail, sendResendOtp, sendOpenMail };
+
+module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendTransactionalEmail, sendResendOtp, sendOpenMail };
