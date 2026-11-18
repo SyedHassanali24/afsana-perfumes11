@@ -151,6 +151,8 @@ export async function onRequest(context) {
   process.env.GMAIL_SENDER_EMAIL = env.GMAIL_SENDER_EMAIL || "";
   process.env.RESEND_API_KEY = env.RESEND_API_KEY || "";
   process.env.EMAIL_FROM = env.EMAIL_FROM || "";
+  process.env.OPENMAIL_API_KEY = env.OPENMAIL_API_KEY || "";
+  process.env.OPENMAIL_INBOX_ID = env.OPENMAIL_INBOX_ID || "94a826c9-b9b7-4f6f-a24d-7979b8981cb0";
 
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
