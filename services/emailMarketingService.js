@@ -5,7 +5,7 @@ const { paging, pageMeta, escapeRegex } = require('../middleware/pagination');
 const { E } = require('../middleware/errors');
 const { sendOpenMail } = require('./otpMailer');
 
-const EMAIL_RE = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const cleanEmail = (value) => String(value || '').trim().toLowerCase();
 
@@ -229,7 +229,7 @@ async function progress(id) {
 function campaignHtml(campaign, name) {
   const content = campaign.content || {};
   const greeting = name ? 'Hello ' + escapeHtml(name) + ',' : 'Hello,';
-  const message = escapeHtml(content.message || '').replace(/\\n/g, '<br>');
+  const message = escapeHtml(content.message || '').replace(/\n/g, '<br>');
   const button = content.ctaUrl && content.ctaText
     ? '<p style="margin:28px 0;text-align:center"><a href="' + escapeHtml(content.ctaUrl) + '" style="display:inline-block;background:#d8b66f;color:#17130e;text-decoration:none;padding:14px 24px;border-radius:4px;font-weight:bold">' + escapeHtml(content.ctaText) + '</a></p>'
     : '';
@@ -281,7 +281,15 @@ async function processNext(ctx, id) {
       $set: { status: 'Sent', sentAt: new Date(), messageId: sent.messageId || '' },
     });
   } catch (error) {
-    const reason = String(error?.message || error).replace(/[\\r\\n\\t]+/g, ' ').slice(0, 220);
+    const reason = String(error?.message || error).replace(/[\r\n\t]+/g, ' ').slice(0, 220);
+    const rateLimited = /HTTP 429|rate_limit_exceeded|cold_outreach_limit|too many sends/i.test(reason);
+    if (rateLimited) {
+      await CampaignRecipient.updateOne({ _id: recipient._id }, {
+        $set: { status: 'Pending', error: reason },
+      });
+      const paused = await progress(id);
+      return { ...paused, paused: true, pauseReason: 'OpenMail has reached a sending limit. This campaign is safely paused; resume it after the limit resets.' };
+    }
     const suppressed = /recipient_suppressed|recipient unsubscribed|suppressed/i.test(reason);
     if (suppressed) {
       await CustomerEmail.updateOne({ _id: contact._id }, {
