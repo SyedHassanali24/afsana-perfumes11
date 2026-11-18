@@ -39,7 +39,7 @@ Put the Meta app ID and app secret in the matching Cloudflare Worker secrets abo
 
 - First Google/Facebook sign-in creates a customer account automatically.
 - A later sign-in with the same social identity opens that customer account.
-- If a verified provider email matches an existing customer account, the provider identity is linked to that account; staff accounts are never linked to customer social sign-in.
+- If a verified Google email matches an existing customer account, the Google identity is linked to that account. Facebook email is not treated as independently verified, so an existing account with the same email must use its existing sign-in method first. Staff accounts are never linked to customer social sign-in.
 - Existing email/password login, registration, forgot-password and customer checkout remain available.
 - Provider tokens are exchanged and checked on the server. They are not stored as customer sessions or sent to browser storage.
 - OAuth state is signed and bound to a short-lived HTTP-only cookie. Google uses PKCE. Return paths are restricted to this storefront's own origin.
