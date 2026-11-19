@@ -174,7 +174,7 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
     return request;
   }
 
-  const result = await executeRequest(url, path, { method, body, idempotencyKey });
+  const result = await executeRequest(url, path, { method, body, idempotencyKey, retryable: retryable ?? method === 'GET' });
   // Mutations can make cached GET data stale. Keep the UI correct and still fast.
   clearApiCache();
   return result;
