@@ -18,7 +18,7 @@ const img={
  story:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1300&q=85'
 };
 const video='https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4';
-const Eyebrow=({children,light=false})=><div className={'flex items-center gap-3 text-[9px] sm:text-[10px] uppercase tracking-[.38em] font-semibold '+(light?'text-[#b4bf41]':'text-[#263e0e]')}><span className="w-9 h-px bg-current opacity-70"/>{children}</div>;
+const Eyebrow=({children,light=false,white=false})=><div className={'flex items-center gap-3 text-[9px] sm:text-[10px] uppercase tracking-[.38em] font-semibold '+(white?'!text-white':light?'text-[#b4bf41]':'text-[#263e0e]')}><span className="w-9 h-px bg-current opacity-70"/>{children}</div>;
 
 function Hero(){
  return <section className="hero relative isolate min-h-[760px] sm:min-h-[900px] overflow-hidden bg-[#080a07] text-white">
@@ -247,7 +247,7 @@ function Product3DShowcase({ section, products=[] }) {
   return <section className="relative overflow-hidden bg-[#080a07] text-white py-20 sm:py-28">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(163,197,233,.18),transparent_22%),radial-gradient(circle_at_25%_70%,rgba(123,0,58,.20),transparent_28%)]"/>
     <div className="container-xl relative grid items-center gap-12 lg:grid-cols-[.85fr_1.15fr]">
-      <div><Eyebrow light>{c.eyebrow||'THE AFSANA OBJECT'}</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl leading-[.9]">{section.title||chosen?.name||'The bottle in motion.'}</h2><p className="mt-6 max-w-xl text-sm leading-7 text-white/55">{c.body||'Explore the signature bottle through a cinematic multi-frame experience.'}</p>
+      <div><Eyebrow white>{c.eyebrow||'THE AFSANA OBJECT'}</Eyebrow><h2 className="!text-white mt-6 font-display text-5xl sm:text-7xl leading-[.9]">{section.title||chosen?.name||'The bottle in motion.'}</h2><p className="mt-6 max-w-xl text-sm leading-7 text-white/55">{c.body||'Explore the signature bottle through a cinematic multi-frame experience.'}</p>
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
@@ -545,8 +545,8 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
       <div className="container-xl relative">
         <div className="mb-12 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.35em] text-[#d9ff55]"><span className="h-px w-10 bg-[#d9ff55]"/> THE AFSANA SELECTION</p>
-            <h2 className="mt-5 max-w-3xl font-display text-5xl leading-[.9] sm:text-7xl">Objects of <em className="text-[#d9ff55]">desire.</em></h2>
+            <p className="!text-white flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[.35em]"><span className="h-px w-10 bg-white"/> THE AFSANA SELECTION</p>
+            <h2 className="!text-white mt-5 max-w-3xl font-display text-5xl leading-[.9] sm:text-7xl">Objects of <em className="!text-white">desire.</em></h2>
             <p className="mt-5 max-w-xl text-sm leading-7 text-white/55">{c.subtitle || 'Signature fragrances chosen for presence, character and the memories they leave behind.'}</p>
           </div>
           <Link to="/shop" className="inline-flex w-fit items-center gap-3 border border-white/20 px-6 py-3 text-[9px] font-semibold uppercase tracking-[.2em] transition hover:border-[#d9ff55] hover:text-[#d9ff55]">View full collection <ArrowRight className="h-3.5 w-3.5"/></Link>
