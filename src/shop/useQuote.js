@@ -8,6 +8,6 @@ import { getReferralCode } from './trafficTracking';
 export default function useQuote(items, couponCode, city) {
   const cityKey = (city || '').trim();
   const referralCode = getReferralCode();
-  const key = useDebounce(JSON.stringify([items, couponCode || '', cityKey, referralCode]), 250);
+  const key = useDebounce(JSON.stringify([items, couponCode || '', cityKey, referralCode]), 600);
   return useApi(() => (items.length ? cartApi.quote({ items, couponCode: couponCode || undefined, referralCode: referralCode || undefined, city: cityKey || undefined }) : Promise.resolve(null)), [key]);
 }

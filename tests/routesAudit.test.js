@@ -109,3 +109,9 @@ test('no duplicate method+path inside one function', () => {
   }
   assert.deepEqual(dup, []);
 });
+
+test('public checkout requires server-side Turnstile verification', () => {
+  const checkout = (groups.orders?.routes || []).find((route) => route.method === 'POST' && route.path === '/');
+  assert.ok(checkout, 'public checkout route must exist');
+  assert.equal(checkout.turnstileAction, 'checkout');
+});

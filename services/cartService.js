@@ -12,9 +12,16 @@ const card = (p) => ({ id: p._id, name: p.name, slug: p.slug, priceFrom: p.price
 async function quote({ items, couponCode, referralCode, city }, cust) {
   const merged = mergeItems(items);
   const ids = merged.map((i) => i.variantId);
-  const variants = ids.length ? await ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean() : [];
-  const products = variants.length ? await Product.find({ _id: { $in: variants.map((v) => v.productId) }, status: 'Active', isDeleted: false }).select('name slug media categoryId').lean() : [];
-  const inv = ids.length ? await Inventory.find({ variantId: { $in: ids } }).select('variantId current reserved').lean() : [];
+  // Load shipping settings alongside the first lookup, then fetch product and stock
+  // records together. These reads are independent and keep checkout quote latency down.
+  const [variants, ship] = await Promise.all([
+    ids.length ? ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean() : Promise.resolve([]),
+    loadContext(),
+  ]);
+  const [products, inv] = await Promise.all([
+    variants.length ? Product.find({ _id: { $in: variants.map((v) => v.productId) }, status: 'Active', isDeleted: false }).select('name slug media categoryId').lean() : Promise.resolve([]),
+    ids.length ? Inventory.find({ variantId: { $in: ids } }).select('variantId current reserved').lean() : Promise.resolve([]),
+  ]);
   const vById = new Map(variants.map((v) => [String(v._id), v]));
   const pById = new Map(products.map((p) => [String(p._id), p]));
   const stock = new Map(inv.map((i) => [String(i.variantId), Math.max(0, i.current - i.reserved)]));
@@ -30,7 +37,6 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
     };
   });
 
-  const ship = await loadContext();
   const priced = lines.filter((l) => l.status === 'ok' || l.status === 'limited');
   const subtotal = priced.reduce((s, l) => s + l.lineTotal, 0);
   const delivery = await deliveryFor(city, subtotal, ship); // city fee (zone) or the Settings fee when the city has no zone

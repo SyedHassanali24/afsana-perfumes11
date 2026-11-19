@@ -7,7 +7,7 @@ function loadTurnstile() {
   if (typeof window === 'undefined') return Promise.reject(new Error('Browser unavailable.'));
   if (window.turnstile) return Promise.resolve(window.turnstile);
   if (!scriptPromise) {
-    scriptPromise = new Promise((resolve, reject) => {
+    const pending = new Promise((resolve, reject) => {
       const existing = document.querySelector('script[data-afsana-turnstile]');
       if (existing) {
         existing.addEventListener('load', () => resolve(window.turnstile), { once: true });
@@ -22,6 +22,15 @@ function loadTurnstile() {
       script.onload = () => resolve(window.turnstile);
       script.onerror = () => reject(new Error('Security check could not load.'));
       document.head.appendChild(script);
+    });
+    // Do not cache a rejected script load forever. A transient network failure
+    // should allow the next checkout retry to attempt loading Turnstile again.
+    scriptPromise = pending.catch((error) => {
+      scriptPromise = null;
+      if (!window.turnstile) {
+        document.querySelector('script[data-afsana-turnstile]')?.remove();
+      }
+      throw error;
     });
   }
   return scriptPromise;

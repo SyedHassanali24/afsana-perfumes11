@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   const saved = useApi(() => (status === 'authed' ? accountApi.addresses() : Promise.resolve({ addresses: [] })), [status]);
   const [f, setF] = useState(blank);
   const { data: q, loading, error, reload } = useQuote(items, couponCode, f.city);
+  const quoteUpdating = loading || !!(q && String(q.delivery?.city || '').trim().toLowerCase() !== f.city.trim().toLowerCase());
   const [pay, setPay] = useState('COD');
   const [whatsappMarketingOptIn, setWhatsappMarketingOptIn] = useState(false);
   const [emailMarketingOptIn, setEmailMarketingOptIn] = useState(false);
@@ -57,7 +58,7 @@ export default function CheckoutPage() {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (busy || !q?.canCheckout) return;
+    if (busy || quoteUpdating || !q?.canCheckout) return;
     setErrors({}); setFormError('');
     const checkoutPayload = {
       items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,
@@ -65,7 +66,9 @@ export default function CheckoutPage() {
       customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
       shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
     };
-    const signature = JSON.stringify(checkoutPayload);
+    // A Turnstile token is single-use and rotates after a failed attempt. It must not
+    // create a new checkout idempotency key for the same order payload.
+    const signature = JSON.stringify({ ...checkoutPayload, turnstileToken: undefined });
     if (checkoutAttempt.current.signature !== signature) checkoutAttempt.current = { signature, key: newCheckoutKey() };
     const idempotencyKey = checkoutAttempt.current.key;
     setBusy(true);
@@ -135,7 +138,7 @@ export default function CheckoutPage() {
               <Totals q={q} />
               {formError && <p role="alert" className="afsana-checkout-error text-sm">{formError}</p>}
               <TurnstileWidget action="checkout" onToken={setTurnstileToken} resetKey={turnstileResetKey} />
-              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || !q.canCheckout || !turnstileToken}>{busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
+              <Button type="submit" className="afsana-checkout-submit w-full min-h-12 rounded-xl" disabled={busy || quoteUpdating || !q.canCheckout || !turnstileToken}>{quoteUpdating ? 'Updating delivery…' : busy ? 'Placing order…' : `Place order · ${money(q.total)}`}</Button>
               <p className="afsana-checkout-note text-xs leading-5">By placing your order, you agree to our <Link to="/terms-of-service" className="font-medium text-[#263e0e] underline underline-offset-2">Terms of Service</Link>, including the 15-day return and refund terms.</p>
               <p className="afsana-checkout-note text-xs">Final price and stock are confirmed by our server when you place the order.</p>
             </aside>
