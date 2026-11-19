@@ -4,13 +4,30 @@ const { Setting, ShippingRate } = require('../database/models');
 const { DEFAULT_SHIPPING } = require('./pricing');
 const Rules = require('./shippingRules');
 
-// Loads the active zones + the Settings fee once. Call it once per request and reuse the result.
+// Cache public shipping settings briefly within each Worker isolate. These values are
+// shared across shoppers; a short TTL removes repeated DB reads while keeping admin
+// changes fresh. A single in-flight load also coalesces concurrent cart quote requests.
+const CONTEXT_TTL_MS = 15000;
+let cachedContext = null;
+let cacheExpiresAt = 0;
+let loadingContext = null;
+
 async function loadContext() {
-  const [rates, s] = await Promise.all([
+  if (cachedContext && cacheExpiresAt > Date.now()) return cachedContext;
+  if (loadingContext) return loadingContext;
+
+  loadingContext = Promise.all([
     ShippingRate.find({ isActive: { $ne: false } }).lean(),
     Setting.findOne({ key: 'shipping' }).lean(),
-  ]);
-  return { rates, cfg: { ...DEFAULT_SHIPPING, ...((s && s.value) || {}) } };
+  ]).then(([rates, s]) => {
+    cachedContext = { rates, cfg: { ...DEFAULT_SHIPPING, ...((s && s.value) || {}) } };
+    cacheExpiresAt = Date.now() + CONTEXT_TTL_MS;
+    return cachedContext;
+  }).finally(() => {
+    loadingContext = null;
+  });
+
+  return loadingContext;
 }
 
 // -> { fee, method, zone, estDays, source: 'zone' | 'default', freeAbove, remaining }
