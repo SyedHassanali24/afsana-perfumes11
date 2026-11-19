@@ -87,12 +87,19 @@ function createHandler(group, routes) {
       const r = toResponse(err);
       if (r.status >= 500) {
         // Never log request bodies, cookies, query values or customer details.
-        console.error('[afsana-api] unhandled server error', {
+        const errorMessage = String(err && err.message || '')
+          .replace(/mongodb(?:\+srv)?:\/\/[^\s"']+/gi, '[REDACTED_MONGODB_URI]')
+          .replace(/(password|token|secret)\s*[:=]\s*[^,\s]+/gi, '$1=[REDACTED]')
+          .slice(0, 240);
+        console.error(JSON.stringify({
+          event: 'afsana_api_server_error',
           group,
           method: (event.httpMethod || 'GET').toUpperCase(),
+          stage: String(err && err.afsanaStage || '').slice(0, 100),
           errorName: String(err && err.name || 'Error').slice(0, 80),
           errorCode: String(err && (err.code || err.codeName) || '').slice(0, 80),
-        });
+          errorMessage,
+        }));
       }
       return json(r.status, r.body, cors);
     }
