@@ -87,35 +87,64 @@ export function clearApiCache() {
 }
 export { CACHE_EVENT };
 
-async function executeRequest(url, path, options) {
-  const { method = 'GET', body, idempotencyKey } = options;
-  let res;
-  try {
-    // Keep the JSON request body as a string. The custom ReadableStream used
-    // for media writes caused Cloudflare FixedLengthStream byte-count errors.
-    const serializedBody = body === undefined ? undefined : JSON.stringify(body);
+const RETRYABLE_HTTP_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504, 520, 522, 523, 524]);
+const RETRY_DELAYS_MS = [250, 750];
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    res = await fetch(url, {
-      method,
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
-      body: serializedBody,
-    });
-  } catch { throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.'); }
+function retryDelay(response, attempt) {
+  const retryAfter = response?.headers?.get('Retry-After');
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.min(2500, seconds * 1000);
+    const date = Date.parse(retryAfter);
+    if (Number.isFinite(date)) return Math.min(2500, Math.max(0, date - Date.now()));
+  }
+  return RETRY_DELAYS_MS[Math.min(attempt, RETRY_DELAYS_MS.length - 1)] + Math.floor(Math.random() * 100);
+}
+
+async function executeRequest(url, path, options) {
+  const { method = 'GET', body, idempotencyKey, retryable = method === 'GET' } = options;
+  // Keep the JSON request body as a string. The custom ReadableStream used
+  // for media writes caused Cloudflare FixedLengthStream byte-count errors.
+  const serializedBody = body === undefined ? undefined : JSON.stringify(body);
+  const maxAttempts = retryable ? 3 : 1;
+  let res = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      res = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'afsana', ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
+        body: serializedBody,
+      });
+    } catch {
+      if (attempt + 1 < maxAttempts) {
+        await wait(retryDelay(null, attempt));
+        continue;
+      }
+      throw new ApiError(0, 'NETWORK', 'Network error. Please check your connection.', { attempts: maxAttempts });
+    }
+
+    if (retryable && RETRYABLE_HTTP_STATUSES.has(res.status) && attempt + 1 < maxAttempts) {
+      await wait(retryDelay(res, attempt));
+      continue;
+    }
+    break;
+  }
 
   let data = null;
   try { data = await res.json(); } catch { /* non-JSON */ }
   if (!res.ok || !data || !data.success) {
     const e = (data && data.error) || {};
-    const staffPath = !/^\/(account|cart|wishlist|returns\/mine)(\/|$)/.test(path);
+    const staffPath = !/^\\/(account|cart|wishlist|returns\\/mine)(\\/|$)/.test(path);
     if (staffPath && res.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/me')) window.dispatchEvent(new Event('afsana:unauthorized'));
     if (staffPath && e.code === 'PASSWORD_CHANGE_REQUIRED') window.dispatchEvent(new Event('afsana:must-change-password'));
     throw new ApiError(res.status, e.code || 'ERROR', e.message || 'Something went wrong. Please try again.', e.details);
   }
   return data;
 }
-
-export async function api(path, { method = 'GET', body, query, idempotencyKey, cacheTtl = 0 } = {}) {
+export async function api(path, { method = 'GET', body, query, idempotencyKey, cacheTtl = 0, retryable } = {}) {
   const url = new URL(`/api${path}`, API_ORIGIN);
   Object.entries(query || {}).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
 
@@ -130,7 +159,7 @@ export async function api(path, { method = 'GET', body, query, idempotencyKey, c
     const existing = inflightGets.get(key);
     if (existing) return existing;
 
-    const request = executeRequest(url, path, { method, body, idempotencyKey })
+    const request = executeRequest(url, path, { method, body, idempotencyKey, retryable: retryable ?? method === 'GET' })
       .then((data) => {
         if (effectiveCacheTtl > 0 && generation === cacheGeneration) {
           const entry = { data, expiresAt: Date.now() + effectiveCacheTtl };
