@@ -10,14 +10,18 @@ const card = (p) => ({ id: p._id, name: p.name, slug: p.slug, priceFrom: p.price
 
 // ---------- quote: prices a list of { variantId, quantity } from the DB. Never trusts client prices. Never throws for stale items. ----------
 async function quote({ items, couponCode, referralCode, city }, cust) {
+  let stage = 'merge cart items';
+  try {
   const merged = mergeItems(items);
   const ids = merged.map((i) => i.variantId);
   // Load shipping settings alongside the first lookup, then fetch product and stock
   // records together. These reads are independent and keep checkout quote latency down.
+  stage = 'load variants and shipping settings';
   const [variants, ship] = await Promise.all([
     ids.length ? ProductVariant.find({ _id: { $in: ids }, isActive: true, isDeleted: false }).lean() : Promise.resolve([]),
     loadContext(),
   ]);
+  stage = 'load products and inventory';
   const [products, inv] = await Promise.all([
     variants.length ? Product.find({ _id: { $in: variants.map((v) => v.productId) }, status: 'Active', isDeleted: false }).select('name slug media categoryId').lean() : Promise.resolve([]),
     ids.length ? Inventory.find({ variantId: { $in: ids } }).select('variantId current reserved').lean() : Promise.resolve([]),
@@ -39,11 +43,13 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
 
   const priced = lines.filter((l) => l.status === 'ok' || l.status === 'limited');
   const subtotal = priced.reduce((s, l) => s + l.lineTotal, 0);
+  stage = 'calculate city delivery fee';
   const delivery = await deliveryFor(city, subtotal, ship); // city fee (zone) or the Settings fee when the city has no zone
   let discount = 0; let shippingDiscount = 0; let coupon = null; let appliedReferral = null;
   if (priced.length) {
     const manualCode = normalizeCode(couponCode);
     const linkCode = normalizeCode(referralCode);
+    stage = 'load coupon and referral codes';
     const [regularCoupon, linkPartner] = await Promise.all([
       manualCode ? Coupon.findOne({ code: manualCode, isDeleted: false }) : Promise.resolve(null),
       linkCode ? AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }) : Promise.resolve(null),
@@ -68,6 +74,7 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
     } else if (regularCoupon) {
       try {
         const cid = cust && cust.customer._id;
+        stage = 'validate coupon and discount';
         validateCoupon(regularCoupon, {
           subtotal, customerId: cid,
           customerUses: cid ? (regularCoupon.usage || []).filter((u) => String(u.customerId) === String(cid)).length : 0,
@@ -95,11 +102,16 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
       }
     }
   }
+  stage = 'build cart quote response';
   return {
     lines: lines.map(({ categoryId, ...l }) => l), coupon, referral: appliedReferral,
     ...summarize(lines, ship.cfg, { discount, shippingDiscount, delivery }),
     delivery: { city: city || '', zone: delivery.zone, method: delivery.method, estDays: delivery.estDays, source: delivery.source },
   };
+  } catch (error) {
+    if (error && typeof error === 'object') error.afsanaStage = stage;
+    throw error;
+  }
 }
 
 // ---------- logged-in customer's saved cart ----------
