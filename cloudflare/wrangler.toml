@@ -37,3 +37,12 @@ enabled = true
 
 [previews.placement]
 mode = "smart"
+
+
+# Enable sampled error logs for production troubleshooting without enabling traces.
+[observability]
+enabled = true
+head_sampling_rate = 0.2
+
+[observability.issues]
+enabled = true
