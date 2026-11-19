@@ -88,8 +88,8 @@ function createHandler(group, routes) {
       if (r.status >= 500) {
         // Never log request bodies, cookies, query values or customer details.
         const errorMessage = String(err && err.message || '')
-          .replace(/mongodb(?:\\+srv)?:\\/\\/[^\\s"'\x60]+/gi, '[REDACTED_MONGODB_URI]')
-          .replace(/(password|token|secret)\\s*[:=]\\s*[^,\\s]+/gi, '$1=[REDACTED]')
+          .replace(/mongodb(?:\+srv)?:\/\/[^\s"']+/gi, '[REDACTED_MONGODB_URI]')
+          .replace(/(password|token|secret)\s*[:=]\s*[^,\s]+/gi, '$1=[REDACTED]')
           .slice(0, 240);
         console.error(JSON.stringify({
           event: 'afsana_api_server_error',
