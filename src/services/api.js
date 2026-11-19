@@ -137,7 +137,7 @@ async function executeRequest(url, path, options) {
   try { data = await res.json(); } catch { /* non-JSON */ }
   if (!res.ok || !data || !data.success) {
     const e = (data && data.error) || {};
-    const staffPath = !/^\\/(account|cart|wishlist|returns\\/mine)(\\/|$)/.test(path);
+    const staffPath = !/^\/(account|cart|wishlist|returns\/mine)(\/|$)/.test(path);
     if (staffPath && res.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/me')) window.dispatchEvent(new Event('afsana:unauthorized'));
     if (staffPath && e.code === 'PASSWORD_CHANGE_REQUIRED') window.dispatchEvent(new Event('afsana:must-change-password'));
     throw new ApiError(res.status, e.code || 'ERROR', e.message || 'Something went wrong. Please try again.', e.details);
