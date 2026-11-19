@@ -31,17 +31,30 @@ async function connectDB() {
   }
 
   if (mongoose.connection.readyState === 1) return mongoose;
-  if (!mongoose.__afsanaConnecting) {
+
+  // Share only an in-flight connection attempt. Keeping a resolved promise forever
+  // prevents a Worker isolate from reconnecting after MongoDB drops its socket.
+  let connecting = mongoose.__afsanaConnecting;
+  if (!connecting) {
     mongoose.set('strictQuery', true);
-    mongoose.__afsanaConnecting = mongoose.connect(MONGODB_URI, {
+    connecting = mongoose.connect(MONGODB_URI, {
       dbName: MONGODB_DB_NAME,
       maxPoolSize: 5,
       serverSelectionTimeoutMS: 8000,
       family: 4,
       autoIndex: false,
-    }).catch((e) => { mongoose.__afsanaConnecting = null; throw e; });
+    });
+    mongoose.__afsanaConnecting = connecting;
   }
-  await mongoose.__afsanaConnecting;
+
+  try {
+    await connecting;
+  } finally {
+    if (mongoose.__afsanaConnecting === connecting) mongoose.__afsanaConnecting = null;
+  }
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB connection was not ready after connect');
+  }
   return mongoose;
 }
 module.exports = { connectDB };
