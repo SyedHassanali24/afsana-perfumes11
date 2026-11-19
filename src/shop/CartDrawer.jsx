@@ -7,7 +7,7 @@ import { money } from './format';
 
 export default function CartDrawer() {
   const { drawerOpen, closeDrawer, items, count, setQty, remove, couponCode, setCoupon } = useCart();
-  const { data: quoteData } = useQuote(items, couponCode);
+  const { data: quoteData } = useQuote(items, couponCode, undefined, drawerOpen);
   const quote = quoteData || { lines: [], subtotal: 0, discount: 0, shipping: 0, total: 0 };
   const navigate = useNavigate();
   const [couponInput, setCouponInput] = useState('');

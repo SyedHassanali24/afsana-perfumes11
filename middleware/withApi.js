@@ -85,6 +85,15 @@ function createHandler(group, routes) {
       return json(r.status, { success: true, ...r.data }, { ...cors, ...extra, ...r.headers });
     } catch (err) {
       const r = toResponse(err);
+      if (r.status >= 500) {
+        // Never log request bodies, cookies, query values or customer details.
+        console.error('[afsana-api] unhandled server error', {
+          group,
+          method: (event.httpMethod || 'GET').toUpperCase(),
+          errorName: String(err && err.name || 'Error').slice(0, 80),
+          errorCode: String(err && (err.code || err.codeName) || '').slice(0, 80),
+        });
+      }
       return json(r.status, r.body, cors);
     }
   };

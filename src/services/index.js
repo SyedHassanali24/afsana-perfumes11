@@ -41,7 +41,7 @@ export const inventoryApi = {
 };
 
 export const ordersApi = {
-  checkout: (body, idempotencyKey) => api('/orders', { method: 'POST', body, idempotencyKey }),
+  checkout: (body, idempotencyKey) => api('/orders', { method: 'POST', body, idempotencyKey, retryable: Boolean(idempotencyKey) }),
   track: (orderNumber, phone) => api(`/orders/track/${orderNumber}`, { query: { phone } }),
   adminList: (query) => api('/orders/admin/list', { query }),
   adminGet: (id) => api(`/orders/admin/${id}`),
@@ -184,9 +184,9 @@ export const accountApi = {
 
 // ---- Phase 6: shopping ----
 export const cartApi = {
-  quote: (body) => api('/cart/quote', { method: 'POST', body }),      // { items:[{variantId,quantity}], couponCode? } -> priced lines (guest or shopper)
+  quote: (body) => api('/cart/quote', { method: 'POST', body, retryable: true }),      // { items:[{variantId,quantity}], couponCode? } -> priced lines (guest or shopper)
   get: () => api('/cart'),
-  save: (body) => api('/cart', { method: 'PUT', body }),
+  save: (body) => api('/cart', { method: 'PUT', body, retryable: true }),
   merge: (body) => api('/cart/merge', { method: 'POST', body }),
 };
 export const wishlistApi = {

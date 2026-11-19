@@ -44,12 +44,12 @@ async function quote({ items, couponCode, referralCode, city }, cust) {
   if (priced.length) {
     const manualCode = normalizeCode(couponCode);
     const linkCode = normalizeCode(referralCode);
-    const regularCoupon = manualCode ? await Coupon.findOne({ code: manualCode, isDeleted: false }) : null;
+    const [regularCoupon, linkPartner] = await Promise.all([
+      manualCode ? Coupon.findOne({ code: manualCode, isDeleted: false }) : Promise.resolve(null),
+      linkCode ? AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true }) : Promise.resolve(null),
+    ]);
     const manualPartner = manualCode && !regularCoupon
       ? await AffiliatePartner.findOne({ code: manualCode, storeId: 'main', isDeleted: false, isActive: true })
-      : null;
-    const linkPartner = linkCode
-      ? await AffiliatePartner.findOne({ code: linkCode, storeId: 'main', isDeleted: false, isActive: true })
       : null;
 
     if (manualPartner || (!manualCode && linkCode)) {
