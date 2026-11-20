@@ -35,7 +35,7 @@ function CmsBannerCarousel({ banners = [] }) {
       <article key={banner.id || index} className="relative isolate flex min-h-[360px] min-w-full snap-center items-center overflow-hidden sm:min-h-[500px]">
        {desktopUrl ? <picture className="absolute inset-0 -z-20">
         {mobileUrl && <source media="(max-width: 700px)" srcSet={mobileUrl}/>}
-        <img src={desktopUrl} alt={banner.desktopImage?.alt || banner.heading || 'AFSANA fragrance campaign'} loading={index === 0 ? 'eager' : 'lazy'} className="h-full w-full object-cover"/>
+        <img src={desktopUrl} alt={banner.desktopImage?.alt || banner.heading || 'AFSANA fragrance campaign'} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/>
        </picture> : <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_70%_35%,rgba(115,87,255,.45),transparent_35%),linear-gradient(120deg,#100d24,#263e0e)]"/>}
        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#100d24]/90 via-[#100d24]/55 to-[#100d24]/10"/>
        <div className="container-xl w-full py-16 sm:py-24">
@@ -195,7 +195,7 @@ export default function ShopLayout(){
    </div>
   </footer>}
 
-  {hasManagedFooter && <div className="border-t border-[#d9ff55]/15 bg-[#100d24] px-4 py-4 text-center text-[9px] uppercase tracking-[.2em] text-white/45"><Link to="/privacy-policy" className="transition hover:text-[#d9ff55]">Privacy Policy</Link><span aria-hidden="true"> · </span><Link to="/terms-of-service" className="transition hover:text-[#d9ff55]">Terms of Service</Link></div>}
+  {/* Legal links are included in the managed footer's responsive bottom bar. */}
 
   {search&&<div
     className="storefront-search-backdrop fixed inset-0 z-[65] overflow-y-auto px-3 py-5 sm:px-6 sm:py-9"

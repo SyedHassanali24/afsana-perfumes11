@@ -145,7 +145,18 @@ export default {
       headers.set("Pragma", "no-cache");
       headers.set("Expires", "0");
     } else if (u.pathname.startsWith("/assets/")) {
+      // Vite assets are content-hashed, so they can safely stay in browser and edge caches.
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("Expires", new Date(Date.now() + 31536000000).toUTCString());
+    } else if (
+      /^(image|font|audio|video)\//i.test(contentType) ||
+      /\.(?:ico|svg|png|jpe?g|webp|avif|woff2?|ttf|otf|webmanifest|xml|txt)$/i.test(u.pathname)
+    ) {
+      // Stable public files (favicon, manifest, fonts and root-level media) need an
+      // explicit browser TTL. Keep this shorter than hashed assets so brand files
+      // can be refreshed without waiting a full year.
+      headers.set("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+      headers.set("Expires", new Date(Date.now() + 604800000).toUTCString());
     }
     headers.set("X-Afsana-Backend", "cloudflare-assets");
     return new Response(asset.body, { status: asset.status, headers: securityHeaders(Object.fromEntries(headers.entries())) });
