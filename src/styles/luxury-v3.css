@@ -3607,3 +3607,27 @@
 @media(prefers-reduced-motion:reduce){
   .afsana-ref-finder-options button,.afsana-ref-finder-options button::after{transition:none}
 }
+
+
+/* Mobile first-load performance: retain the design but avoid full-page/decorative animation work. */
+@media(max-width:700px){
+  .storefront-theme main:before{
+    display:none!important;
+    animation:none!important;
+    transform:none!important;
+  }
+  .storefront-theme .afsana-ref-orbit,
+  .storefront-theme .afsana-ref-glow,
+  .storefront-theme .afsana-ref-bottle-img,
+  .storefront-theme .afsana-ref-sticker{
+    animation:none!important;
+  }
+  .afsana-page-loader:before,
+  .afsana-loader-content,
+  .afsana-loader-ring:before{
+    animation:none!important;
+  }
+  .afsana-loader-glow{
+    display:none!important;
+  }
+}

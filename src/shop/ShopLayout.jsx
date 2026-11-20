@@ -108,8 +108,31 @@ export default function ShopLayout(){
  const brandTagline = navConfig.tagline || 'THE ART OF SCENT';
 
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
- useEffect(()=>{let timer;try{if(!sessionStorage.getItem('afsana-reference-intro-v1')){sessionStorage.setItem('afsana-reference-intro-v1','seen');setShowIntro(true);timer=window.setTimeout(()=>setShowIntro(false),1650);}}catch{}return()=>{if(timer)window.clearTimeout(timer)};},[]);
+ useEffect(()=>{
+  let timer;
+  // The homepage is the primary landing page: do not cover its first paint with
+  // a 1.65s cinematic overlay. Keep the intro for first visits to inner pages.
+  if(location.pathname !== '/') {
+    try {
+      if(!sessionStorage.getItem('afsana-reference-intro-v1')){
+        sessionStorage.setItem('afsana-reference-intro-v1','seen');
+        setShowIntro(true);
+        timer=window.setTimeout(()=>setShowIntro(false),1650);
+      }
+    } catch {}
+  } else {
+    setShowIntro(false);
+  }
+  return()=>{if(timer)window.clearTimeout(timer)};
+ },[location.pathname]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
+ // Start the homepage's featured product request alongside the CMS request.
+ // CmsSectionList uses the same cached GET key, so it reuses this response instead
+ // of waiting for CMS content before starting the product request.
+ useEffect(()=>{
+  if(isHome) productsApi.list({sort:'popular',limit:12}).catch(()=>{});
+ },[isHome]);
+
  useEffect(()=>{
   const term=q.trim();
   if(!search||term.length<2){setSuggestions([]);setSuggesting(false);return;}
