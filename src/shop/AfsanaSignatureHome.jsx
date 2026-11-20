@@ -288,8 +288,10 @@ function AnimatedValue({ value }) {
   const suffix = raw.match(/[kKmM%+]+$/)?.[0] || '';
   return <>{shown.toLocaleString()}{suffix}</>;
 }
-function MuseScene({ section }) {
+function MuseScene({ section, products = [] }) {
   const c = section.config || {};
+  const ownProduct = ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogProductAt(products, 2) : null;
+  const visualImage = ownProduct ? catalogImage(ownProduct) : c.characterImageUrl;
   return <section className="relative min-h-[620px] sm:min-h-[760px] overflow-hidden bg-[#080a07] text-white">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_42%,rgba(180,191,65,.22),transparent_22%),radial-gradient(circle_at_30%_70%,rgba(123,0,58,.18),transparent_28%)]"/>
     <div className="absolute left-[52%] top-1/2 h-[390px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-[48%] bg-gradient-to-b from-white/10 via-[#b4bf41]/10 to-transparent blur-2xl animate-pulse"/>
@@ -303,7 +305,7 @@ function MuseScene({ section }) {
         {c.buttonText && <Link to={c.buttonLink || '/shop'} className="mt-8 inline-flex bg-[#b4bf41] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">{c.buttonText} ↗</Link>}
       </div>
       <div className="relative hidden lg:block h-full">
-        {c.characterImageUrl ? <img src={c.characterImageUrl} srcSet={responsiveUnsplashSrcSet(c.characterImageUrl, 68)} sizes="(max-width: 700px) 70vw, 30vw" alt="" width="360" height="600" className="absolute left-1/2 top-1/2 h-[600px] w-[360px] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_35px_90px_rgba(180,191,65,.25)] animate-[afsanaFloat_6s_ease-in-out_infinite]" /> : <div className="absolute left-1/2 top-1/2 h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 rounded-[45%] bg-gradient-to-b from-white/20 via-[#a3c5e9]/12 to-[#7b003a]/10 blur-[1px] shadow-[0_30px_120px_rgba(0,0,0,.8)] animate-[afsanaFloat_6s_ease-in-out_infinite]"/>}
+        {visualImage ? <img src={visualImage} alt={ownProduct?.name || 'AFSANA perfume'} width="900" height="1300" loading="lazy" decoding="async" className="absolute left-1/2 top-1/2 h-[600px] w-[360px] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_35px_90px_rgba(180,191,65,.25)] animate-[afsanaFloat_6s_ease-in-out_infinite]" /> : <div className="absolute left-1/2 top-1/2 grid h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[45%] bg-gradient-to-b from-white/20 via-[#a3c5e9]/12 to-[#7b003a]/10 text-[10px] tracking-[.3em] text-white/70">AFSANA</div>}
         <div className="absolute left-1/2 top-[38%] h-[150px] w-[150px] -translate-x-1/2 rounded-full border border-white/10 bg-white/[.025] backdrop-blur"/>
         <div className="absolute left-[36%] top-[34%] text-[9px] uppercase tracking-[.3em] text-[#b4bf41] animate-pulse">Presence</div>
         <div className="absolute right-[18%] top-[54%] text-[9px] uppercase tracking-[.3em] text-white/35">Memory</div>
@@ -331,7 +333,7 @@ function Product3DShowcase({ section, products=[] }) {
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
-        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={c.product3dPosterUrl || c.imageUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
+        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={ownProductImage || c.product3dPosterUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
             {frames.length ? <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} width="960" height="1200" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/> : <div className="grid h-[420px] w-[300px] place-items-center border border-white/15 bg-white/5 p-8 text-center"><div><b className="font-display text-3xl text-[#ffe500]">AFSANA</b><p className="mt-4 text-[9px] uppercase tracking-[.2em] text-white/55">Add a primary product photo in the live catalogue to enable the bottle showcase.</p></div></div>}
           </div>
@@ -362,12 +364,19 @@ function FragranceDNA({ section }) {
     </div>
   </section>;
 }
-function InteractiveGallery({ section }) {
+function InteractiveGallery({ section, products = [] }) {
   const c=section.config||{}, items=cmsItems(c.items);
+  const useCatalog=['discover','journal','house','gifting'].includes(section.pageKey);
+  const sourceItems=items.length?items:[{title:'The Signature'},{title:'Dark Woods'},{title:'Soft Light'},{title:'Made to Give'}];
+  const galleryItems=sourceItems.map((item,i)=>{
+    const product=catalogProductAt(products,i);
+    return {...item,image:useCatalog?catalogImage(product):(item.image||item.link||''),link:useCatalog?catalogProductLink(product):(item.link||'/shop'),productName:useCatalog?product?.name:''};
+  });
   return <section className="bg-[#faf8f4] py-20 sm:py-28">
     <div className="container-xl"><Eyebrow>{c.eyebrow || 'THE VISUAL JOURNEY'}</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">{section.title || 'A scent in motion.'}</h2>
-      <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-width:none]">{(items.length?items:[{title:'The Signature',image:img.signature},{title:'Dark Woods',image:img.woods},{title:'Soft Light',image:img.floral},{title:'Made to Give',image:img.gifting}]).map((x,i)=><Link to={x.link||'/shop'} key={i} className="group relative min-w-[78vw] sm:min-w-[48vw] lg:min-w-[31vw] aspect-[.82] snap-start overflow-hidden rounded-[2rem] bg-[#263e0e]">
-        <img src={x.image||x.link} srcSet={responsiveUnsplashSrcSet(x.image||x.link, 66)} sizes="(max-width: 700px) 100vw, 50vw" alt="" width="1200" height="1000" className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-110"/><div className="absolute inset-0 bg-gradient-to-t from-[#080a07] via-transparent to-transparent"/><div className="absolute bottom-0 p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1}</p><h3 className="mt-2 font-display text-3xl">{x.title}</h3><p className="mt-2 text-xs text-white/55">{x.description||x.text}</p></div>
+      <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-width:none]">{galleryItems.map((x,i)=><Link to={x.link||'/shop'} key={i} className="group relative min-w-[78vw] sm:min-w-[48vw] lg:min-w-[31vw] aspect-[.82] snap-start overflow-hidden rounded-[2rem] bg-[#173d26]">
+        {x.image ? <img src={x.image} alt={x.productName||x.title||'AFSANA perfume'} width="1200" height="1000" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain p-5 transition duration-1000 group-hover:scale-105"/> : <div className="absolute inset-0 grid place-items-center font-display text-4xl text-[#ffbd37]">AFSANA</div>}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080a07] via-transparent to-transparent"/><div className="absolute bottom-0 p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-[#ffbd37]">0{i+1}</p><h3 className="mt-2 font-display text-3xl">{x.title}</h3><p className="mt-2 text-xs text-white/75">{x.productName || x.description || x.text}</p></div>
       </Link>)}</div>
     </div>
   </section>;
@@ -641,17 +650,20 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     </div>
   </section>;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p>{!c.hideTimer && c.endAt ? <CmsTimer endAt={c.endAt}/> : null}{btn}</div></div></section>;
-  if (section.type === 'muse_scene') return <MuseScene section={section}/>;
+  if (section.type === 'muse_scene') return <MuseScene section={section} products={products}/>;
     if (section.type === 'product_3d_showcase') return <Product3DShowcase section={{...section,config:c}} products={products}/>;
     if (section.type === 'fragrance_dna') return <FragranceDNA section={section}/>;
-    if (section.type === 'interactive_gallery') return <InteractiveGallery section={section}/>;
+    if (section.type === 'interactive_gallery') return <InteractiveGallery section={section} products={products}/>;
     if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;
     if (section.type === 'footer_showcase') return <PremiumFooterShowcase section={section}/>;
     if (section.type === 'video_grid') {
-    const videos = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({
+    const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
+    const sourceVideos = cmsItems(c.items);
+    const videoItems = sourceVideos.length ? sourceVideos : ['The First Impression','Dark Woods','Made by Hand','Leave a Trace'].map((title)=>({title}));
+    const videos = videoItems.slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({
       ...x,
       image: x.image || [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || '',
-      link: x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || ''
+      link: editorialPage ? catalogImage(catalogProductAt(products,i)) : (x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || '')
     }));
     return <section className="relative isolate overflow-hidden bg-white py-16 text-[#241638] sm:py-20 lg:py-24">
       <div aria-hidden="true" className="pointer-events-none absolute -left-32 top-[-5rem] h-96 w-96 rounded-full bg-purple-100/80 blur-3xl"/>
@@ -814,8 +826,9 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
   if (section.type === 'rich_text') return <section className="bg-[#faf8f4]"><div className={`container-xl flex flex-col ${align}`} style={style}><Eyebrow>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2><p className="mt-6 max-w-3xl text-sm leading-7 opacity-70">{c.body}</p>{btn}</div></section>;
   if (section.type === 'cinematic_statement') { const instagramMatch = String(c.videoUrl || '').match(/^https?:\/\/(?:www\.)?instagram\.com\/(?:reel|p|tv)\/([\w-]+)/i); const instagramEmbed = instagramMatch ? `https://www.instagram.com/${String(c.videoUrl).match(/instagram\.com\/(reel|p|tv)\//i)?.[1]}/${instagramMatch[1]}/embed/` : ''; return <section className="relative isolate overflow-hidden bg-[#10150a] text-white">{instagramEmbed ? <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(180,191,65,.18),transparent_65%)]"/> : c.videoUrl ? <DeferredBackgroundVideo src={c.videoUrl} poster={c.posterUrl} autoPlay={c.autoplay !== false} muted={c.muted !== false} controls={!!c.controls} className="absolute inset-0 -z-20 h-full w-full object-cover"/> : null}<div className={`container-xl relative flex min-h-[520px] flex-col items-center justify-center py-12 ${align}`} style={style}><Eyebrow light>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2>{c.body && <p className="mt-6 max-w-3xl text-sm leading-7 text-white/75">{c.body}</p>}{instagramEmbed && <iframe title="AFSANA Instagram Reel" src={instagramEmbed} className="mt-8 h-[620px] w-full max-w-[420px] rounded-xl border-0 bg-black" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen loading="lazy"/>}{btn}</div></section>; }
   if (section.type === 'split_story') {
-    const houseProduct = section.pageKey === 'house' ? catalogProductAt(products, 1) : null;
-    const storyImage = houseProduct ? catalogImage(houseProduct) : (c.aboutStoryImageUrl || c.imageUrl || '');
+    const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
+    const houseProduct = editorialPage ? catalogProductAt(products, 1) : null;
+    const storyImage = editorialPage ? catalogImage(houseProduct) : (c.aboutStoryImageUrl || c.imageUrl || '');
     return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2">
       <div className="afsana-ref-story-copy"><Eyebrow>{c.eyebrow || 'OUR PHILOSOPHY'}</Eyebrow><h2>{section.title}</h2><p>{c.body}</p>{btn}
         {houseProduct?.name && <Link to={catalogProductLink(houseProduct)} className="mt-5 inline-flex text-[9px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">Discover {houseProduct.name} ↗</Link>}
