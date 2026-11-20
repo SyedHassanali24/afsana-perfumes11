@@ -30,7 +30,22 @@ const catalogProductAt = (products = [], index = 0) => {
   const available = catalogProductsWithImages(products);
   return available.length ? available[index % available.length] : null;
 };
-const catalogProductLink = (product) => product?.slug ? `/product/${product.slug}` : '/shop';
+// Editorial page heroes must use the named AFSANA fragrance for that page.
+// Never substitute a different bottle when the exact product is unavailable.
+const editorialProductByPage = {
+  discover: { name: 'Mood Swing', pattern: /\bmood\s*swing\b/i },
+  journal: { name: 'Rose Miracle', pattern: /\brose\s*miracle\b/i },
+  house: { name: 'Ember Light', pattern: /\bember\s*light\b/i },
+  gifting: { name: 'Astral Drift', pattern: /\bastral\s*drift\b/i }
+};
+const catalogProductForEditorialPage = (products = [], pageKey = '') => {
+  const target = editorialProductByPage[pageKey];
+  if (!target) return null;
+  return catalogProductsWithImages(products).find((product) =>
+    target.pattern.test(String(product?.name || ''))
+  ) || null;
+};
+const catalogProductLink = (product) => product?.slug ? \`/product/\${product.slug}\` : '/shop';
 const Eyebrow=({children,light=false,white=false})=><div className={'flex items-center gap-3 text-[9px] sm:text-[10px] uppercase tracking-[.38em] font-semibold '+(white?'!text-white':light?'text-[#b4bf41]':'text-[#263e0e]')}><span className="w-9 h-px bg-current opacity-70"/>{children}</div>;
 function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, controls = false, className = '' }) {
   const videoRef = useRef(null);
@@ -456,8 +471,7 @@ function ConciergeFloat({ section }) {
 
 function ReferenceHero({ section, config, products }) {
   if (config.layout === 'inner') {
-    const pageIndex = section.pageKey === 'journal' ? 1 : section.pageKey === 'gifting' ? 2 : section.pageKey === 'house' ? 3 : 0;
-    const featuredProduct = catalogProductAt(products, pageIndex);
+    const featuredProduct = catalogProductForEditorialPage(products, section.pageKey);
     const featuredImage = catalogImage(featuredProduct);
     const pageCopy = {
       discover: { eyebrow: 'AFSANA SCENT INTELLIGENCE', title: 'There is a scent for that.', subtitle: 'Explore the live AFSANA collection by mood, notes and the moments you want to make your own.', buttonText: 'Begin your scent match', buttonLink: '/discover' },
@@ -1001,8 +1015,15 @@ function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' 
     () => needsProducts ? productsApi.list({ sort: 'popular', limit: editorialPage ? 36 : 12 }) : Promise.resolve({ products: [] }),
     [needsProducts, editorialPage]
   );
+  const selectedEditorialProduct = editorialProductByPage[pageKey];
+  const { data: selectedEditorialData } = useApi(
+    () => selectedEditorialProduct
+      ? productsApi.list({ q: selectedEditorialProduct.name, limit: 8 })
+      : Promise.resolve({ products: [] }),
+    [selectedEditorialProduct?.name]
+  );
   const shopSettings = useShopSettings();
-  const products = data?.products || [];
+  const products = [...(data?.products || []), ...(selectedEditorialData?.products || [])];
   const hasCatalogSection = safe.some((section) =>
     ['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section?.type)
   );
