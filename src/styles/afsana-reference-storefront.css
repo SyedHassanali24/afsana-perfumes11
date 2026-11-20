@@ -1187,3 +1187,44 @@
     gap:8px 14px;
   }
 }
+
+
+/* Reserve the homepage hero footprint while the CMS response is loading. */
+.storefront-theme.afsana-reference-storefront .afsana-cms-home-reserve{
+  display:flex;
+  min-height:610px;
+  align-items:center;
+  overflow:hidden;
+  background:#f4f4f2;
+  color:#194629;
+}
+.storefront-theme.afsana-reference-storefront .afsana-cms-home-reserve .container-xl{
+  width:min(100% - 48px,1320px);
+  max-width:1320px;
+  padding-top:64px;
+  padding-bottom:64px;
+}
+.storefront-theme.afsana-reference-storefront .afsana-cms-home-reserve p{
+  margin:0 0 18px;
+  color:#194629;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.35em;
+}
+.storefront-theme.afsana-reference-storefront .afsana-cms-home-reserve .container-xl>div{
+  color:#194629;
+  font-size:clamp(58px,9vw,112px);
+  font-weight:800;
+  letter-spacing:-.065em;
+  line-height:.9;
+}
+@media(max-width:700px){
+  .storefront-theme.afsana-reference-storefront .afsana-cms-home-reserve{
+    min-height:610px;
+  }
+  .storefront-theme.afsana-reference-storefront .afsana-cms-home-reserve .container-xl{
+    width:calc(100% - 36px);
+    padding-top:48px;
+    padding-bottom:48px;
+  }
+}
