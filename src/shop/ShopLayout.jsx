@@ -19,26 +19,7 @@ function CmsBannerCarousel({ banners = [] }) {
  const items = Array.isArray(banners) ? banners.filter((banner) =>
    banner && (banner.heading || banner.subtitle || banner.desktopImage?.url || banner.mobileImage?.url)
  ) : [];
- if (!items.length) {
-  // Keep a stable feature slot while the CMS loads and when no campaign is active.
-  // This prevents the homepage content below it from jumping after the CMS request.
-  return (
-   <section aria-label="AFSANA featured collection" className="relative overflow-hidden bg-[#194629]">
-    <article className="relative isolate flex min-h-[360px] min-w-full items-center overflow-hidden sm:min-h-[500px]">
-     <div aria-hidden="true" className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_78%_30%,rgba(255,189,55,.24),transparent_30%),linear-gradient(115deg,#153b23,#194629_55%,#245d39)]"/>
-     <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#153b23]/35 via-transparent to-[#153b23]/10"/>
-     <div className="container-xl w-full py-16 sm:py-24">
-      <div className="max-w-2xl text-white">
-       <p className="text-[9px] font-semibold uppercase tracking-[.34em] text-[#ffbd37]">THE ART OF SCENT</p>
-       <h2 className="mt-5 font-display text-4xl leading-[.95] tracking-tight sm:text-7xl">A fragrance becomes a memory.</h2>
-       <p className="mt-5 max-w-xl text-sm leading-7 text-white/75 sm:text-base">Discover signature scents crafted to leave a lasting impression.</p>
-       <Link to="/shop" className="mt-7 inline-flex items-center gap-3 bg-[#ffbd37] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#194629] transition hover:bg-white">Explore the collection <span>↗</span></Link>
-      </div>
-     </div>
-    </article>
-   </section>
-  );
- }
+ if (!items.length) return null;
  return (
   <section aria-label="AFSANA featured banners" className="relative overflow-hidden bg-[#100d24]">
    <div className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
