@@ -786,7 +786,26 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
       : section.pageKey === 'discover'
         ? [c.discoverEnergyImageUrl,c.discoverSoftImageUrl,c.discoverNightImageUrl]
         : [c.worldDarkImageUrl,c.worldSoftImageUrl,c.worldBoldImageUrl];
-    const worlds = cmsItems(c.items).map((item, i) => ({ ...item, image: item.image || assetImages[i] || '' }));
+    const defaultWorlds = section.pageKey === 'gifting' ? [
+      { title: 'Signature gifting', text: 'A personal fragrance for someone unforgettable.' },
+      { title: 'Discover a scent', text: 'Choose a fragrance that feels like them.' },
+      { title: 'Gift-ready moments', text: 'Make every celebration feel considered.' }
+    ] : [
+      { title: 'Make a statement', text: 'Confident, vivid and unforgettable.' },
+      { title: 'Feel luminous', text: 'Soft, airy and effortless.' },
+      { title: 'Stay mysterious', text: 'Deep, warm and magnetic.' }
+    ];
+    const sourceWorlds = cmsItems(c.items);
+    const useCatalogImages = ['discover','gifting','house','journal'].includes(section.pageKey);
+    const worlds = (sourceWorlds.length ? sourceWorlds : defaultWorlds).slice(0,3).map((item, i) => {
+      const product = catalogProductAt(products, i);
+      return {
+        ...item,
+        image: useCatalogImages ? catalogImage(product) : (item.image || assetImages[i] || ''),
+        link: useCatalogImages && product ? catalogProductLink(product) : (item.link || '/shop'),
+        productName: useCatalogImages ? product?.name : ''
+      };
+    });
     return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>{section.pageKey === 'gifting' ? 'Give them a feeling.' : section.pageKey === 'discover' ? 'Choose a feeling.' : <>Enter a scent <em>world.</em></>}</h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image && <img src={x.image} srcSet={responsiveUnsplashSrcSet(x.image, 66)} sizes="(max-width: 700px) 100vw, 33vw" alt={x.title} width="1200" height="1000" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {section.pageKey === 'gifting' ? ['THE PERSONAL TOUCH','THE FIRST CHAPTER','THE LITTLE EXTRA'][i] : section.pageKey === 'discover' ? ['THE ENERGY SEEKER','THE SOFT ROMANTIC','THE NIGHT THINKER'][i] : ['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
   }
   if (section.type === 'testimonials') return <CmsTestimonials section={section}/>;
@@ -794,7 +813,18 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
   if (section.type === 'marquee') return <section className="overflow-hidden bg-[#b4bf41] text-[#263e0e]"><div className="marquee-track flex gap-12 py-4 text-[10px] font-bold uppercase tracking-[.25em]">{cmsItems(c.items).concat(cmsItems(c.items)).map((x,i)=><span key={i}>{x.title || x.text || 'THE ART OF SCENT'} ✦</span>)}</div></section>;
   if (section.type === 'rich_text') return <section className="bg-[#faf8f4]"><div className={`container-xl flex flex-col ${align}`} style={style}><Eyebrow>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2><p className="mt-6 max-w-3xl text-sm leading-7 opacity-70">{c.body}</p>{btn}</div></section>;
   if (section.type === 'cinematic_statement') { const instagramMatch = String(c.videoUrl || '').match(/^https?:\/\/(?:www\.)?instagram\.com\/(?:reel|p|tv)\/([\w-]+)/i); const instagramEmbed = instagramMatch ? `https://www.instagram.com/${String(c.videoUrl).match(/instagram\.com\/(reel|p|tv)\//i)?.[1]}/${instagramMatch[1]}/embed/` : ''; return <section className="relative isolate overflow-hidden bg-[#10150a] text-white">{instagramEmbed ? <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(180,191,65,.18),transparent_65%)]"/> : c.videoUrl ? <DeferredBackgroundVideo src={c.videoUrl} poster={c.posterUrl} autoPlay={c.autoplay !== false} muted={c.muted !== false} controls={!!c.controls} className="absolute inset-0 -z-20 h-full w-full object-cover"/> : null}<div className={`container-xl relative flex min-h-[520px] flex-col items-center justify-center py-12 ${align}`} style={style}><Eyebrow light>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2>{c.body && <p className="mt-6 max-w-3xl text-sm leading-7 text-white/75">{c.body}</p>}{instagramEmbed && <iframe title="AFSANA Instagram Reel" src={instagramEmbed} className="mt-8 h-[620px] w-full max-w-[420px] rounded-xl border-0 bg-black" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen loading="lazy"/>}{btn}</div></section>; }
-  if (section.type === 'split_story') return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2"><div className="afsana-ref-story-copy"><Eyebrow>{c.eyebrow || 'OUR PHILOSOPHY'}</Eyebrow><h2>{section.title}</h2><p>{c.body}</p>{btn}</div><div className="afsana-ref-story-image">{(c.aboutStoryImageUrl || c.imageUrl) && <img src={c.aboutStoryImageUrl || c.imageUrl} srcSet={responsiveUnsplashSrcSet(c.aboutStoryImageUrl || c.imageUrl, 66)} sizes="(max-width: 700px) 100vw, 50vw" alt={section.title || 'AFSANA story'} width="1200" height="1350" loading="lazy" decoding="async"/>}</div></div></section>;
+  if (section.type === 'split_story') {
+    const houseProduct = section.pageKey === 'house' ? catalogProductAt(products, 1) : null;
+    const storyImage = houseProduct ? catalogImage(houseProduct) : (c.aboutStoryImageUrl || c.imageUrl || '');
+    return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2">
+      <div className="afsana-ref-story-copy"><Eyebrow>{c.eyebrow || 'OUR PHILOSOPHY'}</Eyebrow><h2>{section.title}</h2><p>{c.body}</p>{btn}
+        {houseProduct?.name && <Link to={catalogProductLink(houseProduct)} className="mt-5 inline-flex text-[9px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">Discover {houseProduct.name} ↗</Link>}
+      </div>
+      <div className="afsana-ref-story-image">
+        {storyImage ? (houseProduct ? <Link to={catalogProductLink(houseProduct)} aria-label={`Explore ${houseProduct.name}`}><img src={storyImage} alt={houseProduct.name || 'AFSANA perfume'} width="1200" height="1350" loading="lazy" decoding="async"/></Link> : <img src={storyImage} alt={section.title || 'AFSANA story'} width="1200" height="1350" loading="lazy" decoding="async"/>) : <div className="afsana-journal-image-fallback"><span>AFSANA</span><small>THE HOUSE OF SCENT</small></div>}
+      </div>
+    </div></section>;
+  }
   if (section.type === 'video_banner') {
     const videoSource = /world of afsana/i.test(section.title || '') ? 'https://www.instagram.com/reel/DfMwPQwo4TV/' : c.videoUrl;
     const reelParts = (() => {
