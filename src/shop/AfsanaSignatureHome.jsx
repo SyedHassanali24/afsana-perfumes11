@@ -455,7 +455,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   }
   if (section.type === 'reference_assets' || section.type === 'nav_menu') return null;
   if (section.type === 'whatsapp_float') {
-    const phone = String(c.phone || c.publicWhatsapp || '').replace(/[^0-9]/g, '');
+    const phone = '923252032321';
     if (!phone) return null;
     const href = `https://wa.me/${phone}?text=${encodeURIComponent(c.message || 'Assalam-o-alaikum, I need help with AFSANA fragrances.')}`;
     return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" title="Chat with AFSANA on WhatsApp" className="fixed bottom-24 right-6 z-[86] isolate inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#20c768] p-0 text-white shadow-2xl transition hover:-translate-y-1 hover:scale-105">
@@ -753,7 +753,7 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
-    publicWhatsapp: shopSettings?.store?.whatsapp || shopSettings?.store?.phone || '923132956206'
+    publicWhatsapp: '923252032321'
   };
   return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
     <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
