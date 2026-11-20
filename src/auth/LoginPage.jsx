@@ -291,7 +291,7 @@ export default function LoginPage() {
               <span className="h-px flex-1 bg-[#eeeaf4]" />
             </div>
 
-            <a href="https://wa.me/923132956206" target="_blank" rel="noreferrer" className="group flex items-center justify-between rounded-2xl border border-[#e9e3f3] bg-[#fcfbff] px-4 py-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-[#c9b9f0] hover:bg-[#f7f3ff]">
+            <a href="https://wa.me/923252032321" target="_blank" rel="noreferrer" className="group flex items-center justify-between rounded-2xl border border-[#e9e3f3] bg-[#fcfbff] px-4 py-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-[#c9b9f0] hover:bg-[#f7f3ff]">
               <span className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9f8ef] text-[#1f9e5a]"><MessageCircle size={20} /></span>
                 <span>
