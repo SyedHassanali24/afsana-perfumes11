@@ -419,7 +419,7 @@ function ReferenceHero({ section, config, products }) {
       </div>
       <div className="afsana-ref-hero-stage">
         <div className="afsana-ref-glow"/><div className="afsana-ref-orbit"><i/></div>
-        {bottle ? <img className="afsana-ref-bottle-img" src={bottle} alt={product?.name || 'AFSANA perfume bottle'} onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-ref-bottle-css"><b>AFSANA</b><small>EAU DE PARFUM</small></div>}
+        {bottle ? <img className="afsana-ref-bottle-img" src={bottle} alt={product?.name || 'AFSANA perfume bottle'} fetchPriority="high" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-ref-bottle-css"><b>AFSANA</b><small>EAU DE PARFUM</small></div>}
         <div className="afsana-ref-sticker">SCENT<br/>OBJECT<br/>NO. 001</div>
         <div className="afsana-ref-index">OBJECT 001 / {product?.name || 'AFSANA SIGNATURE'}</div>
       </div>
@@ -428,7 +428,7 @@ function ReferenceHero({ section, config, products }) {
   </section>;
 }
 
-function CmsSection({ section, products, faq, referenceAssets = {} }) {
+function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings = null }) {
   const c = { ...referenceAssets, ...(section.config || {}) };
   const align = c.align === 'center' ? 'text-center items-center' : c.align === 'right' ? 'text-right items-end' : 'text-left items-start';
   const style = {
@@ -446,12 +446,96 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
   const heading = section.title ? <div className={`mb-8 flex flex-col ${align}`}><Eyebrow light={['hero','video_grid','promo_timer','testimonials','cinematic_statement','lookbook'].includes(section.type)}>{c.eyebrow || 'AFSANA'}</Eyebrow><h2 className="mt-5 font-display text-4xl sm:text-6xl leading-[.95]">{section.title}</h2>{c.subtitle && <p className="mt-4 max-w-2xl text-sm leading-7 text-[#5f654f]">{c.subtitle}</p>}</div> : null;
   const btn = c.buttonText && c.buttonLink ? <Link to={c.buttonLink} className="mt-7 inline-flex items-center gap-2 bg-[#b4bf41] px-6 py-3 text-[10px] font-semibold uppercase tracking-[.18em] text-[#263e0e]">{c.buttonText}<ArrowRight className="w-4 h-4"/></Link> : null;
   if (section.type === 'custom_footer') {
-    const links = cmsItems(c.items);
-    const socials = [
-      ['Instagram',c.instagramUrl,Instagram],['Facebook',c.facebookUrl,Facebook],['TikTok',c.tiktokUrl,Music2],
-      ['YouTube',c.youtubeUrl,Youtube],['Pinterest',c.pinterestUrl,Pin],['X',c.xUrl,X]
+    const store = shopSettings?.store || {};
+    const configuredLinks = cmsItems(c.items).filter((item) => item && (item.title || item.text || item.link));
+    const exploreLinks = configuredLinks.length ? configuredLinks : [
+      { title: 'The collection', text: 'Discover the AFSANA fragrances.', link: '/shop' },
+      { title: 'Scent finder', text: 'Find a scent that feels like you.', link: '/discover' },
+      { title: 'The house', text: 'The story and philosophy of AFSANA.', link: '/about' },
+      { title: 'The journal', text: 'Notes, rituals and inspiration.', link: '/journal' },
+      { title: 'Gifting', text: 'Thoughtful fragrance gifts.', link: '/gifting' }
     ];
-    return <footer className="relative overflow-hidden bg-[#100d24] text-white"><div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(115,87,255,.24),transparent_28%),radial-gradient(circle_at_88%_75%,rgba(217,255,85,.08),transparent_25%)]"/><div className="container-xl relative py-16 sm:py-24"><div className="grid gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]"><div><p className="text-[9px] uppercase tracking-[.35em] text-[#d9ff55]">{c.tagline || 'THE ART OF SCENT'}</p><h2 className="mt-5 font-display text-6xl tracking-[-.04em]">{c.brandName || 'AFSANA'}</h2><p className="mt-6 max-w-sm text-sm leading-7 text-white/55">{c.description}</p><div className="mt-7"><p className="text-[9px] uppercase tracking-[.25em] text-white/40">Follow the house</p><div className="mt-3 flex flex-wrap gap-2">{socials.map(([label,url,Icon])=>url?<a key={label} href={url} target="_blank" rel="noreferrer" aria-label={label} title={label} className={`afsana-social-link afsana-social-${label.toLowerCase()} grid h-11 w-11 place-items-center rounded-full border transition hover:-translate-y-1`}><Icon className="h-4 w-4"/></a>:<span key={label} aria-label={label+' not connected'} title={label+' — connect in CMS'} className={`afsana-social-link afsana-social-${label.toLowerCase()} is-unconnected grid h-11 w-11 place-items-center rounded-full border`}><Icon className="h-4 w-4"/></span>)}</div><p className="mt-2 text-[9px] text-white/35">Connect your official social URLs in Admin → Content → Website page builder → Footer.</p></div></div><div className="lg:col-span-2"><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">EXPLORE THE HOUSE</p><div className="mt-6 grid grid-cols-2 gap-4">{links.map((item,i) => <div key={i}><p className="text-base font-display">{item.title}</p><p className="mt-1 text-xs text-white/45">{item.text}</p>{item.link && <Link className="mt-3 inline-flex text-[9px] uppercase tracking-[.2em] text-[#d9ff55]" to={item.link}>Discover ↗</Link>}</div>)}</div></div><div><p className="text-[9px] uppercase tracking-[.3em] text-[#d9ff55]">CONTACT</p>{c.email && <a href={'mailto:'+c.email} className="mt-6 block text-sm text-white/65">{c.email}</a>}{c.phone && <p className="mt-3 text-sm text-white/65">{c.phone}</p>}<Link to="/track" className="mt-6 block text-sm text-white/65 hover:text-[#d9ff55]">Track an order ↗</Link><Link to="/account" className="mt-3 block text-sm text-white/65 hover:text-[#d9ff55]">Customer account ↗</Link></div></div><div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 text-[9px] uppercase tracking-[.22em] text-white/35 sm:flex-row sm:items-center sm:justify-between"><span>{c.footerNote || 'AFSANA — THE ART OF SCENT'}</span><span>Made to leave a memory.</span><span>Privacy · Terms · Customer care</span></div></div></footer>;
+    const socials = [
+      ['Instagram', c.instagramUrl || store.instagram, Instagram],
+      ['Facebook', c.facebookUrl || store.facebook, Facebook],
+      ['TikTok', c.tiktokUrl, Music2],
+      ['YouTube', c.youtubeUrl, Youtube],
+      ['Pinterest', c.pinterestUrl, Pin],
+      ['X', c.xUrl, X]
+    ].filter(([, url]) => /^https?:\/\//i.test(String(url || '')));
+    const email = String(c.email || store.email || '').trim();
+    const phone = String(c.phone || store.phone || '').trim();
+    const address = String(c.address || store.address || '').trim();
+    const whatsappDisplay = String(c.whatsapp || store.whatsapp || '+92 325 2032321').trim();
+    const whatsappNumber = whatsappDisplay.replace(/[^\d]/g, '') || '923252032321';
+    const whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Assalam-o-Alaikum! I need help with AFSANA fragrances or an order.')}`;
+    const year = new Date().getFullYear();
+    const careLinks = [
+      ['Track an order', '/track'],
+      ['Contact the house', '/contact'],
+      ['Customer account', '/account']
+    ];
+    return <footer className="afsana-pro-footer relative overflow-hidden text-white">
+      <div aria-hidden="true" className="afsana-footer-glow pointer-events-none absolute inset-0"/>
+      <div className="container-xl relative">
+        <div className="afsana-footer-grid">
+          <div className="afsana-footer-brand-col">
+            <p className="afsana-footer-eyebrow">{c.tagline || 'THE ART OF SCENT'}</p>
+            <h2 className="afsana-footer-brand">{c.brandName || 'AFSANA'}</h2>
+            <p className="afsana-footer-description">{c.description || 'Fragrance is more than a note. It is a memory, a feeling, a signature.'}</p>
+            {socials.length > 0 && <div className="afsana-footer-socials">
+              <p className="afsana-footer-label">Follow the house</p>
+              <div className="afsana-footer-social-links">
+                {socials.map(([label, url, Icon]) => <a key={label} href={url} target="_blank" rel="noreferrer" aria-label={`AFSANA on ${label}`} title={label} className="afsana-footer-social">
+                  <Icon className="h-4 w-4"/>
+                </a>)}
+              </div>
+            </div>}
+          </div>
+
+          <div className="afsana-footer-group">
+            <h3 className="afsana-footer-heading">Explore the house</h3>
+            <nav className="afsana-footer-links" aria-label="Explore AFSANA">
+              {exploreLinks.map((item, index) => <Link key={item.id || item.link || item.title || index} to={item.link || '/shop'} title={item.text || item.title}>
+                <span>{item.title || item.text || 'Explore'}</span><span aria-hidden="true">↗</span>
+              </Link>)}
+            </nav>
+          </div>
+
+          <div className="afsana-footer-group">
+            <h3 className="afsana-footer-heading">Customer care</h3>
+            <nav className="afsana-footer-links" aria-label="Customer care">
+              {careLinks.map(([label, link]) => <Link key={link} to={link}>
+                <span>{label}</span><span aria-hidden="true">↗</span>
+              </Link>)}
+            </nav>
+            <p className="afsana-footer-detail">Order tracking, delivery questions and fragrance advice.</p>
+          </div>
+
+          <div className="afsana-footer-group afsana-footer-contact">
+            <h3 className="afsana-footer-heading">Contact the house</h3>
+            <p className="afsana-footer-detail">For fragrance recommendations, gifting help and order support.</p>
+            {email && <a className="afsana-footer-contact-line" href={`mailto:${email}`}>{email}</a>}
+            {phone && <a className="afsana-footer-contact-line" href={`tel:${phone.replace(/[^\d+]/g, '')}`}>{phone}</a>}
+            {address && <p className="afsana-footer-contact-line afsana-footer-address">{address}</p>}
+            <a className="afsana-footer-whatsapp" href={whatsappHref} target="_blank" rel="noreferrer">
+              <span>WhatsApp support</span><ArrowRight className="h-4 w-4"/>
+            </a>
+            <p className="afsana-footer-whatsapp-number">{whatsappDisplay}</p>
+          </div>
+        </div>
+
+        <div className="afsana-footer-bottom">
+          <span>{c.footerNote || `© ${year} AFSANA PERFUMES. ALL RIGHTS RESERVED.`}</span>
+          <span className="afsana-footer-made">Made to leave a memory.</span>
+          <nav aria-label="Legal and company information">
+            <Link to="/privacy-policy">Privacy policy</Link>
+            <Link to="/terms-of-service">Terms of service</Link>
+            <Link to="/contact">Customer care</Link>
+          </nav>
+        </div>
+      </div>
+    </footer>;
   }
   if (section.type === 'reference_assets' || section.type === 'nav_menu') return null;
   if (section.type === 'whatsapp_float') {
@@ -676,7 +760,7 @@ function CmsSection({ section, products, faq, referenceAssets = {} }) {
     </section>;
   }
   if (section.type === 'hero' && ['reference','inner'].includes(c.layout)) return <ReferenceHero section={section} config={c} products={products}/>;
-  if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
+  if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} alt="" loading={section.type === 'hero' ? 'eager' : 'lazy'} fetchPriority={section.type === 'hero' ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
   return null;
 }
 function FilmCard({ film, index, autoplay = true }) {
@@ -757,7 +841,7 @@ function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
   };
   return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
     <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
-      <CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets}/>
+      <CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets} shopSettings={shopSettings}/>
     </div>
   )}</div>;
 }
