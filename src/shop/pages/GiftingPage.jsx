@@ -11,7 +11,9 @@ const Ey = ({ children, light = false }) => <p className={`eyebrow ${light ? 'te
 export default function GiftingPage() {
   useTitle('AFSANA Gifting — Give a Memory');
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
+  const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Astral Drift', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
+  const astralDrift = (featuredData?.products || []).find((product) => /\\bastral\\s*drift\\b/i.test(String(product?.name || '')) && product?.image?.url) || null;
   const whatsapp = 'https://wa.me/923252032321?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like help choosing an AFSANA perfume as a gift.');
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
@@ -24,10 +26,10 @@ export default function GiftingPage() {
         </div>
         <div className="relative flex min-h-[330px] items-center justify-center">
           <div className="absolute h-[280px] w-[280px] rounded-full border border-[#ffbd37]/30 bg-[#ffbd37]/10"/>
-          {products[0] ? <Link to={`/product/${products[0].slug}`} className="relative z-10 flex h-[340px] w-full items-center justify-center">
-            <img src={products[0].image.url} alt={products[0].name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[340px] w-full object-contain drop-shadow-[0_26px_36px_rgba(0,0,0,.4)]"/>
-          </Link> : <div className="relative z-10 text-center"><b className="font-display text-5xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.24em] text-white/60">{loading ? 'LOADING THE COLLECTION' : 'GIVE A MEMORY'}</p></div>}
-          {products[0]?.name && <p className="absolute bottom-0 text-[9px] font-bold uppercase tracking-[.25em] text-[#ffbd37]">{products[0].name}</p>}
+          {astralDrift ? <Link to={`/product/${astralDrift.slug}`} aria-label={`Explore ${astralDrift.name}`} className="relative z-10 flex h-[340px] w-full items-center justify-center">
+            <img src={astralDrift.image.url} alt={astralDrift.name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[340px] w-full object-contain drop-shadow-[0_26px_36px_rgba(0,0,0,.4)]"/>
+          </Link> : <div className="relative z-10 text-center"><b className="font-display text-5xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.24em] text-white/60">{featuredLoading ? 'LOADING ASTRAL DRIFT' : 'ASTRAL DRIFT IMAGE NOT SET IN THE LIVE CATALOGUE'}</p></div>}
+          {astralDrift?.name && <p className="absolute bottom-0 text-[9px] font-bold uppercase tracking-[.25em] text-[#ffbd37]">{astralDrift.name}</p>}
         </div>
       </Container>
     </section>
