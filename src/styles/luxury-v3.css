@@ -3840,3 +3840,188 @@
 @media(prefers-reduced-motion:reduce){
   .afsana-memory-feature-cta{transition:none!important}
 }
+
+
+/* Responsive, product-led inner page heroes — only live AFSANA catalogue imagery. */
+.afsana-ref-inner-hero-catalog{
+  display:block;
+  min-height:0;
+  padding:clamp(56px,7vw,92px) 0;
+  background:
+    radial-gradient(ellipse at 78% 36%,rgba(255,189,55,.16),transparent 31%),
+    radial-gradient(ellipse at 20% 80%,rgba(104,149,119,.19),transparent 38%),
+    linear-gradient(115deg,#173d26,#24583a 58%,#183d29);
+}
+.afsana-ref-inner-catalog-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+  align-items:center;
+  gap:clamp(28px,6vw,90px);
+  min-height:390px;
+}
+.afsana-ref-inner-catalog-copy{max-width:740px}
+.afsana-ref-inner-hero-catalog h1{
+  max-width:760px;
+  color:#fff;
+  font-size:clamp(48px,7vw,88px);
+  line-height:.94;
+  letter-spacing:-.055em;
+}
+.afsana-ref-inner-hero-catalog .afsana-ref-eyebrow{color:#ffbd37}
+.afsana-ref-inner-hero-catalog .afsana-ref-inner-catalog-copy>p:not(.afsana-ref-eyebrow){
+  max-width:570px;
+  color:rgba(255,255,255,.78);
+  font-size:13px;
+  line-height:1.9;
+}
+.afsana-ref-inner-catalog-product{
+  position:relative;
+  display:flex;
+  min-width:0;
+  min-height:360px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  isolation:isolate;
+}
+.afsana-ref-inner-catalog-product:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:min(90%,360px);
+  aspect-ratio:1;
+  border:1px solid rgba(255,189,55,.28);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,189,55,.13),transparent 70%);
+  box-shadow:0 0 75px rgba(255,189,55,.09);
+}
+.afsana-ref-inner-catalog-product a{
+  display:flex;
+  width:100%;
+  min-height:340px;
+  align-items:center;
+  justify-content:center;
+}
+.afsana-ref-inner-catalog-product img{
+  display:block;
+  width:min(100%,330px);
+  height:365px;
+  object-fit:contain;
+  filter:drop-shadow(0 28px 34px rgba(0,0,0,.38));
+}
+.afsana-ref-inner-catalog-product>p{
+  margin:8px 0 0;
+  color:#ffbd37;
+  font:600 10px ui-monospace,monospace;
+  letter-spacing:.23em;
+  text-align:center;
+  text-transform:uppercase;
+}
+.afsana-ref-inner-product-pending{
+  display:grid;
+  width:min(100%,320px);
+  min-height:320px;
+  align-content:center;
+  justify-items:center;
+  gap:12px;
+  border:1px dashed rgba(255,189,55,.4);
+  background:rgba(255,255,255,.04);
+  color:#ffbd37;
+  font:600 12px ui-monospace,monospace;
+  letter-spacing:.25em;
+}
+.afsana-ref-inner-product-pending span{color:rgba(255,255,255,.65);font-size:9px}
+.afsana-journal-image-fallback{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:radial-gradient(circle at 50% 40%,rgba(255,189,55,.22),transparent 45%),linear-gradient(140deg,#173d26,#241638);
+  color:#ffbd37;
+}
+.afsana-journal-image-fallback span{
+  font:600 clamp(28px,5vw,54px) 'Cormorant Garamond',Georgia,serif;
+  letter-spacing:.2em;
+}
+.afsana-journal-image-fallback small{
+  color:rgba(255,255,255,.65);
+  font:600 8px ui-monospace,monospace;
+  letter-spacing:.28em;
+}
+.afsana-editorial-product-shelf{
+  padding:clamp(58px,7vw,92px) 0;
+  background:#f7f4ed;
+}
+.afsana-editorial-product-shelf-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:28px;
+  margin-bottom:30px;
+}
+.afsana-editorial-product-shelf-head p{
+  margin:0 0 11px;
+  color:#667c54;
+  font:700 9px ui-monospace,monospace;
+  letter-spacing:.24em;
+}
+.afsana-editorial-product-shelf-head h2{
+  margin:0;
+  color:#173d26;
+  font:500 clamp(34px,5vw,58px)/.95 'Cormorant Garamond',Georgia,serif;
+}
+.afsana-editorial-product-shelf-head span{
+  display:block;
+  max-width:620px;
+  margin-top:13px;
+  color:#697163;
+  font-size:12px;
+  line-height:1.8;
+}
+.afsana-editorial-product-shelf-head>a{
+  flex:0 0 auto;
+  border-bottom:1px solid rgba(23,61,38,.5);
+  padding-bottom:9px;
+  color:#173d26;
+  font:700 9px ui-monospace,monospace;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.afsana-editorial-product-shelf-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:18px;
+}
+.afsana-editorial-product-empty{
+  border:1px dashed rgba(23,61,38,.28);
+  background:#fff;
+  padding:28px;
+  color:#657260;
+  font-size:12px;
+  line-height:1.8;
+}
+.afsana-ref-world-card .afsana-ref-world-info small{
+  color:#ffdf90;
+}
+.afsana-ref-world-card .afsana-ref-world-info p{
+  max-width:88%;
+  color:rgba(255,255,255,.78);
+  text-shadow:0 1px 8px rgba(0,0,0,.25);
+}
+.afsana-ref-world-card img{
+  background:#173d26;
+}
+@media(max-width:760px){
+  .afsana-ref-inner-hero-catalog{padding:55px 0 46px}
+  .afsana-ref-inner-catalog-grid{grid-template-columns:minmax(0,1fr);gap:16px;min-height:0}
+  .afsana-ref-inner-hero-catalog h1{font-size:clamp(46px,13vw,66px)}
+  .afsana-ref-inner-catalog-product{min-height:270px}
+  .afsana-ref-inner-catalog-product a{min-height:260px}
+  .afsana-ref-inner-catalog-product img{height:275px;width:min(78%,260px)}
+  .afsana-ref-inner-product-pending{min-height:240px}
+  .afsana-editorial-product-shelf-head{align-items:flex-start;flex-direction:column}
+  .afsana-editorial-product-shelf-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}
