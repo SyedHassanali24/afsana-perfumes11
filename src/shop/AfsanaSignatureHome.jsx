@@ -917,35 +917,56 @@ function FilmCard({ film, index, autoplay = true }) {
     </div>
   </article>;
 }
-function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
+function AfsanaEditorialProductShelf({ pageKey, products }) {
+  const picks = catalogProductsWithImages(products).slice(0,4);
+  const copy = {
+    discover: ['THE AFSANA COLLECTION', 'Find your next signature.', 'Explore the live AFSANA fragrances and discover the bottle that fits your mood.'],
+    journal: ['SCENT / IN OBJECTS', 'Stories you can wear.', 'Meet the AFSANA fragrances behind the notes, rituals and stories in our journal.'],
+    house: ['THE HOUSE COLLECTION', 'Meet the fragrances of AFSANA.', 'Every bottle is part of the AFSANA story. Explore the current collection.'],
+    gifting: ['THE GIFT EDIT', 'Give a scent worth remembering.', 'Choose a fragrance from the live AFSANA collection for a thoughtful, personal gift.']
+  }[pageKey] || ['THE AFSANA COLLECTION', 'Discover AFSANA.', 'Explore the live fragrance collection.'];
+  return <section className="afsana-editorial-product-shelf">
+    <div className="container-xl">
+      <div className="afsana-editorial-product-shelf-head">
+        <div><p>{copy[0]}</p><h2>{copy[1]}</h2><span>{copy[2]}</span></div>
+        <Link to="/shop">View all fragrances ↗</Link>
+      </div>
+      {picks.length ? <div className="afsana-editorial-product-shelf-grid">{picks.map((product)=><ProductCard key={product.id || product.slug} product={product}/>)}</div> : <div className="afsana-editorial-product-empty">AFSANA product photographs are being prepared. Please add a primary image to each published product in the catalogue.</div>}
+    </div>
+  </section>;
+}
+
+function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' }) {
   const source = Array.isArray(sections) ? sections : [];
-  // Fetch catalog data only for page sections that actually render products.
-  // CMS footer, banners and editorial-only pages should not open MongoDB reads.
   const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'footer_showcase');
-  const needsProducts = safe.some((section) =>
+  const editorialPage = ['discover','journal','house','gifting'].includes(pageKey);
+  const needsProducts = editorialPage || safe.some((section) =>
     ['featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'product_3d_showcase'].includes(section?.type) ||
     (section?.type === 'hero' && ['reference', 'inner'].includes(section?.config?.layout))
   );
   const { data } = useApi(
-    () => needsProducts ? productsApi.list({ sort: 'popular', limit: 12 }) : Promise.resolve({ products: [] }),
-    [needsProducts]
+    () => needsProducts ? productsApi.list({ sort: 'popular', limit: editorialPage ? 36 : 12 }) : Promise.resolve({ products: [] }),
+    [needsProducts, editorialPage]
   );
   const shopSettings = useShopSettings();
   const products = data?.products || [];
-  // The public API sends only enabled and non-deleted CMS rows.
-  // Do not require internal template/theme tags here: custom and older saved
-  // sections are valid storefront content too.
-  // The footer showcase is rendered once in the global footer by ShopLayout, not again in the homepage flow.
+  const hasCatalogSection = safe.some((section) =>
+    ['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section?.type)
+  );
+  const showEditorialShelf = editorialPage && !hasCatalogSection;
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
     publicWhatsapp: '923252032321'
   };
-  return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
-    <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
-      <CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets} shopSettings={shopSettings}/>
-    </div>
-  )}</div>;
+  return <div className="bg-[#f7f4ed] text-[#100d24]">
+    {safe.map((s) =>
+      <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
+        <CmsSection section={{...s,pageKey}} products={products} faq={faq} referenceAssets={referenceAssets} shopSettings={shopSettings}/>
+      </div>
+    )}
+    {showEditorialShelf && <AfsanaEditorialProductShelf pageKey={pageKey} products={products}/>}
+  </div>;
 }
 
 function CmsDrivenHome({ sections, faq, referenceAssets = {} }) {
@@ -974,7 +995,7 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
   const previewAssets = preview?.layouts?.home?.find((item) => item.type === 'reference_assets')?.config || {};
   const referenceAssets = Object.keys(previewAssets).length ? previewAssets : (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
-  return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} pageKey={pageKey} />;
 }
 
 export function ScentFinderPage(){
