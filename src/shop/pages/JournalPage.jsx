@@ -13,7 +13,7 @@ export default function JournalPage() {
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
   const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Rose Miracle', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
-  const roseMiracle = (featuredData?.products || []).find((product) => /\\brose\\s*miracle\\b/i.test(String(product?.name || '')) && product?.image?.url) || null;
+  const roseMiracle = (featuredData?.products || []).find((product) => String(product?.name || '').toLowerCase().includes('rose miracle') && product?.image?.url) || null;
   const stories = [
     ['01 / THE SIGNATURE GUIDE','Find your signature scent','Begin with the feeling you want to carry. Explore the current AFSANA fragrances and find a composition that fits your mood and moment.'],
     ['02 / NOTES & ATMOSPHERE','A world in every note','Fresh, floral, woody and warm directions each create a different atmosphere. Discover the AFSANA collection and the bottle that speaks to you.'],
