@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Gift, MessageCircle } from 'lucide-react';
+import { ArrowRight, Gift, MessageCircle, Sparkles } from 'lucide-react';
 import useApi from '../../hooks/useApi';
 import { productsApi } from '../../services';
 import useTitle from '../useTitle';
