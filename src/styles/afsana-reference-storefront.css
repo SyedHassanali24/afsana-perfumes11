@@ -642,11 +642,23 @@
 /* AFSANA top strip: animated 15-day returns message and clear utility actions */
 .afsana-reference-topbar-inner{
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) auto!important;
   gap:18px!important;
   min-height:42px!important;
   align-items:center!important;
 }
+.afsana-reference-topbar-message{
+  display:block!important;
+  min-width:0;
+  overflow:hidden;
+  color:#fff4db!important;
+  font-size:9px!important;
+  line-height:1.25;
+  text-align:center;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.afsana-reference-topbar-message:empty{visibility:hidden}
 .afsana-return-policy-marquee{
   min-width:0;
   overflow:hidden;
