@@ -19,6 +19,18 @@ const img={
  story:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1000&q=74'
 };
 const video='https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4';
+// The public catalogue is the only source for perfume product imagery on editorial pages.
+const isCatalogueImageUrl = (url) => {
+  const path = String(url || '').split(/[?#]/, 1)[0].toLowerCase();
+  return !!path && !['.mp4','.webm','.mov','.m4v','.glb','.gltf'].some((extension) => path.endsWith(extension));
+};
+const catalogImage = (product) => product?.image?.url || product?.media?.find?.((item) => item?.kind === 'main' && isCatalogueImageUrl(item?.url))?.url || product?.media?.find?.((item) => isCatalogueImageUrl(item?.url) && !['video','media360','model3d'].includes(String(item?.kind || '').toLowerCase()))?.url || '';
+const catalogProductsWithImages = (products = []) => products.filter((product) => catalogImage(product));
+const catalogProductAt = (products = [], index = 0) => {
+  const available = catalogProductsWithImages(products);
+  return available.length ? available[index % available.length] : null;
+};
+const catalogProductLink = (product) => product?.slug ? `/product/${product.slug}` : '/shop';
 const Eyebrow=({children,light=false,white=false})=><div className={'flex items-center gap-3 text-[9px] sm:text-[10px] uppercase tracking-[.38em] font-semibold '+(white?'!text-white':light?'text-[#b4bf41]':'text-[#263e0e]')}><span className="w-9 h-px bg-current opacity-70"/>{children}</div>;
 function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, controls = false, className = '' }) {
   const videoRef = useRef(null);
@@ -280,8 +292,10 @@ function AnimatedValue({ value }) {
   const suffix = raw.match(/[kKmM%+]+$/)?.[0] || '';
   return <>{shown.toLocaleString()}{suffix}</>;
 }
-function MuseScene({ section }) {
+function MuseScene({ section, products = [] }) {
   const c = section.config || {};
+  const ownProduct = ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogProductAt(products, 2) : null;
+  const visualImage = ownProduct ? catalogImage(ownProduct) : c.characterImageUrl;
   return <section className="relative min-h-[620px] sm:min-h-[760px] overflow-hidden bg-[#080a07] text-white">
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_42%,rgba(180,191,65,.22),transparent_22%),radial-gradient(circle_at_30%_70%,rgba(123,0,58,.18),transparent_28%)]"/>
     <div className="absolute left-[52%] top-1/2 h-[390px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-[48%] bg-gradient-to-b from-white/10 via-[#b4bf41]/10 to-transparent blur-2xl animate-pulse"/>
@@ -295,7 +309,7 @@ function MuseScene({ section }) {
         {c.buttonText && <Link to={c.buttonLink || '/shop'} className="mt-8 inline-flex bg-[#b4bf41] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">{c.buttonText} ↗</Link>}
       </div>
       <div className="relative hidden lg:block h-full">
-        {c.characterImageUrl ? <img src={c.characterImageUrl} srcSet={responsiveUnsplashSrcSet(c.characterImageUrl, 68)} sizes="(max-width: 700px) 70vw, 30vw" alt="" width="360" height="600" className="absolute left-1/2 top-1/2 h-[600px] w-[360px] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_35px_90px_rgba(180,191,65,.25)] animate-[afsanaFloat_6s_ease-in-out_infinite]" /> : <div className="absolute left-1/2 top-1/2 h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 rounded-[45%] bg-gradient-to-b from-white/20 via-[#a3c5e9]/12 to-[#7b003a]/10 blur-[1px] shadow-[0_30px_120px_rgba(0,0,0,.8)] animate-[afsanaFloat_6s_ease-in-out_infinite]"/>}
+        {visualImage ? <img src={visualImage} alt={ownProduct?.name || 'AFSANA perfume'} width="900" height="1300" loading="lazy" decoding="async" className="absolute left-1/2 top-1/2 h-[600px] w-[360px] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_35px_90px_rgba(180,191,65,.25)] animate-[afsanaFloat_6s_ease-in-out_infinite]" /> : <div className="absolute left-1/2 top-1/2 grid h-[500px] w-[270px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-[45%] bg-gradient-to-b from-white/20 via-[#a3c5e9]/12 to-[#7b003a]/10 text-[10px] tracking-[.3em] text-white/70">AFSANA</div>}
         <div className="absolute left-1/2 top-[38%] h-[150px] w-[150px] -translate-x-1/2 rounded-full border border-white/10 bg-white/[.025] backdrop-blur"/>
         <div className="absolute left-[36%] top-[34%] text-[9px] uppercase tracking-[.3em] text-[#b4bf41] animate-pulse">Presence</div>
         <div className="absolute right-[18%] top-[54%] text-[9px] uppercase tracking-[.3em] text-white/35">Memory</div>
@@ -306,9 +320,11 @@ function MuseScene({ section }) {
 function Product3DShowcase({ section, products=[] }) {
   const c=section.config||{};
   useEffect(()=>{if(!c.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[c.product3dModelUrl]);
-  const chosen=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug)) || products[0];
-  const media=[...(chosen?.media||[])].filter(x=>x?.url).slice(0,8);
-  const frames=media.length?media:[{url:c.imageUrl||img.signature}];
+  const requestedProduct=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug));
+  const chosen=(requestedProduct && catalogImage(requestedProduct)) ? requestedProduct : catalogProductAt(products,0) || requestedProduct || products[0];
+  const media=[...(chosen?.media||[])].filter(x=>isCatalogueImageUrl(x?.url) && !['video','media360','model3d'].includes(String(x?.kind||'').toLowerCase())).slice(0,8);
+  const ownProductImage=catalogImage(chosen);
+  const frames=media.length?media:(ownProductImage?[{url:ownProductImage}]:[]);
   const [frame,setFrame]=useState(0),[auto,setAuto]=useState(true);
   const drag=useRef({active:false,x:0});
   useEffect(()=>{if(!auto||frames.length<2)return;const id=window.setInterval(()=>setFrame(v=>(v+1)%frames.length),900);return()=>window.clearInterval(id)},[auto,frames.length]);
@@ -322,9 +338,9 @@ function Product3DShowcase({ section, products=[] }) {
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
-        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={c.product3dPosterUrl || c.imageUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
+        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={ownProductImage || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
-            <img src={frames[frame]?.url || img.signature} srcSet={responsiveUnsplashSrcSet(frames[frame]?.url || img.signature, 66)} sizes="(max-width: 700px) 90vw, 40vw" alt={chosen?.name||'AFSANA fragrance'} width="960" height="1200" onError={(e)=>{if(e.currentTarget.src!==img.signature)e.currentTarget.src=img.signature;}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
+            {frames.length ? <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} width="960" height="1200" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/> : <div className="grid h-[420px] w-[300px] place-items-center border border-white/15 bg-white/5 p-8 text-center"><div><b className="font-display text-3xl text-[#ffe500]">AFSANA</b><p className="mt-4 text-[9px] uppercase tracking-[.2em] text-white/55">Add a primary product photo in the live catalogue to enable the bottle showcase.</p></div></div>}
           </div>
         </div>}
         <div className="absolute bottom-4 left-0 text-[8px] uppercase tracking-[.18em] text-white/45">Drag to rotate · {frames.length} gallery angles</div><button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
@@ -353,12 +369,19 @@ function FragranceDNA({ section }) {
     </div>
   </section>;
 }
-function InteractiveGallery({ section }) {
+function InteractiveGallery({ section, products = [] }) {
   const c=section.config||{}, items=cmsItems(c.items);
+  const useCatalog=['discover','journal','house','gifting'].includes(section.pageKey);
+  const sourceItems=items.length?items:[{title:'The Signature'},{title:'Dark Woods'},{title:'Soft Light'},{title:'Made to Give'}];
+  const galleryItems=sourceItems.map((item,i)=>{
+    const product=catalogProductAt(products,i);
+    return {...item,image:useCatalog?catalogImage(product):(item.image||item.link||''),link:useCatalog?catalogProductLink(product):(item.link||'/shop'),productName:useCatalog?product?.name:''};
+  });
   return <section className="bg-[#faf8f4] py-20 sm:py-28">
     <div className="container-xl"><Eyebrow>{c.eyebrow || 'THE VISUAL JOURNEY'}</Eyebrow><h2 className="mt-6 font-display text-5xl sm:text-7xl">{section.title || 'A scent in motion.'}</h2>
-      <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-width:none]">{(items.length?items:[{title:'The Signature',image:img.signature},{title:'Dark Woods',image:img.woods},{title:'Soft Light',image:img.floral},{title:'Made to Give',image:img.gifting}]).map((x,i)=><Link to={x.link||'/shop'} key={i} className="group relative min-w-[78vw] sm:min-w-[48vw] lg:min-w-[31vw] aspect-[.82] snap-start overflow-hidden rounded-[2rem] bg-[#263e0e]">
-        <img src={x.image||x.link} srcSet={responsiveUnsplashSrcSet(x.image||x.link, 66)} sizes="(max-width: 700px) 100vw, 50vw" alt="" width="1200" height="1000" className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-110"/><div className="absolute inset-0 bg-gradient-to-t from-[#080a07] via-transparent to-transparent"/><div className="absolute bottom-0 p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-[#b4bf41]">0{i+1}</p><h3 className="mt-2 font-display text-3xl">{x.title}</h3><p className="mt-2 text-xs text-white/55">{x.description||x.text}</p></div>
+      <div className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5 [scrollbar-width:none]">{galleryItems.map((x,i)=><Link to={x.link||'/shop'} key={i} className="group relative min-w-[78vw] sm:min-w-[48vw] lg:min-w-[31vw] aspect-[.82] snap-start overflow-hidden rounded-[2rem] bg-[#173d26]">
+        {x.image ? <img src={x.image} alt={x.productName||x.title||'AFSANA perfume'} width="1200" height="1000" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain p-5 transition duration-1000 group-hover:scale-105"/> : <div className="absolute inset-0 grid place-items-center font-display text-4xl text-[#ffbd37]">AFSANA</div>}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080a07] via-transparent to-transparent"/><div className="absolute bottom-0 p-7 text-white"><p className="text-[9px] uppercase tracking-[.3em] text-[#ffbd37]">0{i+1}</p><h3 className="mt-2 font-display text-3xl">{x.title}</h3><p className="mt-2 text-xs text-white/75">{x.productName || x.description || x.text}</p></div>
       </Link>)}</div>
     </div>
   </section>;
@@ -433,12 +456,32 @@ function ConciergeFloat({ section }) {
 
 function ReferenceHero({ section, config, products }) {
   if (config.layout === 'inner') {
-    const pageImage = section.pageKey === 'house' ? config.aboutHeroImageUrl
-      : section.pageKey === 'journal' ? config.journalHeroImageUrl
-      : section.pageKey === 'gifting' ? config.giftingHeroImageUrl
-      : section.pageKey === 'discover' ? config.discoverHeroImageUrl
-      : config.collectionHeroImageUrl;
-    return <section className="afsana-ref-inner-hero">{pageImage && <img src={pageImage} srcSet={responsiveUnsplashSrcSet(pageImage, 68)} sizes="100vw" alt="" width="1600" height="900" className="afsana-ref-inner-image"/>}<div className="afsana-ref-inner-overlay"/><div className="container-xl relative z-10"><p className="afsana-ref-eyebrow">{config.eyebrow || 'THE ART OF SCENT'}</p><h1>{section.title || 'A world in every note.'}</h1>{config.subtitle && <p>{config.subtitle}</p>}{config.buttonText && <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText} <span>↗</span></Link>}</div></section>;
+    const pageIndex = section.pageKey === 'journal' ? 1 : section.pageKey === 'gifting' ? 2 : section.pageKey === 'house' ? 3 : 0;
+    const featuredProduct = catalogProductAt(products, pageIndex);
+    const featuredImage = catalogImage(featuredProduct);
+    const pageCopy = {
+      discover: { eyebrow: 'AFSANA SCENT INTELLIGENCE', title: 'There is a scent for that.', subtitle: 'Explore the live AFSANA collection by mood, notes and the moments you want to make your own.', buttonText: 'Begin your scent match', buttonLink: '/discover' },
+      journal: { eyebrow: 'NOTES FROM THE HOUSE', title: 'A world in every note.', subtitle: 'Stories, ingredients and rituals from the House of AFSANA—through the fragrances that bring each feeling to life.', buttonText: 'Explore the AFSANA collection', buttonLink: '/shop' },
+      house: { eyebrow: 'THE HOUSE OF AFSANA', title: 'We make memories visible.', subtitle: 'A modern fragrance house shaped by contrast, character and the memories a scent leaves behind.', buttonText: 'Discover the house', buttonLink: '/shop' },
+      gifting: { eyebrow: 'GIVE WITH FEELING', title: 'Wrap up the extraordinary.', subtitle: 'Choose a real AFSANA fragrance for birthdays, celebrations, thoughtful gestures and the moments worth remembering.', buttonText: 'Explore gift fragrances', buttonLink: '/gifting' }
+    }[section.pageKey] || {};
+    return <section className="afsana-ref-inner-hero afsana-ref-inner-hero-catalog">
+      <div className="afsana-ref-inner-overlay"/>
+      <div className="container-xl afsana-ref-inner-catalog-grid relative z-10">
+        <div className="afsana-ref-inner-catalog-copy">
+          <p className="afsana-ref-eyebrow">{config.eyebrow || pageCopy.eyebrow || 'THE ART OF SCENT'}</p>
+          <h1>{section.title || pageCopy.title || 'A world in every note.'}</h1>
+          <p>{config.subtitle || pageCopy.subtitle || 'Discover the AFSANA collection and find a fragrance that feels like you.'}</p>
+          <Link className="afsana-ref-btn" to={config.buttonLink || pageCopy.buttonLink || '/shop'}>{config.buttonText || pageCopy.buttonText || 'Explore the collection'} <span>↗</span></Link>
+        </div>
+        <div className="afsana-ref-inner-catalog-product">
+          {featuredImage ? <Link to={catalogProductLink(featuredProduct)} aria-label={`Explore ${featuredProduct.name}`}>
+            <img src={featuredImage} alt={featuredProduct.name || 'AFSANA perfume'} width="900" height="1200" loading="eager" decoding="async"/>
+          </Link> : <div className="afsana-ref-inner-product-pending"><b>AFSANA</b><span>THE ART OF SCENT</span></div>}
+          {featuredProduct?.name && <p>{featuredProduct.name}</p>}
+        </div>
+      </div>
+    </section>;
   }
   const product = products?.[0];
   const bottle = config.heroBottleImageUrl || product?.image?.url || product?.media?.find((m) => m.kind === 'main')?.url || product?.media?.[0]?.url;
@@ -618,17 +661,20 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     </div>
   </section>;
   if (section.type === 'offer_timer' || section.type === 'promo_timer') return <section className="bg-[#263e0e] text-white"><div className="container-xl" style={style}><div className={`flex flex-col ${align}`}><Eyebrow light>{c.label || 'LIMITED OFFER'}</Eyebrow><h2 className="mt-4 font-display text-4xl sm:text-6xl">{section.title || 'A moment worth discovering.'}</h2><p className="mt-4 max-w-xl text-sm leading-7 text-white/65">{c.offerText}</p>{!c.hideTimer && c.endAt ? <CmsTimer endAt={c.endAt}/> : null}{btn}</div></div></section>;
-  if (section.type === 'muse_scene') return <MuseScene section={section}/>;
+  if (section.type === 'muse_scene') return <MuseScene section={section} products={products}/>;
     if (section.type === 'product_3d_showcase') return <Product3DShowcase section={{...section,config:c}} products={products}/>;
     if (section.type === 'fragrance_dna') return <FragranceDNA section={section}/>;
-    if (section.type === 'interactive_gallery') return <InteractiveGallery section={section}/>;
+    if (section.type === 'interactive_gallery') return <InteractiveGallery section={section} products={products}/>;
     if (section.type === 'community_pulse') return <CommunityPulse section={section}/>;
     if (section.type === 'footer_showcase') return <PremiumFooterShowcase section={section}/>;
     if (section.type === 'video_grid') {
-    const videos = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({
+    const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
+    const sourceVideos = cmsItems(c.items);
+    const videoItems = sourceVideos.length ? sourceVideos : ['The First Impression','Dark Woods','Made by Hand','Leave a Trace'].map((title)=>({title}));
+    const videos = videoItems.slice(0, Math.max(1, Number(c.limit)||cols)).map((x,i) => ({
       ...x,
       image: x.image || [c.filmAtmosphereVideoUrl,c.filmBotanicalVideoUrl,c.filmCraftVideoUrl,c.filmEmotionVideoUrl][i] || '',
-      link: x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || ''
+      link: editorialPage ? catalogImage(catalogProductAt(products,i)) : (x.link || [c.filmAtmosphereImageUrl,c.filmBotanicalImageUrl,c.filmCraftImageUrl,c.filmEmotionImageUrl][i] || '')
     }));
     return <section className="relative isolate overflow-hidden bg-white py-16 text-[#241638] sm:py-20 lg:py-24">
       <div aria-hidden="true" className="pointer-events-none absolute -left-32 top-[-5rem] h-96 w-96 rounded-full bg-purple-100/80 blur-3xl"/>
@@ -647,10 +693,22 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     </section>;
   }
   if (section.type === 'post_grid' || section.type === 'blog_grid') {
-    const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||3)).map((x,i) => ({
-      ...x,
-      image:x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''
-    }));
+    const journalPage = section.pageKey === 'journal';
+    const defaultPosts = [
+      { title: 'Find your signature scent', text: 'Begin with the feeling you want to carry. Explore the AFSANA collection and discover a fragrance that belongs in your everyday ritual.' },
+      { title: 'A world in every note', text: 'Fresh, floral, woody and warm compositions each create a different atmosphere. Explore the AFSANA fragrances and find the notes that feel like you.' },
+      { title: 'The art of giving', text: 'A considered fragrance gift turns an ordinary occasion into a personal memory. Discover the AFSANA edit for thoughtful gifting.' }
+    ];
+    const sourcePosts = cmsItems(c.items);
+    const posts = (sourcePosts.length ? sourcePosts : defaultPosts).slice(0, Math.max(3, Number(c.limit)||3)).map((x,i) => {
+      const product = catalogProductAt(products, i);
+      return {
+        ...x,
+        image: ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
+        link: ['discover','journal','house','gifting'].includes(section.pageKey) && product ? catalogProductLink(product) : (x.link || '/journal'),
+        productName: ['discover','journal','house','gifting'].includes(section.pageKey) ? product?.name : ''
+      };
+    });
     const featured = posts[0];
     const supporting = posts.slice(1,3);
     return <section className="afsana-journal-pro">
@@ -665,24 +723,24 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
         </div>
         {featured ? <div className="afsana-journal-layout">
           <Link to={featured.link || '/journal'} className="afsana-journal-feature">
-            {featured.image && <img src={featured.image} srcSet={responsiveUnsplashSrcSet(featured.image, 66)} sizes="(max-width: 700px) 100vw, 65vw" alt={featured.title || 'AFSANA journal feature'} width="1600" height="1100" loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}
+            {featured.image ? <img src={featured.image} alt={featured.productName || featured.title || 'AFSANA journal feature'} width="1600" height="1100" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-journal-image-fallback"><span>AFSANA</span><small>THE ART OF SCENT</small></div>}
             <div className="afsana-journal-feature-shade"/>
             <div className="afsana-journal-feature-meta"><span>THE FEATURED STORY</span><span>01 / {String(posts.length).padStart(2,'0')}</span></div>
             <div className="afsana-journal-feature-copy">
               <p>THE AFSANA EDIT</p>
               <h3>{featured.title}</h3>
               {featured.text && <span>{featured.text}</span>}
-              <b>Read the story <ArrowRight className="h-4 w-4"/></b>
+              <b>{journalPage ? 'Explore fragrance' : 'Read the story'} <ArrowRight className="h-4 w-4"/></b>
             </div>
           </Link>
           <div className="afsana-journal-side">
             {supporting.map((post,index)=><Link to={post.link || '/journal'} key={post.title || index} className="afsana-journal-side-card">
-              <div className="afsana-journal-side-image">{post.image && <img src={post.image} srcSet={responsiveUnsplashSrcSet(post.image, 66)} sizes="(max-width: 700px) 100vw, 28vw" alt={post.title || 'AFSANA journal story'} width="900" height="1100" loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span>0{index+2}</span></div>
+              <div className="afsana-journal-side-image">{post.image ? <img src={post.image} alt={post.productName || post.title || 'AFSANA journal story'} width="900" height="1100" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-journal-image-fallback"><span>AFSANA</span></div>}<span>0{index+2}</span></div>
               <div className="afsana-journal-side-copy">
                 <small>{index===0?'INGREDIENT NOTES':'SCENT & RITUAL'}</small>
                 <h3>{post.title}</h3>
                 {post.text && <p>{post.text}</p>}
-                <b>Discover story <ArrowRight className="h-3.5 w-3.5"/></b>
+                <b>{journalPage ? 'Explore fragrance' : 'Discover story'} <ArrowRight className="h-3.5 w-3.5"/></b>
               </div>
             </Link>)}
             <div className="afsana-journal-note"><span>AFSANA / JOURNAL</span><p>Every fragrance holds a story. Here are a few worth discovering.</p><Link to="/journal">Enter the journal ↗</Link></div>
@@ -751,15 +809,50 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
       : section.pageKey === 'discover'
         ? [c.discoverEnergyImageUrl,c.discoverSoftImageUrl,c.discoverNightImageUrl]
         : [c.worldDarkImageUrl,c.worldSoftImageUrl,c.worldBoldImageUrl];
-    const worlds = cmsItems(c.items).map((item, i) => ({ ...item, image: item.image || assetImages[i] || '' }));
-    return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>{section.pageKey === 'gifting' ? 'Give them a feeling.' : section.pageKey === 'discover' ? 'Choose a feeling.' : <>Enter a scent <em>world.</em></>}</h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image && <img src={x.image} srcSet={responsiveUnsplashSrcSet(x.image, 66)} sizes="(max-width: 700px) 100vw, 33vw" alt={x.title} width="1200" height="1000" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {section.pageKey === 'gifting' ? ['THE PERSONAL TOUCH','THE FIRST CHAPTER','THE LITTLE EXTRA'][i] : section.pageKey === 'discover' ? ['THE ENERGY SEEKER','THE SOFT ROMANTIC','THE NIGHT THINKER'][i] : ['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
+    const defaultWorlds = section.pageKey === 'gifting' ? [
+      { title: 'Signature gifting', text: 'A personal fragrance for someone unforgettable.' },
+      { title: 'Discover a scent', text: 'Choose a fragrance that feels like them.' },
+      { title: 'Gift-ready moments', text: 'Make every celebration feel considered.' }
+    ] : [
+      { title: 'Make a statement', text: 'Confident, vivid and unforgettable.' },
+      { title: 'Feel luminous', text: 'Soft, airy and effortless.' },
+      { title: 'Stay mysterious', text: 'Deep, warm and magnetic.' }
+    ];
+    const sourceWorlds = cmsItems(c.items);
+    const useCatalogImages = ['discover','gifting','house','journal'].includes(section.pageKey);
+    const worlds = (sourceWorlds.length ? sourceWorlds : defaultWorlds).slice(0,3).map((item, i) => {
+      const product = catalogProductAt(products, i);
+      return {
+        ...item,
+        image: useCatalogImages ? catalogImage(product) : (item.image || assetImages[i] || ''),
+        link: useCatalogImages && product ? catalogProductLink(product) : (item.link || '/shop'),
+        productName: useCatalogImages ? product?.name : ''
+      };
+    });
+    return <section className="afsana-ref-worlds"><div className="container-xl"><div className="afsana-ref-section-head"><div><p className="afsana-ref-tag">{c.eyebrow || 'CHOOSE YOUR ATMOSPHERE'}</p><h2>{section.pageKey === 'gifting' ? 'Give them a feeling.' : section.pageKey === 'discover' ? 'Choose a feeling.' : <>Enter a scent <em>world.</em></>}</h2></div><p>{c.subtitle || 'Every fragrance has a universe. Find the one that feels like yours—from magnetic woods to luminous skin scents.'}</p></div><div className="afsana-ref-world-grid">{worlds.slice(0,3).map((x,i)=><Link to={x.link || '/shop'} key={i} className="afsana-ref-world-card">{x.image ? <img src={x.image} alt={x.productName || x.title || 'AFSANA perfume'} width="1200" height="1000" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_40%,rgba(255,189,55,.16),transparent_45%),linear-gradient(145deg,#173d26,#24583a)]"><div className="text-center"><b className="font-display text-4xl tracking-[.2em] text-[#ffbd37]">AFSANA</b><small className="mt-3 block text-[8px] font-semibold uppercase tracking-[.24em] text-white/65">THE ART OF SCENT</small></div></div>}<div className="afsana-ref-world-info"><small>{String(i+1).padStart(2,'0')} / {section.pageKey === 'gifting' ? ['THE PERSONAL TOUCH','THE FIRST CHAPTER','THE LITTLE EXTRA'][i] : section.pageKey === 'discover' ? ['THE ENERGY SEEKER','THE SOFT ROMANTIC','THE NIGHT THINKER'][i] : ['THE AFTER DARK EDIT','THE DAYLIGHT EDIT','THE STATEMENT EDIT'][i]}</small><h3>{x.title}</h3><p>{x.text}</p></div><span className="afsana-ref-world-arrow">↗</span></Link>)}</div></div></section>;
   }
   if (section.type === 'testimonials') return <CmsTestimonials section={section}/>;
   if (['benefits','trust_grid','values_grid'].includes(section.type)) return <section className="bg-[#faf8f4]"><div className="container-xl" style={style}>{heading}<div className="cms-grid" style={gridStyle}>{cmsItems(c.items).map((x,i)=><article key={i} className="rounded-2xl border border-[#263e0e]/10 bg-white p-6"><span className="text-2xl text-[#748e40]">✦</span><h3 className="mt-5 font-display text-2xl">{x.title}</h3><p className="mt-3 text-sm leading-7 text-[#5f654f]">{x.text}</p>{x.link && <Link to={x.link} className="mt-5 inline-block text-[9px] uppercase tracking-[.2em] text-[#263e0e]">Discover ↗</Link>}</article>)}</div></div></section>;
   if (section.type === 'marquee') return <section className="overflow-hidden bg-[#b4bf41] text-[#263e0e]"><div className="marquee-track flex gap-12 py-4 text-[10px] font-bold uppercase tracking-[.25em]">{cmsItems(c.items).concat(cmsItems(c.items)).map((x,i)=><span key={i}>{x.title || x.text || 'THE ART OF SCENT'} ✦</span>)}</div></section>;
   if (section.type === 'rich_text') return <section className="bg-[#faf8f4]"><div className={`container-xl flex flex-col ${align}`} style={style}><Eyebrow>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2><p className="mt-6 max-w-3xl text-sm leading-7 opacity-70">{c.body}</p>{btn}</div></section>;
   if (section.type === 'cinematic_statement') { const instagramMatch = String(c.videoUrl || '').match(/^https?:\/\/(?:www\.)?instagram\.com\/(?:reel|p|tv)\/([\w-]+)/i); const instagramEmbed = instagramMatch ? `https://www.instagram.com/${String(c.videoUrl).match(/instagram\.com\/(reel|p|tv)\//i)?.[1]}/${instagramMatch[1]}/embed/` : ''; return <section className="relative isolate overflow-hidden bg-[#10150a] text-white">{instagramEmbed ? <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(180,191,65,.18),transparent_65%)]"/> : c.videoUrl ? <DeferredBackgroundVideo src={c.videoUrl} poster={c.posterUrl} autoPlay={c.autoplay !== false} muted={c.muted !== false} controls={!!c.controls} className="absolute inset-0 -z-20 h-full w-full object-cover"/> : null}<div className={`container-xl relative flex min-h-[520px] flex-col items-center justify-center py-12 ${align}`} style={style}><Eyebrow light>{c.eyebrow || 'THE HOUSE OF AFSANA'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-4xl sm:text-7xl">{section.title}</h2>{c.body && <p className="mt-6 max-w-3xl text-sm leading-7 text-white/75">{c.body}</p>}{instagramEmbed && <iframe title="AFSANA Instagram Reel" src={instagramEmbed} className="mt-8 h-[620px] w-full max-w-[420px] rounded-xl border-0 bg-black" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen loading="lazy"/>}{btn}</div></section>; }
-  if (section.type === 'split_story') return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2"><div className="afsana-ref-story-copy"><Eyebrow>{c.eyebrow || 'OUR PHILOSOPHY'}</Eyebrow><h2>{section.title}</h2><p>{c.body}</p>{btn}</div><div className="afsana-ref-story-image">{(c.aboutStoryImageUrl || c.imageUrl) && <img src={c.aboutStoryImageUrl || c.imageUrl} srcSet={responsiveUnsplashSrcSet(c.aboutStoryImageUrl || c.imageUrl, 66)} sizes="(max-width: 700px) 100vw, 50vw" alt={section.title || 'AFSANA story'} width="1200" height="1350" loading="lazy" decoding="async"/>}</div></div></section>;
+  if (section.type === 'split_story') {
+    const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
+    const houseProduct = editorialPage ? catalogProductAt(products, 1) : null;
+    const storyImage = editorialPage ? catalogImage(houseProduct) : (c.aboutStoryImageUrl || c.imageUrl || '');
+    return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2">
+      <div className="afsana-ref-story-copy">
+        <Eyebrow>{c.eyebrow || (editorialPage ? 'THE AFSANA PHILOSOPHY' : 'OUR PHILOSOPHY')}</Eyebrow>
+        <h2>{section.title || (section.pageKey === 'house' ? 'A little unexpected. A lot unforgettable.' : section.pageKey === 'gifting' ? 'A gift with a point of view.' : section.pageKey === 'journal' ? 'Every fragrance has a story.' : 'Find the feeling behind the fragrance.')}</h2>
+        <p>{c.body || (section.pageKey === 'house' ? 'AFSANA is built around a simple belief: scent can turn an ordinary moment into a lasting memory. Explore compositions made for presence, character and personal expression.' : section.pageKey === 'gifting' ? 'A fragrance is a thoughtful way to mark a moment. Choose a real AFSANA composition that feels personal, considered and made to be remembered.' : section.pageKey === 'journal' ? 'From first impression to final trail, explore the ideas, notes and rituals that shape the AFSANA fragrance experience.' : 'Start with the mood you want to carry, then explore the AFSANA collection for a scent that feels like your own.')}</p>
+        {btn}
+        {houseProduct?.name && <Link to={catalogProductLink(houseProduct)} className="mt-5 inline-flex text-[9px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">Discover {houseProduct.name} ↗</Link>}
+      </div>
+      <div className="afsana-ref-story-image">
+        {storyImage ? (houseProduct ? <Link to={catalogProductLink(houseProduct)} aria-label={`Explore ${houseProduct.name}`}><img src={storyImage} alt={houseProduct.name || 'AFSANA perfume'} width="1200" height="1350" loading="lazy" decoding="async"/></Link> : <img src={storyImage} alt={section.title || 'AFSANA story'} width="1200" height="1350" loading="lazy" decoding="async"/>) : <div className="afsana-journal-image-fallback"><span>AFSANA</span><small>THE HOUSE OF SCENT</small></div>}
+      </div>
+    </div></section>;
+  }
   if (section.type === 'video_banner') {
     const videoSource = /world of afsana/i.test(section.title || '') ? 'https://www.instagram.com/reel/DfMwPQwo4TV/' : c.videoUrl;
     const reelParts = (() => {
@@ -797,7 +890,31 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     </section>;
   }
   if (section.type === 'hero' && ['reference','inner'].includes(c.layout)) return <ReferenceHero section={section} config={c} products={products}/>;
-  if (['hero','image_banner','split_story','lookbook'].includes(section.type)) return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}><div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} srcSet={responsiveUnsplashSrcSet(c.imageUrl, 68)} sizes="100vw" alt="" width="1600" height="900" loading={section.type === 'hero' ? 'eager' : 'lazy'} fetchPriority={section.type === 'hero' ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div><div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div></section>;
+  if (['hero','image_banner','split_story','lookbook'].includes(section.type)) {
+    const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
+    const pageProduct = editorialPage ? catalogProductAt(products, section.pageKey === 'gifting' ? 2 : section.pageKey === 'journal' ? 1 : 0) : null;
+    const pageProductImage = catalogImage(pageProduct);
+    if (editorialPage) return <section className="afsana-ref-inner-hero afsana-ref-inner-hero-catalog">
+      <div className="afsana-ref-inner-overlay"/>
+      <div className="container-xl afsana-ref-inner-catalog-grid relative z-10">
+        <div className="afsana-ref-inner-catalog-copy">
+          <p className="afsana-ref-eyebrow">{c.eyebrow || 'THE ART OF SCENT'}</p>
+          <h1>{section.title || 'A world in every note.'}</h1>
+          {c.subtitle && <p>{c.subtitle}</p>}
+          {c.body && <p>{c.body}</p>}
+          {btn}
+        </div>
+        <div className="afsana-ref-inner-catalog-product">
+          {pageProductImage ? <Link to={catalogProductLink(pageProduct)} aria-label={`Explore ${pageProduct.name}`}><img src={pageProductImage} alt={pageProduct.name || 'AFSANA perfume'} width="900" height="1200" loading="eager" decoding="async"/></Link> : <div className="afsana-ref-inner-product-pending"><b>AFSANA</b><span>THE ART OF SCENT</span></div>}
+          {pageProduct?.name && <p>{pageProduct.name}</p>}
+        </div>
+      </div>
+    </section>;
+    return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}>
+      <div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} srcSet={responsiveUnsplashSrcSet(c.imageUrl, 68)} sizes="100vw" alt="" width="1600" height="900" loading={section.type === 'hero' ? 'eager' : 'lazy'} fetchPriority={section.type === 'hero' ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div>
+      <div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div>
+    </section>;
+  }
   return null;
 }
 function FilmCard({ film, index, autoplay = true }) {
@@ -806,6 +923,7 @@ function FilmCard({ film, index, autoplay = true }) {
   const [visible, setVisible] = useState(false);
   const videoRef = useRef(null);
   const source = String(film.image || '').trim();
+  const poster = String(film.link || '').trim();
   const labels = ['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'];
   const accents = [
     'from-purple-500/55 via-fuchsia-400/10 to-transparent',
@@ -837,8 +955,8 @@ function FilmCard({ film, index, autoplay = true }) {
   }, [source, muted, autoplay, nearViewport, visible]);
   return <article className="group relative isolate min-h-[390px] aspect-[.78] overflow-hidden rounded-[22px] border border-purple-100 bg-[#201632] shadow-[0_18px_48px_rgba(42,27,70,.13)] transition duration-700 hover:-translate-y-2 hover:border-pink-200 hover:shadow-[0_28px_64px_rgba(96,52,148,.22)] sm:min-h-[440px] xl:min-h-[500px]">
     {source
-      ? <video ref={videoRef} key={source} src={nearViewport ? source : undefined} poster={film.link || undefined} autoPlay={false} muted={muted} loop playsInline preload="none" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
-      : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-purple-900 via-[#292044] to-sky-900 px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-white/70">Add a video in CMS</div>}
+      ? <video ref={videoRef} key={source} src={nearViewport ? source : undefined} poster={poster || undefined} autoPlay={false} muted={muted} loop playsInline preload="none" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
+      : poster ? <img src={poster} alt={film.title || 'AFSANA fragrance'} width="1000" height="1300" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain bg-[#173d26] p-7"/> : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#173d26] via-[#214d32] to-[#102b1a] px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-[#ffbd37]">AFSANA / THE ART OF SCENT</div>}
     <div aria-hidden="true" className={'pointer-events-none absolute inset-0 bg-gradient-to-br '+(accents[index] || accents[0])}/>
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#160d2d]/95 via-[#211638]/16 to-[#1d1230]/10"/>
     <div aria-hidden="true" className="pointer-events-none absolute inset-[10px] rounded-[15px] border border-white/25 transition duration-700 group-hover:inset-[15px] group-hover:border-white/45"/>
@@ -852,35 +970,56 @@ function FilmCard({ film, index, autoplay = true }) {
     </div>
   </article>;
 }
-function CmsSectionList({ sections, faq, inheritedAssets = {} }) {
+function AfsanaEditorialProductShelf({ pageKey, products }) {
+  const picks = catalogProductsWithImages(products).slice(0,4);
+  const copy = {
+    discover: ['THE AFSANA COLLECTION', 'Find your next signature.', 'Explore the live AFSANA fragrances and discover the bottle that fits your mood.'],
+    journal: ['SCENT / IN OBJECTS', 'Stories you can wear.', 'Meet the AFSANA fragrances behind the notes, rituals and stories in our journal.'],
+    house: ['THE HOUSE COLLECTION', 'Meet the fragrances of AFSANA.', 'Every bottle is part of the AFSANA story. Explore the current collection.'],
+    gifting: ['THE GIFT EDIT', 'Give a scent worth remembering.', 'Choose a fragrance from the live AFSANA collection for a thoughtful, personal gift.']
+  }[pageKey] || ['THE AFSANA COLLECTION', 'Discover AFSANA.', 'Explore the live fragrance collection.'];
+  return <section className="afsana-editorial-product-shelf">
+    <div className="container-xl">
+      <div className="afsana-editorial-product-shelf-head">
+        <div><p>{copy[0]}</p><h2>{copy[1]}</h2><span>{copy[2]}</span></div>
+        <Link to="/shop">View all fragrances ↗</Link>
+      </div>
+      {picks.length ? <div className="afsana-editorial-product-shelf-grid">{picks.map((product)=><ProductCard key={product.id || product.slug} product={product}/>)}</div> : <div className="afsana-editorial-product-empty">AFSANA product photographs are being prepared. Please add a primary image to each published product in the catalogue.</div>}
+    </div>
+  </section>;
+}
+
+function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' }) {
   const source = Array.isArray(sections) ? sections : [];
-  // Fetch catalog data only for page sections that actually render products.
-  // CMS footer, banners and editorial-only pages should not open MongoDB reads.
   const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'footer_showcase');
-  const needsProducts = safe.some((section) =>
+  const editorialPage = ['discover','journal','house','gifting'].includes(pageKey);
+  const needsProducts = editorialPage || safe.some((section) =>
     ['featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'product_3d_showcase'].includes(section?.type) ||
     (section?.type === 'hero' && ['reference', 'inner'].includes(section?.config?.layout))
   );
   const { data } = useApi(
-    () => needsProducts ? productsApi.list({ sort: 'popular', limit: 12 }) : Promise.resolve({ products: [] }),
-    [needsProducts]
+    () => needsProducts ? productsApi.list({ sort: 'popular', limit: editorialPage ? 36 : 12 }) : Promise.resolve({ products: [] }),
+    [needsProducts, editorialPage]
   );
   const shopSettings = useShopSettings();
   const products = data?.products || [];
-  // The public API sends only enabled and non-deleted CMS rows.
-  // Do not require internal template/theme tags here: custom and older saved
-  // sections are valid storefront content too.
-  // The footer showcase is rendered once in the global footer by ShopLayout, not again in the homepage flow.
+  const hasCatalogSection = safe.some((section) =>
+    ['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section?.type)
+  );
+  const showEditorialShelf = editorialPage && !hasCatalogSection;
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
     publicWhatsapp: '923252032321'
   };
-  return <div className="bg-[#f7f4ed] text-[#100d24]">{safe.map((s) =>
-    <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
-      <CmsSection section={s} products={products} faq={faq} referenceAssets={referenceAssets} shopSettings={shopSettings}/>
-    </div>
-  )}</div>;
+  return <div className="bg-[#f7f4ed] text-[#100d24]">
+    {safe.map((s) =>
+      <div key={s.id} className="afsana-cms-section afsana-cms-theme-neon">
+        <CmsSection section={{...s,pageKey}} products={products} faq={faq} referenceAssets={referenceAssets} shopSettings={shopSettings}/>
+      </div>
+    )}
+    {showEditorialShelf && <AfsanaEditorialProductShelf pageKey={pageKey} products={products}/>}
+  </div>;
 }
 
 function CmsDrivenHome({ sections, faq, referenceAssets = {} }) {
@@ -909,13 +1048,47 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
   if (!sections.length && !isPreviewPage && !hasManagedLayout) return fallback;
   const previewAssets = preview?.layouts?.home?.find((item) => item.type === 'reference_assets')?.config || {};
   const referenceAssets = Object.keys(previewAssets).length ? previewAssets : (data?.homepageSections || []).find((item) => item.type === 'reference_assets')?.config || {};
-  return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} />;
+  return <CmsSectionList sections={sections} faq={data?.faqs || []} inheritedAssets={referenceAssets} pageKey={pageKey} />;
 }
 
 export function ScentFinderPage(){
-  // Keep the interactive scent finder, but do not inject hardcoded storefront
-  // sections here. Promotional/page content must come from the CMS.
-  return <Finder/>;
+  const {data,loading}=useApi(()=>productsApi.list({sort:'popular',limit:36}),[]);
+  const products=data?.products||[];
+  const visualProducts=catalogProductsWithImages(products).slice(0,3);
+  const worlds=[
+    ['THE AFTER DARK EDIT','Make a statement','Confident, vivid and unforgettable.'],
+    ['THE DAYLIGHT EDIT','Feel luminous','Soft, airy and effortless.'],
+    ['THE STATEMENT EDIT','Stay mysterious','Deep, warm and magnetic.']
+  ];
+  return <div className="bg-[#f7f4ed] text-[#173d26]">
+    <section className="relative overflow-hidden bg-[#173d26] text-white">
+      <div className="container-xl grid min-h-[400px] items-center gap-8 py-14 sm:py-20 lg:grid-cols-[1fr_.8fr]">
+        <div><p className="text-[9px] font-bold uppercase tracking-[.3em] text-[#ffbd37]">AFSANA SCENT INTELLIGENCE / DISCOVER</p>
+          <h1 className="mt-6 font-display text-6xl leading-[.9] sm:text-8xl">There is a<br/><em className="text-[#ffbd37]">scent for that.</em></h1>
+          <p className="mt-6 max-w-xl text-sm leading-8 text-white/75">Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.</p>
+          <a href="#finderSection" className="mt-7 inline-flex bg-[#ffbd37] px-6 py-4 text-[9px] font-bold uppercase tracking-[.18em] text-[#173d26]">Begin your scent match ↗</a>
+        </div>
+        <div className="grid grid-cols-3 items-end gap-3">
+          {visualProducts.map((product,i)=><Link key={product.id||product.slug} to={catalogProductLink(product)} className={`flex items-center justify-center rounded-xl border border-white/15 bg-white/[.06] ${i===1?'h-[270px]':'h-[220px]'}`}>
+            <img src={catalogImage(product)} alt={product.name} width="600" height="800" loading="lazy" decoding="async" className="h-full w-full object-contain p-2"/>
+          </Link>)}
+          {!visualProducts.length && <div className="col-span-3 grid h-[240px] place-items-center border border-white/20 text-center"><div><b className="font-display text-4xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.2em] text-white/55">{loading?'LOADING THE COLLECTION':'PUBLISH PRODUCT PHOTOS TO DISPLAY THE COLLECTION'}</p></div></div>}
+        </div>
+      </div>
+    </section>
+    <section className="bg-white py-16 sm:py-20">
+      <div className="container-xl">
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-6"><div><p className="text-[9px] font-bold uppercase tracking-[.28em] text-[#7357ff]">A MORE PERSONAL DISCOVERY</p><h2 className="mt-3 font-display text-5xl sm:text-6xl">Enter a scent <em>world.</em></h2></div><p className="max-w-sm text-xs leading-7 text-[#687363]">Fragrance is personal. Let your instinct lead and explore a scent world that matches your energy.</p></div>
+        <div className="grid gap-4 md:grid-cols-3">{worlds.map(([kicker,title,body],i)=>{const product=visualProducts[i];return <Link key={title} to={catalogProductLink(product)} className="group relative min-h-[340px] overflow-hidden rounded-2xl bg-[#241638] text-white">
+          {product && <img src={catalogImage(product)} alt={product.name} width="900" height="1100" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain p-7 transition duration-700 group-hover:scale-[1.04]"/>}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#100d24] via-[#100d24]/5 to-transparent"/>
+          <div className="absolute bottom-6 left-6 right-6"><small className="text-[8px] font-bold uppercase tracking-[.2em] text-[#ffdf90]">{kicker}</small><h3 className="mt-2 font-display text-3xl">{title}</h3><p className="mt-2 text-xs text-white/75">{body}</p>{product?.name && <span className="mt-4 inline-block text-[8px] font-bold uppercase tracking-[.16em] text-[#ffbd37]">{product.name} ↗</span>}</div>
+        </Link>})}</div>
+      </div>
+    </section>
+    <Finder/>
+    <AfsanaEditorialProductShelf pageKey="discover" products={products}/>
+  </div>;
 }
 
 export default function AfsanaSignatureHome(){
