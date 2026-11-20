@@ -1,3 +1,4 @@
+import { responsiveUnsplashSrcSet } from './responsiveImages';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ArrowUpRight } from 'lucide-react';
@@ -28,6 +29,8 @@ export default function ProductCard({ product }) {
             <>
               <img
                 src={imageUrl}
+                srcSet={responsiveUnsplashSrcSet(imageUrl, 66)}
+                sizes="(max-width: 640px) 48vw, (max-width: 1024px) 33vw, 25vw"
                 alt={p.image.alt || p.name}
                 width="1000"
                 height="1250"
@@ -38,6 +41,8 @@ export default function ProductCard({ product }) {
               {secondary?.url ? (
                 <img
                   src={secondary.url}
+                  srcSet={responsiveUnsplashSrcSet(secondary.url, 66)}
+                  sizes="(max-width: 640px) 48vw, (max-width: 1024px) 33vw, 25vw"
                   alt=""
                   width="1000"
                   height="1250"
