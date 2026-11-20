@@ -999,9 +999,43 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
 }
 
 export function ScentFinderPage(){
-  // Keep the interactive scent finder, but do not inject hardcoded storefront
-  // sections here. Promotional/page content must come from the CMS.
-  return <Finder/>;
+  const {data,loading}=useApi(()=>productsApi.list({sort:'popular',limit:36}),[]);
+  const products=data?.products||[];
+  const visualProducts=catalogProductsWithImages(products).slice(0,3);
+  const worlds=[
+    ['THE AFTER DARK EDIT','Make a statement','Confident, vivid and unforgettable.'],
+    ['THE DAYLIGHT EDIT','Feel luminous','Soft, airy and effortless.'],
+    ['THE STATEMENT EDIT','Stay mysterious','Deep, warm and magnetic.']
+  ];
+  return <div className="bg-[#f7f4ed] text-[#173d26]">
+    <section className="relative overflow-hidden bg-[#173d26] text-white">
+      <div className="container-xl grid min-h-[400px] items-center gap-8 py-14 sm:py-20 lg:grid-cols-[1fr_.8fr]">
+        <div><p className="text-[9px] font-bold uppercase tracking-[.3em] text-[#ffbd37]">AFSANA SCENT INTELLIGENCE / DISCOVER</p>
+          <h1 className="mt-6 font-display text-6xl leading-[.9] sm:text-8xl">There is a<br/><em className="text-[#ffbd37]">scent for that.</em></h1>
+          <p className="mt-6 max-w-xl text-sm leading-8 text-white/75">Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.</p>
+          <a href="#finderSection" className="mt-7 inline-flex bg-[#ffbd37] px-6 py-4 text-[9px] font-bold uppercase tracking-[.18em] text-[#173d26]">Begin your scent match ↗</a>
+        </div>
+        <div className="grid grid-cols-3 items-end gap-3">
+          {visualProducts.map((product,i)=><Link key={product.id||product.slug} to={catalogProductLink(product)} className={`flex items-center justify-center rounded-xl border border-white/15 bg-white/[.06] ${i===1?'h-[270px]':'h-[220px]'}`}>
+            <img src={catalogImage(product)} alt={product.name} width="600" height="800" loading="lazy" decoding="async" className="h-full w-full object-contain p-2"/>
+          </Link>)}
+          {!visualProducts.length && <div className="col-span-3 grid h-[240px] place-items-center border border-white/20 text-center"><div><b className="font-display text-4xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.2em] text-white/55">{loading?'LOADING THE COLLECTION':'PUBLISH PRODUCT PHOTOS TO DISPLAY THE COLLECTION'}</p></div></div>}
+        </div>
+      </div>
+    </section>
+    <section className="bg-white py-16 sm:py-20">
+      <div className="container-xl">
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-6"><div><p className="text-[9px] font-bold uppercase tracking-[.28em] text-[#7357ff]">A MORE PERSONAL DISCOVERY</p><h2 className="mt-3 font-display text-5xl sm:text-6xl">Enter a scent <em>world.</em></h2></div><p className="max-w-sm text-xs leading-7 text-[#687363]">Fragrance is personal. Let your instinct lead and explore a scent world that matches your energy.</p></div>
+        <div className="grid gap-4 md:grid-cols-3">{worlds.map(([kicker,title,body],i)=>{const product=visualProducts[i];return <Link key={title} to={catalogProductLink(product)} className="group relative min-h-[340px] overflow-hidden rounded-2xl bg-[#241638] text-white">
+          {product && <img src={catalogImage(product)} alt={product.name} width="900" height="1100" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain p-7 transition duration-700 group-hover:scale-[1.04]"/>}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#100d24] via-[#100d24]/5 to-transparent"/>
+          <div className="absolute bottom-6 left-6 right-6"><small className="text-[8px] font-bold uppercase tracking-[.2em] text-[#ffdf90]">{kicker}</small><h3 className="mt-2 font-display text-3xl">{title}</h3><p className="mt-2 text-xs text-white/75">{body}</p>{product?.name && <span className="mt-4 inline-block text-[8px] font-bold uppercase tracking-[.16em] text-[#ffbd37]">{product.name} ↗</span>}</div>
+        </Link>})}</div>
+      </div>
+    </section>
+    <Finder/>
+    <AfsanaEditorialProductShelf pageKey="discover" products={products}/>
+  </div>;
 }
 
 export default function AfsanaSignatureHome(){
