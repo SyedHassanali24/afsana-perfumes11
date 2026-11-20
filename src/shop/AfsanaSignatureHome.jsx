@@ -882,9 +882,17 @@ export function ScentFinderPage(){
 }
 
 export default function AfsanaSignatureHome(){
-  const { data } = useApi(() => cmsPublicApi.content(), []);
+  const { data, loading } = useApi(() => cmsPublicApi.content(), []);
   const preview = readCmsPreview();
   const previewSections = Array.isArray(preview?.layouts?.home) ? preview.layouts.home : preview && (new URLSearchParams(window.location.search).get('afsanaPageKey') || preview.pageKey || 'home') === 'home' ? preview.sections : null;
+  if (loading && !data && !previewSections) {
+    return <section className="afsana-cms-home-reserve" aria-busy="true" aria-label="Loading AFSANA homepage">
+      <div className="container-xl">
+        <p>THE ART OF SCENT</p>
+        <div>AFSANA</div>
+      </div>
+    </section>;
+  }
   const sections = previewSections || data?.pageSections?.home || data?.homepageSections || [];
   const homeSections = sections.some((item) => item?.type === 'testimonials')
     ? sections
