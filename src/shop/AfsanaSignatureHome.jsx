@@ -45,7 +45,7 @@ const catalogProductForEditorialPage = (products = [], pageKey = '') => {
     target.pattern.test(String(product?.name || ''))
   ) || null;
 };
-const catalogProductLink = (product) => product?.slug ? \`/product/\${product.slug}\` : '/shop';
+const catalogProductLink = (product) => product?.slug ? `/product/${product.slug}` : '/shop';
 const Eyebrow=({children,light=false,white=false})=><div className={'flex items-center gap-3 text-[9px] sm:text-[10px] uppercase tracking-[.38em] font-semibold '+(white?'!text-white':light?'text-[#b4bf41]':'text-[#263e0e]')}><span className="w-9 h-px bg-current opacity-70"/>{children}</div>;
 function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, controls = false, className = '' }) {
   const videoRef = useRef(null);
