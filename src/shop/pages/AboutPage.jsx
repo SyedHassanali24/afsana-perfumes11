@@ -11,8 +11,9 @@ const Ey = ({ children, light = false }) => <p className={`eyebrow ${light ? 'te
 export default function AboutPage() {
   useTitle('The House of AFSANA — The Art of Scent');
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
+  const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Ember Light', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
-  const featured = products[0];
+  const featured = (featuredData?.products || []).find((product) => /\\bember\\s*light\\b/i.test(String(product?.name || '')) && product?.image?.url) || null;
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
       <Container className="relative grid min-h-[520px] items-center gap-8 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr]">
@@ -26,7 +27,7 @@ export default function AboutPage() {
           <div className="absolute h-[300px] w-[300px] rounded-full border border-[#ffbd37]/30 bg-[#ffbd37]/10 shadow-[0_0_85px_rgba(255,189,55,.12)]"/>
           {featured ? <Link to={`/product/${featured.slug}`} aria-label={`Explore ${featured.name}`} className="relative z-10 flex h-[360px] w-full items-center justify-center">
             <img src={featured.image.url} alt={featured.name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[360px] w-full object-contain drop-shadow-[0_28px_38px_rgba(0,0,0,.42)]"/>
-          </Link> : <div className="relative z-10 text-center"><b className="font-display text-5xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.28em] text-white/60">{loading ? 'THE COLLECTION IS LOADING' : 'THE ART OF SCENT'}</p></div>}
+          </Link> : <div className="relative z-10 text-center"><b className="font-display text-5xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.28em] text-white/60">{featuredLoading ? 'LOADING EMBER LIGHT' : 'EMBER LIGHT IMAGE NOT SET IN THE LIVE CATALOGUE'}</p></div>}
           {featured?.name && <p className="absolute bottom-0 text-[9px] font-bold uppercase tracking-[.25em] text-[#ffbd37]">{featured.name}</p>}
         </div>
       </Container>
