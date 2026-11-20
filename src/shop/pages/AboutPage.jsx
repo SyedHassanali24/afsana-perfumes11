@@ -13,7 +13,7 @@ export default function AboutPage() {
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
   const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Ember Light', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
-  const featured = (featuredData?.products || []).find((product) => /\\bember\\s*light\\b/i.test(String(product?.name || '')) && product?.image?.url) || null;
+  const featured = (featuredData?.products || []).find((product) => String(product?.name || '').toLowerCase().includes('ember light') && product?.image?.url) || null;
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
       <Container className="relative grid min-h-[520px] items-center gap-8 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr]">
