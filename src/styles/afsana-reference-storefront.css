@@ -955,3 +955,235 @@
 .storefront-theme.afsana-reference-storefront .afsana-ref-worlds .afsana-ref-world-card * {
   color:#fff!important;
 }
+
+
+
+/* AFSANA managed footer — balanced desktop columns and a deliberate mobile stack. */
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer{
+  background:#194629!important;
+  color:#fff!important;
+  border-top:1px solid rgba(255,189,55,.24)!important;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .container-xl{
+  width:min(100% - 48px,1320px)!important;
+  max-width:1320px!important;
+  padding-top:54px!important;
+  padding-bottom:0!important;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-grid{
+  display:grid;
+  grid-template-columns:minmax(230px,1.25fr) minmax(140px,.8fr) minmax(145px,.8fr) minmax(220px,1.1fr);
+  align-items:start;
+  gap:clamp(24px,3.4vw,52px);
+  padding-bottom:46px;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-brand-col{min-width:0}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-eyebrow,
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-heading,
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-label{
+  margin:0;
+  color:#ffbd37!important;
+  font-size:9px!important;
+  font-weight:700!important;
+  letter-spacing:.24em!important;
+  line-height:1.5;
+  text-transform:uppercase;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-brand{
+  margin:14px 0 0!important;
+  color:#fff!important;
+  font-family:'Cormorant Garamond',Georgia,serif!important;
+  font-size:clamp(54px,6.2vw,78px)!important;
+  font-weight:600!important;
+  letter-spacing:-.045em!important;
+  line-height:.88!important;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-description{
+  max-width:330px;
+  margin:18px 0 0!important;
+  color:rgba(255,255,255,.74)!important;
+  font-size:13px!important;
+  line-height:1.85!important;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-group{min-width:0}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-links{
+  display:grid;
+  gap:13px;
+  margin-top:22px;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-links a{
+  display:flex;
+  min-width:0;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  color:rgba(255,255,255,.78)!important;
+  font-size:12px!important;
+  line-height:1.55;
+  text-decoration:none;
+  transition:color .2s ease;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-links a span:last-child{
+  color:#ffbd37;
+  opacity:.65;
+  transition:transform .2s ease,opacity .2s ease;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-links a:hover{
+  color:#ffcf73!important;
+  transform:none!important;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-links a:hover span:last-child{
+  opacity:1;
+  transform:translate(2px,-2px);
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-detail{
+  margin:18px 0 0!important;
+  color:rgba(255,255,255,.61)!important;
+  font-size:11px!important;
+  line-height:1.8!important;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-contact-line{
+  display:block;
+  overflow-wrap:anywhere;
+  margin-top:12px;
+  color:rgba(255,255,255,.82)!important;
+  font-size:12px!important;
+  line-height:1.65;
+  text-decoration:none;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-address{
+  white-space:pre-line;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-whatsapp{
+  display:inline-flex;
+  min-height:42px;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-top:19px;
+  padding:11px 16px;
+  border:1px solid #ffbd37;
+  border-radius:999px;
+  background:#ffbd37;
+  color:#194629!important;
+  font-size:10px!important;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-decoration:none;
+  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-whatsapp:hover{
+  background:#ffd477;
+  border-color:#ffd477;
+  color:#194629!important;
+  transform:translateY(-2px);
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-whatsapp-number{
+  margin:8px 0 0!important;
+  color:rgba(255,255,255,.55)!important;
+  font-size:10px!important;
+  letter-spacing:.08em;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-socials{margin-top:25px}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-social-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:12px;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-social{
+  display:grid;
+  width:38px;
+  height:38px;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.23);
+  border-radius:50%;
+  color:#ffbd37!important;
+  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-social:hover{
+  border-color:#ffbd37;
+  background:rgba(255,189,55,.12);
+  color:#ffcf73!important;
+  transform:translateY(-2px);
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  gap:20px;
+  margin:0 -24px!important;
+  padding:15px 24px!important;
+  border:0!important;
+  background:#ffbd37!important;
+  color:#262626!important;
+  font-size:8px!important;
+  line-height:1.6;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom>span{
+  min-width:0;
+  color:#262626!important;
+  font-size:8px!important;
+  overflow-wrap:anywhere;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom .afsana-footer-made{
+  text-align:center;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom nav{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:8px 18px;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom nav a{
+  color:#262626!important;
+  font-size:8px!important;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom nav a:hover{
+  color:#194629!important;
+  text-decoration:underline;
+}
+.storefront-theme.afsana-reference-storefront footer.afsana-pro-footer a:focus-visible{
+  outline:2px solid #ffbd37;
+  outline-offset:4px;
+}
+@media(max-width:1000px){
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:38px 34px;
+  }
+}
+@media(max-width:600px){
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .container-xl{
+    width:calc(100% - 36px)!important;
+    padding-top:38px!important;
+  }
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-grid{
+    grid-template-columns:minmax(0,1fr);
+    gap:30px;
+    padding-bottom:34px;
+  }
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-brand{
+    font-size:58px!important;
+  }
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-description{
+    max-width:420px;
+  }
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:9px;
+    margin:0 -18px!important;
+    padding:15px 18px!important;
+    text-align:center;
+  }
+  .storefront-theme.afsana-reference-storefront footer.afsana-pro-footer .afsana-footer-bottom nav{
+    justify-content:center;
+    gap:8px 14px;
+  }
+}
