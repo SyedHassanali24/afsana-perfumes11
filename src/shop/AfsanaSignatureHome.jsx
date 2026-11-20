@@ -456,17 +456,23 @@ function ConciergeFloat({ section }) {
 
 function ReferenceHero({ section, config, products }) {
   if (config.layout === 'inner') {
-    const productIndex = section.pageKey === 'journal' ? 1 : section.pageKey === 'gifting' ? 2 : section.pageKey === 'house' ? 3 : 0;
-    const featuredProduct = catalogProductAt(products, productIndex);
+    const pageIndex = section.pageKey === 'journal' ? 1 : section.pageKey === 'gifting' ? 2 : section.pageKey === 'house' ? 3 : 0;
+    const featuredProduct = catalogProductAt(products, pageIndex);
     const featuredImage = catalogImage(featuredProduct);
+    const pageCopy = {
+      discover: { eyebrow: 'AFSANA SCENT INTELLIGENCE', title: 'There is a scent for that.', subtitle: 'Explore the live AFSANA collection by mood, notes and the moments you want to make your own.', buttonText: 'Begin your scent match', buttonLink: '/discover' },
+      journal: { eyebrow: 'NOTES FROM THE HOUSE', title: 'A world in every note.', subtitle: 'Stories, ingredients and rituals from the House of AFSANA—through the fragrances that bring each feeling to life.', buttonText: 'Explore the AFSANA collection', buttonLink: '/shop' },
+      house: { eyebrow: 'THE HOUSE OF AFSANA', title: 'We make memories visible.', subtitle: 'A modern fragrance house shaped by contrast, character and the memories a scent leaves behind.', buttonText: 'Discover the house', buttonLink: '/shop' },
+      gifting: { eyebrow: 'GIVE WITH FEELING', title: 'Wrap up the extraordinary.', subtitle: 'Choose a real AFSANA fragrance for birthdays, celebrations, thoughtful gestures and the moments worth remembering.', buttonText: 'Explore gift fragrances', buttonLink: '/gifting' }
+    }[section.pageKey] || {};
     return <section className="afsana-ref-inner-hero afsana-ref-inner-hero-catalog">
       <div className="afsana-ref-inner-overlay"/>
       <div className="container-xl afsana-ref-inner-catalog-grid relative z-10">
         <div className="afsana-ref-inner-catalog-copy">
-          <p className="afsana-ref-eyebrow">{config.eyebrow || 'THE ART OF SCENT'}</p>
-          <h1>{section.title || 'A world in every note.'}</h1>
-          {config.subtitle && <p>{config.subtitle}</p>}
-          {config.buttonText && <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText} <span>↗</span></Link>}
+          <p className="afsana-ref-eyebrow">{config.eyebrow || pageCopy.eyebrow || 'THE ART OF SCENT'}</p>
+          <h1>{section.title || pageCopy.title || 'A world in every note.'}</h1>
+          <p>{config.subtitle || pageCopy.subtitle || 'Discover the AFSANA collection and find a fragrance that feels like you.'}</p>
+          <Link className="afsana-ref-btn" to={config.buttonLink || pageCopy.buttonLink || '/shop'}>{config.buttonText || pageCopy.buttonText || 'Explore the collection'} <span>↗</span></Link>
         </div>
         <div className="afsana-ref-inner-catalog-product">
           {featuredImage ? <Link to={catalogProductLink(featuredProduct)} aria-label={`Explore ${featuredProduct.name}`}>
@@ -835,7 +841,11 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     const houseProduct = editorialPage ? catalogProductAt(products, 1) : null;
     const storyImage = editorialPage ? catalogImage(houseProduct) : (c.aboutStoryImageUrl || c.imageUrl || '');
     return <section className="afsana-ref-story"><div className="container-xl grid items-center gap-12 lg:grid-cols-2">
-      <div className="afsana-ref-story-copy"><Eyebrow>{c.eyebrow || 'OUR PHILOSOPHY'}</Eyebrow><h2>{section.title}</h2><p>{c.body}</p>{btn}
+      <div className="afsana-ref-story-copy">
+        <Eyebrow>{c.eyebrow || (editorialPage ? 'THE AFSANA PHILOSOPHY' : 'OUR PHILOSOPHY')}</Eyebrow>
+        <h2>{section.title || (section.pageKey === 'house' ? 'A little unexpected. A lot unforgettable.' : section.pageKey === 'gifting' ? 'A gift with a point of view.' : section.pageKey === 'journal' ? 'Every fragrance has a story.' : 'Find the feeling behind the fragrance.')}</h2>
+        <p>{c.body || (section.pageKey === 'house' ? 'AFSANA is built around a simple belief: scent can turn an ordinary moment into a lasting memory. Explore compositions made for presence, character and personal expression.' : section.pageKey === 'gifting' ? 'A fragrance is a thoughtful way to mark a moment. Choose a real AFSANA composition that feels personal, considered and made to be remembered.' : section.pageKey === 'journal' ? 'From first impression to final trail, explore the ideas, notes and rituals that shape the AFSANA fragrance experience.' : 'Start with the mood you want to carry, then explore the AFSANA collection for a scent that feels like your own.')}</p>
+        {btn}
         {houseProduct?.name && <Link to={catalogProductLink(houseProduct)} className="mt-5 inline-flex text-[9px] font-semibold uppercase tracking-[.2em] text-[#263e0e]">Discover {houseProduct.name} ↗</Link>}
       </div>
       <div className="afsana-ref-story-image">
