@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import RequireAuth from './auth/RequireAuth';
 import LoginPage from './auth/LoginPage';
 import ChangePasswordPage from './auth/ChangePasswordPage';
-import AdminLayout from '../admin/components/AdminLayout';
+const AdminLayout = lazy(() => import('../admin/components/AdminLayout'));
 const Dashboard = lazy(() => import('../admin/dashboard/Dashboard'));
 const AnalyticsPage = lazy(() => import('../admin/dashboard/AnalyticsPage'));
 const CouponsList = lazy(() => import('../admin/coupons/CouponsList'));
