@@ -20,7 +20,11 @@ const img={
 };
 const video='https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4';
 // The public catalogue is the only source for perfume product imagery on editorial pages.
-const catalogImage = (product) => product?.image?.url || product?.media?.find?.((item) => item?.kind === 'main' && item?.url)?.url || product?.media?.find?.((item) => item?.url && !/\\.(mp4|webm|mov|m4v|glb|gltf)(\\?|$)/i.test(item.url))?.url || '';
+const isCatalogueImageUrl = (url) => {
+  const path = String(url || '').split(/[?#]/, 1)[0].toLowerCase();
+  return !!path && !['.mp4','.webm','.mov','.m4v','.glb','.gltf'].some((extension) => path.endsWith(extension));
+};
+const catalogImage = (product) => product?.image?.url || product?.media?.find?.((item) => item?.kind === 'main' && isCatalogueImageUrl(item?.url))?.url || product?.media?.find?.((item) => isCatalogueImageUrl(item?.url) && !['video','media360','model3d'].includes(String(item?.kind || '').toLowerCase()))?.url || '';
 const catalogProductsWithImages = (products = []) => products.filter((product) => catalogImage(product));
 const catalogProductAt = (products = [], index = 0) => {
   const available = catalogProductsWithImages(products);
@@ -318,7 +322,7 @@ function Product3DShowcase({ section, products=[] }) {
   useEffect(()=>{if(!c.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[c.product3dModelUrl]);
   const requestedProduct=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug));
   const chosen=(requestedProduct && catalogImage(requestedProduct)) ? requestedProduct : catalogProductAt(products,0) || requestedProduct || products[0];
-  const media=[...(chosen?.media||[])].filter(x=>x?.url && !/\\.(mp4|webm|mov|m4v|glb|gltf)(\\?|$)/i.test(String(x.url))).slice(0,8);
+  const media=[...(chosen?.media||[])].filter(x=>isCatalogueImageUrl(x?.url) && !['video','media360','model3d'].includes(String(x?.kind||'').toLowerCase())).slice(0,8);
   const ownProductImage=catalogImage(chosen);
   const frames=media.length?media:(ownProductImage?[{url:ownProductImage}]:[]);
   const [frame,setFrame]=useState(0),[auto,setAuto]=useState(true);
@@ -694,9 +698,9 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
       const product = catalogProductAt(products, i);
       return {
         ...x,
-        image: journalPage ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
-        link: journalPage && product ? catalogProductLink(product) : (x.link || '/journal'),
-        productName: journalPage ? product?.name : ''
+        image: ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
+        link: ['discover','journal','house','gifting'].includes(section.pageKey) && product ? catalogProductLink(product) : (x.link || '/journal'),
+        productName: ['discover','journal','house','gifting'].includes(section.pageKey) ? product?.name : ''
       };
     });
     const featured = posts[0];
