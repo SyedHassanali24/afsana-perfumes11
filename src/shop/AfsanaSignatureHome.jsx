@@ -670,10 +670,22 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     </section>;
   }
   if (section.type === 'post_grid' || section.type === 'blog_grid') {
-    const posts = cmsItems(c.items).slice(0, Math.max(1, Number(c.limit)||3)).map((x,i) => ({
-      ...x,
-      image:x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''
-    }));
+    const journalPage = section.pageKey === 'journal';
+    const defaultPosts = [
+      { title: 'Find your signature scent', text: 'Begin with the feeling you want to carry. Explore the AFSANA collection and discover a fragrance that belongs in your everyday ritual.' },
+      { title: 'A world in every note', text: 'Fresh, floral, woody and warm compositions each create a different atmosphere. Explore the AFSANA fragrances and find the notes that feel like you.' },
+      { title: 'The art of giving', text: 'A considered fragrance gift turns an ordinary occasion into a personal memory. Discover the AFSANA edit for thoughtful gifting.' }
+    ];
+    const sourcePosts = cmsItems(c.items);
+    const posts = (sourcePosts.length ? sourcePosts : defaultPosts).slice(0, Math.max(3, Number(c.limit)||3)).map((x,i) => {
+      const product = catalogProductAt(products, i);
+      return {
+        ...x,
+        image: journalPage ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
+        link: journalPage && product ? catalogProductLink(product) : (x.link || '/journal'),
+        productName: journalPage ? product?.name : ''
+      };
+    });
     const featured = posts[0];
     const supporting = posts.slice(1,3);
     return <section className="afsana-journal-pro">
@@ -688,24 +700,24 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
         </div>
         {featured ? <div className="afsana-journal-layout">
           <Link to={featured.link || '/journal'} className="afsana-journal-feature">
-            {featured.image && <img src={featured.image} srcSet={responsiveUnsplashSrcSet(featured.image, 66)} sizes="(max-width: 700px) 100vw, 65vw" alt={featured.title || 'AFSANA journal feature'} width="1600" height="1100" loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}
+            {featured.image ? <img src={featured.image} alt={featured.productName || featured.title || 'AFSANA journal feature'} width="1600" height="1100" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-journal-image-fallback"><span>AFSANA</span><small>THE ART OF SCENT</small></div>}
             <div className="afsana-journal-feature-shade"/>
             <div className="afsana-journal-feature-meta"><span>THE FEATURED STORY</span><span>01 / {String(posts.length).padStart(2,'0')}</span></div>
             <div className="afsana-journal-feature-copy">
               <p>THE AFSANA EDIT</p>
               <h3>{featured.title}</h3>
               {featured.text && <span>{featured.text}</span>}
-              <b>Read the story <ArrowRight className="h-4 w-4"/></b>
+              <b>{journalPage ? 'Explore fragrance' : 'Read the story'} <ArrowRight className="h-4 w-4"/></b>
             </div>
           </Link>
           <div className="afsana-journal-side">
             {supporting.map((post,index)=><Link to={post.link || '/journal'} key={post.title || index} className="afsana-journal-side-card">
-              <div className="afsana-journal-side-image">{post.image && <img src={post.image} srcSet={responsiveUnsplashSrcSet(post.image, 66)} sizes="(max-width: 700px) 100vw, 28vw" alt={post.title || 'AFSANA journal story'} width="900" height="1100" loading="lazy" onError={(e)=>{e.currentTarget.style.display='none';}}/>}<span>0{index+2}</span></div>
+              <div className="afsana-journal-side-image">{post.image ? <img src={post.image} alt={post.productName || post.title || 'AFSANA journal story'} width="900" height="1100" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <div className="afsana-journal-image-fallback"><span>AFSANA</span></div>}<span>0{index+2}</span></div>
               <div className="afsana-journal-side-copy">
                 <small>{index===0?'INGREDIENT NOTES':'SCENT & RITUAL'}</small>
                 <h3>{post.title}</h3>
                 {post.text && <p>{post.text}</p>}
-                <b>Discover story <ArrowRight className="h-3.5 w-3.5"/></b>
+                <b>{journalPage ? 'Explore fragrance' : 'Discover story'} <ArrowRight className="h-3.5 w-3.5"/></b>
               </div>
             </Link>)}
             <div className="afsana-journal-note"><span>AFSANA / JOURNAL</span><p>Every fragrance holds a story. Here are a few worth discovering.</p><Link to="/journal">Enter the journal ↗</Link></div>
