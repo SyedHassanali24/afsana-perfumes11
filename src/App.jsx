@@ -87,7 +87,29 @@ function TrafficTracker() {
   useEffect(() => {
     const isAdmin = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
     const isPreview = new URLSearchParams(location.search).get('afsanaPreview') === '1';
-    if (!isAdmin && !isPreview) trackStorefrontPageView(location.pathname, location.search);
+    if (isAdmin || isPreview) return undefined;
+
+    let idleId = null;
+    let timerId = null;
+    let cancelled = false;
+    const track = () => {
+      if (!cancelled) trackStorefrontPageView(location.pathname, location.search);
+    };
+
+    // Analytics is non-critical. Send it when the browser is idle (with a
+    // bounded fallback) so it cannot contend with first-screen resources.
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(track, { timeout: 2500 });
+    } else {
+      timerId = window.setTimeout(track, 1200);
+    }
+    return () => {
+      cancelled = true;
+      if (idleId !== null && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timerId !== null) window.clearTimeout(timerId);
+    };
   }, [location.pathname, location.search]);
   return null;
 }
