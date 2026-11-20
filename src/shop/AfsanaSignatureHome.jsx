@@ -19,6 +19,14 @@ const img={
  story:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1000&q=74'
 };
 const video='https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4';
+// The public catalogue is the only source for perfume product imagery on editorial pages.
+const catalogImage = (product) => product?.image?.url || product?.media?.find?.((item) => item?.kind === 'main' && item?.url)?.url || product?.media?.find?.((item) => item?.url && !/\\.(mp4|webm|mov|m4v|glb|gltf)(\\?|$)/i.test(item.url))?.url || '';
+const catalogProductsWithImages = (products = []) => products.filter((product) => catalogImage(product));
+const catalogProductAt = (products = [], index = 0) => {
+  const available = catalogProductsWithImages(products);
+  return available.length ? available[index % available.length] : null;
+};
+const catalogProductLink = (product) => product?.slug ? `/product/${product.slug}` : '/shop';
 const Eyebrow=({children,light=false,white=false})=><div className={'flex items-center gap-3 text-[9px] sm:text-[10px] uppercase tracking-[.38em] font-semibold '+(white?'!text-white':light?'text-[#b4bf41]':'text-[#263e0e]')}><span className="w-9 h-px bg-current opacity-70"/>{children}</div>;
 function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, controls = false, className = '' }) {
   const videoRef = useRef(null);
@@ -307,8 +315,9 @@ function Product3DShowcase({ section, products=[] }) {
   const c=section.config||{};
   useEffect(()=>{if(!c.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[c.product3dModelUrl]);
   const chosen=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug)) || products[0];
-  const media=[...(chosen?.media||[])].filter(x=>x?.url).slice(0,8);
-  const frames=media.length?media:[{url:c.imageUrl||img.signature}];
+  const media=[...(chosen?.media||[])].filter(x=>x?.url && !/\\.(mp4|webm|mov|m4v|glb|gltf)(\\?|$)/i.test(String(x.url))).slice(0,8);
+  const ownProductImage=catalogImage(chosen);
+  const frames=media.length?media:(ownProductImage?[{url:ownProductImage}]:[]);
   const [frame,setFrame]=useState(0),[auto,setAuto]=useState(true);
   const drag=useRef({active:false,x:0});
   useEffect(()=>{if(!auto||frames.length<2)return;const id=window.setInterval(()=>setFrame(v=>(v+1)%frames.length),900);return()=>window.clearInterval(id)},[auto,frames.length]);
@@ -324,7 +333,7 @@ function Product3DShowcase({ section, products=[] }) {
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
         {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={c.product3dPosterUrl || c.imageUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
-            <img src={frames[frame]?.url || img.signature} srcSet={responsiveUnsplashSrcSet(frames[frame]?.url || img.signature, 66)} sizes="(max-width: 700px) 90vw, 40vw" alt={chosen?.name||'AFSANA fragrance'} width="960" height="1200" onError={(e)=>{if(e.currentTarget.src!==img.signature)e.currentTarget.src=img.signature;}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/>
+            {frames.length ? <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} width="960" height="1200" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/> : <div className="grid h-[420px] w-[300px] place-items-center border border-white/15 bg-white/5 p-8 text-center"><div><b className="font-display text-3xl text-[#ffe500]">AFSANA</b><p className="mt-4 text-[9px] uppercase tracking-[.2em] text-white/55">Add a primary product photo in the live catalogue to enable the bottle showcase.</p></div></div>}
           </div>
         </div>}
         <div className="absolute bottom-4 left-0 text-[8px] uppercase tracking-[.18em] text-white/45">Drag to rotate · {frames.length} gallery angles</div><button type="button" onClick={()=>setAuto(v=>!v)} className="absolute bottom-4 right-0 border border-white/15 bg-white/5 px-4 py-3 text-[9px] uppercase tracking-[.2em] hover:border-[#ffe500]">{auto?'Pause 360°':'Play 360°'}</button>
