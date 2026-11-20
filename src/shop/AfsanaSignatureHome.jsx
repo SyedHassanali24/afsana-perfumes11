@@ -906,7 +906,7 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
   if (section.type === 'hero' && ['reference','inner'].includes(c.layout)) return <ReferenceHero section={section} config={c} products={products}/>;
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) {
     const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
-    const pageProduct = editorialPage ? catalogProductAt(products, section.pageKey === 'gifting' ? 2 : section.pageKey === 'journal' ? 1 : 0) : null;
+    const pageProduct = editorialPage ? catalogProductForEditorialPage(products, section.pageKey) : null;
     const pageProductImage = catalogImage(pageProduct);
     if (editorialPage) return <section className="afsana-ref-inner-hero afsana-ref-inner-hero-catalog">
       <div className="afsana-ref-inner-overlay"/>
@@ -1074,8 +1074,10 @@ export function ManagedCmsPage({ pageKey, fallback = null }) {
 
 export function ScentFinderPage(){
   const {data,loading}=useApi(()=>productsApi.list({sort:'popular',limit:36}),[]);
+  const {data:featuredData,loading:featuredLoading}=useApi(()=>productsApi.list({q:'Mood Swing',limit:8}),[]);
   const products=data?.products||[];
   const visualProducts=catalogProductsWithImages(products).slice(0,3);
+  const featuredMoodSwing=(featuredData?.products||[]).find((product)=>/\\bmood\\s*swing\\b/i.test(String(product?.name||''))&&catalogImage(product))||null;
   const worlds=[
     ['THE AFTER DARK EDIT','Make a statement','Confident, vivid and unforgettable.'],
     ['THE DAYLIGHT EDIT','Feel luminous','Soft, airy and effortless.'],
@@ -1089,11 +1091,12 @@ export function ScentFinderPage(){
           <p className="mt-6 max-w-xl text-sm leading-8 text-white/75">Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.</p>
           <a href="#finderSection" className="mt-7 inline-flex bg-[#ffbd37] px-6 py-4 text-[9px] font-bold uppercase tracking-[.18em] text-[#173d26]">Begin your scent match ↗</a>
         </div>
-        <div className="grid grid-cols-3 items-end gap-3">
-          {visualProducts.map((product,i)=><Link key={product.id||product.slug} to={catalogProductLink(product)} className={`flex items-center justify-center rounded-xl border border-white/15 bg-white/[.06] ${i===1?'h-[270px]':'h-[220px]'}`}>
-            <img src={catalogImage(product)} alt={product.name} width="600" height="800" loading="lazy" decoding="async" className="h-full w-full object-contain p-2"/>
-          </Link>)}
-          {!visualProducts.length && <div className="col-span-3 grid h-[240px] place-items-center border border-white/20 text-center"><div><b className="font-display text-4xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.2em] text-white/55">{loading?'LOADING THE COLLECTION':'PUBLISH PRODUCT PHOTOS TO DISPLAY THE COLLECTION'}</p></div></div>}
+        <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden rounded-[28px] border border-white/15 bg-white/[.045] p-4 sm:min-h-[430px]">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-8 rounded-full bg-[#e8b3c9]/20 blur-3xl"/>
+          {featuredMoodSwing ? <Link to={catalogProductLink(featuredMoodSwing)} aria-label={`Explore ${featuredMoodSwing.name}`} className="relative z-10 flex h-[360px] w-full items-center justify-center sm:h-[430px]">
+            <img src={catalogImage(featuredMoodSwing)} alt={featuredMoodSwing.name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[430px] w-full object-contain"/>
+          </Link> : <div className="relative z-10 text-center"><b className="font-display text-4xl text-[#ffbd37]">AFSANA</b><p className="mt-3 text-[9px] tracking-[.2em] text-white/55">{featuredLoading?'LOADING MOOD SWING':'MOOD SWING IMAGE NOT SET IN THE LIVE CATALOGUE'}</p></div>}
+          {featuredMoodSwing?.name && <p className="absolute bottom-4 z-20 text-[9px] font-bold uppercase tracking-[.22em] text-[#ffbd37]">{featuredMoodSwing.name}</p>}
         </div>
       </div>
     </section>
