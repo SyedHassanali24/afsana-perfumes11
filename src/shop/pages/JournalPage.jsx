@@ -11,7 +11,9 @@ const Ey = ({ children }) => <p className="eyebrow text-[#496b4e]">{children}</p
 export default function JournalPage() {
   useTitle('The AFSANA Journal — Notes from the House');
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
+  const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Rose Miracle', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
+  const roseMiracle = (featuredData?.products || []).find((product) => /\\brose\\s*miracle\\b/i.test(String(product?.name || '')) && product?.image?.url) || null;
   const stories = [
     ['01 / THE SIGNATURE GUIDE','Find your signature scent','Begin with the feeling you want to carry. Explore the current AFSANA fragrances and find a composition that fits your mood and moment.'],
     ['02 / NOTES & ATMOSPHERE','A world in every note','Fresh, floral, woody and warm directions each create a different atmosphere. Discover the AFSANA collection and the bottle that speaks to you.'],
@@ -23,8 +25,8 @@ export default function JournalPage() {
         <div><Ey>NOTES FROM THE HOUSE</Ey><h1 className="mt-6 font-display text-6xl leading-[.9] tracking-[-.05em] sm:text-8xl">The scent<br/><em className="text-[#ffbd37]">journal.</em></h1><p className="mt-7 max-w-xl text-sm leading-8 text-white/75">Stories, ingredients and rituals from the world of AFSANA. Discover the fragrances behind the moments we remember.</p></div>
         <div className="relative flex min-h-[300px] items-center justify-center">
           <div className="absolute h-[260px] w-[260px] rounded-full border border-[#ffbd37]/25 bg-[#ffbd37]/10"/>
-          {products[1] ? <Link to={`/product/${products[1].slug}`} className="relative z-10 flex h-[310px] w-full items-center justify-center"><img src={products[1].image.url} alt={products[1].name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[310px] w-full object-contain drop-shadow-[0_28px_36px_rgba(0,0,0,.4)]"/></Link> : <b className="relative z-10 font-display text-5xl text-[#ffbd37]">AFSANA</b>}
-          {products[1]?.name && <p className="absolute bottom-0 text-[9px] font-bold uppercase tracking-[.25em] text-[#ffbd37]">{products[1].name}</p>}
+          {roseMiracle ? <Link to={`/product/${roseMiracle.slug}`} aria-label={`Explore ${roseMiracle.name}`} className="relative z-10 flex h-[310px] w-full items-center justify-center"><img src={roseMiracle.image.url} alt={roseMiracle.name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[310px] w-full object-contain drop-shadow-[0_28px_36px_rgba(0,0,0,.4)]"/></Link> : <div className="relative z-10 text-center"><b className="font-display text-5xl text-[#ffbd37]">AFSANA</b><p className="mt-2 text-[9px] tracking-[.2em] text-white/60">{featuredLoading ? 'LOADING ROSE MIRACLE' : 'ROSE MIRACLE IMAGE NOT SET IN THE LIVE CATALOGUE'}</p></div>}
+          {roseMiracle?.name && <p className="absolute bottom-0 text-[9px] font-bold uppercase tracking-[.25em] text-[#ffbd37]">{roseMiracle.name}</p>}
         </div>
       </Container>
     </section>
