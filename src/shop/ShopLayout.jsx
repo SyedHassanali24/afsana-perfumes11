@@ -35,7 +35,7 @@ function CmsBannerCarousel({ banners = [] }) {
       <article key={banner.id || index} className="relative isolate flex min-h-[360px] min-w-full snap-center items-center overflow-hidden sm:min-h-[500px]">
        {desktopUrl ? <picture className="absolute inset-0 -z-20">
         {mobileUrl && <source media="(max-width: 700px)" srcSet={mobileUrl}/>}
-        <img src={desktopUrl} alt={banner.desktopImage?.alt || banner.heading || 'AFSANA fragrance campaign'} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/>
+        <img src={desktopUrl} alt={banner.desktopImage?.alt || banner.heading || 'AFSANA fragrance campaign'} width="1920" height="900" loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/>
        </picture> : <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_70%_35%,rgba(115,87,255,.45),transparent_35%),linear-gradient(120deg,#100d24,#263e0e)]"/>}
        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#100d24]/90 via-[#100d24]/55 to-[#100d24]/10"/>
        <div className="container-xl w-full py-16 sm:py-24">
@@ -110,13 +110,14 @@ export default function ShopLayout(){
    {isCmsPreview && <div className="relative z-[60] bg-[#7357ff] px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[.18em] text-white">Preview only — this design is not live. Return to Admin CMS and click Confirm &amp; Publish after checking.</div>}
   {showIntro && <div className="afsana-ref-intro" aria-label="AFSANA — Scent, Reimagined"><div><div className="afsana-ref-intro-mark">AFSANA<span>.</span></div><div className="afsana-ref-intro-line"/><div className="afsana-ref-intro-copy">SCENT, REIMAGINED</div></div></div>}
 
-  {cmsData?.announcement?.text && <div className="border-b border-[#100d24]/10 bg-[#d9ff55] px-4 py-2.5 text-center text-[9px] font-semibold uppercase tracking-[.22em] text-[#100d24]">AFSANA <span className="mx-2 text-[#7357ff]">•</span>{cmsData.announcement.text}</div>}
+
 
   <div className="afsana-reference-topbar" aria-label="AFSANA return policy and account links">
     <Container className="afsana-reference-topbar-inner">
       <div className="afsana-return-policy-marquee" aria-label="15 days return policy">
         <div className="afsana-return-policy-track"><span>15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i> 15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i></span><span aria-hidden="true">15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i> 15 DAYS RETURN POLICY <i>✦</i> SHOP WITH CONFIDENCE <i>✦</i></span></div>
       </div>
+      <span className="afsana-reference-topbar-message" aria-live="polite" aria-atomic="true">{cmsData?.announcement?.text ? <>AFSANA <i aria-hidden="true">•</i> {cmsData.announcement.text}</> : null}</span>
       <span className="afsana-reference-topbar-links">
         <Link to="/track" className="afsana-topbar-action"><Truck aria-hidden="true"/>Track order</Link>
         <Link to={status==='authed'?'/account':'/login'} className="afsana-topbar-action afsana-topbar-account"><User aria-hidden="true"/>{status==='authed'?'My account':'Sign in'}</Link>
@@ -128,7 +129,7 @@ export default function ShopLayout(){
    <Container className="container-xl storefront-header-inner relative flex h-[82px] items-center justify-between gap-4">
     <button className="storefront-mobile-toggle lg:hidden" onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
     <Link to="/" className="logo storefront-brand group flex shrink-0 items-center gap-3" aria-label={brandName}>
-      <span className="storefront-brand-mark grid h-10 w-10 place-items-center overflow-hidden rounded-[13px] bg-[#17112f] shadow-[0_5px_16px_rgba(23,17,47,.2)]">{logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[23px] italic text-[#d9ff55]">A</span>}</span>
+      <span className="storefront-brand-mark grid h-10 w-10 place-items-center overflow-hidden rounded-[13px] bg-[#17112f] shadow-[0_5px_16px_rgba(23,17,47,.2)]">{logoUrl ? <img src={logoUrl} alt="" width="400" height="400" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[23px] italic text-[#d9ff55]">A</span>}</span>
       <span className="block font-display text-[20px] leading-none tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[5px] block font-mono text-[7px] font-semibold tracking-[.34em] text-[#80798f]">{brandTagline}</small></span>
     </Link>
     <nav className="storefront-main-nav hidden lg:flex items-center gap-1 rounded-full border border-[#e8e2ef] bg-white/80 p-1 shadow-[0_5px_20px_rgba(23,17,47,.055)]" aria-label="Main navigation">
