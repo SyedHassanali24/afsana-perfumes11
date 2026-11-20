@@ -65,7 +65,7 @@ export default function ShopLayout(){
  const footerCms=siteFooterSections.find((s)=>s?.type==='footer_showcase')?.config||{};
  const hasFooterShowcase=siteFooterSections.some((s)=>s?.type==='footer_showcase'&&s?.isEnabled!==false);
  const cmsWhatsapp = (cmsData?.pageSections?.site_footer_before || []).some((section) => section?.type === 'whatsapp_float' && section?.isEnabled !== false);
- const directWhatsappHref = 'https://wa.me/923132956206?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like to know more about AFSANA perfumes.');
+ const directWhatsappHref = 'https://wa.me/923252032321?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like to know more about AFSANA perfumes.');
  const isPreviewRequested = new URLSearchParams(location.search).get('afsanaPreview') === '1';
  let previewLayout = null;
  try { if (isPreviewRequested) previewLayout = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null'); } catch {}
