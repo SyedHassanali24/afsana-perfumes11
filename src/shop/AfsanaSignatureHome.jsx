@@ -89,10 +89,10 @@ function BestSellers(){const {data,loading}=useApi(()=>productsApi.list({sort:'p
 function AfsanaMemoryFeature(){
   const {data,loading}=useApi(()=>productsApi.list({q:'Drama Queen',limit:8}),[]);
   const catalogue=data?.products||[];
-  const dramaQueen=catalogue.find((product)=>/drama\\s*queen/i.test(String(product?.name||'')))||null;
+  const dramaQueen=catalogue.find((product)=>/drama\s*queen/i.test(String(product?.name||'')))||null;
   const bottle=dramaQueen?.image?.url
     || dramaQueen?.media?.find?.((item)=>item?.kind==='main'&&item?.url)?.url
-    || dramaQueen?.media?.find?.((item)=>item?.url&&!/\\.(mp4|webm|mov|glb|gltf)(\\?|$)/i.test(item.url))?.url
+    || dramaQueen?.media?.find?.((item)=>item?.url&&!/\.(mp4|webm|mov|glb|gltf)(\?|$)/i.test(item.url))?.url
     || '';
   const productPath=dramaQueen?.slug?'/product/'+dramaQueen.slug:'/shop?q=Drama%20Queen';
   return <section className="afsana-memory-feature">
