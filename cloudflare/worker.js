@@ -1,8 +1,6 @@
 // Hassan storefront visual baseline redeploy sync
 import { MongoDBConnection } from "./MongoDBConnection.js";
-import { connectMongo } from "./mongodb.js";
 import { corsHeaders, securityHeaders } from "./security.js";
-import { onRequest as handleApiRequest } from "./api-router.js";
 
 const SITE_ORIGIN = "https://afsanaperfumes.store";
 const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
@@ -27,9 +25,13 @@ async function verifyMetaSignature(rawBody, signature, appSecret) {
   return diff === 0;
 }
 
-async function health(env) {
+function mongoStub(env) {
   const id = env.MONGODB_CONNECTION.idFromName("afsana-mongodb");
-  return env.MONGODB_CONNECTION.get(id, { locationHint: "me" }).health();
+  return env.MONGODB_CONNECTION.get(id, { locationHint: "me" });
+}
+
+async function health(env) {
+  return mongoStub(env).health();
 }
 
 function addCors(headers, origin) {
@@ -75,12 +77,7 @@ export default {
         try { payload = JSON.parse(rawBody); }
         catch { return json({ success: false, error: "INVALID_JSON" }, 400, { "Cache-Control": "no-store" }); }
         try {
-          const db = await connectMongo(env);
-          await db.collection("whatsapp_webhook_events").insertOne({
-            payload,
-            receivedAt: new Date(),
-            signatureVerified: true
-          });
+          await mongoStub(env).storeWhatsAppWebhook(payload);
           return json({ success: true, received: true }, 200, { "Cache-Control": "no-store" });
         } catch {
           return json({ success: false, error: "WEBHOOK_STORAGE_UNAVAILABLE" }, 503, { "Cache-Control": "no-store" });
@@ -90,9 +87,10 @@ export default {
     }
 
     if (u.pathname.startsWith("/api/")) {
-      const path = u.pathname.slice("/api/".length).split("/").filter(Boolean);
       try {
-        const response = await handleApiRequest({ request, params: { path }, env, ctx });
+        // Run every API route inside the MongoDB Durable Object. Cloudflare Workers
+        // cannot safely reuse a MongoDB TCP socket across unrelated request contexts.
+        const response = await mongoStub(env).fetch(request);
         const headers = new Headers(response.headers);
         const policy = headers.get("Cache-Control") || "";
         const vary = headers.get("Vary") || "";
