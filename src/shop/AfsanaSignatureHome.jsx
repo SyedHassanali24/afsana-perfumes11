@@ -1077,7 +1077,7 @@ export function ScentFinderPage(){
   const {data:featuredData,loading:featuredLoading}=useApi(()=>productsApi.list({q:'Mood Swing',limit:8}),[]);
   const products=data?.products||[];
   const visualProducts=catalogProductsWithImages(products).slice(0,3);
-  const featuredMoodSwing=(featuredData?.products||[]).find((product)=>/\\bmood\\s*swing\\b/i.test(String(product?.name||''))&&catalogImage(product))||null;
+  const featuredMoodSwing=(featuredData?.products||[]).find((product)=>String(product?.name||'').toLowerCase().includes('mood swing')&&catalogImage(product))||null;
   const worlds=[
     ['THE AFTER DARK EDIT','Make a statement','Confident, vivid and unforgettable.'],
     ['THE DAYLIGHT EDIT','Feel luminous','Soft, airy and effortless.'],
