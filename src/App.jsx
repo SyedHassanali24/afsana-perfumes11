@@ -96,7 +96,7 @@ export default function App() {
   return (
     <>
       <TrafficTracker />
-      {!window.location.pathname.startsWith("/admin/login") && <AfsanaLoader />}
+      {/* Route loading is already handled by the Suspense fallback below. */}
       <Suspense fallback={window.location.pathname.startsWith("/admin") ? <AfsanaLoader suspense /> : <AfsanaLoader suspense />}>
         <Routes>
           <Route path="/admin/login" element={<LoginPage />} />
