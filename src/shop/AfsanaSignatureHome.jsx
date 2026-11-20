@@ -316,7 +316,8 @@ function MuseScene({ section, products = [] }) {
 function Product3DShowcase({ section, products=[] }) {
   const c=section.config||{};
   useEffect(()=>{if(!c.product3dModelUrl||customElements.get('model-viewer'))return;const existing=document.querySelector('script[data-afsana-model-viewer]');if(existing)return;const script=document.createElement('script');script.type='module';script.src='https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js';script.dataset.afsanaModelViewer='true';document.head.appendChild(script);},[c.product3dModelUrl]);
-  const chosen=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug)) || products[0];
+  const requestedProduct=products.find(p=>c.productSlug && (p.slug===c.productSlug || p.id===c.productSlug));
+  const chosen=(requestedProduct && catalogImage(requestedProduct)) ? requestedProduct : catalogProductAt(products,0) || requestedProduct || products[0];
   const media=[...(chosen?.media||[])].filter(x=>x?.url && !/\\.(mp4|webm|mov|m4v|glb|gltf)(\\?|$)/i.test(String(x.url))).slice(0,8);
   const ownProductImage=catalogImage(chosen);
   const frames=media.length?media:(ownProductImage?[{url:ownProductImage}]:[]);
@@ -333,7 +334,7 @@ function Product3DShowcase({ section, products=[] }) {
       {c.buttonText&&<Link to={c.buttonLink||'/shop'} className="mt-8 inline-flex bg-[#ffe500] px-7 py-4 text-[10px] font-semibold uppercase tracking-[.2em] text-[#080a07]">{c.buttonText} ↗</Link>}</div>
       <div className="relative min-h-[500px] flex items-center justify-center">
         <div className="absolute h-[360px] w-[360px] rounded-full bg-[#a3c5e9]/10 blur-3xl"/>
-        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={ownProductImage || c.product3dPosterUrl || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
+        {c.product3dModelUrl ? <model-viewer src={c.product3dModelUrl} poster={ownProductImage || undefined} alt={chosen?.name || 'AFSANA 3D perfume bottle'} camera-controls auto-rotate shadow-intensity="1.1" exposure="1.05" environment-image="neutral" style={{width:'100%',height:'480px',background:'transparent','--poster-color':'transparent'}}/> : <div className="relative h-[440px] w-[330px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none" style={{perspective:'1200px',touchAction:'pan-y'}} onPointerDown={startTurn} onPointerMove={moveTurn} onPointerUp={endTurn} onPointerCancel={endTurn} onLostPointerCapture={endTurn} aria-label="Drag left or right to rotate through the product gallery">
           <div className="absolute inset-0 flex items-center justify-center" style={{transform:`rotateY(${frame* (360/Math.max(frames.length,1))}deg) rotateX(${Math.sin(frame)*3}deg)`,transformStyle:'preserve-3d',transition:'transform .7s cubic-bezier(.2,.8,.2,1)'}}>
             {frames.length ? <img src={frames[frame]?.url} alt={chosen?.name||'AFSANA fragrance'} width="960" height="1200" loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.display='none';}} className="max-h-[420px] max-w-[300px] object-contain drop-shadow-[0_45px_50px_rgba(0,0,0,.65)]"/> : <div className="grid h-[420px] w-[300px] place-items-center border border-white/15 bg-white/5 p-8 text-center"><div><b className="font-display text-3xl text-[#ffe500]">AFSANA</b><p className="mt-4 text-[9px] uppercase tracking-[.2em] text-white/55">Add a primary product photo in the live catalogue to enable the bottle showcase.</p></div></div>}
           </div>
@@ -908,6 +909,7 @@ function FilmCard({ film, index, autoplay = true }) {
   const [visible, setVisible] = useState(false);
   const videoRef = useRef(null);
   const source = String(film.image || '').trim();
+  const poster = String(film.link || '').trim();
   const labels = ['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'];
   const accents = [
     'from-purple-500/55 via-fuchsia-400/10 to-transparent',
@@ -939,8 +941,8 @@ function FilmCard({ film, index, autoplay = true }) {
   }, [source, muted, autoplay, nearViewport, visible]);
   return <article className="group relative isolate min-h-[390px] aspect-[.78] overflow-hidden rounded-[22px] border border-purple-100 bg-[#201632] shadow-[0_18px_48px_rgba(42,27,70,.13)] transition duration-700 hover:-translate-y-2 hover:border-pink-200 hover:shadow-[0_28px_64px_rgba(96,52,148,.22)] sm:min-h-[440px] xl:min-h-[500px]">
     {source
-      ? <video ref={videoRef} key={source} src={nearViewport ? source : undefined} poster={film.link || undefined} autoPlay={false} muted={muted} loop playsInline preload="none" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
-      : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-purple-900 via-[#292044] to-sky-900 px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-white/70">Add a video in CMS</div>}
+      ? <video ref={videoRef} key={source} src={nearViewport ? source : undefined} poster={poster || undefined} autoPlay={false} muted={muted} loop playsInline preload="none" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
+      : poster ? <img src={poster} alt={film.title || 'AFSANA fragrance'} width="1000" height="1300" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain bg-[#173d26] p-7"/> : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#173d26] via-[#214d32] to-[#102b1a] px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-[#ffbd37]">AFSANA / THE ART OF SCENT</div>}
     <div aria-hidden="true" className={'pointer-events-none absolute inset-0 bg-gradient-to-br '+(accents[index] || accents[0])}/>
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#160d2d]/95 via-[#211638]/16 to-[#1d1230]/10"/>
     <div aria-hidden="true" className="pointer-events-none absolute inset-[10px] rounded-[15px] border border-white/25 transition duration-700 group-hover:inset-[15px] group-hover:border-white/45"/>
