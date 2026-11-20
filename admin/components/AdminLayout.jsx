@@ -1,3 +1,4 @@
+import "../../src/styles/afsana-dashboard-contact-reference.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
