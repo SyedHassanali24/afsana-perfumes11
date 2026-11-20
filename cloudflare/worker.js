@@ -43,6 +43,12 @@ function addCors(headers, origin) {
 export default {
   async fetch(request, env, ctx) {
     const u = new URL(request.url);
+    // Redirect plaintext requests to the same HTTPS URL before API, webhook,
+    // or asset handling. Cloudflare's edge terminates TLS for this Worker.
+    if (u.protocol === "http:") {
+      u.protocol = "https:";
+      return Response.redirect(u.toString(), 301);
+    }
     const origin = request.headers.get("Origin") || SITE_ORIGIN;
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: securityHeaders({ ...cors(origin), "Cache-Control": "no-store" }) });
 
