@@ -581,8 +581,8 @@
   .storefront-theme.afsana-reference-storefront .afsana-product-page .product-detail-grid{gap:24px!important}
 }
 @media(max-width:900px){
-  .afsana-reference-topbar-inner{grid-template-columns:1fr 1fr;min-height:31px}
-  .afsana-reference-topbar-message{display:none}
+  .afsana-reference-topbar-inner{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;min-height:31px}
+  .afsana-reference-topbar-message{display:block!important;font-size:8px!important}
   .afsana-reference-benefits-inner{gap:16px}
   .storefront-theme.afsana-reference-storefront .afsana-product-page .product-detail-grid{grid-template-columns:minmax(0,1fr)!important;gap:22px!important}
   .storefront-theme.afsana-reference-storefront .afsana-product-page .product-gallery{max-width:650px;margin:0 auto}
@@ -642,11 +642,23 @@
 /* AFSANA top strip: animated 15-day returns message and clear utility actions */
 .afsana-reference-topbar-inner{
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) auto!important;
   gap:18px!important;
   min-height:42px!important;
   align-items:center!important;
 }
+.afsana-reference-topbar-message{
+  display:block!important;
+  min-width:0;
+  overflow:hidden;
+  color:#fff4db!important;
+  font-size:9px!important;
+  line-height:1.25;
+  text-align:center;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.afsana-reference-topbar-message:empty{visibility:hidden}
 .afsana-return-policy-marquee{
   min-width:0;
   overflow:hidden;
@@ -768,7 +780,7 @@
 @media(max-width:640px){
   .afsana-reference-topbar-inner{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,.9fr) auto!important;
     gap:7px!important;
     min-height:36px!important;
     padding-top:4px!important;

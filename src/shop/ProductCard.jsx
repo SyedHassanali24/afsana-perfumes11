@@ -29,6 +29,8 @@ export default function ProductCard({ product }) {
               <img
                 src={imageUrl}
                 alt={p.image.alt || p.name}
+                width="1000"
+                height="1250"
                 loading="lazy"
                 onError={() => setBrokenImage(imageUrl)}
                 className={secondary?.url ? 'afsana-product-img afsana-product-img-primary has-secondary' : 'afsana-product-img afsana-product-img-primary'}
@@ -37,6 +39,8 @@ export default function ProductCard({ product }) {
                 <img
                   src={secondary.url}
                   alt=""
+                  width="1000"
+                  height="1250"
                   loading="lazy"
                   onError={(event) => { event.currentTarget.style.display = 'none'; }}
                   className="afsana-product-img afsana-product-img-secondary"
