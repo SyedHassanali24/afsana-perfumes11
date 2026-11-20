@@ -442,12 +442,26 @@ function ConciergeFloat({ section }) {
 
 function ReferenceHero({ section, config, products }) {
   if (config.layout === 'inner') {
-    const pageImage = section.pageKey === 'house' ? config.aboutHeroImageUrl
-      : section.pageKey === 'journal' ? config.journalHeroImageUrl
-      : section.pageKey === 'gifting' ? config.giftingHeroImageUrl
-      : section.pageKey === 'discover' ? config.discoverHeroImageUrl
-      : config.collectionHeroImageUrl;
-    return <section className="afsana-ref-inner-hero">{pageImage && <img src={pageImage} srcSet={responsiveUnsplashSrcSet(pageImage, 68)} sizes="100vw" alt="" width="1600" height="900" className="afsana-ref-inner-image"/>}<div className="afsana-ref-inner-overlay"/><div className="container-xl relative z-10"><p className="afsana-ref-eyebrow">{config.eyebrow || 'THE ART OF SCENT'}</p><h1>{section.title || 'A world in every note.'}</h1>{config.subtitle && <p>{config.subtitle}</p>}{config.buttonText && <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText} <span>↗</span></Link>}</div></section>;
+    const productIndex = section.pageKey === 'journal' ? 1 : section.pageKey === 'gifting' ? 2 : section.pageKey === 'house' ? 3 : 0;
+    const featuredProduct = catalogProductAt(products, productIndex);
+    const featuredImage = catalogImage(featuredProduct);
+    return <section className="afsana-ref-inner-hero afsana-ref-inner-hero-catalog">
+      <div className="afsana-ref-inner-overlay"/>
+      <div className="container-xl afsana-ref-inner-catalog-grid relative z-10">
+        <div className="afsana-ref-inner-catalog-copy">
+          <p className="afsana-ref-eyebrow">{config.eyebrow || 'THE ART OF SCENT'}</p>
+          <h1>{section.title || 'A world in every note.'}</h1>
+          {config.subtitle && <p>{config.subtitle}</p>}
+          {config.buttonText && <Link className="afsana-ref-btn" to={config.buttonLink || '/shop'}>{config.buttonText} <span>↗</span></Link>}
+        </div>
+        <div className="afsana-ref-inner-catalog-product">
+          {featuredImage ? <Link to={catalogProductLink(featuredProduct)} aria-label={`Explore ${featuredProduct.name}`}>
+            <img src={featuredImage} alt={featuredProduct.name || 'AFSANA perfume'} width="900" height="1200" loading="eager" decoding="async"/>
+          </Link> : <div className="afsana-ref-inner-product-pending"><b>AFSANA</b><span>THE ART OF SCENT</span></div>}
+          {featuredProduct?.name && <p>{featuredProduct.name}</p>}
+        </div>
+      </div>
+    </section>;
   }
   const product = products?.[0];
   const bottle = config.heroBottleImageUrl || product?.image?.url || product?.media?.find((m) => m.kind === 'main')?.url || product?.media?.[0]?.url;
