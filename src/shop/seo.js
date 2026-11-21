@@ -204,8 +204,6 @@ export function buildProductJsonLd({
   imageUrls = [],
   canonicalUrl,
   category,
-  ratingAverage,
-  ratingCount,
 }) {
   const name = cleanText(product?.name, 160);
   const images = [...new Set(
@@ -249,18 +247,6 @@ export function buildProductJsonLd({
         : 'https://schema.org/OutOfStock';
     }
     schema.offers = offer;
-  }
-
-  const average = Number(ratingAverage);
-  const count = Number(ratingCount);
-  if (Number.isFinite(average) && average >= 1 && average <= 5 && Number.isInteger(count) && count > 0) {
-    schema.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: average,
-      reviewCount: count,
-      bestRating: 5,
-      worstRating: 1,
-    };
   }
 
   return schema;
