@@ -42,6 +42,7 @@ const TrackOrderPage = lazy(() => import('./shop/pages/TrackOrderPage'));
 const ContactPage = lazy(() => import('./shop/pages/ContactPage'));
 const AboutPage = lazy(() => import('./shop/pages/AboutPage'));
 const JournalPage = lazy(() => import('./shop/pages/JournalPage'));
+const JournalArticlePage = lazy(() => import('./shop/pages/JournalArticlePage'));
 const GiftingPage = lazy(() => import('./shop/pages/GiftingPage'));
 const PrivacyPolicyPage = lazy(() => import('./shop/pages/PrivacyPolicyPage'));
 const DataDeletionPage = lazy(() => import('./shop/pages/DataDeletionPage'));
@@ -155,6 +156,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<><ManagedCmsPage pageKey="collection_before" /><ShopPage /><ManagedCmsPage pageKey="collection_after" /></>} />
             <Route path="/about" element={<ManagedCmsPage pageKey="house" fallback={<AboutPage />} />} />
+            <Route path="/journal/:slug" element={<JournalArticlePage />} />
             <Route path="/journal" element={<ManagedCmsPage pageKey="journal" fallback={<JournalPage />} />} />
             <Route path="/discover" element={<ManagedCmsPage pageKey="discover" fallback={<ScentFinderPage />} />} />
             <Route path="/gifting" element={<ManagedCmsPage pageKey="gifting" fallback={<GiftingPage />} />} />
