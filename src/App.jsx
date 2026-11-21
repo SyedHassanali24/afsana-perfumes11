@@ -30,6 +30,7 @@ const RegisterPage = lazy(() => import('./customer/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./customer/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./customer/ResetPasswordPage'));
 import ShopLayout from './shop/ShopLayout';
+import SeoController from './shop/SeoController';
 import { trackStorefrontPageView } from './shop/trafficTracking';
 const HomePage = lazy(() => import('./shop/pages/HomePage'));
 const ShopPage = lazy(() => import('./shop/pages/ShopPage'));
@@ -118,6 +119,7 @@ export default function App() {
   return (
     <>
       <TrafficTracker />
+      <SeoController />
       {/* Route loading is already handled by the Suspense fallback below. */}
       <Suspense fallback={window.location.pathname.startsWith("/admin") ? <AfsanaLoader suspense /> : <AfsanaLoader suspense />}>
         <Routes>
