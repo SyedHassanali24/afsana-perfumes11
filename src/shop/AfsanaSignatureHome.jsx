@@ -11,7 +11,7 @@ import CmsTestimonials, { sampleTestimonialsSection } from './CmsTestimonials';
 import { Container } from './ui';
 
 const img={
- hero:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1440&q=74',
+ hero:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=900&q=68',
  signature:'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=640&q=74',
  woods:'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=800&q=74',
  floral:'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=800&q=74',
