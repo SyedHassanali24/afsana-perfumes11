@@ -31,15 +31,12 @@ test('product sitemap skips malformed slugs and duplicate products', async () =>
   assert.doesNotMatch(xml, /example\.com|admin/);
 });
 
-test('product sitemap does not trust a caller-provided external host', async () => {
+test('product sitemap always uses the canonical AFSANA hostname', async () => {
   const { buildProductSitemapXml } = await sitemap;
-  const xml = buildProductSitemapXml(
-    [{ slug: 'amber-night' }],
-    'https://attacker.example/path',
-  );
+  const xml = buildProductSitemapXml([{ slug: 'amber-night' }]);
 
-  assert.match(xml, /https:\/\/attacker\.example\/product\/amber-night/);
-  assert.doesNotMatch(xml, /afsanaperfumes\.store/);
+  assert.match(xml, /https:\/\/afsanaperfumes\.store\/product\/amber-night/);
+  assert.doesNotMatch(xml, /attacker\.example/);
 });
 
 test('invalid updated dates are safely omitted', async () => {
