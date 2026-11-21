@@ -9,7 +9,7 @@ import { Container } from '../ui';
 const Ey = ({ children, light = false }) => <p className={`eyebrow ${light ? 'text-[#ffbd37]' : 'text-[#496b4e]'}`}>{children}</p>;
 
 export default function GiftingPage() {
-  useTitle('AFSANA Gifting — Give a Memory');
+  useTitle('Perfume Gifts in Pakistan | AFSANA Gifting');
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
   const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Astral Drift', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
