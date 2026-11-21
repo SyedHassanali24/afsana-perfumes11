@@ -11,7 +11,7 @@ import CmsTestimonials, { sampleTestimonialsSection } from './CmsTestimonials';
 import { Container } from './ui';
 
 const img={
- hero:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1440&q=74',
+ hero:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=900&q=68',
  signature:'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=640&q=74',
  woods:'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=800&q=74',
  floral:'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=800&q=74',
@@ -124,7 +124,7 @@ function Hero(){
    <div className="hero-side hidden lg:block luxury-reveal">
     <div className="hero-card relative mx-auto hero-card-magical">
       <div className="absolute -top-4 -right-4 z-10 rounded-full border border-[#d6a84f]/40 bg-[#070807]/70 px-4 py-2 text-[8px] uppercase tracking-[.28em] text-[#ffe500] backdrop-blur">01 • Signature</div>
-      <div className="hero-card-image"><img src={img.signature} srcSet={responsiveUnsplashSrcSet(img.signature)} sizes="(max-width: 700px) 90vw, 34vw" alt="Afsana fragrance" width="960" height="1200"/></div>
+      <div className="hero-card-image"><img src={img.signature} srcSet={responsiveUnsplashSrcSet(img.signature)} sizes="(max-width: 700px) 90vw, 34vw" alt="Afsana fragrance" width="960" height="1200" loading="lazy" decoding="async"/></div>
       <div className="text-left mt-4"><Eyebrow light>THE SIGNATURE</Eyebrow><p className="mt-4 font-display text-2xl">Citrus, saffron & a magnetic trail.</p></div>
     </div>
    </div>
