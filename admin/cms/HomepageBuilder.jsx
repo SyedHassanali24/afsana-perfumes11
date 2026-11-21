@@ -56,9 +56,7 @@ export default function HomepageBuilder() {
   const preview = () => { try { localStorage.setItem('afsana_cms_preview_v1', JSON.stringify({ sections: sorted })); window.open('/?afsanaPreview=1', '_blank', 'noopener,noreferrer'); } catch { setNotice('Preview could not be opened in this browser.'); } };
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
-  const updateTestimonial = (index, key, value) => setConfig('items', (Array.isArray(form.config.items) ? form.config.items : []).map((item, i) => i === index ? { ...item, [key]: value } : item));
-  const addTestimonial = () => setConfig('items', [...(Array.isArray(form.config.items) ? form.config.items : []), { name: 'AFSANA customer', rating: 0, title: '', text: '', product: '', sample: false }]);
-  const removeTestimonial = (index) => setConfig('items', (Array.isArray(form.config.items) ? form.config.items : []).filter((_, i) => i !== index));
+
   const open = (item) => {
     if (item) {
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
@@ -139,7 +137,9 @@ export default function HomepageBuilder() {
     <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
         <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: defaults(e.target.value) }))}>{HOMEPAGE_SECTION_TYPES.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
-        <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>
+        {form.type === 'testimonials'
+          ? <div className="rounded-xl border border-[#b4bf41]/35 bg-[#f4f6eb] p-3 text-xs leading-5 text-[#5f654f]"><strong className="text-[#263e0e]">Shared review content</strong><p>Heading and review cards are managed centrally in CMS → Reviews Manager. Edit them there once to update every page placement.</p></div>
+          : <Field label="Section title" hint="Optional — leave empty for the component's default heading"><Input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Discover your signature scent" /></Field>}
         <Field label="Display on page" hint="Choose Collection page — top banner to place an editable campaign banner above the collection heading and category filters.">
           <Select value={form.config.templateSlot || 'home'} onChange={(e) => setConfig('templateSlot', e.target.value)}>
             <option value="home">Home page</option>
@@ -175,27 +175,10 @@ export default function HomepageBuilder() {
         {['video_banner','video_grid'].includes(form.type) && <><Field label="Video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="https://…/video.mp4" /></Field><Field label="Poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} placeholder="Optional video poster image" /><div className="mt-2"><ImageUploadButton label="Upload poster image" onUploaded={(url) => setConfig('posterUrl', url)} /></div></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
         {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-2 gap-3"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
         {['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','blog_grid'].includes(form.type) && <><Field label="Collection / query hint"><Input value={form.config.query || ''} onChange={(e) => setConfig('query', e.target.value)} placeholder="Optional category / collection / query" /></Field><Field label="Number of items"><Input type="number" min="1" max="12" value={form.config.limit ?? 4} onChange={(e) => setConfig('limit', Number(e.target.value))} /></Field></>}
-        {form.type === 'testimonials' && <>
-          <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#f4f6eb] p-4 space-y-3">
-            <Field label="Section eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field>
-            <Field label="Intro text"><Textarea rows={2} value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field>
-            <p className="text-xs leading-5 text-[#5f654f]">These same AFSANA review cards appear on the homepage and every product page. Demo cards are visibly marked SAMPLE. Only remove that mark for customer feedback you have permission to publish.</p>
-          </div>
-          {(Array.isArray(form.config.items) ? form.config.items : []).map((item, index) => (
-            <div key={index} className="rounded-2xl border border-[#263e0e]/15 bg-white p-4 space-y-3">
-              <div className="flex items-center justify-between gap-3"><strong className="text-sm text-[#263e0e]">Review {index + 1}</strong><button type="button" onClick={() => removeTestimonial(index)} className="text-xs font-semibold text-[#9b3f3f] underline">Remove</button></div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Display name"><Input value={item.name || ''} onChange={(e) => updateTestimonial(index, 'name', e.target.value)} placeholder="e.g. Ayesha K." /></Field>
-                <Field label="Star rating"><Select value={String(item.rating ?? 0)} onChange={(e) => updateTestimonial(index, 'rating', Number(e.target.value))}>{[0,1,2,3,4,5].map((n) => <option key={n} value={n}>{n === 0 ? 'No rating' : `${n} / 5 stars`}</option>)}</Select></Field>
-              </div>
-              <Field label="Review heading"><Input value={item.title || ''} onChange={(e) => updateTestimonial(index, 'title', e.target.value)} placeholder="A memorable fragrance" /></Field>
-              <Field label="Customer comment"><Textarea rows={3} value={item.text || ''} onChange={(e) => updateTestimonial(index, 'text', e.target.value)} placeholder="Write the customer feedback here…" /></Field>
-              <Field label="Perfume / product label"><Input value={item.product || ''} onChange={(e) => updateTestimonial(index, 'product', e.target.value)} placeholder="Perfume name (optional)" /></Field>
-              <Check label="Show SAMPLE badge on this card" checked={!!item.sample} onChange={(v) => updateTestimonial(index, 'sample', v)} />
-            </div>
-          ))}
-          <button type="button" onClick={addTestimonial} className="w-full rounded-xl border border-dashed border-[#263e0e]/35 px-4 py-3 text-sm font-semibold text-[#263e0e] hover:bg-[#f4f6eb]">+ Add another review card</button>
-        </>}
+        {form.type === 'testimonials' && <div className="rounded-xl border border-[#b4bf41]/35 bg-[#f4f6eb] p-4 text-sm leading-6 text-[#5f654f]">
+          <strong className="text-[#263e0e]">Reviews are managed centrally.</strong>
+          <p>Use CMS → Reviews Manager to add, edit or remove review cards. Your changes sync to every existing testimonials placement, including Home and product pages. This section editor is only for placement and layout.</p>
+        </div>}
         {itemTypes.includes(form.type) && form.type !== 'testimonials' && <Field label="Items" hint="One per line: Title|Description|Image URL|Link. Video grid uses Title|Description|Video URL|Poster URL."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
         {['promo_timer','offer_timer'].includes(form.type) && <><Field label="Offer label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Offer end (ISO/date-time)"><Input type="datetime-local" value={form.config.endAt || ''} onChange={(e) => setConfig('endAt', e.target.value)} /></Field><Field label="Offer text"><Textarea rows={3} value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></>}
         {form.type === 'muse_scene' && <><Field label="Character image URL"><Input value={form.config.characterImageUrl || ''} onChange={(e) => setConfig('characterImageUrl', e.target.value)} placeholder="Upload/host an editorial character image" /></Field><p className="text-xs text-[#5f654f]">Best result: transparent PNG/WebP of the AFSANA Muse. The storefront adds cinematic glow and motion.</p></>}
