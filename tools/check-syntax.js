@@ -1,4 +1,4 @@
-// Parse-checks every .js/.jsx file under src/ and admin/ (catches JSX typos without running Vite).
+// Parse-checks .js/.jsx files under src/, admin/ and cloudflare/ (catches Worker syntax before deployment).
 // Usage: node tools/check-syntax.js
 // Uses `esbuild` (already installed with Vite). Falls back to the `typescript` package ONLY if it still has the old JS API
 // (TypeScript 7+ is a native binary without one, so `npm i -D typescript` alone is no longer enough).
@@ -15,7 +15,7 @@ if (!esbuild && !ts) { console.log('No parser found: run `npm i -D esbuild` (Vit
 
 const files = [];
 const walk = (dir) => { for (const f of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, f.name); if (f.isDirectory()) walk(p); else if (/\.jsx?$/.test(f.name)) files.push(p); } };
-['src', 'admin'].filter(fs.existsSync).forEach(walk);
+['src', 'admin', 'cloudflare'].filter(fs.existsSync).forEach(walk);
 
 let bad = 0;
 for (const f of files) {
