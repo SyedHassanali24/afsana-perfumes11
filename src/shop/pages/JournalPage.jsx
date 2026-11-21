@@ -9,7 +9,7 @@ import { Container } from '../ui';
 const Ey = ({ children }) => <p className="eyebrow text-[#496b4e]">{children}</p>;
 
 export default function JournalPage() {
-  useTitle('The AFSANA Journal — Notes from the House');
+  useTitle('Perfume Guides & Scent Stories | AFSANA Journal');
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
   const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Rose Miracle', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
