@@ -32,7 +32,7 @@ function preloadHomepageImage(source, sizes = "100vw", quality = 68) {
   if (!["https:", "http:"].includes(imageUrl.protocol)) return;
 
   const key = imageUrl.href;
-  if (document.querySelector(`link[data-afsana-home-preload="${CSS.escape(key)}"]`)) return;
+  if (Array.from(document.querySelectorAll("link[data-afsana-home-preload]")).some((link) => link.href === key)) return;
 
   if (imageUrl.origin !== window.location.origin &&
       !document.querySelector(`link[rel="preconnect"][href="${imageUrl.origin}"]`)) {
@@ -62,7 +62,7 @@ function getProductImage(product) {
   const media = Array.isArray(product?.media) ? product.media : [];
   return product?.image?.url ||
     media.find((item) => item?.kind === "main" && item?.url)?.url ||
-    media.find((item) => item?.url && !/\\.(mp4|webm|mov|m4v|glb|gltf)(?:$|[?#])/i.test(item.url))?.url ||
+    media.find((item) => item?.url && !/\.(mp4|webm|mov|m4v|glb|gltf)(?:$|[?#])/i.test(item.url))?.url ||
     "";
 }
 
@@ -78,7 +78,10 @@ if (window.location.pathname === "/") {
           banner.heading || banner.subtitle || banner.desktopImage?.url || banner.mobileImage?.url
         ))
       : null;
-    const bannerImage = firstBanner?.mobileImage?.url || firstBanner?.desktopImage?.url;
+    const useMobileBanner = window.matchMedia("(max-width: 700px)").matches;
+    const bannerImage = useMobileBanner
+      ? firstBanner?.mobileImage?.url || firstBanner?.desktopImage?.url
+      : firstBanner?.desktopImage?.url || firstBanner?.mobileImage?.url;
     if (bannerImage) {
       preloadHomepageImage(bannerImage, "100vw", 68);
       return;
