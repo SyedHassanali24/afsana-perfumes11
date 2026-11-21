@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 
 Disallow: /admin
+Allow: /api/seo/products-sitemap.xml
 Disallow: /api/
 Disallow: /cart
 Disallow: /checkout
@@ -14,3 +15,4 @@ Disallow: /wishlist
 Disallow: /order-success/
 
 Sitemap: https://afsanaperfumes.store/sitemap.xml
+Sitemap: https://afsanaperfumes.store/api/seo/products-sitemap.xml
