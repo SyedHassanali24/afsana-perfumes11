@@ -4014,6 +4014,14 @@
 .afsana-ref-world-card img{
   background:#173d26;
 }
+/* Keep editorial page headings close to the tracking/header bar. */
+.afsana-ref-inner-hero-catalog{padding:18px 0 46px}
+.afsana-ref-inner-catalog-copy{align-self:start;padding-top:6px}
+@media(max-width:760px){
+  .afsana-ref-inner-hero-catalog{padding:14px 0 34px}
+  .afsana-ref-inner-catalog-copy{padding-top:0}
+  .afsana-ref-inner-catalog-grid{gap:12px}
+}
 @media(max-width:760px){
   .afsana-ref-inner-hero-catalog{padding:55px 0 46px}
   .afsana-ref-inner-catalog-grid{grid-template-columns:minmax(0,1fr);gap:16px;min-height:0}
