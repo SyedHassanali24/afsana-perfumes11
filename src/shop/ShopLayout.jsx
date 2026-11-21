@@ -35,7 +35,7 @@ function CmsBannerCarousel({ banners = [] }) {
      return (
       <article key={banner.id || index} className="relative isolate flex min-h-[360px] min-w-full snap-center items-center overflow-hidden sm:min-h-[500px]">
        {desktopUrl ? <picture className="absolute inset-0 -z-20">
-        {mobileUrl && <source media="(max-width: 700px)" srcSet={mobileUrl}/>}
+        {mobileUrl && <source media="(max-width: 700px)" srcSet={responsiveUnsplashSrcSet(mobileUrl, 68) || mobileUrl} sizes="100vw"/>}
         <img src={desktopUrl} srcSet={responsiveUnsplashSrcSet(desktopUrl, 68)} sizes="100vw" alt={banner.desktopImage?.alt || banner.heading || 'AFSANA fragrance campaign'} width="1920" height="900" loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/>
        </picture> : <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_70%_35%,rgba(115,87,255,.45),transparent_35%),linear-gradient(120deg,#100d24,#263e0e)]"/>}
        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#100d24]/90 via-[#100d24]/55 to-[#100d24]/10"/>

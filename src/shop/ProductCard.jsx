@@ -35,6 +35,7 @@ export default function ProductCard({ product }) {
                 width="1000"
                 height="1250"
                 loading="lazy"
+                decoding="async"
                 onError={() => setBrokenImage(imageUrl)}
                 className={secondary?.url ? 'afsana-product-img afsana-product-img-primary has-secondary' : 'afsana-product-img afsana-product-img-primary'}
               />
@@ -47,6 +48,7 @@ export default function ProductCard({ product }) {
                   width="1000"
                   height="1250"
                   loading="lazy"
+                  decoding="async"
                   onError={(event) => { event.currentTarget.style.display = 'none'; }}
                   className="afsana-product-img afsana-product-img-secondary"
                 />
