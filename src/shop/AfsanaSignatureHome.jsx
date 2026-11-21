@@ -102,7 +102,7 @@ function Hero(){
    <div className="hero-side hidden lg:block luxury-reveal">
     <div className="hero-card relative mx-auto hero-card-magical">
       <div className="absolute -top-4 -right-4 z-10 rounded-full border border-[#d6a84f]/40 bg-[#070807]/70 px-4 py-2 text-[8px] uppercase tracking-[.28em] text-[#ffe500] backdrop-blur">01 • Signature</div>
-      <div className="hero-card-image"><img src={img.signature} srcSet={responsiveUnsplashSrcSet(img.signature)} sizes="(max-width: 700px) 90vw, 34vw" alt="Afsana fragrance" width="960" height="1200"/></div>
+      <div className="hero-card-image"><img src={img.signature} srcSet={responsiveUnsplashSrcSet(img.signature)} sizes="(max-width: 700px) 90vw, 34vw" alt="Afsana fragrance" width="960" height="1200" loading="lazy" decoding="async"/></div>
       <div className="text-left mt-4"><Eyebrow light>THE SIGNATURE</Eyebrow><p className="mt-4 font-display text-2xl">Citrus, saffron & a magnetic trail.</p></div>
     </div>
    </div>
