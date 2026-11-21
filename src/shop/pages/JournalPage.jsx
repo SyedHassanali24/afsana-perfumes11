@@ -20,9 +20,9 @@ export default function JournalPage() {
     ['03 / THE GIFT EDIT','A gift worth remembering','A fragrance can make a personal gesture feel even more considered. Explore AFSANA scents for birthdays, celebrations and everyday surprises.']
   ];
   return <div className="bg-[#f7f4ed] text-[#173d26]">
-    <section className="relative overflow-hidden bg-[#173d26] py-16 text-white sm:py-20">
+    <section className="relative overflow-hidden bg-[#173d26] pt-5 pb-16 text-white sm:pt-6 sm:pb-20">
       <Container className="grid items-center gap-8 lg:grid-cols-[1fr_.8fr]">
-        <div><Ey>NOTES FROM THE HOUSE</Ey><h1 className="mt-6 font-display text-6xl leading-[.9] tracking-[-.05em] sm:text-8xl">The scent<br/><em className="text-[#ffbd37]">journal.</em></h1><p className="mt-7 max-w-xl text-sm leading-8 text-white/75">Stories, ingredients and rituals from the world of AFSANA. Discover the fragrances behind the moments we remember.</p></div>
+        <div className="self-start pt-2 sm:pt-3"><Ey>NOTES FROM THE HOUSE</Ey><h1 className="mt-6 font-display text-6xl leading-[.9] tracking-[-.05em] sm:text-8xl">The scent<br/><em className="text-[#ffbd37]">journal.</em></h1><p className="mt-7 max-w-xl text-sm leading-8 text-white/75">Stories, ingredients and rituals from the world of AFSANA. Discover the fragrances behind the moments we remember.</p></div>
         <div className="relative flex min-h-[300px] items-center justify-center">
           <div className="absolute h-[260px] w-[260px] rounded-full border border-[#ffbd37]/25 bg-[#ffbd37]/10"/>
           {roseMiracle ? <Link to={`/product/${roseMiracle.slug}`} aria-label={`Explore ${roseMiracle.name}`} className="relative z-10 flex h-[310px] w-full items-center justify-center"><img src={roseMiracle.image.url} alt={roseMiracle.name} width="900" height="1200" loading="eager" decoding="async" className="h-full max-h-[310px] w-full object-contain drop-shadow-[0_28px_36px_rgba(0,0,0,.4)]"/></Link> : <div className="relative z-10 text-center"><b className="font-display text-5xl text-[#ffbd37]">AFSANA</b><p className="mt-2 text-[9px] tracking-[.2em] text-white/60">{featuredLoading ? 'LOADING ROSE MIRACLE' : 'ROSE MIRACLE IMAGE NOT SET IN THE LIVE CATALOGUE'}</p></div>}
