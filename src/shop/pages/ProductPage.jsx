@@ -143,9 +143,7 @@ export default function ProductPage(){
   imageUrls:[productSeoImage,...imageMedia.map((item)=>item.url)],
   canonicalUrl:productCanonicalUrl,
   category:productCategory,
-  ratingAverage:ratingAvg,
-  ratingCount,
- }),[p,price,v?.available,productSeoImage,imageMedia,productCanonicalUrl,productCategory,ratingAvg,ratingCount]);
+ }),[p,price,v?.available,productSeoImage,imageMedia,productCanonicalUrl,productCategory]);
  useTitle(p?.seo?.title||(p?.name?p.name+' Perfume':undefined),{
   description:p?.seo?.metaDescription||p?.content?.shortDescription||p?.content?.fullDescription||'Explore this AFSANA perfume, discover its scent profile and view product details.',
   image:productSeoImage||undefined,
