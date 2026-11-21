@@ -903,6 +903,25 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
       </div></div>
     </section>;
   }
+  // On The House page, respect the campaign image explicitly uploaded in CMS.
+  // Other editorial pages retain their existing product-led hero rendering.
+  if (section.pageKey === 'house' && ['hero', 'image_banner'].includes(section.type) && c.imageUrl) {
+    return <section aria-label="The House campaign hero" className="relative overflow-hidden bg-[#120d0a]">
+      <picture>
+        {c.mobileImageUrl && <source media="(max-width: 700px)" srcSet={c.mobileImageUrl}/>}
+        <img
+          src={c.imageUrl}
+          alt={c.imageAlt || section.title || 'AFSANA The House campaign'}
+          width="1881"
+          height="836"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="block h-auto w-full"
+        />
+      </picture>
+    </section>;
+  }
   if (section.type === 'hero' && ['reference','inner'].includes(c.layout)) return <ReferenceHero section={section} config={c} products={products}/>;
   if (['hero','image_banner','split_story','lookbook'].includes(section.type)) {
     const editorialPage = ['discover','journal','house','gifting'].includes(section.pageKey);
