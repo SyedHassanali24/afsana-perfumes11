@@ -82,9 +82,31 @@ function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, c
 }
 
 
+function DeferredHeroVideo({ src, poster, className = '' }) {
+  const videoRef = useRef(null);
+  useEffect(() => {
+    const element = videoRef.current;
+    if (!element || !src || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    let cancelled = false;
+    const startVideo = () => {
+      if (cancelled || element.src) return;
+      element.src = src;
+      element.load();
+      element.play().catch(() => {});
+    };
+    // Keep the poster as the first paint; let critical text and imagery settle before video fetch.
+    const timer = window.setTimeout(startVideo, 1800);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      element.pause();
+    };
+  }, [src]);
+  return <video ref={videoRef} className={className} muted loop playsInline preload="none" poster={poster} aria-hidden="true" />;
+}
 function Hero(){
  return <section className="hero relative isolate min-h-[760px] sm:min-h-[900px] overflow-hidden bg-[#080a07] text-white">
-  <video className="absolute inset-0 -z-20 h-full w-full object-cover" autoPlay muted loop playsInline poster={img.hero}><source src={video} type="video/mp4"/></video>
+  <DeferredHeroVideo className="absolute inset-0 -z-20 h-full w-full object-cover" src={video} poster={img.hero}/>
   <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_38%,rgba(163,197,233,.28),transparent_22%),radial-gradient(circle_at_18%_72%,rgba(123,0,58,.24),transparent_26%),linear-gradient(90deg,rgba(8,10,7,.98),rgba(38,62,14,.80),rgba(8,10,7,.42))]"/>
   <div className="hero-light"/><div className="hero-light two"/>
   <div className="container-xl hero-content"><div className="grid w-full items-center lg:grid-cols-[1.08fr_.92fr] gap-12">
