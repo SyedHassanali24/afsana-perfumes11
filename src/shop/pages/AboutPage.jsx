@@ -16,8 +16,8 @@ export default function AboutPage() {
   const featured = (featuredData?.products || []).find((product) => String(product?.name || '').toLowerCase().includes('ember light') && product?.image?.url) || null;
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
-      <Container className="relative grid min-h-[520px] items-center gap-8 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr]">
-        <div className="relative z-10 max-w-2xl">
+      <Container className="relative grid min-h-[520px] items-center gap-8 pt-5 pb-16 sm:pt-6 sm:pb-20 lg:grid-cols-[1.05fr_.95fr]">
+        <div className="relative z-10 max-w-2xl self-start pt-2 sm:pt-3">
           <Ey light>THE HOUSE OF AFSANA</Ey>
           <h1 className="mt-6 font-display text-6xl leading-[.9] tracking-[-.05em] sm:text-8xl">A house of<br/><em className="text-[#ffbd37]">memories.</em></h1>
           <p className="mt-7 max-w-xl text-sm leading-8 text-white/75">AFSANA is a modern fragrance house built around the feeling a scent leaves behind. Discover the compositions, stories and rituals that make every fragrance personal.</p>
