@@ -1086,7 +1086,7 @@ export function ScentFinderPage(){
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
       <div className="container-xl grid min-h-[400px] items-center gap-8 py-14 sm:py-20 lg:grid-cols-[1fr_.8fr]">
-        <div><p className="text-[9px] font-bold uppercase tracking-[.3em] text-[#ffbd37]">AFSANA SCENT INTELLIGENCE / DISCOVER</p>
+        <div className="self-start pt-3 sm:pt-5"><p className="text-[9px] font-bold uppercase tracking-[.3em] text-[#ffbd37]">AFSANA SCENT INTELLIGENCE / DISCOVER</p>
           <h1 className="mt-6 font-display text-6xl leading-[.9] sm:text-8xl">There is a<br/><em className="text-[#ffbd37]">scent for that.</em></h1>
           <p className="mt-6 max-w-xl text-sm leading-8 text-white/75">Not sure what you love yet? Tell us how you want to feel, where you are going and which notes pull you in. We will help you find a starting point.</p>
           <a href="#finderSection" className="mt-7 inline-flex bg-[#ffbd37] px-6 py-4 text-[9px] font-bold uppercase tracking-[.18em] text-[#173d26]">Begin your scent match ↗</a>
