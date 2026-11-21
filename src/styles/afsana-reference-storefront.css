@@ -1240,3 +1240,66 @@
     padding-bottom:48px;
   }
 }
+
+
+/* Put the return-policy ticker immediately after Track Order in the top strip.
+   The old three-column grid left a wide, empty CMS-announcement column before
+   the utility buttons, so the ticker appeared detached from Track Order. */
+.afsana-reference-topbar-inner{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  gap:12px!important;
+  min-height:42px!important;
+}
+.afsana-reference-topbar-links{
+  display:contents!important;
+}
+.afsana-reference-topbar-links .afsana-topbar-action:first-child{
+  order:1!important;
+  flex:0 0 auto!important;
+}
+.afsana-return-policy-marquee{
+  order:2!important;
+  flex:1 1 0!important;
+  width:auto!important;
+  min-width:0!important;
+  mask-image:linear-gradient(90deg,#000 0,#000 96%,transparent 100%)!important;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 96%,transparent 100%)!important;
+}
+.afsana-reference-topbar-links .afsana-topbar-action:last-child{
+  order:3!important;
+  flex:0 0 auto!important;
+}
+.afsana-reference-topbar-message{
+  order:4!important;
+  flex:0 1 180px!important;
+  max-width:180px!important;
+  min-width:0!important;
+  text-align:right!important;
+}
+.afsana-reference-topbar-message:empty{
+  display:none!important;
+}
+@media(max-width:640px){
+  .afsana-reference-topbar-inner{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    min-height:36px!important;
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+  }
+  .afsana-reference-topbar-links .afsana-topbar-action{
+    flex:0 0 auto!important;
+  }
+  .afsana-return-policy-marquee{
+    flex:1 1 0!important;
+    min-width:0!important;
+  }
+  .afsana-reference-topbar-message{
+    flex:0 1 76px!important;
+    max-width:76px!important;
+    font-size:8px!important;
+  }
+}
