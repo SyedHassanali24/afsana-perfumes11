@@ -225,7 +225,7 @@ export function buildProductJsonLd({
     name,
     image: images,
     brand: { '@type': 'Brand', name: 'AFSANA' },
-    url: getCanonicalUrl(canonicalUrl || (product?.slug ? `/product/${product.slug}` : '/')),
+    url: getCanonicalUrl(product?.slug ? `/product/${product.slug}` : '/', canonicalUrl),
   };
 
   if (description) schema.description = description;
