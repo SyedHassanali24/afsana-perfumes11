@@ -84,7 +84,7 @@ function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, c
 
 function Hero(){
  return <section className="hero relative isolate min-h-[760px] sm:min-h-[900px] overflow-hidden bg-[#080a07] text-white">
-  <video className="absolute inset-0 -z-20 h-full w-full object-cover" autoPlay muted loop playsInline poster={img.hero}><source src={video} type="video/mp4"/></video>
+  <DeferredBackgroundVideo src={video} poster={img.hero} className="absolute inset-0 -z-20 h-full w-full object-cover"/>
   <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_38%,rgba(163,197,233,.28),transparent_22%),radial-gradient(circle_at_18%_72%,rgba(123,0,58,.24),transparent_26%),linear-gradient(90deg,rgba(8,10,7,.98),rgba(38,62,14,.80),rgba(8,10,7,.42))]"/>
   <div className="hero-light"/><div className="hero-light two"/>
   <div className="container-xl hero-content"><div className="grid w-full items-center lg:grid-cols-[1.08fr_.92fr] gap-12">
