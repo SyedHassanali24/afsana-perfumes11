@@ -132,7 +132,7 @@ export default function ProductPage(){
  const v=variants.find(x=>x.id===vid), hasSalePrice=Boolean(v&&v.salePrice>0&&v.salePrice<v.price), price=v&&(hasSalePrice?v.salePrice:v.price), discountPct=hasSalePrice?Math.round((1-v.salePrice/v.price)*100):0, soldOut=!v||v.available<=0, ns=notes(p);
  const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);openDrawer();window.setTimeout(()=>setAdding(false),650)}};
  const buyNow=()=>{if(v&&!soldOut){add(v.id,qty);navigate('/checkout')}};
- const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
+ const imageMedia=useMemo(()=>media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url)),[media]);
  const activeMedia=media[img]||media[0]||null;
  const productCanonicalUrl=getCanonicalUrl(typeof window!=='undefined'?window.location.pathname:'/',p?.seo?.canonicalUrl);
  const productSeoImage=p?.seo?.ogImage||p?.image?.url||activeMedia?.url||imageMedia[0]?.url||'';
@@ -146,10 +146,10 @@ export default function ProductPage(){
   ratingAverage:ratingAvg,
   ratingCount,
  }),[p,price,v?.available,productSeoImage,imageMedia,productCanonicalUrl,productCategory,ratingAvg,ratingCount]);
- useTitle(p?.seo?.title||(p?.name?\x60${p.name} Perfume\x60:undefined),{
+ useTitle(p?.seo?.title||(p?.name?p.name+' Perfume':undefined),{
   description:p?.seo?.metaDescription||p?.content?.shortDescription||p?.content?.fullDescription||'Explore this AFSANA perfume, discover its scent profile and view product details.',
   image:productSeoImage||undefined,
-  imageAlt:p?.name?\x60${p.name} by AFSANA Perfumes\x60:undefined,
+  imageAlt:p?.name?p.name+' by AFSANA Perfumes':undefined,
   canonicalUrl:productCanonicalUrl,
   type:'product',
   jsonLd:productJsonLd,
