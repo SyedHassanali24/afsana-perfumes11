@@ -13,6 +13,18 @@ export class MongoDBConnection extends DurableObject {
     return dbHealth(this.env);
   }
 
+  async publicProductSitemapEntries() {
+    const db = await connectMongo(this.env);
+    return db.collection("products")
+      .find(
+        { status: "Active", isDeleted: false },
+        { projection: { _id: 0, slug: 1, updatedAt: 1 } }
+      )
+      .sort({ slug: 1 })
+      .limit(50000)
+      .toArray();
+  }
+
   async storeWhatsAppWebhook(payload) {
     const db = await connectMongo(this.env);
     await db.collection("whatsapp_webhook_events").insertOne({

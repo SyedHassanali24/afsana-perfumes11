@@ -1,9 +1,11 @@
 // Hassan storefront visual baseline redeploy sync
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { corsHeaders, securityHeaders } from "./security.js";
+import { buildProductSitemapXml } from "./product-sitemap.js";
 
 const SITE_ORIGIN = "https://afsanaperfumes.store";
 const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
+const PRODUCT_SITEMAP_PATH = "/api/seo/products-sitemap.xml";
 
 function cors(origin) {
   return corsHeaders(origin, SITE_ORIGIN);
@@ -37,6 +39,44 @@ async function health(env) {
 function addCors(headers, origin) {
   Object.entries(securityHeaders(cors(origin))).forEach(([key, value]) => headers.set(key, value));
   return headers;
+}
+
+async function productSitemapResponse(env, ctx) {
+  const cacheKey = new Request(`${SITE_ORIGIN}${PRODUCT_SITEMAP_PATH}`, { method: "GET" });
+  let cache = null;
+
+  try {
+    if (typeof caches !== "undefined" && caches.default) {
+      cache = caches.default;
+      const cached = await cache.match(cacheKey);
+      if (cached) return cached;
+    }
+  } catch {
+    // A cache miss or cache API issue must not prevent the public sitemap from being served.
+  }
+
+  const products = await mongoStub(env).publicProductSitemapEntries();
+  const xml = buildProductSitemapXml(products);
+  const response = new Response(xml, {
+    status: 200,
+    headers: securityHeaders({
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      "X-Afsana-Backend": "cloudflare-product-sitemap"
+    })
+  });
+
+  try {
+    if (cache) {
+      const cacheWrite = cache.put(cacheKey, response.clone());
+      if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(cacheWrite);
+      else await cacheWrite;
+    }
+  } catch {
+    // Sitemap generation remains successful even if edge caching is unavailable.
+  }
+
+  return response;
 }
 
 
@@ -90,6 +130,31 @@ export default {
         }
       }
       return new Response("Method Not Allowed", { status: 405, headers: securityHeaders({ Allow: "GET, POST", "Cache-Control": "no-store" }) });
+    }
+
+    if (u.pathname === PRODUCT_SITEMAP_PATH) {
+      if (!["GET", "HEAD"].includes(request.method)) {
+        return new Response("Method Not Allowed", {
+          status: 405,
+          headers: securityHeaders({ Allow: "GET, HEAD", "Cache-Control": "no-store" })
+        });
+      }
+      try {
+        const sitemap = await productSitemapResponse(env, ctx);
+        return request.method === "HEAD"
+          ? new Response(null, { status: sitemap.status, headers: sitemap.headers })
+          : sitemap;
+      } catch (error) {
+        console.error("[afsana-sitemap] product sitemap unavailable:", error?.message || error);
+        return new Response("Product sitemap temporarily unavailable.", {
+          status: 503,
+          headers: securityHeaders({
+            "Content-Type": "text/plain; charset=utf-8",
+            "Cache-Control": "no-store",
+            "X-Afsana-Backend": "cloudflare-product-sitemap"
+          })
+        });
+      }
     }
 
     if (u.pathname.startsWith("/api/")) {
