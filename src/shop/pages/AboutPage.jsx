@@ -9,7 +9,7 @@ import { Container } from '../ui';
 const Ey = ({ children, light = false }) => <p className={`eyebrow ${light ? 'text-[#ffbd37]' : 'text-[#496b4e]'}`}>{children}</p>;
 
 export default function AboutPage() {
-  useTitle('The House of AFSANA — The Art of Scent');
+  useTitle('About AFSANA Perfumes | The Art of Scent');
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
   return <div className="bg-[#f7f4ed] text-[#173d26]">

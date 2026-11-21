@@ -11,6 +11,7 @@ import { useCart } from '../CartContext';
 import { useWishlist } from '../WishlistContext';
 import { money } from '../format';
 import useTitle from '../useTitle';
+import { buildProductJsonLd, getCanonicalUrl } from '../seo';
 
 const notes=(p)=>({top:p?.notes?.top||['Citrus','Saffron'],heart:p?.notes?.heart||['Rose','Jasmine','Spice'],base:p?.notes?.base||['Oud','Amber','Musk','Woods']});
 const mediaUrl = (value) => {
@@ -83,7 +84,6 @@ export default function ProductPage(){
  const productCategory=typeof p?.category==='string'?p.category:(p?.category?.name||p?.categoryId?.name||p?.fragrance?.family||p?.fragrance?.gender||'AFSANA');
  const productTags=Array.isArray(p?.tags)?p.tags.filter(Boolean).slice(0,4):[];
  const productShareUrl=typeof window!=='undefined'?window.location.href:'';
- useTitle(p?.seo?.title||p?.name);
  useEffect(()=>{if(variants.length){setVid((variants.find(v=>v.available>0)||variants[0]).id);setQty(1);setImg(0)}},[data]);
  useEffect(()=>{
   const end=offerEndAt?new Date(offerEndAt).getTime():0;
@@ -132,8 +132,26 @@ export default function ProductPage(){
  const v=variants.find(x=>x.id===vid), hasSalePrice=Boolean(v&&v.salePrice>0&&v.salePrice<v.price), price=v&&(hasSalePrice?v.salePrice:v.price), discountPct=hasSalePrice?Math.round((1-v.salePrice/v.price)*100):0, soldOut=!v||v.available<=0, ns=notes(p);
  const addToCart=()=>{if(v&&!soldOut){add(v.id,qty);setAdding(true);openDrawer();window.setTimeout(()=>setAdding(false),650)}};
  const buyNow=()=>{if(v&&!soldOut){add(v.id,qty);navigate('/checkout')}};
- const imageMedia=media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url));
+ const imageMedia=useMemo(()=>media.filter(m=>m?.url&&m.kind!=='video'&&!/\.(mp4|webm|mov)(\?|$)/i.test(m.url)),[media]);
  const activeMedia=media[img]||media[0]||null;
+ const productCanonicalUrl=getCanonicalUrl(typeof window!=='undefined'?window.location.pathname:'/',p?.seo?.canonicalUrl);
+ const productSeoImage=p?.seo?.ogImage||p?.image?.url||activeMedia?.url||imageMedia[0]?.url||'';
+ const productJsonLd=useMemo(()=>buildProductJsonLd({
+  product:p,
+  price,
+  available:v?.available,
+  imageUrls:[productSeoImage,...imageMedia.map((item)=>item.url)],
+  canonicalUrl:productCanonicalUrl,
+  category:productCategory,
+ }),[p,price,v?.available,productSeoImage,imageMedia,productCanonicalUrl,productCategory]);
+ useTitle(p?.seo?.title||(p?.name?p.name+' Perfume':undefined),{
+  description:p?.seo?.metaDescription||p?.content?.shortDescription||p?.content?.fullDescription||'Explore this AFSANA perfume, discover its scent profile and view product details.',
+  image:productSeoImage||undefined,
+  imageAlt:p?.name?p.name+' by AFSANA Perfumes':undefined,
+  canonicalUrl:productCanonicalUrl,
+  type:'product',
+  jsonLd:productJsonLd,
+ });
  const hasProductVisual=!!(activeMedia?.url&&!mediaBroken);
  const showRealModel=!!(product3dUrl&&modelViewerReady&&!modelViewerFailed);
  const banners=[imageMedia[0]?.url||'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85',imageMedia[1]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',imageMedia[2]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',imageMedia[3]?.url||imageMedia[0]?.url||'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85'];
