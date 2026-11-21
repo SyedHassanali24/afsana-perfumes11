@@ -17,8 +17,8 @@ export default function GiftingPage() {
   const whatsapp = 'https://wa.me/923252032321?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like help choosing an AFSANA perfume as a gift.');
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
-      <Container className="relative grid min-h-[500px] items-center gap-8 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr]">
-        <div className="max-w-2xl">
+      <Container className="relative grid min-h-[500px] items-center gap-8 pt-5 pb-16 sm:pt-6 sm:pb-20 lg:grid-cols-[1.05fr_.95fr]">
+        <div className="max-w-2xl self-start pt-2 sm:pt-3">
           <Ey light>THE ART OF GIVING</Ey>
           <h1 className="mt-6 font-display text-6xl leading-[.9] tracking-[-.05em] sm:text-8xl">Give a<br/><em className="text-[#ffbd37]">memory.</em></h1>
           <p className="mt-7 max-w-xl text-sm leading-8 text-white/75">A fragrance is a personal kind of gift. Choose an AFSANA scent for birthdays, celebrations, thank-yous or the moments that deserve something thoughtful.</p>
