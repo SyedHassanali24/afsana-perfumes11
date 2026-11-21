@@ -93,11 +93,17 @@ export function getPageMetadata(pathname = '/') {
           title: 'AFSANA Perfumes | Signature Fragrances',
           description: 'Discover this AFSANA fragrance, explore its scent profile and view product details.',
         }
-      : {
-          title: 'AFSANA Perfumes | The Art of Scent',
-          description: 'Discover AFSANA signature fragrances, explore scent notes and find your next memorable perfume.',
-          robots: 'noindex,follow',
-        }
+      : path.startsWith('/journal/')
+        ? {
+            title: 'Perfume Guides & Scent Stories | AFSANA Journal',
+            description: 'Read practical fragrance guides from AFSANA, including perfume notes, signature scents, warm-weather fragrance and gifting.',
+            robots: 'index,follow,max-image-preview:large',
+          }
+        : {
+            title: 'AFSANA Perfumes | The Art of Scent',
+            description: 'Discover AFSANA signature fragrances, explore scent notes and find your next memorable perfume.',
+            robots: 'noindex,follow',
+          }
   );
 
   return {
@@ -105,7 +111,7 @@ export function getPageMetadata(pathname = '/') {
     canonicalUrl: getCanonicalUrl(path),
     image: DEFAULT_SOCIAL_IMAGE,
     imageAlt: 'AFSANA Perfumes — The Art of Scent',
-    type: path.startsWith('/product/') ? 'product' : 'website',
+    type: path.startsWith('/product/') ? 'product' : (path.startsWith('/journal/') ? 'article' : 'website'),
     robots: privateRoute ? 'noindex,follow' : (page.robots || 'index,follow,max-image-preview:large'),
   };
 }

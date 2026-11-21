@@ -30,6 +30,18 @@ test('public collection routes remain indexable', async () => {
   assert.match(getPageMetadata('/shop').robots, /^index,follow/);
 });
 
+test('dedicated journal guides remain indexable with article metadata', async () => {
+  const { getPageMetadata, getCanonicalUrl } = await seo;
+  const metadata = getPageMetadata('/journal/perfume-notes-explained');
+
+  assert.match(metadata.robots, /^index,follow/);
+  assert.equal(metadata.type, 'article');
+  assert.equal(
+    getCanonicalUrl('/journal/perfume-notes-explained'),
+    'https://afsanaperfumes.store/journal/perfume-notes-explained',
+  );
+});
+
 test('Product JSON-LD uses available real product facts only', async () => {
   const { buildProductJsonLd } = await seo;
   const schema = buildProductJsonLd({
