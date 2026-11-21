@@ -10,7 +10,7 @@ const SORTS = [['newest', 'Newest'], ['price_asc', 'Price: low to high'], ['pric
 const KEYS = ['q', 'category', 'collection', 'brand', 'gender', 'sort', 'minPrice', 'maxPrice', 'page'];
 
 export default function ShopPage() {
-  useTitle('Shop');
+  useTitle('Perfumes Online in Pakistan | AFSANA Collection');
   const [sp, setSp] = useSearchParams();
   const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
   const {data:categoryData}=useApi(()=>publicTaxonomyApi.list('categories'),[]);
