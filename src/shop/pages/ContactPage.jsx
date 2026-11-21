@@ -6,7 +6,7 @@ import useShopSettings from '../useShopSettings';
 import useTitle from '../useTitle';
 
 export default function ContactPage() {
-  useTitle('Contact AFSANA');
+  useTitle('Contact AFSANA Perfumes');
   const settings = useShopSettings();
   const store = settings?.store || {};
   const address = String(store.address || '').trim();
