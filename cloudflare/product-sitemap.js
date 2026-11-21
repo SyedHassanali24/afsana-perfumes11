@@ -16,8 +16,8 @@ function sitemapDate(value) {
   return date.toISOString().slice(0, 10);
 }
 
-export function buildProductSitemapXml(products = [], siteOrigin = 'https://afsanaperfumes.store') {
-  const origin = new URL(siteOrigin).origin;
+export function buildProductSitemapXml(products = []) {
+  const origin = 'https://afsanaperfumes.store';
   const unique = new Map();
 
   for (const product of Array.isArray(products) ? products : []) {
