@@ -941,13 +941,13 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
           {btn}
         </div>
         <div className="afsana-ref-inner-catalog-product">
-          {pageProductImage ? <Link to={catalogProductLink(pageProduct)} aria-label={`Explore ${pageProduct.name}`}><img src={pageProductImage} alt={pageProduct.name || 'AFSANA perfume'} width="900" height="1200" loading="eager" decoding="async"/></Link> : <div className="afsana-ref-inner-product-pending"><b>AFSANA</b><span>THE ART OF SCENT</span></div>}
+          {pageProductImage ? <Link to={catalogProductLink(pageProduct)} aria-label={`Explore ${pageProduct.name}`}><img src={pageProductImage} srcSet={responsiveUnsplashSrcSet(pageProductImage, 68)} sizes="(max-width: 700px) 90vw, 42vw" alt={pageProduct.name || 'AFSANA perfume'} width="900" height="1200" loading="eager" decoding="async"/></Link> : <div className="afsana-ref-inner-product-pending"><b>AFSANA</b><span>THE ART OF SCENT</span></div>}
           {pageProduct?.name && <p>{pageProduct.name}</p>}
         </div>
       </div>
     </section>;
     return <section className={section.type==='hero' ? 'relative overflow-hidden bg-[#182308] text-white' : 'relative overflow-hidden bg-[#faf8f4]'}>
-      <div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={c.mobileImageUrl || c.imageUrl}/><img src={c.imageUrl} srcSet={responsiveUnsplashSrcSet(c.imageUrl, 68)} sizes="100vw" alt="" width="1600" height="900" loading={section.type === 'hero' ? 'eager' : 'lazy'} fetchPriority={section.type === 'hero' ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div>
+      <div className="absolute inset-0">{c.imageUrl && <picture><source media="(max-width: 700px)" srcSet={responsiveUnsplashSrcSet(c.mobileImageUrl || c.imageUrl, 68) || (c.mobileImageUrl || c.imageUrl)} sizes="100vw"/><img src={c.imageUrl} srcSet={responsiveUnsplashSrcSet(c.imageUrl, 68)} sizes="100vw" alt="" width="1600" height="900" loading={section.type === 'hero' ? 'eager' : 'lazy'} fetchPriority={section.type === 'hero' ? 'high' : 'auto'} decoding="async" className="h-full w-full object-cover"/></picture>}<div className={`absolute inset-0 ${section.type==='hero' ? 'bg-[linear-gradient(90deg,rgba(24,35,8,.98),rgba(38,62,14,.72),rgba(24,35,8,.25))]' : 'bg-black/25'}`}/></div>
       <div className="container-xl relative" style={style}><div className={`flex min-h-[520px] flex-col justify-center ${align}`}><Eyebrow light={section.type==='hero'}>{c.eyebrow || 'THE ART OF SCENT'}</Eyebrow><h2 className="mt-5 max-w-5xl font-display text-5xl sm:text-8xl leading-[.9]">{section.title || 'SCENTS WITH A STORY.'}</h2>{c.subtitle && <p className="mt-6 max-w-2xl text-sm leading-7 opacity-75">{c.subtitle}</p>}{c.body && <p className="mt-3 max-w-2xl text-sm leading-7 opacity-70">{c.body}</p>}{btn}</div></div>
     </section>;
   }
