@@ -42,25 +42,20 @@ test('Product JSON-LD uses available real product facts only', () => {
     imageUrls: ['/images/rose-miracle.webp'],
     canonicalUrl: 'https://afsanaperfumes.store/product/rose-miracle',
     category: 'Women',
-    ratingAverage: 4.8,
-    ratingCount: 12,
   });
 
   assert.equal(schema['@type'], 'Product');
   assert.equal(schema.offers.priceCurrency, 'PKR');
   assert.equal(schema.offers.availability, 'https://schema.org/InStock');
-  assert.equal(schema.aggregateRating.reviewCount, 12);
   assert.equal(schema.image[0], 'https://afsanaperfumes.store/images/rose-miracle.webp');
 });
 
-test('Product JSON-LD never fabricates rating data', () => {
+test('Product JSON-LD excludes rating data unless review provenance is confirmed', () => {
   const schema = buildProductJsonLd({
     product: { name: 'New Fragrance', sku: 'AF-NEW' },
     price: 2500,
     available: 0,
     imageUrls: ['https://cdn.example.com/new-fragrance.webp'],
-    ratingAverage: 0,
-    ratingCount: 0,
   });
 
   assert.equal(schema.offers.availability, 'https://schema.org/OutOfStock');
