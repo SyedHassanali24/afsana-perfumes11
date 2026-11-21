@@ -1303,3 +1303,22 @@
     font-size:8px!important;
   }
 }
+
+
+/* Keep Track Order and Sign In together at the right edge of the top strip. */
+.afsana-return-policy-marquee{
+  order:1!important;
+}
+.afsana-reference-topbar-links .afsana-topbar-action:first-child{
+  order:2!important;
+  margin-left:auto!important;
+}
+.afsana-reference-topbar-links .afsana-topbar-action:last-child{
+  order:3!important;
+}
+.afsana-reference-topbar-inner{
+  column-gap:10px!important;
+}
+@media(max-width:640px){
+  .afsana-reference-topbar-inner{column-gap:5px!important}
+}
