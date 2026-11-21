@@ -45,6 +45,8 @@ export default function JournalArticlePage() {
     description: article?.description || 'Perfume guides and scent stories from AFSANA Perfumes.',
     canonicalUrl: canonicalUrl || undefined,
     jsonLd,
+    type: 'article',
+    robots: 'index,follow,max-image-preview:large',
   });
 
   if (!article) return <Navigate to="/journal" replace />;
