@@ -244,8 +244,6 @@ export default {
     if (edgeMetadata && asset.status === 200 && contentType.toLowerCase().includes("text/html")) {
       const escapeAttribute = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
       const canonical = escapeAttribute(edgeMetadata.canonicalUrl);
-      const title = escapeAttribute(edgeMetadata.title);
-      const description = escapeAttribute(edgeMetadata.description);
       response = new HTMLRewriter()
         .on("title", {
           element(element) {
@@ -285,6 +283,16 @@ export default {
         .on('meta[name="twitter:description"]', {
           element(element) {
             element.setAttribute("content", edgeMetadata.description);
+          }
+        })
+        .on('link[rel="canonical"]', {
+          element(element) {
+            element.remove();
+          }
+        })
+        .on('meta[property="og:url"]', {
+          element(element) {
+            element.remove();
           }
         })
         .on("head", {
