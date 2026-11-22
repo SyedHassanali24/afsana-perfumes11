@@ -505,7 +505,7 @@ export default function ProductPage(){
       <div className="afsana-product-taxonomy">
        <span><b>SKU:</b> {p.sku||p.slug?.toUpperCase()||'AFSANA'}</span>
        {productTags.length>0&&<span><b>Tags:</b> {productTags.join(', ')}</span>}
-       <span className="afsana-product-share"><b>Share:</b> <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productShareUrl)}`} target="_blank" rel="noreferrer" aria-label="Share on Facebook">f</a><a href={`https://wa.me/?text=${encodeURIComponent((p.name||'AFSANA fragrance')+' '+productShareUrl)}`} target="_blank" rel="noreferrer" aria-label="Share on WhatsApp">wa</a></span>
+       <span className="afsana-product-share"><b>Share:</b> <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productShareUrl)}`} target="_blank" rel="noreferrer" aria-label="f — Share on Facebook">f</a><a href={`https://wa.me/?text=${encodeURIComponent((p.name||'AFSANA fragrance')+' '+productShareUrl)}`} target="_blank" rel="noreferrer" aria-label="wa — Share on WhatsApp">wa</a></span>
       </div>
       <div className="product-perks-standard">
        <div><span>01</span><p><strong>Premium oils</strong><small>Carefully composed</small></p></div>
