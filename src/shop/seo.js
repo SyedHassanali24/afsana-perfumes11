@@ -51,6 +51,26 @@ const PAGE_METADATA = {
   },
 };
 
+const PRODUCT_NAMES = {
+  'astral-drift': 'Astral Drift',
+  'busy-man': 'Busy Man',
+  dastan: 'Dastan',
+  dragon: 'Dragon',
+  'drama-queen': 'Drama Queen',
+  'ember-light': 'Ember Light',
+  flex: 'Flex',
+  'mood-swing': 'Mood Swing',
+  'red-forest': 'Red Forest',
+  'rose-miricle': 'Rose Miricle',
+  'safr-e-meehak': 'Safr-e-Meehak',
+  'taj-ul-oud': 'Taj-ul-Oud',
+};
+
+function getProductNameFromPath(path) {
+  const slug = path.slice('/product/'.length).split('/')[0];
+  return PRODUCT_NAMES[slug] || slug.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+}
+
 const PRIVATE_ROUTE_PATTERNS = [
   /^\/admin(?:\/|$)/,
   /^\/api(?:\/|$)/,
@@ -87,11 +107,12 @@ export function getCanonicalUrl(pathname = '/', preferredUrl) {
 export function getPageMetadata(pathname = '/') {
   const path = String(pathname || '/').split(/[?#]/, 1)[0] || '/';
   const privateRoute = PRIVATE_ROUTE_PATTERNS.some((pattern) => pattern.test(path));
+  const productName = path.startsWith('/product/') ? getProductNameFromPath(path) : '';
   const page = PAGE_METADATA[path] || (
     path.startsWith('/product/')
       ? {
-          title: 'AFSANA Perfumes | Signature Fragrances',
-          description: 'Discover this AFSANA fragrance, explore its scent profile and view product details.',
+          title: productName + ' Perfume',
+          description: 'Explore ' + productName + ', view confirmed product details, current price and availability from AFSANA Perfumes.',
         }
       : path.startsWith('/journal/')
         ? {
