@@ -9,6 +9,7 @@ import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
 import CmsTestimonials, { sampleTestimonialsSection } from './CmsTestimonials';
 import { Container } from './ui';
+import { JOURNAL_ARTICLES } from './journalArticles';
 
 const img={
  hero:'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1440&q=74',
@@ -714,15 +715,23 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
       { title: 'The art of giving', text: 'A considered fragrance gift turns an ordinary occasion into a personal memory. Discover the AFSANA edit for thoughtful gifting.' }
     ];
     const sourcePosts = cmsItems(c.items);
-    const posts = (sourcePosts.length ? sourcePosts : defaultPosts).slice(0, Math.max(3, Number(c.limit)||3)).map((x,i) => {
-      const product = catalogProductAt(products, i);
-      return {
-        ...x,
-        image: ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
-        link: ['discover','journal','house','gifting'].includes(section.pageKey) && product ? catalogProductLink(product) : (x.link || '/journal'),
-        productName: ['discover','journal','house','gifting'].includes(section.pageKey) ? product?.name : ''
-      };
-    });
+    const journalPosts = JOURNAL_ARTICLES.map((article, i) => ({
+      ...(sourcePosts[i] || {}),
+      title: sourcePosts[i]?.title || article.title,
+      text: sourcePosts[i]?.text || article.excerpt,
+      link: `/journal/${article.slug}`,
+    }));
+    const posts = (journalPage ? journalPosts : (sourcePosts.length ? sourcePosts : defaultPosts))
+      .slice(0, journalPage ? JOURNAL_ARTICLES.length : Math.max(3, Number(c.limit)||3))
+      .map((x,i) => {
+        const product = catalogProductAt(products, i);
+        return {
+          ...x,
+          image: ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
+          link: journalPage ? x.link : (['discover','journal','house','gifting'].includes(section.pageKey) && product ? catalogProductLink(product) : (x.link || '/journal')),
+          productName: ['discover','journal','house','gifting'].includes(section.pageKey) ? product?.name : ''
+        };
+      });
     const featured = posts[0];
     const supporting = posts.slice(1,3);
     return <section className="afsana-journal-pro">
