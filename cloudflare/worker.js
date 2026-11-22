@@ -2,6 +2,7 @@
 import { MongoDBConnection } from "./MongoDBConnection.js";
 import { corsHeaders, securityHeaders } from "./security.js";
 import { buildProductSitemapXml } from "./product-sitemap.js";
+import { getEdgePageMetadata } from "./seo-html.js";
 
 const SITE_ORIGIN = "https://afsanaperfumes.store";
 const WORKER_ORIGIN = "https://afsana-perfumes11.eastwala12.workers.dev";
@@ -230,7 +231,74 @@ export default {
       headers.set("Expires", new Date(Date.now() + 604800000).toUTCString());
     }
     headers.set("X-Afsana-Backend", "cloudflare-assets");
-    return new Response(asset.body, { status: asset.status, headers: securityHeaders(Object.fromEntries(headers.entries())) });
+    let response = new Response(asset.body, {
+      status: asset.status,
+      statusText: asset.statusText,
+      headers: securityHeaders(Object.fromEntries(headers.entries()))
+    });
+
+    // Give crawlers useful route-specific metadata in the initial HTML response.
+    // React can still refine it after hydration; this edge layer also supports
+    // crawlers and link unfurlers that inspect the first HTML response.
+    const edgeMetadata = getEdgePageMetadata(u.pathname);
+    if (edgeMetadata && asset.status === 200 && contentType.toLowerCase().includes("text/html")) {
+      const escapeAttribute = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      const canonical = escapeAttribute(edgeMetadata.canonicalUrl);
+      const title = escapeAttribute(edgeMetadata.title);
+      const description = escapeAttribute(edgeMetadata.description);
+      response = new HTMLRewriter()
+        .on("title", {
+          element(element) {
+            element.setInnerContent(edgeMetadata.title);
+          }
+        })
+        .on('meta[name="description"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.description);
+          }
+        })
+        .on('meta[name="robots"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.robots);
+          }
+        })
+        .on('meta[property="og:title"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.title);
+          }
+        })
+        .on('meta[property="og:description"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.description);
+          }
+        })
+        .on('meta[property="og:type"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.type);
+          }
+        })
+        .on('meta[name="twitter:title"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.title);
+          }
+        })
+        .on('meta[name="twitter:description"]', {
+          element(element) {
+            element.setAttribute("content", edgeMetadata.description);
+          }
+        })
+        .on("head", {
+          element(element) {
+            element.append(
+              `<link rel="canonical" href="${canonical}"><meta property="og:url" content="${canonical}">`,
+              { html: true }
+            );
+          }
+        })
+        .transform(response);
+    }
+
+    return response;
   }
 };
 export { MongoDBConnection };
