@@ -37,3 +37,10 @@ test("does not index unknown article paths or private routes", () => {
   assert.equal(getEdgePageMetadata("/product/not-a-real-product"), null);
   assert.equal(getEdgePageMetadata("/admin"), null);
 });
+
+test("keeps legal pages indexable and order/data utility pages noindex", () => {
+  assert.match(getEdgePageMetadata("/privacy-policy").robots, /^index,follow/);
+  assert.match(getEdgePageMetadata("/terms-of-service").robots, /^index,follow/);
+  assert.match(getEdgePageMetadata("/track").robots, /^noindex,follow/);
+  assert.match(getEdgePageMetadata("/data-deletion").robots, /^noindex,follow/);
+});
