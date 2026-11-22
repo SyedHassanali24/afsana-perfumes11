@@ -152,7 +152,7 @@ export default function ShopLayout(){
    <div className="storefront-header-surface absolute inset-0 border-b border-[#100d24]/10 bg-[#f7f4ed]/95 backdrop-blur-xl shadow-[0_10px_36px_rgba(16,13,36,.08)]"/>
    <Container className="container-xl storefront-header-inner relative flex h-[82px] items-center justify-between gap-4">
     <button className="storefront-mobile-toggle lg:hidden" onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
-    <Link to="/" className="logo storefront-brand group flex shrink-0 items-center gap-3" aria-label={brandName}>
+    <Link to="/" className="logo storefront-brand group flex shrink-0 items-center gap-3" aria-label={`${brandName} ${brandTagline}`}>
       <span className="storefront-brand-mark grid h-10 w-10 place-items-center overflow-hidden rounded-[13px] bg-[#17112f] shadow-[0_5px_16px_rgba(23,17,47,.2)]">{logoUrl ? <img src={logoUrl} alt="" width="400" height="400" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[23px] italic text-[#d9ff55]">A</span>}</span>
       <span className="block font-display text-[20px] leading-none tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[5px] block font-mono text-[7px] font-semibold tracking-[.34em] text-[#80798f]">{brandTagline}</small></span>
     </Link>
