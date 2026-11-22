@@ -66,10 +66,6 @@ const ARTICLES = {
   },
 };
 
-function titleCaseSlug(slug) {
-  return slug.split("-").filter(Boolean).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-}
-
 export function getEdgePageMetadata(pathname = "/") {
   const path = String(pathname || "/").split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
   let metadata = PAGE_METADATA[path];
@@ -77,7 +73,7 @@ export function getEdgePageMetadata(pathname = "/") {
 
   if (!metadata && path.startsWith("/product/")) {
     const slug = path.slice("/product/".length).split("/")[0];
-    const name = PRODUCTS[slug] || titleCaseSlug(slug);
+    const name = PRODUCTS[slug];
     if (!name || path.split("/").length !== 3) return null;
     metadata = {
       title: `${name} Perfume | AFSANA Perfumes Pakistan`,
