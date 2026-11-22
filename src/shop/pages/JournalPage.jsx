@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import useApi from '../../hooks/useApi';
@@ -10,7 +11,30 @@ import { JOURNAL_ARTICLES } from '../journalArticles';
 const Ey = ({ children }) => <p className="eyebrow text-[#496b4e]">{children}</p>;
 
 export default function JournalPage() {
-  useTitle('Perfume Guides & Scent Stories | AFSANA Journal');
+  const journalJsonLd = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Perfume Guides & Scent Stories | AFSANA Journal',
+    description: 'Explore AFSANA perfume guides, fragrance notes, scent inspiration and thoughtful stories.',
+    url: 'https://afsanaperfumes.store/journal',
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListOrder: 'https://schema.org/ItemListOrderAscending',
+      numberOfItems: JOURNAL_ARTICLES.length,
+      itemListElement: JOURNAL_ARTICLES.map((story, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `https://afsanaperfumes.store/journal/${story.slug}`,
+        name: story.title,
+      })),
+    },
+  }), []);
+
+  useTitle('Perfume Guides & Scent Stories | AFSANA Journal', {
+    description: 'Explore AFSANA perfume guides, fragrance notes, scent inspiration and thoughtful stories.',
+    canonicalUrl: 'https://afsanaperfumes.store/journal',
+    jsonLd: journalJsonLd,
+  });
   const { data, loading } = useApi(() => productsApi.list({ sort: 'popular', limit: 36 }), []);
   const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Rose Miracle', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
