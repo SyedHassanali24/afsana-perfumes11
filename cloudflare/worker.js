@@ -241,7 +241,7 @@ export default {
     // React can still refine it after hydration; this edge layer also supports
     // crawlers and link unfurlers that inspect the first HTML response.
     const edgeMetadata = getEdgePageMetadata(u.pathname);
-    if (edgeMetadata && asset.status === 200 && contentType.toLowerCase().includes("text/html")) {
+    if (request.method === "GET" && edgeMetadata && asset.status === 200 && contentType.toLowerCase().includes("text/html")) {
       const escapeAttribute = (value) => String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
       const canonical = escapeAttribute(edgeMetadata.canonicalUrl);
       response = new HTMLRewriter()
