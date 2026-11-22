@@ -30,6 +30,24 @@ const PAGE_METADATA = {
     title: "Contact AFSANA Perfumes",
     description: "Contact AFSANA for perfume recommendations, fragrance questions, gifting guidance and help with your order.",
   },
+  "/privacy-policy": {
+    title: "Privacy Policy | AFSANA Perfumes",
+    description: "Read how AFSANA Perfumes handles website information and customer privacy.",
+  },
+  "/terms-of-service": {
+    title: "Terms of Service | AFSANA Perfumes",
+    description: "Review the terms that apply when browsing and shopping with AFSANA Perfumes.",
+  },
+  "/track": {
+    title: "Track Your AFSANA Order",
+    description: "Check the latest status of your AFSANA perfume order using your order details.",
+    robots: "noindex,follow",
+  },
+  "/data-deletion": {
+    title: "User Data Deletion | AFSANA Perfumes",
+    description: "Information about requesting deletion of personal data associated with AFSANA services.",
+    robots: "noindex,follow",
+  },
 };
 
 const PRODUCTS = {
@@ -91,7 +109,7 @@ export function getEdgePageMetadata(pathname = "/") {
   return {
     ...metadata,
     canonicalUrl: `${SITE_URL}${path}`,
-    robots: INDEXABLE_ROBOTS,
+    robots: metadata.robots || INDEXABLE_ROBOTS,
     type,
   };
 }
