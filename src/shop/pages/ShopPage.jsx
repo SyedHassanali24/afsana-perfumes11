@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import useApi from '../../hooks/useApi';
 import { productsApi, cmsPublicApi, publicTaxonomyApi } from '../../services';
@@ -10,7 +11,6 @@ const SORTS = [['newest', 'Newest'], ['price_asc', 'Price: low to high'], ['pric
 const KEYS = ['q', 'category', 'collection', 'brand', 'gender', 'sort', 'minPrice', 'maxPrice', 'page'];
 
 export default function ShopPage() {
-  useTitle('Perfumes Online in Pakistan | AFSANA Collection');
   const [sp, setSp] = useSearchParams();
   const {data:cmsContent}=useApi(()=>cmsPublicApi.content(),[]);
   const {data:categoryData}=useApi(()=>publicTaxonomyApi.list('categories'),[]);
@@ -28,6 +28,36 @@ export default function ShopPage() {
   const query = Object.fromEntries(KEYS.map((k) => [k, get(k)]).filter(([, v]) => v));
   const { data, loading, error, reload } = useApi(() => productsApi.list({ ...query, limit: 12 }), [sp.toString()]);
   const list = data?.products || [];
+  const shopJsonLd = useMemo(() => {
+    const hasFilters = KEYS.some((key) => key !== 'page' && Boolean(get(key)));
+    if (hasFilters || get('page')) return null;
+    const items = list
+      .filter((product) => product?.slug && product?.name)
+      .map((product, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `https://afsanaperfumes.store/product/${encodeURIComponent(product.slug)}`,
+        name: product.name,
+      }));
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Perfumes Online in Pakistan | AFSANA Collection',
+      description: 'Explore the AFSANA perfume collection and discover fragrances for your signature scent.',
+      url: 'https://afsanaperfumes.store/shop',
+      mainEntity: {
+        '@type': 'ItemList',
+        itemListOrder: 'https://schema.org/ItemListOrderAscending',
+        numberOfItems: items.length,
+        itemListElement: items,
+      },
+    };
+  }, [list, sp.toString()]);
+  useTitle('Perfumes Online in Pakistan | AFSANA Collection', {
+    description: 'Explore the AFSANA perfume collection and discover fragrances for your signature scent.',
+    canonicalUrl: 'https://afsanaperfumes.store/shop',
+    jsonLd: shopJsonLd,
+  });
   const collectionVisual = referenceAssets.collectionHeroImageUrl || list.find((product)=>product.image?.url)?.image?.url || '';
   const collectionBeforeSections = cmsContent?.pageSections?.collection_before || [];
   const hasCmsCollectionBanner = collectionBeforeSections.some((section)=>['hero','image_banner','video_banner'].includes(section.type));
