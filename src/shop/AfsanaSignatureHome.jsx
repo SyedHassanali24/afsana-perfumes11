@@ -733,7 +733,7 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
         };
       });
     const featured = posts[0];
-    const supporting = posts.slice(1,3);
+    const supporting = posts.slice(1);
     return <section className="afsana-journal-pro">
       <div className="container-xl">
         <div className="afsana-journal-heading">
