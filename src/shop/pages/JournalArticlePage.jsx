@@ -41,7 +41,7 @@ export default function JournalArticlePage() {
     };
   }, [article, canonicalUrl]);
 
-  useTitle(article?.title || 'AFSANA Journal', {
+  useTitle(article?.seoTitle || article?.title || 'AFSANA Journal', {
     description: article?.description || 'Perfume guides and scent stories from AFSANA Perfumes.',
     canonicalUrl: canonicalUrl || undefined,
     jsonLd,
