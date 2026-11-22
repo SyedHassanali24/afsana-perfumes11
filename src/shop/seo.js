@@ -257,6 +257,26 @@ export function buildProductJsonLd({
   if (product?.sku) schema.sku = cleanText(product.sku, 80);
   if (category) schema.category = cleanText(category, 120);
 
+  // Product.ratingAvg/ratingCount are recalculated server-side from public
+  // Approved + Featured reviews only. Never publish an empty or invalid rating.
+  const ratingValue = Number(product?.ratingAvg);
+  const reviewCount = Number(product?.ratingCount);
+  if (
+    Number.isFinite(ratingValue)
+    && ratingValue >= 1
+    && ratingValue <= 5
+    && Number.isInteger(reviewCount)
+    && reviewCount > 0
+  ) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: Number(ratingValue.toFixed(2)),
+      reviewCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
   const numericPrice = Number(price);
   if (Number.isFinite(numericPrice) && numericPrice > 0) {
     const offer = {
