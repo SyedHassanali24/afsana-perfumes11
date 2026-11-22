@@ -78,6 +78,44 @@ test('Product JSON-LD excludes rating data unless review provenance is confirmed
   assert.equal('aggregateRating' in schema, false);
 });
 
+test('Product JSON-LD publishes only verified public review aggregates', async () => {
+  const { buildProductJsonLd } = await seo;
+  const schema = buildProductJsonLd({
+    product: {
+      name: 'Oud Royal',
+      slug: 'oud-royal',
+      ratingAvg: 4.75,
+      ratingCount: 12,
+    },
+    price: 6990,
+    available: 3,
+    imageUrls: ['/images/oud-royal.webp'],
+  });
+
+  assert.deepEqual(schema.aggregateRating, {
+    '@type': 'AggregateRating',
+    ratingValue: 4.75,
+    reviewCount: 12,
+    bestRating: 5,
+    worstRating: 1,
+  });
+});
+
+test('Product JSON-LD ignores invalid or empty review aggregates', async () => {
+  const { buildProductJsonLd } = await seo;
+  for (const product of [
+    { name: 'Invalid Rating', ratingAvg: 6, ratingCount: 3 },
+    { name: 'No Reviews', ratingAvg: 4.8, ratingCount: 0 },
+    { name: 'Fractional Count', ratingAvg: 4.8, ratingCount: 2.5 },
+  ]) {
+    const schema = buildProductJsonLd({
+      product,
+      imageUrls: ['/images/product.webp'],
+    });
+    assert.equal('aggregateRating' in schema, false);
+  }
+});
+
 test('Product JSON-LD is skipped when product identity or image is absent', async () => {
   const { buildProductJsonLd } = await seo;
   assert.equal(buildProductJsonLd({ product: { name: 'No image' } }), null);
