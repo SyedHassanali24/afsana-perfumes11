@@ -154,7 +154,7 @@ export default function ShopLayout(){
     <button className="storefront-mobile-toggle lg:hidden" onClick={()=>setMenu(!menu)} aria-label="Menu" aria-expanded={menu} aria-controls="mobile-navigation">{menu?<X/>:<Menu/>}</button>
     <Link to="/" className="logo storefront-brand group flex shrink-0 items-center gap-3" aria-label={`${brandName} ${brandTagline}`}>
       <span className="storefront-brand-mark grid h-10 w-10 place-items-center overflow-hidden rounded-[13px] bg-[#17112f] shadow-[0_5px_16px_rgba(23,17,47,.2)]">{logoUrl ? <img src={logoUrl} alt="" width="400" height="400" className="h-full w-full object-contain" onError={(e)=>{e.currentTarget.style.display='none';}}/> : <span className="font-display text-[23px] italic text-[#d9ff55]">A</span>}</span>
-      <span className="block font-display text-[20px] leading-none tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[5px] block font-mono text-[7px] font-semibold tracking-[.34em] text-[#80798f]">{brandTagline}</small></span>
+      <span className="block font-display text-[20px] leading-none tracking-[.17em] text-[#100d24]">{brandName}<small className="mt-[5px] block font-mono text-[7px] font-semibold tracking-[.34em] text-[#5e566b]">{brandTagline}</small></span>
     </Link>
     <nav className="storefront-main-nav hidden lg:flex items-center gap-1 rounded-full border border-[#e8e2ef] bg-white/80 p-1 shadow-[0_5px_20px_rgba(23,17,47,.055)]" aria-label="Main navigation">
       {contactNav.map(([to,label])=><NavLink key={to} to={to} end={to==='/'} className={({isActive})=>'storefront-nav-link '+(isActive?'is-active':'')}>{label}</NavLink>)}

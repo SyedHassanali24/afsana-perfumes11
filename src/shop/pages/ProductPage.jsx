@@ -211,7 +211,7 @@ export default function ProductPage(){
    .afsana-product-info-topline{display:flex;align-items:center;gap:10px;min-height:25px}
    .afsana-product-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid rgba(115,87,255,.2);border-radius:30px;background:rgba(115,87,255,.055);color:#65469a;font-size:8px;font-weight:800;letter-spacing:.2em;text-transform:uppercase}
    .afsana-product-eyebrow:before{content:"";width:5px;height:5px;border-radius:50%;background:#9471ca;box-shadow:0 0 0 4px rgba(148,113,202,.1)}
-   .afsana-product-concentration{color:#847a91;font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+   .afsana-product-concentration{color:#5d5368;font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
    .afsana-product-ref{margin-left:auto;color:#a49aaa;font-size:8px;letter-spacing:.2em}
    .afsana-product-title{margin:23px 0 0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;color:#1c1428!important;font-family:var(--font-display,Georgia,serif)!important;font-size:clamp(48px,5.6vw,76px)!important;font-weight:500!important;line-height:.88!important;letter-spacing:-.045em!important;overflow-wrap:anywhere}
    .afsana-product-rating{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:19px;color:#82798b;font-size:9px;line-height:1.6}
