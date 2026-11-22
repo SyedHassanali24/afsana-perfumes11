@@ -34,5 +34,6 @@ test("normalizes trailing slashes for canonical URLs", () => {
 
 test("does not index unknown article paths or private routes", () => {
   assert.equal(getEdgePageMetadata("/journal/not-a-real-article"), null);
+  assert.equal(getEdgePageMetadata("/product/not-a-real-product"), null);
   assert.equal(getEdgePageMetadata("/admin"), null);
 });
