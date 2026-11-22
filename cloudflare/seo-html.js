@@ -71,7 +71,7 @@ function titleCaseSlug(slug) {
 }
 
 export function getEdgePageMetadata(pathname = "/") {
-  const path = String(pathname || "/").split(/[?#]/, 1)[0].replace(/\\/+$/, "") || "/";
+  const path = String(pathname || "/").split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
   let metadata = PAGE_METADATA[path];
   let type = "website";
 
