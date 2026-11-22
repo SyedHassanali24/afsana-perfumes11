@@ -418,7 +418,24 @@ export default function ProductPage(){
 
    @media(prefers-reduced-motion:reduce){.afsana-bottle-preview{animation:none}}
   `}</style>
-  <StateBox loading={loading} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
+  <StateBox loading={loading} skeleton={
+  <div className="product-detail-grid mt-8" aria-hidden="true">
+    <div className="product-gallery no-thumbs">
+      <div className="main-product-stage relative overflow-hidden flex items-center justify-center animate-pulse">
+        <div className="h-2/3 w-1/2 rounded-[2rem] bg-[#7357ff]/10"/>
+      </div>
+    </div>
+    <div className="afsana-product-info product-info-standard space-y-6">
+      <div className="h-4 w-1/3 rounded bg-[#7357ff]/10 animate-pulse"/>
+      <div className="h-12 w-3/4 rounded bg-[#7357ff]/10 animate-pulse"/>
+      <div className="h-5 w-1/2 rounded bg-[#7357ff]/10 animate-pulse"/>
+      <div className="h-20 w-full rounded bg-[#7357ff]/10 animate-pulse"/>
+      <div className="h-12 w-2/3 rounded bg-[#7357ff]/10 animate-pulse"/>
+      <div className="h-14 w-full rounded bg-[#7357ff]/10 animate-pulse"/>
+      <div className="h-14 w-full rounded bg-[#7357ff]/10 animate-pulse"/>
+    </div>
+  </div>
+} error={error?.status===404?{message:'This perfume could not be found.'}:error} onRetry={reload}>{p&&<>
    <div className="text-[9px] uppercase tracking-[.28em] text-[#5f654f]"><Link to="/" className="hover:text-[#263e0e]">Home</Link> <span>/</span> <Link to="/shop" className="hover:text-[#263e0e]">Collection</Link> <span>/</span> {p.name}</div>
    <div className="product-detail-grid mt-8">
     <div className={"product-gallery "+(media.length>1?"has-thumbs":"no-thumbs")}>
