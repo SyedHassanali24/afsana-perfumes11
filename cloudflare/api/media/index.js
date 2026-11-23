@@ -111,9 +111,9 @@ const api = createHandler('media', [
       let expectedBytes;
       try { expectedBytes = expectedMediaChunkBytes(upload.size, index, upload.chunkSize); }
       catch { throw E.badRequest('Video chunk number is outside the upload.'); }
-      if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(body.data)) {
-        throw E.badRequest('The video part is not valid base64 data.');
-      }
+      // Do not run a backtracking RegExp over multi-megabyte base64 payloads:
+      // V8 can overflow its stack on a full 4 MiB video chunk. The canonical
+      // decode/encode equality check below rejects malformed or non-canonical base64.
       const data = Buffer.from(body.data, 'base64');
       if (!data.length || data.length !== expectedBytes || data.toString('base64') !== body.data) {
         throw E.badRequest('The uploaded video part has an unexpected size.');
