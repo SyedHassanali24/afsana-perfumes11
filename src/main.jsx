@@ -58,17 +58,9 @@ function preloadHomepageImage(source, sizes = "100vw", quality = 68) {
   document.head.appendChild(preload);
 }
 
-function getProductImage(product) {
-  const media = Array.isArray(product?.media) ? product.media : [];
-  return product?.image?.url ||
-    media.find((item) => item?.kind === "main" && item?.url)?.url ||
-    media.find((item) => item?.url && !/\.(mp4|webm|mov|m4v|glb|gltf)(?:$|[?#])/i.test(item.url))?.url ||
-    "";
-}
-
 if (window.location.pathname === "/") {
   const cmsRequest = cmsPublicApi.content().catch(() => null);
-  const productsRequest = productsApi.list({ sort: "popular", limit: 12 }).catch(() => null);
+  const featuredProductRequest = productsApi.featured().catch(() => null);
 
   void cmsRequest.then((content) => {
     if (!content) return;
@@ -100,9 +92,9 @@ if (window.location.pathname === "/") {
       return;
     }
 
-    if (hero?.type === "hero" && config.layout === "reference") {
-      void productsRequest.then((result) => {
-        const image = getProductImage(result?.products?.[0]);
+    if (hero?.type === "hero" && config.layout === "reference" && !config.heroBottleImageUrl) {
+      void featuredProductRequest.then((result) => {
+        const image = result?.product?.image?.url;
         if (image) preloadHomepageImage(image, "90vw", 70);
       });
     }
