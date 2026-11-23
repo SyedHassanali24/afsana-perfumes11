@@ -39,8 +39,8 @@ function publicApiCacheKey(request, epoch = INITIAL_EPOCH) {
 function publicApiCacheTtlMs(response) {
   if (!response || response.status !== 200 || response.headers.has('Set-Cookie')) return 0;
   const policy = String(response.headers.get('Cache-Control') || '').toLowerCase();
-  if (!/\\bpublic\\b/.test(policy) || /\\b(private|no-store)\\b/.test(policy)) return 0;
-  const maxAge = policy.match(/(?:^|,)\\s*max-age\\s*=\\s*"?([0-9]+)"?/);
+  if (!/\bpublic\b/.test(policy) || /\b(private|no-store)\b/.test(policy)) return 0;
+  const maxAge = policy.match(/(?:^|,)\s*max-age\s*=\s*"?([0-9]+)"?/);
   if (!maxAge) return 0;
   const declaredTtlMs = Number(maxAge[1]) * 1000;
   if (!Number.isFinite(declaredTtlMs) || declaredTtlMs <= 0) return 0;
