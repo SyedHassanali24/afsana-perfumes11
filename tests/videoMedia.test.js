@@ -18,6 +18,16 @@ test('video media: upload chunk counts and final chunk lengths are exact', async
   assert.throws(() => expectedMediaChunkBytes(MEDIA_CHUNK_BYTES, 1), /index is invalid/);
 });
 
+test('video media: canonical base64 validation safely handles a full 4 MiB chunk', async () => {
+  const { decodeCanonicalBase64 } = await helpers();
+  const source = Buffer.alloc(4 * 1024 * 1024, 0x5a);
+  const encoded = source.toString('base64');
+  const decoded = decodeCanonicalBase64(encoded);
+  assert.equal(decoded.length, source.length);
+  assert.deepEqual(decoded, source);
+  assert.equal(decodeCanonicalBase64('not valid base64!'), null);
+});
+
 test('video media: MP4 and WebM signatures are checked against the selected type', async () => {
   const { isValidChunkedMediaSignature } = await helpers();
   const mp4 = new Uint8Array(16);
