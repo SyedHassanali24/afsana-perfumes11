@@ -22,8 +22,8 @@ function publicApiCacheKey(request) {
 function publicApiCacheable(response) {
   if (!response || response.status !== 200 || response.headers.has('Set-Cookie')) return false;
   const policy = String(response.headers.get('Cache-Control') || '').toLowerCase();
-  if (!/\\bpublic\\b/.test(policy) || /\\b(private|no-store)\\b/.test(policy)) return false;
-  const maxAge = policy.match(/(?:^|,)\\s*max-age=(\\d+)/);
+  if (!/\bpublic\b/.test(policy) || /\b(private|no-store)\b/.test(policy)) return false;
+  const maxAge = policy.match(/(?:^|,)\s*max-age=(\d+)/);
   return !!maxAge && Number(maxAge[1]) > 0;
 }
 
