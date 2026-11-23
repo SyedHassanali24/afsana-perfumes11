@@ -162,8 +162,13 @@ test('public API cache: persists small responses, expires, and clears only its o
   assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 302000), null, 'expired response is deleted');
 
   await storage.put('unrelated:keep', { value: true });
-  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 400000), true);
+  const inFlightEpoch = await PublicApiCache.getPublicApiCacheEpoch(storage);
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 400000, inFlightEpoch), true);
   assert.equal(await PublicApiCache.clearPublicApiCache(storage), 1);
   assert.equal(rows.has('unrelated:keep'), true, 'invalidation leaves unrelated Durable Object data alone');
   assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 400001), null);
+
+  // Simulate an earlier GET finishing after a successful write invalidated the cache.
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 400002, inFlightEpoch), true);
+  assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 400003), null, 'old in-flight response stays under its old epoch');
 });
