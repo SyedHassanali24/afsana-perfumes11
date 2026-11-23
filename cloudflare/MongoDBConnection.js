@@ -15,7 +15,7 @@ const VIDEO_CHUNKS = "afsana_video_chunks";
 function parseVideoRange(value, size) {
   if (!value) return null;
   if (!String(value).startsWith("bytes=") || String(value).includes(",")) return false;
-  const match = /^bytes=(\\d*)-(\\d*)$/.exec(String(value));
+  const match = /^bytes=(\d*)-(\d*)$/.exec(String(value));
   if (!match || (!match[1] && !match[2])) return false;
   let start;
   let end;
@@ -96,7 +96,7 @@ export class MongoDBConnection extends DurableObject {
     const firstChunk = Math.floor(start / file.chunkSize);
     const lastChunk = Math.floor(end / file.chunkSize);
     const contentLength = end - start + 1;
-    const safeName = String(file.filename || "afsana-video").replace(/[\\r\\n"]/g, "_").slice(0, 120);
+    const safeName = String(file.filename || "afsana-video").replace(/[^a-zA-Z0-9._ -]/g, "_").slice(0, 120);
     const headers = new Headers({
       "Content-Type": file.contentType,
       "Content-Length": String(contentLength),
@@ -147,7 +147,7 @@ export class MongoDBConnection extends DurableObject {
       }
     }
 
-    const videoMatch = /^\\/api\\/media\\/video\\/([a-f0-9]{24})$/i.exec(url.pathname);
+    const videoMatch = /^\/api\/media\/video\/([a-f0-9]{24})$/i.exec(url.pathname);
     if (videoMatch) {
       if (!["GET", "HEAD"].includes(request.method)) return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
       try {
