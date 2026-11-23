@@ -82,7 +82,7 @@ async function clearPublicApiCache(storage) {
   return deleted;
 }
 
-module.exports = {
+export {
   PREFIX,
   EPOCH_KEY,
   INITIAL_EPOCH,
