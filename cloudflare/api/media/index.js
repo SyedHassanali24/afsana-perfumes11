@@ -96,7 +96,7 @@ const api = createHandler('media', [
     handler: async ({ ctx, scopes, params, body }) => {
       const uploadId = objectIdOrNull(params.uploadId);
       if (!uploadId) throw E.badRequest('Invalid video upload session.');
-      const { expectedMediaChunkBytes, isValidChunkedMediaSignature } = await import('../../../shared/mediaLimits.mjs');
+      const { expectedMediaChunkBytes, isValidChunkedMediaSignature, decodeCanonicalBase64 } = await import('../../../shared/mediaLimits.mjs');
       const db = mongoose.connection.db;
       const storeId = scopedStoreId(scopes);
       const uploads = db.collection(VIDEO_UPLOADS);
@@ -111,12 +111,12 @@ const api = createHandler('media', [
       let expectedBytes;
       try { expectedBytes = expectedMediaChunkBytes(upload.size, index, upload.chunkSize); }
       catch { throw E.badRequest('Video chunk number is outside the upload.'); }
-      if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(body.data)) {
-        throw E.badRequest('The video part is not valid base64 data.');
-      }
-      const data = Buffer.from(body.data, 'base64');
-      if (!data.length || data.length !== expectedBytes || data.toString('base64') !== body.data) {
-        throw E.badRequest('The uploaded video part has an unexpected size.');
+      // Do not run a backtracking RegExp over multi-megabyte base64 payloads:
+      // V8 can overflow its stack on a full 4 MiB video chunk. The canonical
+      // decode/encode equality check below rejects malformed or non-canonical base64.
+      const data = decodeCanonicalBase64(body.data);
+      if (!data || data.length !== expectedBytes) {
+        throw E.badRequest('The uploaded video part is not valid base64 or has an unexpected size.');
       }
       if (index === 0 && !isValidChunkedMediaSignature(data, upload.contentType)) {
         throw E.badRequest('The file contents do not match the selected video format.');

@@ -4,6 +4,15 @@ export const MEDIA_MAX_CHUNK_BYTES = 25 * 1024 * 1024;
 export const MEDIA_UPLOAD_TTL_SECONDS = 24 * 60 * 60;
 export const CHUNKED_VIDEO_TYPES = Object.freeze(['video/mp4', 'video/webm']);
 
+// Decode large upload chunks without a regular expression over the full payload.
+// Buffer's canonical round-trip rejects invalid and non-canonical base64 strings.
+export function decodeCanonicalBase64(value) {
+  if (typeof value !== 'string' || value.length === 0) return null;
+  const decoded = Buffer.from(value, 'base64');
+  if (!decoded.length || decoded.toString('base64') !== value) return null;
+  return decoded;
+}
+
 export function mediaChunkCount(size, chunkSize = MEDIA_CHUNK_BYTES) {
   if (!Number.isSafeInteger(size) || size < 1 || size > MEDIA_MAX_BYTES) {
     throw new RangeError('Video size must be between 1 byte and 250 MiB.');
