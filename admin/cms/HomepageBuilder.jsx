@@ -41,7 +41,7 @@ const parseTestimonialItems = (text) => String(text || '').split('\n').map((line
   const [name = '', rating = '0', title = '', textValue = '', product = '', sample = ''] = line.split('|');
   return { name: name.trim(), rating: Number(rating) || 0, title: title.trim(), text: textValue.trim(), product: product.trim(), sample: /^(sample|demo|true|yes)$/i.test(sample.trim()) };
 });
-const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].filter((v, i) => i < 2 || v).join('|')).join('\n') : String(items || '');
+const itemText = (items) => Array.isArray(items) ? items.map((x) => [x.title || '', x.text || '', x.image || '', x.link || ''].join('|')).join('\n') : String(items || '');
 
 export default function HomepageBuilder() {
   const { can } = useAuth();
@@ -59,10 +59,28 @@ export default function HomepageBuilder() {
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
 
   const currentVideoItems = form.type === 'video_grid' ? parseItems(form.config.items) : [];
+  const currentPostItems = form.type === 'post_grid' ? parseItems(form.config.items) : [];
   const updateVideoItem = (index, key, value) => setForm((state) => {
     const items = parseItems(state.config.items);
     if (!items[index]) return state;
     items[index] = { ...items[index], [key]: value };
+    return { ...state, config: { ...state.config, items: itemText(items) } };
+  });
+  const updatePostItem = (index, key, value) => setForm((state) => {
+    const items = parseItems(state.config.items);
+    if (!items[index]) return state;
+    items[index] = { ...items[index], [key]: value };
+    return { ...state, config: { ...state.config, items: itemText(items) } };
+  });
+  const addPostItem = () => setForm((state) => {
+    const items = parseItems(state.config.items);
+    if (items.length >= 4) return state;
+    items.push({ title: `New story 0${items.length + 1}`, text: '', image: '', link: '/journal' });
+    return { ...state, config: { ...state.config, items: itemText(items) } };
+  });
+  const removePostItem = (index) => setForm((state) => {
+    const items = parseItems(state.config.items);
+    items.splice(index, 1);
     return { ...state, config: { ...state.config, items: itemText(items) } };
   });
   const addVideoItem = () => setForm((state) => {
@@ -199,7 +217,27 @@ export default function HomepageBuilder() {
           <strong className="text-[#263e0e]">Reviews are managed centrally.</strong>
           <p>Use CMS → Reviews Manager to add, edit or remove review cards. Your changes sync to every existing testimonials placement, including Home and product pages. This section editor is only for placement and layout.</p>
         </div>}
-        {form.type === 'video_grid' ? <div className="space-y-4">
+        {form.type === 'post_grid' ? <div className="space-y-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div><h3 className="text-sm font-semibold text-[#263e0e]">Journal stories & perfume images</h3><p className="text-xs text-[#5f654f]">Upload your AFSANA bottle or product photo for each story card. The uploaded image will appear in this section.</p></div>
+            <span className="text-xs text-[#5f654f]">{currentPostItems.length} / 4 stories</span>
+          </div>
+          {currentPostItems.map((item, index) => <div key={index} className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-4">
+            <div className="flex items-center justify-between gap-3"><strong className="text-sm text-[#263e0e]">Story {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removePostItem(index)} className="text-xs font-medium text-[#9b3f3f] hover:underline">Remove story</button></div>
+            <Field label="Story title"><Input value={item.title} onChange={(e) => updatePostItem(index, 'title', e.target.value)} placeholder="e.g. Find your signature scent" /></Field>
+            <Field label="Story description"><Textarea rows={2} value={item.text} onChange={(e) => updatePostItem(index, 'text', e.target.value)} placeholder="A short introduction to this story" /></Field>
+            <Field label="Perfume image">
+              <Input value={item.image} onChange={(e) => updatePostItem(index, 'image', e.target.value)} placeholder="Upload an image or paste its URL" />
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <ImageUploadButton label={item.image ? 'Replace perfume image' : 'Upload perfume image'} onUploaded={(url) => updatePostItem(index, 'image', url)} />
+                {item.image && <img src={item.image} alt="" className="h-24 w-20 rounded-lg border border-[#263e0e]/10 bg-white object-contain p-1" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}
+              </div>
+            </Field>
+            <Field label="Story link"><Input value={item.link} onChange={(e) => updatePostItem(index, 'link', e.target.value)} placeholder="/journal" /></Field>
+          </div>)}
+          {currentPostItems.length < 4 && <button type="button" onClick={addPostItem} className="w-full rounded-xl border border-dashed border-[#263e0e]/25 bg-white px-4 py-3 text-sm font-medium text-[#263e0e] hover:bg-[#eef2e5]">+ Add story</button>}
+          <p className="text-xs leading-5 text-[#5f654f]">Upload up to four individual perfume images. Press Save section after each upload or after updating the cards.</p>
+        </div> : form.type === 'video_grid' ? <div className="space-y-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div><h3 className="text-sm font-semibold text-[#263e0e]">Moving Image videos</h3><p className="text-xs text-[#5f654f]">Upload one MP4 or WebM for each card. Videos are uploaded in secure chunks and stored with AFSANA's existing database media; no R2 setup is required.</p></div>
             <span className="text-xs text-[#5f654f]">{currentVideoItems.length} / 4 cards</span>
