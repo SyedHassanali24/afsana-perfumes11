@@ -1058,7 +1058,9 @@ function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' 
   const needsProducts = editorialPage || safe.some((section) =>
     ['featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'product_3d_showcase'].includes(section?.type)
   );
-  const needsHeroProduct = !editorialPage && !inheritedAssets.heroBottleImageUrl && safe.some((section) =>
+  const configuredHeroBottle = inheritedAssets.heroBottleImageUrl
+    || safe.find((section) => section?.type === 'reference_assets')?.config?.heroBottleImageUrl;
+  const needsHeroProduct = !editorialPage && !configuredHeroBottle && safe.some((section) =>
     section?.type === 'hero' && section?.config?.layout === 'reference' && !section?.config?.heroBottleImageUrl
   );
   const { data } = useApi(
