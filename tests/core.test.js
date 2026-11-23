@@ -7,6 +7,7 @@ const { toResponse, E } = require('../middleware/errors');
 const { hit } = require('../middleware/rateLimit');
 const { paging, escapeRegex } = require('../middleware/pagination');
 const P = require('../services/pricing');
+const PublicApiCache = require('../cloudflare/public-api-cache');
 
 const grant = (module, actions, scope) => ({ module, actions, scope: scope || { kind: 'all', values: [] } });
 
@@ -119,4 +120,50 @@ test('pricing: effective price, shipping, coupons', () => {
   assert.throws(() => P.validateCoupon({ ...coupon, expiresAt: new Date('2020-01-01') }, { subtotal: 3000 }), /expired/);
   assert.equal(P.calcDiscount({ type: 'free_shipping' }, lines, 250).shippingDiscount, 250);
   assert.throws(() => P.calcDiscount({ type: 'fixed', value: 100, productIds: ['other'] }, lines, 0), /does not apply/);
+});
+
+
+test('public API cache: only approved public GET routes are cacheable and origins are isolated', () => {
+  const shopRequest = new Request('https://afsanaperfumes.store/api/cms/public');
+  const wwwRequest = new Request('https://afsanaperfumes.store/api/cms/public', { headers: { Origin: 'https://www.afsanaperfumes.store' } });
+  const settingsRequest = new Request('https://afsanaperfumes.store/api/settings/public');
+  const productListRequest = new Request('https://afsanaperfumes.store/api/products?sort=popular');
+  const postRequest = new Request('https://afsanaperfumes.store/api/cms/public', { method: 'POST' });
+
+  assert.ok(PublicApiCache.publicApiCacheKey(shopRequest));
+  assert.notEqual(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(wwwRequest));
+  assert.ok(PublicApiCache.publicApiCacheKey(settingsRequest));
+  assert.equal(PublicApiCache.publicApiCacheKey(productListRequest), null, 'live product lists are never cached here');
+  assert.equal(PublicApiCache.publicApiCacheKey(postRequest), null, 'mutations are never cached');
+
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60' } })), true);
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'private, max-age=60' } })), false);
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, no-store, max-age=60' } })), false);
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60', 'Set-Cookie': 'session=secret' } })), false);
+});
+
+test('public API cache: persists small responses, expires, and clears only its own keys', async () => {
+  const rows = new Map();
+  const storage = {
+    get: async (key) => rows.get(key),
+    put: async (key, value) => { rows.set(key, value); },
+    delete: async (key) => rows.delete(key),
+    list: async ({ prefix }) => new Map([...rows.entries()].filter(([key]) => key.startsWith(prefix))),
+  };
+  const request = new Request('https://afsanaperfumes.store/api/products/featured');
+  const response = new Response(JSON.stringify({ success: true, product: { name: 'Dastan' } }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60, stale-while-revalidate=60' },
+  });
+
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 1000), true);
+  const hit = await PublicApiCache.readPublicApiCache(storage, request, 2000);
+  assert.deepEqual(await hit.json(), { success: true, product: { name: 'Dastan' } });
+  assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 302000), null, 'expired response is deleted');
+
+  await storage.put('unrelated:keep', { value: true });
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 400000), true);
+  assert.equal(await PublicApiCache.clearPublicApiCache(storage), 1);
+  assert.equal(rows.has('unrelated:keep'), true, 'invalidation leaves unrelated Durable Object data alone');
+  assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 400001), null);
 });
