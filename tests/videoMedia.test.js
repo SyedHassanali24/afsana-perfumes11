@@ -1,16 +1,11 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {
-  MEDIA_CHUNK_BYTES,
-  MEDIA_MAX_BYTES,
-  CHUNKED_VIDEO_TYPES,
-  mediaChunkCount,
-  expectedMediaChunkBytes,
-  isValidChunkedMediaSignature,
-  parseMediaByteRange,
-} from '../shared/mediaLimits.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
 
-test('video media: upload chunk counts and final chunk lengths are exact', () => {
+let mediaHelpers;
+const helpers = () => mediaHelpers || (mediaHelpers = import('../shared/mediaLimits.mjs'));
+
+test('video media: upload chunk counts and final chunk lengths are exact', async () => {
+  const { MEDIA_CHUNK_BYTES, MEDIA_MAX_BYTES, CHUNKED_VIDEO_TYPES, mediaChunkCount, expectedMediaChunkBytes } = await helpers();
   assert.deepEqual(CHUNKED_VIDEO_TYPES, ['video/mp4', 'video/webm']);
   assert.equal(mediaChunkCount(1), 1);
   assert.equal(mediaChunkCount(MEDIA_CHUNK_BYTES), 1);
@@ -23,7 +18,8 @@ test('video media: upload chunk counts and final chunk lengths are exact', () =>
   assert.throws(() => expectedMediaChunkBytes(MEDIA_CHUNK_BYTES, 1), /index is invalid/);
 });
 
-test('video media: MP4 and WebM signatures are checked against the selected type', () => {
+test('video media: MP4 and WebM signatures are checked against the selected type', async () => {
+  const { isValidChunkedMediaSignature } = await helpers();
   const mp4 = new Uint8Array(16);
   mp4.set([0x66, 0x74, 0x79, 0x70], 4);
   const webm = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3, 0x00, 0x00]);
@@ -35,7 +31,8 @@ test('video media: MP4 and WebM signatures are checked against the selected type
   assert.equal(isValidChunkedMediaSignature(fake, 'video/mp4'), false);
 });
 
-test('video media: byte ranges support full, open-ended and suffix requests', () => {
+test('video media: byte ranges support full, open-ended and suffix requests', async () => {
+  const { parseMediaByteRange } = await helpers();
   assert.equal(parseMediaByteRange('', 100), null);
   assert.deepEqual(parseMediaByteRange('bytes=0-9', 100), { start: 0, end: 9 });
   assert.deepEqual(parseMediaByteRange('bytes=10-', 100), { start: 10, end: 99 });
@@ -43,7 +40,8 @@ test('video media: byte ranges support full, open-ended and suffix requests', ()
   assert.deepEqual(parseMediaByteRange('bytes=90-200', 100), { start: 90, end: 99 });
 });
 
-test('video media: malformed, multiple and unsatisfiable ranges are rejected', () => {
+test('video media: malformed, multiple and unsatisfiable ranges are rejected', async () => {
+  const { parseMediaByteRange } = await helpers();
   for (const range of ['items=0-1', 'bytes=1-2,4-5', 'bytes=-0', 'bytes=100-101', 'bytes=9-2', 'bytes=-', 'bytes=x-y']) {
     assert.equal(parseMediaByteRange(range, 100), false, range);
   }
