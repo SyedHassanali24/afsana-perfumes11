@@ -4,7 +4,7 @@
       "@context": "https://agenticresourcediscovery.org/context/v1",
       "identifier": "urn:air:afsanaperfumes.store:skill:public-brand-guide",
       "displayName": "AFSANA public brand and product guide",
-      "type": "application/ai-skill+md",
+      "type": "application/agent-skills+md",
       "url": "https://afsanaperfumes.store/afsana-agent-guide.md",
       "description": "A static, read-only reference to AFSANA's public perfume catalogue, scent discovery, gifting and fragrance guides. It does not provide order placement, customer-account access or a live agent endpoint.",
       "representativeQueries": [
