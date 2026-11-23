@@ -26,12 +26,20 @@ function publicApiCacheKey(request, epoch = INITIAL_EPOCH) {
   return PREFIX + encodeURIComponent(epoch) + ':' + encodeURIComponent(origin) + ':' + encodeURIComponent(url.pathname + url.search);
 }
 
-function publicApiCacheable(response) {
-  if (!response || response.status !== 200 || response.headers.has('Set-Cookie')) return false;
+function publicApiCacheTtlMs(response) {
+  if (!response || response.status !== 200 || response.headers.has('Set-Cookie')) return 0;
   const policy = String(response.headers.get('Cache-Control') || '').toLowerCase();
-  if (!/\bpublic\b/.test(policy) || /\b(private|no-store)\b/.test(policy)) return false;
-  const maxAge = policy.match(/(?:^|,)\s*max-age=(\d+)/);
-  return !!maxAge && Number(maxAge[1]) > 0;
+  if (!/\\bpublic\\b/.test(policy) || /\\b(private|no-store)\\b/.test(policy)) return 0;
+  const maxAge = policy.match(/(?:^|,)\\s*max-age\\s*=\\s*"?([0-9]+)"?/);
+  if (!maxAge) return 0;
+  const declaredTtlMs = Number(maxAge[1]) * 1000;
+  if (!Number.isFinite(declaredTtlMs) || declaredTtlMs <= 0) return 0;
+  // Respect the route's HTTP freshness lifetime and apply the internal five-minute ceiling.
+  return Math.min(INTERNAL_TTL_MS, declaredTtlMs);
+}
+
+function publicApiCacheable(response) {
+  return publicApiCacheTtlMs(response) > 0;
 }
 
 async function readPublicApiCache(storage, request, now = Date.now(), epoch) {
@@ -56,7 +64,8 @@ async function readPublicApiCache(storage, request, now = Date.now(), epoch) {
 async function writePublicApiCache(storage, request, response, now = Date.now(), epoch) {
   const keyEpoch = epoch === undefined ? await getPublicApiCacheEpoch(storage) : epoch;
   const key = publicApiCacheKey(request, keyEpoch);
-  if (!key || !publicApiCacheable(response)) return false;
+  const ttlMs = publicApiCacheTtlMs(response);
+  if (!key || ttlMs <= 0) return false;
 
   const body = await response.clone().text();
   await storage.put(key, {
@@ -64,9 +73,7 @@ async function writePublicApiCache(storage, request, response, now = Date.now(),
     statusText: response.statusText,
     headers: [...response.headers.entries()],
     body,
-    // A five-minute ceiling bounds staleness even if an out-of-band data change occurs.
-    // Normal CMS/product/settings mutations change the epoch immediately after success.
-    expiresAt: now + INTERNAL_TTL_MS,
+    expiresAt: now + ttlMs,
   });
   return true;
 }
@@ -90,6 +97,7 @@ export {
   INTERNAL_TTL_MS,
   getPublicApiCacheEpoch,
   publicApiCacheKey,
+  publicApiCacheTtlMs,
   publicApiCacheable,
   readPublicApiCache,
   writePublicApiCache,
