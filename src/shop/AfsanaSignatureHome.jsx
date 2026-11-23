@@ -1056,12 +1056,18 @@ function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' 
   const safe = source.filter((s) => s?.isEnabled !== false && s?.type !== 'footer_showcase');
   const editorialPage = ['discover','journal','house','gifting'].includes(pageKey);
   const needsProducts = editorialPage || safe.some((section) =>
-    ['featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'product_3d_showcase'].includes(section?.type) ||
-    (section?.type === 'hero' && ['reference', 'inner'].includes(section?.config?.layout))
+    ['featured_collection', 'best_sellers', 'new_arrivals', 'under_2000', 'gift_boxes', 'product_3d_showcase'].includes(section?.type)
+  );
+  const needsHeroProduct = !editorialPage && !inheritedAssets.heroBottleImageUrl && safe.some((section) =>
+    section?.type === 'hero' && section?.config?.layout === 'reference' && !section?.config?.heroBottleImageUrl
   );
   const { data } = useApi(
     () => needsProducts ? productsApi.list({ sort: 'popular', limit: editorialPage ? 36 : 12 }) : Promise.resolve({ products: [] }),
     [needsProducts, editorialPage]
+  );
+  const { data: featuredProductData } = useApi(
+    () => needsHeroProduct ? productsApi.featured() : Promise.resolve({ product: null }),
+    [needsHeroProduct]
   );
   const selectedEditorialProduct = editorialProductByPage[pageKey];
   const { data: selectedEditorialData } = useApi(
@@ -1071,7 +1077,11 @@ function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' 
     [selectedEditorialProduct?.name]
   );
   const shopSettings = useShopSettings();
-  const products = [...(data?.products || []), ...(selectedEditorialData?.products || [])];
+  const products = [
+    ...(featuredProductData?.product ? [featuredProductData.product] : []),
+    ...(data?.products || []),
+    ...(selectedEditorialData?.products || []),
+  ];
   const hasCatalogSection = safe.some((section) =>
     ['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes'].includes(section?.type)
   );
