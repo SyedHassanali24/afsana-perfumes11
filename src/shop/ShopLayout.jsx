@@ -174,10 +174,7 @@ export default function ShopLayout(){
   </header>
 
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_header_after" /></Suspense>
-  {isHome && (cmsData
-    ? <CmsBannerCarousel banners={cmsData?.banners || []}/>
-    : <div aria-hidden="true" className="min-h-[360px] overflow-hidden bg-[radial-gradient(circle_at_70%_35%,rgba(115,87,255,.35),transparent_35%),linear-gradient(120deg,#100d24,#263e0e)] sm:min-h-[500px]"/>
-  )}
+  {isHome && <CmsBannerCarousel banners={cmsData?.banners || []}/>}
   <main className={isHome?'':'py-0'}><Outlet/></main>
   <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer_before" /></Suspense>
   {!cmsWhatsapp && <a href={directWhatsappHref} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" title="Chat with AFSANA on WhatsApp" className="fixed bottom-24 right-6 z-[86] isolate inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-[#20c768] p-0 text-white shadow-2xl shadow-black/25 transition hover:-translate-y-1 hover:bg-[#16b85b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9ff55]">
