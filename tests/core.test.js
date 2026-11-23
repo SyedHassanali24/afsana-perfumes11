@@ -7,7 +7,6 @@ const { toResponse, E } = require('../middleware/errors');
 const { hit } = require('../middleware/rateLimit');
 const { paging, escapeRegex } = require('../middleware/pagination');
 const P = require('../services/pricing');
-const PublicApiCache = require('../cloudflare/public-api-cache');
 
 const grant = (module, actions, scope) => ({ module, actions, scope: scope || { kind: 'all', values: [] } });
 
@@ -123,7 +122,8 @@ test('pricing: effective price, shipping, coupons', () => {
 });
 
 
-test('public API cache: only approved public GET routes are cacheable and origins are isolated', () => {
+test('public API cache: only approved public GET routes are cacheable and origins are isolated', async () => {
+  const PublicApiCache = await import('../cloudflare/public-api-cache.js');
   const shopRequest = new Request('https://afsanaperfumes.store/api/cms/public');
   const wwwRequest = new Request('https://afsanaperfumes.store/api/cms/public', { headers: { Origin: 'https://www.afsanaperfumes.store' } });
   const settingsRequest = new Request('https://afsanaperfumes.store/api/settings/public');
@@ -143,6 +143,7 @@ test('public API cache: only approved public GET routes are cacheable and origin
 });
 
 test('public API cache: persists small responses, expires, and clears only its own keys', async () => {
+  const PublicApiCache = await import('../cloudflare/public-api-cache.js');
   const rows = new Map();
   const storage = {
     get: async (key) => rows.get(key),
