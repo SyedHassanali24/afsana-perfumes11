@@ -64,10 +64,24 @@ async function readPublicApiCache(storage, request, now = Date.now(), epoch) {
     return null;
   }
 
+  const headers = new Headers(entry.headers || []);
+  const ageSeconds = Number.isFinite(entry.createdAt)
+    ? Math.max(0, Math.floor((now - entry.createdAt) / 1000))
+    : 0;
+  if (ageSeconds > 0) {
+    const policy = String(headers.get('Cache-Control') || '');
+    const adjustedPolicy = policy
+      .replace(/(^|,)\\s*max-age\\s*=\\s*"?([0-9]+)"?/i, (_match, separator, seconds) =>
+        `${separator}${separator ? ' ' : ''}max-age=${Math.max(0, Number(seconds) - ageSeconds)}`)
+      .replace(/(^|,)\\s*stale-while-revalidate\\s*=\\s*"?([0-9]+)"?/i, (_match, separator, seconds) =>
+        `${separator}${separator ? ' ' : ''}stale-while-revalidate=${Math.max(0, Number(seconds) - ageSeconds)}`);
+    if (adjustedPolicy) headers.set('Cache-Control', adjustedPolicy);
+  }
+
   return new Response(entry.body, {
     status: entry.status,
     statusText: entry.statusText || '',
-    headers: new Headers(entry.headers || []),
+    headers,
   });
 }
 
@@ -83,6 +97,7 @@ async function writePublicApiCache(storage, request, response, now = Date.now(),
     statusText: response.statusText,
     headers: [...response.headers.entries()],
     body,
+    createdAt: now,
     expiresAt: now + ttlMs,
   });
   return true;
