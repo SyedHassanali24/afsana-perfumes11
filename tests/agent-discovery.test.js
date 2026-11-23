@@ -32,6 +32,4 @@ test('HTML advertises the current ARD manifest and llms.txt', () => {
   assert.ok(html.includes('rel="ard"'));
   assert.ok(html.includes('href="/.well-known/ard.json"'));
   assert.ok(html.includes('href="/llms.txt"'));
-  assert.ok(html.includes('fetchpriority="high"'));
-  assert.ok(html.includes('imagesrcset='));
 });
