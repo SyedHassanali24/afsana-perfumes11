@@ -4,7 +4,6 @@ import { cmsPublicApi, productsApi } from "./services";
 import { responsiveUnsplashSrcSet } from "./shop/responsiveImages";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import App from "./App";
-import { AuthProvider } from "./auth/AuthContext";
 import { CustomerAuthProvider } from "./customer/CustomerAuthContext";
 import { CartProvider } from "./shop/CartContext";
 import { WishlistProvider } from "./shop/WishlistContext";
@@ -104,15 +103,13 @@ if (window.location.pathname === "/") {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Router>
-      <AuthProvider>
-        <CustomerAuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <App />
-            </WishlistProvider>
-          </CartProvider>
-        </CustomerAuthProvider>
-      </AuthProvider>
+      <CustomerAuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <App />
+          </WishlistProvider>
+        </CartProvider>
+      </CustomerAuthProvider>
     </Router>
   </React.StrictMode>
 );
