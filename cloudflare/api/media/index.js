@@ -36,6 +36,16 @@ function safeFilename(value) {
     .slice(0, 120) || 'afsana-video';
 }
 
+function videoChunkBuffer(value) {
+  if (Buffer.isBuffer(value)) return value;
+  if (value && typeof value.value === 'function') return Buffer.from(value.value(true));
+  if (value && value.buffer) {
+    const bytes = Buffer.from(value.buffer);
+    return bytes.subarray(0, Number.isInteger(value.position) ? value.position : bytes.length);
+  }
+  return Buffer.from(value || []);
+}
+
 const api = createHandler('media', [
   { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
       const c = checkUpload(body); if (!c.ok) throw E.badRequest(c.message);
@@ -151,7 +161,7 @@ const api = createHandler('media', [
       }
       const first = await chunks.findOne({ uploadId, index: 0, storeId });
       const { isValidChunkedMediaSignature } = await import('../../../shared/mediaLimits.mjs');
-      if (!first || !isValidChunkedMediaSignature(Buffer.from(first.data), upload.contentType)) {
+      if (!first || !isValidChunkedMediaSignature(videoChunkBuffer(first.data), upload.contentType)) {
         await uploads.updateOne({ _id: uploadId, storeId }, { $set: { status: 'uploading' }, $unset: { completingAt: '' } });
         throw E.badRequest('The uploaded file does not match the selected video format.');
       }
