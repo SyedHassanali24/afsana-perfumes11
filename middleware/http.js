@@ -31,10 +31,10 @@ function serializeCookie(name, value, { maxAge, secure = true } = {}) {
   return [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', `SameSite=${sameSiteValue}`, secure ? 'Secure' : '', maxAge !== undefined ? `Max-Age=${maxAge}` : '']
     .filter(Boolean).join('; ');
 }
-function parseBody(event) {
+function parseBody(event, maxBytes = 1_000_000) {
   if (!event.body) return undefined;
   const raw = event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body;
-  if (raw.length > 1_000_000) { const { E } = require('./errors'); throw E.badRequest('Request too large.'); }
+  if (Buffer.byteLength(raw, 'utf8') > maxBytes) { const { E } = require('./errors'); throw E.badRequest('Request too large.'); }
   try { return JSON.parse(raw); } catch { const { E } = require('./errors'); throw E.badRequest('Invalid JSON.'); }
 }
 module.exports = { json, res, lowerKeys, clientIp, parseCookies, serializeCookie, parseBody };
