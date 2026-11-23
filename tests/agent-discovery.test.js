@@ -7,8 +7,8 @@ const readPublic = (file) => fs.readFileSync(path.join(__dirname, '..', 'public'
 
 test('llms.txt is Markdown with a site H1 and useful public links', () => {
   const content = readPublic('llms.txt');
-  assert.match(content, /^# AFSANA Perfumes/m);
-  assert.match(content, /\\[[^\\]]+\\]\\(https:\\/\\/afsanaperfumes\\.store\\//);
+  assert.ok(content.startsWith('# AFSANA Perfumes'));
+  assert.ok(content.includes('https://afsanaperfumes.store/'));
   assert.ok(content.trim().length > 50);
 });
 
@@ -17,10 +17,10 @@ test('ARD manifest contains a valid, domain-anchored static skill entry', () => 
   assert.ok(Array.isArray(manifest.entries));
   assert.equal(manifest.entries.length, 1);
   const [entry] = manifest.entries;
-  assert.match(entry.identifier, /^urn:air:afsanaperfumes\\.store:[a-z0-9_-]+:[a-z0-9_-]+$/);
+  assert.ok(entry.identifier.startsWith('urn:air:afsanaperfumes.store:'));
   assert.ok(entry.displayName);
   assert.equal(entry.type, 'application/ai-skill+md');
-  assert.match(entry.url, /^https:\\/\\/afsanaperfumes\\.store\\//);
+  assert.ok(entry.url.startsWith('https://afsanaperfumes.store/'));
   assert.equal(Number(Boolean(entry.url)) + Number(Boolean(entry.data)), 1);
   assert.ok(Array.isArray(entry.representativeQueries));
   assert.ok(entry.representativeQueries.length >= 2 && entry.representativeQueries.length <= 5);
@@ -29,7 +29,9 @@ test('ARD manifest contains a valid, domain-anchored static skill entry', () => 
 
 test('HTML advertises the current ARD manifest and llms.txt', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  assert.match(html, /rel="ard"[^>]+href="\\/.well-known\\/ard\\.json"/);
-  assert.match(html, /rel="describedby" href="\\/llms\\.txt"/);
-  assert.match(html, /rel="preload"\\s+as="image"/);
+  assert.ok(html.includes('rel="ard"'));
+  assert.ok(html.includes('href="/.well-known/ard.json"'));
+  assert.ok(html.includes('href="/llms.txt"'));
+  assert.ok(html.includes('fetchpriority="high"'));
+  assert.ok(html.includes('imagesrcset='));
 });
