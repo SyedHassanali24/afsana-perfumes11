@@ -7,9 +7,24 @@ compatibility_flags = ["nodejs_compat"]
 directory = "../dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-# Only API requests need application code. Static assets and SPA navigations
-# are served directly by Workers Static Assets and do not consume Worker requests.
-run_worker_first = ["/api/*"]
+# Keep hashed/static assets asset-first, but run the Worker for API calls and
+# document routes whose initial HTML needs route-specific SEO metadata.
+run_worker_first = [
+  "/api/*",
+  "/",
+  "/shop",
+  "/discover",
+  "/about",
+  "/journal",
+  "/journal/*",
+  "/gifting",
+  "/contact",
+  "/privacy-policy",
+  "/terms-of-service",
+  "/product/*",
+  "/track",
+  "/data-deletion",
+]
 
 [[kv_namespaces]]
 binding = "AFSANA_MEDIA_FREE"
