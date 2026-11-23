@@ -71,9 +71,9 @@ async function readPublicApiCache(storage, request, now = Date.now(), epoch) {
   if (ageSeconds > 0) {
     const policy = String(headers.get('Cache-Control') || '');
     const adjustedPolicy = policy
-      .replace(/(^|,)\\s*max-age\\s*=\\s*"?([0-9]+)"?/i, (_match, separator, seconds) =>
+      .replace(/(^|,)\s*max-age\s*=\s*"?([0-9]+)"?/i, (_match, separator, seconds) =>
         `${separator}${separator ? ' ' : ''}max-age=${Math.max(0, Number(seconds) - ageSeconds)}`)
-      .replace(/(^|,)\\s*stale-while-revalidate\\s*=\\s*"?([0-9]+)"?/i, (_match, separator, seconds) =>
+      .replace(/(^|,)\s*stale-while-revalidate\s*=\s*"?([0-9]+)"?/i, (_match, separator, seconds) =>
         `${separator}${separator ? ' ' : ''}stale-while-revalidate=${Math.max(0, Number(seconds) - ageSeconds)}`);
     if (adjustedPolicy) headers.set('Cache-Control', adjustedPolicy);
   }
