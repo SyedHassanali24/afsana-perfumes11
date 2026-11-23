@@ -7,6 +7,7 @@ const P = require('../../../services/productService');
 // Order matters: static '/admin/...' routes before the public '/:slug'.
 const routes = [
   { method: 'GET', path: '/', public: true, query: S.publicProductsQuery, cache: 60, cacheTags: ['products'], handler: ({ query }) => P.listPublic(query) },
+  { method: 'GET', path: '/featured', public: true, cache: 60, cacheTags: ['products'], handler: () => P.getFeaturedPublic() },
 
   { method: 'GET', path: '/admin/list', permission: ['products', 'view'], query: S.adminProductsQuery,
     handler: async ({ query, ctx, scopes }) => redact(await P.listAdmin(query, scopes, ctx.user._id), ctx.perms.deniedFields) },
