@@ -33,7 +33,7 @@ const products = require('../services/productService');
 test('storefront layout does not eagerly fetch the full homepage catalogue', () => {
   const fs = require('node:fs');
   const shopLayout = fs.readFileSync(path.join(ROOT, 'src/shop/ShopLayout.jsx'), 'utf8');
-  assert.doesNotMatch(shopLayout, /productsApi\\.list\\(\\{\\s*sort:\\s*['"]popular['"],\\s*limit:\\s*12\\s*\\}\\)/);
+  assert.doesNotMatch(shopLayout, /productsApi\.list\(\{\s*sort:\s*['"]popular['"],\s*limit:\s*12\s*\}\)/);
 });
 
 test('featured public product is a minimal primary-image view using the popular index', async () => {
