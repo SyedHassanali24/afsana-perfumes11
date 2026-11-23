@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { getEdgePageMetadata } from "./seo-html.js";
 
 test("returns homepage metadata and canonical URL", () => {
@@ -43,4 +44,28 @@ test("keeps legal pages indexable and order/data utility pages noindex", () => {
   assert.match(getEdgePageMetadata("/terms-of-service").robots, /^index,follow/);
   assert.match(getEdgePageMetadata("/track").robots, /^noindex,follow/);
   assert.match(getEdgePageMetadata("/data-deletion").robots, /^noindex,follow/);
+});
+
+test("runs the Worker for SEO document routes but not hashed static assets", () => {
+  const config = readFileSync(new URL("./wrangler.toml", import.meta.url), "utf8");
+  const routeBlock = config.match(/run_worker_first\\s*=\\s*\\[([\\s\\S]*?)\\]/)?.[1] || "";
+  for (const route of [
+    "/api/*",
+    "/",
+    "/shop",
+    "/discover",
+    "/about",
+    "/journal",
+    "/journal/*",
+    "/gifting",
+    "/contact",
+    "/privacy-policy",
+    "/terms-of-service",
+    "/product/*",
+    "/track",
+    "/data-deletion",
+  ]) {
+    assert.ok(routeBlock.includes(`"${route}"`), `Missing Worker-first route: ${route}`);
+  }
+  assert.ok(!routeBlock.includes('"/assets/*"'));
 });
