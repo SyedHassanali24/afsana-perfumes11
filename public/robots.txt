@@ -1,4 +1,5 @@
 User-agent: *
+Agentmap: https://afsanaperfumes.store/.well-known/ard.json
 Allow: /
 
 Disallow: /admin

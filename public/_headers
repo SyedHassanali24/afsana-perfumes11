@@ -21,3 +21,15 @@
 
 /robots.txt
   Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/afsana-public-brand-guide/SKILL.md
+  Content-Type: application/agent-skills+md; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/.well-known/ard.json
+  Content-Type: application/ard+json; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
