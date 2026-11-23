@@ -120,13 +120,6 @@ export default function ShopLayout(){
   return()=>{if(timer)window.clearTimeout(timer)};
  },[location.pathname]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
- // Start the homepage's featured product request alongside the CMS request.
- // CmsSectionList uses the same cached GET key, so it reuses this response instead
- // of waiting for CMS content before starting the product request.
- useEffect(()=>{
-  if(isHome) productsApi.list({sort:'popular',limit:12}).catch(()=>{});
- },[isHome]);
-
  useEffect(()=>{
   const term=q.trim();
   if(!search||term.length<2){setSuggestions([]);setSuggesting(false);return;}
