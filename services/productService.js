@@ -96,6 +96,22 @@ async function getPublicBySlug(slug) {
   };
 }
 
+// Small, indexed public response for the homepage bottle. It intentionally skips
+// pagination counts and stock aggregation; neither is needed to paint the LCP hero.
+async function getFeaturedPublic() {
+  const product = await Product.findOne({ status: 'Active', isDeleted: false })
+    .select('name slug media ratingCount')
+    .sort({ ratingCount: -1 })
+    .lean();
+  if (!product) return { product: null };
+  return { product: {
+    id: product._id,
+    name: product.name,
+    slug: product.slug,
+    image: primaryDisplayImage(product.media),
+  } };
+}
+
 // ---------------- admin ----------------
 async function listAdmin(q, scopes, uid, { trash = false } = {}) {
   const { page, limit, skip } = pg(q);
@@ -229,4 +245,4 @@ async function setDeleted(ctx, id, isDeleted, scopes) {
     return p;
   });
 }
-module.exports = { listPublic, getPublicBySlug, listAdmin, listCategories, getAdmin, createProduct, updateProduct, updateVariant, addVariant, removeVariant, setDeleted };
+module.exports = { listPublic, getFeaturedPublic, getPublicBySlug, listAdmin, listCategories, getAdmin, createProduct, updateProduct, updateVariant, addVariant, removeVariant, setDeleted };

@@ -17,6 +17,7 @@ export const authApi = {
 export const productsApi = {
   // storefront
   list: (query) => api('/products', { query }),
+  featured: () => api('/products/featured'),
   bySlug: (slug) => api(`/products/${slug}`),
   // admin
   adminList: (query) => api('/products/admin/list', { query }),

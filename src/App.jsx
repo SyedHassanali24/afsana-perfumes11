@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthContext';
 import RequireAuth from './auth/RequireAuth';
 import LoginPage from './auth/LoginPage';
 import ChangePasswordPage from './auth/ChangePasswordPage';
@@ -32,6 +33,10 @@ const ResetPasswordPage = lazy(() => import('./customer/ResetPasswordPage'));
 import ShopLayout from './shop/ShopLayout';
 import SeoController from './shop/SeoController';
 import { trackStorefrontPageView } from './shop/trafficTracking';
+
+function AdminAuthScope() {
+  return <AuthProvider><Outlet /></AuthProvider>;
+}
 const HomePage = lazy(() => import('./shop/pages/HomePage'));
 const ShopPage = lazy(() => import('./shop/pages/ShopPage'));
 const ProductPage = lazy(() => import('./shop/pages/ProductPage'));
@@ -124,7 +129,8 @@ export default function App() {
       {/* Route loading is already handled by the Suspense fallback below. */}
       <Suspense fallback={window.location.pathname.startsWith("/admin") ? <AfsanaLoader suspense /> : <AfsanaLoader suspense />}>
         <Routes>
-          <Route path="/admin/login" element={<LoginPage />} />
+          <Route element={<AdminAuthScope />}>
+            <Route path="/admin/login" element={<LoginPage />} />
           <Route path="/admin/change-password" element={<ChangePasswordPage />} />
           <Route path="/admin" element={page('dashboard.view', <Dashboard />)} />
           <Route path="/admin/analytics" element={page('dashboard.view', <AnalyticsPage />)} />
@@ -147,6 +153,7 @@ export default function App() {
           <Route path="/admin/staff" element={page(undefined, <StaffPage />)} />
           <Route path="/admin/account" element={page(undefined, <MyAccountPage />)} />
           <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
+          </Route>
 
           <Route element={<ShopLayout />}>
             <Route path="/login" element={<CustomerLoginPage />} />

@@ -57,6 +57,7 @@ function CmsBannerCarousel({ banners = [] }) {
 
 export default function ShopLayout(){
  const [showIntro,setShowIntro]=useState(false);
+ const [homeReady,setHomeReady]=useState(false);
  const {count}=useCart(),{count:wishlistCount}=useWishlist(),{status}=useCustomer(),location=useLocation(),navigate=useNavigate(),isHome=location.pathname==='/',[menu,setMenu]=useState(false),[search,setSearch]=useState(false),[q,setQ]=useState(''),[suggestions,setSuggestions]=useState([]),[suggesting,setSuggesting]=useState(false);
  const {data:cmsData}=useApi(()=>cmsPublicApi.content(),[]);
  const shopSettings=useShopSettings();
@@ -88,6 +89,18 @@ export default function ShopLayout(){
  const brandName = navConfig.brandName || 'AFSANA';
  const brandTagline = navConfig.tagline || 'THE ART OF SCENT';
 
+ useEffect(() => {
+  if (!isHome) {
+    setHomeReady(false);
+    return undefined;
+  }
+  const homeRoot = document.querySelector('[data-afsana-home]');
+  setHomeReady(homeRoot?.getAttribute('data-afsana-home-ready') === 'true');
+  const onHomeReady = () => setHomeReady(true);
+  window.addEventListener('afsana:home-ready', onHomeReady);
+  return () => window.removeEventListener('afsana:home-ready', onHomeReady);
+ }, [isHome, location.pathname]);
+
  useEffect(()=>{setMenu(false)},[location.pathname,location.search]);
  useEffect(()=>{
   let timer;
@@ -107,13 +120,6 @@ export default function ShopLayout(){
   return()=>{if(timer)window.clearTimeout(timer)};
  },[location.pathname]);
  useEffect(()=>{if(!search)return;const onKey=e=>{if(e.key==='Escape')setSearch(false)};document.addEventListener('keydown',onKey);const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.removeEventListener('keydown',onKey);document.body.style.overflow=prev}},[search]);
- // Start the homepage's featured product request alongside the CMS request.
- // CmsSectionList uses the same cached GET key, so it reuses this response instead
- // of waiting for CMS content before starting the product request.
- useEffect(()=>{
-  if(isHome) productsApi.list({sort:'popular',limit:12}).catch(()=>{});
- },[isHome]);
-
  useEffect(()=>{
   const term=q.trim();
   if(!search||term.length<2){setSuggestions([]);setSuggesting(false);return;}
@@ -184,13 +190,13 @@ export default function ShopLayout(){
     </svg>
   </a>}
 
-  <section className="afsana-reference-benefits" aria-label="AFSANA customer benefits">
+  {(!isHome || homeReady) && <section className="afsana-reference-benefits" aria-label="AFSANA customer benefits">
     <Container className="afsana-reference-benefits-inner">
       <div><span><Truck aria-hidden="true"/></span><p><strong>Complimentary Delivery</strong><small>On qualifying orders above PKR 7,500</small></p></div>
       <div><span><CreditCard aria-hidden="true"/></span><p><strong>Flexible Payment</strong><small>Cash on Delivery and Bank Transfer</small></p></div>
       <div><span><Headphones aria-hidden="true"/></span><p><strong>Customer Support</strong><small>Help with your fragrance and order</small></p></div>
     </Container>
-  </section>
+  </section>}
 
   {hasManagedFooter ? <Suspense fallback={null}><ManagedCmsPage pageKey="site_footer" /></Suspense> :
   <footer className="relative overflow-hidden bg-[#100d24] text-white border-t border-[#d9ff55]/20">

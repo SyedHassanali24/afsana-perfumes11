@@ -4,7 +4,6 @@ import { cmsPublicApi, productsApi } from "./services";
 import { responsiveUnsplashSrcSet } from "./shop/responsiveImages";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import App from "./App";
-import { AuthProvider } from "./auth/AuthContext";
 import { CustomerAuthProvider } from "./customer/CustomerAuthContext";
 import { CartProvider } from "./shop/CartContext";
 import { WishlistProvider } from "./shop/WishlistContext";
@@ -17,8 +16,8 @@ import "./styles/afsana-reference-storefront.css";
 // HashRouter keeps every storefront/admin route working on GitHub Pages without server rewrites.
 const Router = import.meta.env.BASE_URL === "/" ? BrowserRouter : HashRouter;
 
-// Start homepage data reads before React mounts. The API client deduplicates
-// these with the same requests made by ShopLayout and AfsanaSignatureHome.
+// Start homepage CMS and featured-product reads before React mounts. The
+// featured-product GET is shared with AfsanaSignatureHome through the API cache.
 // When the CMS data arrives, preload its first visible campaign/hero image
 // before React inserts the corresponding image element into the page.
 function preloadHomepageImage(source, sizes = "100vw", quality = 68) {
@@ -58,17 +57,9 @@ function preloadHomepageImage(source, sizes = "100vw", quality = 68) {
   document.head.appendChild(preload);
 }
 
-function getProductImage(product) {
-  const media = Array.isArray(product?.media) ? product.media : [];
-  return product?.image?.url ||
-    media.find((item) => item?.kind === "main" && item?.url)?.url ||
-    media.find((item) => item?.url && !/\.(mp4|webm|mov|m4v|glb|gltf)(?:$|[?#])/i.test(item.url))?.url ||
-    "";
-}
-
 if (window.location.pathname === "/") {
   const cmsRequest = cmsPublicApi.content().catch(() => null);
-  const productsRequest = productsApi.list({ sort: "popular", limit: 12 }).catch(() => null);
+  const featuredProductRequest = productsApi.featured().catch(() => null);
 
   void cmsRequest.then((content) => {
     if (!content) return;
@@ -100,9 +91,9 @@ if (window.location.pathname === "/") {
       return;
     }
 
-    if (hero?.type === "hero" && config.layout === "reference") {
-      void productsRequest.then((result) => {
-        const image = getProductImage(result?.products?.[0]);
+    if (hero?.type === "hero" && config.layout === "reference" && !config.heroBottleImageUrl) {
+      void featuredProductRequest.then((result) => {
+        const image = result?.product?.image?.url;
         if (image) preloadHomepageImage(image, "90vw", 70);
       });
     }
@@ -112,15 +103,13 @@ if (window.location.pathname === "/") {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Router>
-      <AuthProvider>
-        <CustomerAuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <App />
-            </WishlistProvider>
-          </CartProvider>
-        </CustomerAuthProvider>
-      </AuthProvider>
+      <CustomerAuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <App />
+          </WishlistProvider>
+        </CartProvider>
+      </CustomerAuthProvider>
     </Router>
   </React.StrictMode>
 );
