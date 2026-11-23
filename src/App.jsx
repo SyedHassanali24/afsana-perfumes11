@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthContext';
 import RequireAuth from './auth/RequireAuth';
 import LoginPage from './auth/LoginPage';
 import ChangePasswordPage from './auth/ChangePasswordPage';
