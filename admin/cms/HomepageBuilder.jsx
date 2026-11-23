@@ -59,7 +59,7 @@ export default function HomepageBuilder() {
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
 
   const currentVideoItems = form.type === 'video_grid' ? parseItems(form.config.items) : [];
-  const currentPostItems = form.type === 'post_grid' ? parseItems(form.config.items) : [];
+  const currentPostItems = ['post_grid','blog_grid'].includes(form.type) ? parseItems(form.config.items) : [];
   const updateVideoItem = (index, key, value) => setForm((state) => {
     const items = parseItems(state.config.items);
     if (!items[index]) return state;
@@ -217,7 +217,7 @@ export default function HomepageBuilder() {
           <strong className="text-[#263e0e]">Reviews are managed centrally.</strong>
           <p>Use CMS → Reviews Manager to add, edit or remove review cards. Your changes sync to every existing testimonials placement, including Home and product pages. This section editor is only for placement and layout.</p>
         </div>}
-        {form.type === 'post_grid' ? <div className="space-y-4">
+        {['post_grid','blog_grid'].includes(form.type) ? <div className="space-y-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div><h3 className="text-sm font-semibold text-[#263e0e]">Journal stories & perfume images</h3><p className="text-xs text-[#5f654f]">Upload your AFSANA bottle or product photo for each story card. The uploaded image will appear in this section.</p></div>
             <span className="text-xs text-[#5f654f]">{currentPostItems.length} / 4 stories</span>
