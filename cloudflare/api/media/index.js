@@ -60,7 +60,6 @@ const api = createHandler('media', [
       if (!CHUNKED_VIDEO_TYPES.includes(body.contentType)) throw E.badRequest('Choose an MP4 or WebM video.');
       const chunkCount = mediaChunkCount(body.size, MEDIA_CHUNK_BYTES);
       const db = mongoose.connection.db;
-      if (!db) throw E.internal();
       const storeId = scopedStoreId(scopes);
       const uploads = db.collection(VIDEO_UPLOADS);
       const chunks = db.collection(VIDEO_CHUNKS);
