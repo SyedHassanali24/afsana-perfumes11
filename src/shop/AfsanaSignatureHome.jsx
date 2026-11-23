@@ -747,7 +747,7 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
         const product = catalogProductAt(products, i);
         return {
           ...x,
-          image: ['discover','journal','house','gifting'].includes(section.pageKey) ? catalogImage(product) : (x.image || [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
+          image: x.image || (['discover','journal','house','gifting'].includes(section.pageKey) ? catalogImage(product) : [c.journalImage1Url,c.journalImage2Url,c.journalImage3Url][i] || ''),
           link: journalPage ? x.link : (['discover','journal','house','gifting'].includes(section.pageKey) && product ? catalogProductLink(product) : (x.link || '/journal')),
           productName: ['discover','journal','house','gifting'].includes(section.pageKey) ? product?.name : ''
         };
