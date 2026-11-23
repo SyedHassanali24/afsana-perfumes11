@@ -34,8 +34,9 @@ test('staff auth provider is scoped to admin routes, not the public storefront r
   const fs = require('node:fs');
   const app = fs.readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8');
   const main = fs.readFileSync(path.join(ROOT, 'src/main.jsx'), 'utf8');
-  assert.match(app, /function AdminAuthScope\\(\\)\\s*\\{\\s*return <AuthProvider><Outlet \\/><\\/AuthProvider>;\\s*\\}/);
-  assert.match(app, /<Route element={<AdminAuthScope \\/>}>/);
+  assert.ok(app.includes('function AdminAuthScope()'));
+  assert.ok(app.includes('return <AuthProvider><Outlet /></AuthProvider>'));
+  assert.ok(app.includes('<Route element={<AdminAuthScope />}>'));
   assert.doesNotMatch(main, /<AuthProvider>/);
 });
 
