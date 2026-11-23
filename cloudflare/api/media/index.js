@@ -31,7 +31,6 @@ function objectIdOrNull(value) {
 }
 function safeFilename(value) {
   return String(value || 'afsana-video')
-    .replace(/[\\/\\r\\n\\0]/g, '_')
     .replace(/[^a-zA-Z0-9._ -]/g, '_')
     .trim()
     .slice(0, 120) || 'afsana-video';
@@ -123,7 +122,7 @@ const api = createHandler('media', [
   },
   {
     method: 'POST', path: '/videos/uploads/:uploadId/complete',
-    permission: ['homepage', 'edit'], body: z => z, rateLimit: { limit: 20, windowMs: 10 * 60000 },
+    permission: ['homepage', 'edit'], rateLimit: { limit: 20, windowMs: 10 * 60000 },
     handler: async ({ ctx, scopes, params }) => {
       const uploadId = objectIdOrNull(params.uploadId);
       if (!uploadId) throw E.badRequest('Invalid video upload session.');
