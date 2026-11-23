@@ -120,3 +120,70 @@ test('pricing: effective price, shipping, coupons', () => {
   assert.equal(P.calcDiscount({ type: 'free_shipping' }, lines, 250).shippingDiscount, 250);
   assert.throws(() => P.calcDiscount({ type: 'fixed', value: 100, productIds: ['other'] }, lines, 0), /does not apply/);
 });
+
+
+test('public API cache: only approved public GET routes are cacheable and origins are isolated', async () => {
+  const PublicApiCache = await import('../cloudflare/public-api-cache.js');
+  const shopRequest = new Request('https://afsanaperfumes.store/api/cms/public');
+  const wwwRequest = new Request('https://afsanaperfumes.store/api/cms/public', { headers: { Origin: 'https://www.afsanaperfumes.store' } });
+  const untrustedOriginRequest = new Request('https://afsanaperfumes.store/api/cms/public', { headers: { Origin: 'https://untrusted.example' } });
+  const queryVariantRequest = new Request('https://afsanaperfumes.store/api/cms/public?cacheBust=arbitrary');
+  const settingsRequest = new Request('https://afsanaperfumes.store/api/settings/public');
+  const productListRequest = new Request('https://afsanaperfumes.store/api/products?sort=popular');
+  const postRequest = new Request('https://afsanaperfumes.store/api/cms/public', { method: 'POST' });
+
+  assert.ok(PublicApiCache.publicApiCacheKey(shopRequest));
+  assert.notEqual(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(wwwRequest));
+  assert.equal(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(untrustedOriginRequest), 'untrusted origins do not create cache variants');
+  assert.equal(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(queryVariantRequest), 'ignored query strings do not create cache variants');
+  assert.ok(PublicApiCache.publicApiCacheKey(settingsRequest));
+  assert.equal(PublicApiCache.publicApiCacheKey(productListRequest), null, 'live product lists are never cached here');
+  assert.equal(PublicApiCache.publicApiCacheKey(postRequest), null, 'mutations are never cached');
+
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60' } })), true);
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=120' } })), 120000, 'a 120-second public max-age is respected');
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60' } })), 60000, 'featured max-age is respected');
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=300' } })), 300000, 'a 300-second public max-age is respected up to the internal cap');
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=900' } })), 300000, 'internal TTL caps longer public freshness');
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'private, max-age=60' } })), false);
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, no-store, max-age=60' } })), false);
+  assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60', 'Set-Cookie': 'session=secret' } })), false);
+});
+
+test('public API cache: persists small responses, expires, and clears only its own keys', async () => {
+  const PublicApiCache = await import('../cloudflare/public-api-cache.js');
+  const rows = new Map();
+  const storage = {
+    get: async (key) => rows.get(key),
+    put: async (key, value) => { rows.set(key, value); },
+    delete: async (key) => rows.delete(key),
+    list: async ({ prefix }) => new Map([...rows.entries()].filter(([key]) => key.startsWith(prefix))),
+  };
+  const request = new Request('https://afsanaperfumes.store/api/products/featured');
+  const response = new Response(JSON.stringify({ success: true, product: { name: 'Dastan' } }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60, stale-while-revalidate=60' },
+  });
+
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 1000), true);
+  const cacheKey = PublicApiCache.publicApiCacheKey(request);
+  assert.equal(rows.get(cacheKey).createdAt, 1000);
+  assert.equal(rows.get(cacheKey).expiresAt, 61000, 'internal cache never exceeds the response max-age');
+  const hit = await PublicApiCache.readPublicApiCache(storage, request, 2000);
+  assert.deepEqual(await hit.json(), { success: true, product: { name: 'Dastan' } });
+  assert.equal(hit.headers.get('Cache-Control'), 'public, max-age=59, stale-while-revalidate=59', 'cache-hit headers report remaining freshness');
+  const agedHit = await PublicApiCache.readPublicApiCache(storage, request, 51000);
+  assert.equal(agedHit.headers.get('Cache-Control'), 'public, max-age=10, stale-while-revalidate=10', 'stale window is reduced by cache age');
+  assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 302000), null, 'expired response is deleted');
+
+  await storage.put('unrelated:keep', { value: true });
+  const inFlightEpoch = await PublicApiCache.getPublicApiCacheEpoch(storage);
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 400000, inFlightEpoch), true);
+  assert.equal(await PublicApiCache.clearPublicApiCache(storage), 1);
+  assert.equal(rows.has('unrelated:keep'), true, 'invalidation leaves unrelated Durable Object data alone');
+  assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 400001), null);
+
+  // Simulate an earlier GET finishing after a successful write invalidated the cache.
+  assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 400002, inFlightEpoch), true);
+  assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 400003), null, 'old in-flight response stays under its old epoch');
+});
