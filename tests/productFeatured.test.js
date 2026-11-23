@@ -30,6 +30,15 @@ stub('services/audit.js', { audit() {} });
 
 const products = require('../services/productService');
 
+test('staff auth provider is scoped to admin routes, not the public storefront root', () => {
+  const fs = require('node:fs');
+  const app = fs.readFileSync(path.join(ROOT, 'src/App.jsx'), 'utf8');
+  const main = fs.readFileSync(path.join(ROOT, 'src/main.jsx'), 'utf8');
+  assert.match(app, /function AdminAuthScope\\(\\)\\s*\\{\\s*return <AuthProvider><Outlet \\/><\\/AuthProvider>;\\s*\\}/);
+  assert.match(app, /<Route element={<AdminAuthScope \\/>}>/);
+  assert.doesNotMatch(main, /<AuthProvider>/);
+});
+
 test('storefront layout does not eagerly fetch the full homepage catalogue', () => {
   const fs = require('node:fs');
   const shopLayout = fs.readFileSync(path.join(ROOT, 'src/shop/ShopLayout.jsx'), 'utf8');
