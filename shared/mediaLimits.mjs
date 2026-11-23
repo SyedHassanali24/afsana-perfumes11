@@ -43,7 +43,7 @@ export function parseMediaByteRange(value, size) {
   if (!Number.isSafeInteger(size) || size < 1) return false;
   const header = String(value);
   if (!header.startsWith('bytes=') || header.includes(',')) return false;
-  const match = /^bytes=(\\d*)-(\\d*)$/.exec(header);
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header);
   if (!match || (!match[1] && !match[2])) return false;
   let start;
   let end;
