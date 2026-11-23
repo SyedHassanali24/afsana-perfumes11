@@ -46,7 +46,7 @@ function createHandler(group, routes) {
       if (!['GET', 'HEAD'].includes(method) && headers['x-requested-with'] !== 'afsana') throw E.forbidden('Invalid request.');
       // Parse once at the edge-facing API boundary. Turnstile must be verified before
       // database work or any authentication side effects.
-      const rawBody = parseBody(req);
+      const rawBody = parseBody(req, route.maxBodyBytes || 1_000_000);
       if (route.turnstileAction) {
         const siteUrl = process.env.SITE_URL || context?.site?.url;
         let hostname = headers.host || '';

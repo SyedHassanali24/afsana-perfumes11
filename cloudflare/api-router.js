@@ -89,7 +89,8 @@ async function cloudflareEvent(request, path) {
     // Read the incoming stream directly. Request.text() can hit Cloudflare's
     // FixedLengthStream framing error when the forwarded Content-Length differs
     // from the bytes delivered by the edge. Preserve the JSON/base64 payload as UTF-8.
-    body = await readRequestBody(request);
+    const videoChunkPath = /^\/api\/media\/videos\/uploads\/[a-f0-9]{24}\/chunks\/\d+$/.test(path);
+    body = await readRequestBody(request, videoChunkPath ? 5700000 : 1000000);
   }
   return {
     httpMethod: request.method,

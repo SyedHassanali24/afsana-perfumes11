@@ -9,10 +9,42 @@ const { E } = require('../../../middleware/errors');
 const { Media } = require('../../../database/models');
 const { audit } = require('../../../services/audit');
 const { checkUpload } = require('../../../services/mediaRules');
+const mongoose = require('mongoose');
 const S = require('../../../validation/schemas');
 
 // Anyone who can edit a picture somewhere (product pictures, categories, banners...) may upload one.
 const UPLOADERS = [['products', 'manageImages'], ['categories', 'edit'], ['categories', 'create'], ['collections', 'edit'], ['brands', 'edit'], ['banners', 'create'], ['banners', 'edit'], ['homepage', 'create'], ['homepage', 'edit']];
+
+const VIDEO_UPLOADS = 'afsana_video_uploads';
+const VIDEO_CHUNKS = 'afsana_video_chunks';
+const VIDEO_FILES = 'afsana_video_files';
+
+function scopedStoreId(scopes) {
+  if (!Array.isArray(scopes) || !scopes.length) throw E.forbidden();
+  if (scopes.some((scope) => scope.kind === 'all')) return 'main';
+  const ids = [...new Set(scopes.filter((scope) => scope.kind === 'stores').flatMap((scope) => scope.values || []))];
+  if (ids.length !== 1) throw E.forbidden('Video uploads must belong to one store in your access scope.');
+  return ids[0];
+}
+function objectIdOrNull(value) {
+  return /^[a-f0-9]{24}$/i.test(String(value || '')) ? new mongoose.Types.ObjectId(String(value)) : null;
+}
+function safeFilename(value) {
+  return String(value || 'afsana-video')
+    .replace(/[^a-zA-Z0-9._ -]/g, '_')
+    .trim()
+    .slice(0, 120) || 'afsana-video';
+}
+
+function videoChunkBuffer(value) {
+  if (Buffer.isBuffer(value)) return value;
+  if (value && typeof value.value === 'function') return Buffer.from(value.value(true));
+  if (value && value.buffer) {
+    const bytes = Buffer.from(value.buffer);
+    return bytes.subarray(0, Number.isInteger(value.position) ? value.position : bytes.length);
+  }
+  return Buffer.from(value || []);
+}
 
 const api = createHandler('media', [
   { method: 'POST', path: '/profile', body: S.uploadBody, rateLimit: { limit: 20, windowMs: 10 * 60000 }, handler: async ({ ctx, body }) => {
@@ -30,6 +62,121 @@ const api = createHandler('media', [
       await audit(ctx, { action: 'media.uploaded', module: 'products', recordId: doc._id, newValue: { size: doc.size, contentType: doc.contentType } });
       return res(201, { url: `/api/media/${doc._id}`, size: doc.size });
     } },
+  {
+    method: 'POST', path: '/videos/uploads', permission: ['homepage', 'edit'],
+    body: S.videoUploadStartBody, rateLimit: { limit: 10, windowMs: 10 * 60000 },
+    handler: async ({ ctx, scopes, body }) => {
+      const { MEDIA_CHUNK_BYTES, MEDIA_UPLOAD_TTL_SECONDS, mediaChunkCount, CHUNKED_VIDEO_TYPES } = await import('../../../shared/mediaLimits.mjs');
+      if (!CHUNKED_VIDEO_TYPES.includes(body.contentType)) throw E.badRequest('Choose an MP4 or WebM video.');
+      const chunkCount = mediaChunkCount(body.size, MEDIA_CHUNK_BYTES);
+      const db = mongoose.connection.db;
+      const storeId = scopedStoreId(scopes);
+      const uploads = db.collection(VIDEO_UPLOADS);
+      const chunks = db.collection(VIDEO_CHUNKS);
+      await Promise.all([
+        uploads.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'afsana_video_upload_expiry' }),
+        chunks.createIndex({ uploadId: 1, index: 1 }, { unique: true, name: 'afsana_video_chunk_unique' }),
+        chunks.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'afsana_video_chunk_expiry' }),
+      ]);
+      const uploadId = new mongoose.Types.ObjectId();
+      const expiresAt = new Date(Date.now() + MEDIA_UPLOAD_TTL_SECONDS * 1000);
+      const filename = safeFilename(body.filename);
+      await uploads.insertOne({
+        _id: uploadId, storeId, filename, contentType: body.contentType,
+        size: body.size, chunkSize: MEDIA_CHUNK_BYTES, chunkCount,
+        uploadedBy: ctx.user._id, status: 'uploading', createdAt: new Date(), expiresAt,
+      });
+      return res(201, { uploadId: String(uploadId), chunkSize: MEDIA_CHUNK_BYTES, chunkCount, expiresAt });
+    },
+  },
+  {
+    method: 'POST', path: '/videos/uploads/:uploadId/chunks/:index',
+    permission: ['homepage', 'edit'], body: S.videoUploadChunkBody,
+    maxBodyBytes: 5700000, rateLimit: { limit: 1000, windowMs: 10 * 60000 },
+    handler: async ({ ctx, scopes, params, body }) => {
+      const uploadId = objectIdOrNull(params.uploadId);
+      if (!uploadId) throw E.badRequest('Invalid video upload session.');
+      const { expectedMediaChunkBytes, isValidChunkedMediaSignature } = await import('../../../shared/mediaLimits.mjs');
+      const db = mongoose.connection.db;
+      const storeId = scopedStoreId(scopes);
+      const uploads = db.collection(VIDEO_UPLOADS);
+      const chunks = db.collection(VIDEO_CHUNKS);
+      const upload = await uploads.findOne({
+        _id: uploadId, storeId, uploadedBy: ctx.user._id,
+        status: 'uploading', expiresAt: { $gt: new Date() },
+      });
+      if (!upload) throw E.notFound('Video upload session not found or expired.');
+      const index = Number(params.index);
+      if (!Number.isSafeInteger(index)) throw E.badRequest('Invalid video chunk number.');
+      let expectedBytes;
+      try { expectedBytes = expectedMediaChunkBytes(upload.size, index, upload.chunkSize); }
+      catch { throw E.badRequest('Video chunk number is outside the upload.'); }
+      if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(body.data)) {
+        throw E.badRequest('The video part is not valid base64 data.');
+      }
+      const data = Buffer.from(body.data, 'base64');
+      if (!data.length || data.length !== expectedBytes || data.toString('base64') !== body.data) {
+        throw E.badRequest('The uploaded video part has an unexpected size.');
+      }
+      if (index === 0 && !isValidChunkedMediaSignature(data, upload.contentType)) {
+        throw E.badRequest('The file contents do not match the selected video format.');
+      }
+      await chunks.updateOne(
+        { uploadId, index },
+        { $set: { uploadId, index, data, storeId, expiresAt: upload.expiresAt }, $setOnInsert: { createdAt: new Date() } },
+        { upsert: true },
+      );
+      return { uploaded: true, index, bytes: data.length };
+    },
+  },
+  {
+    method: 'POST', path: '/videos/uploads/:uploadId/complete',
+    permission: ['homepage', 'edit'], rateLimit: { limit: 20, windowMs: 10 * 60000 },
+    handler: async ({ ctx, scopes, params }) => {
+      const uploadId = objectIdOrNull(params.uploadId);
+      if (!uploadId) throw E.badRequest('Invalid video upload session.');
+      const db = mongoose.connection.db;
+      const storeId = scopedStoreId(scopes);
+      const uploads = db.collection(VIDEO_UPLOADS);
+      const chunks = db.collection(VIDEO_CHUNKS);
+      const videos = db.collection(VIDEO_FILES);
+      const existing = await videos.findOne({ _id: uploadId, storeId });
+      if (existing) {
+        await chunks.updateMany({ uploadId, storeId }, { $unset: { expiresAt: '' } });
+        await uploads.deleteOne({ _id: uploadId });
+        return { url: `/api/media/video/${uploadId}`, size: existing.size, contentType: existing.contentType, filename: existing.filename };
+      }
+      const lock = await uploads.updateOne(
+        { _id: uploadId, storeId, uploadedBy: ctx.user._id, status: 'uploading', expiresAt: { $gt: new Date() } },
+        { $set: { status: 'completing', completingAt: new Date() } },
+      );
+      if (!lock.modifiedCount) throw E.conflict('This video upload is already completing or has expired.');
+      const upload = await uploads.findOne({ _id: uploadId, storeId });
+      if (!upload) throw E.notFound('Video upload session not found.');
+      const received = await chunks.find({ uploadId, storeId }, { projection: { _id: 0, index: 1 } }).sort({ index: 1 }).toArray();
+      const complete = received.length === upload.chunkCount && received.every((part, index) => part.index === index);
+      if (!complete) {
+        await uploads.updateOne({ _id: uploadId, storeId, status: 'completing' }, { $set: { status: 'uploading' }, $unset: { completingAt: '' } });
+        throw E.badRequest(`Video upload is incomplete: received ${received.length} of ${upload.chunkCount} parts.`);
+      }
+      const first = await chunks.findOne({ uploadId, index: 0, storeId });
+      const { isValidChunkedMediaSignature } = await import('../../../shared/mediaLimits.mjs');
+      if (!first || !isValidChunkedMediaSignature(videoChunkBuffer(first.data), upload.contentType)) {
+        await uploads.updateOne({ _id: uploadId, storeId }, { $set: { status: 'uploading' }, $unset: { completingAt: '' } });
+        throw E.badRequest('The uploaded file does not match the selected video format.');
+      }
+      const file = {
+        _id: uploadId, storeId, filename: upload.filename, contentType: upload.contentType,
+        size: upload.size, chunkSize: upload.chunkSize, chunkCount: upload.chunkCount,
+        uploadedBy: upload.uploadedBy, createdAt: new Date(),
+      };
+      await videos.insertOne(file);
+      await chunks.updateMany({ uploadId, storeId }, { $unset: { expiresAt: '' } });
+      await uploads.deleteOne({ _id: uploadId, storeId });
+      await audit(ctx, { action: 'media.video_uploaded', module: 'homepage', recordId: String(uploadId), newValue: { filename: file.filename, contentType: file.contentType, size: file.size } });
+      return res(201, { url: `/api/media/video/${uploadId}`, size: file.size, contentType: file.contentType, filename: file.filename });
+    },
+  },
 ]);
 
 exports.handler = async (event) => {

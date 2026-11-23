@@ -244,6 +244,9 @@ export const myReturnsApi = {
 export const mediaApi = {
   upload: (body) => api('/media/admin', { method: 'POST', body }),
   uploadProfile: (body) => api('/media/profile', { method: 'POST', body }), // { filename?, contentType, data(base64) } -> { url, size }
+  startVideoUpload: (body) => api('/media/videos/uploads', { method: 'POST', body }),
+  uploadVideoChunk: (uploadId, index, data) => api(`/media/videos/uploads/${uploadId}/chunks/${index}`, { method: 'POST', body: { data } }),
+  completeVideoUpload: (uploadId) => api(`/media/videos/uploads/${uploadId}/complete`, { method: 'POST', body: {} }),
 };
 
 // ---- backup (owner only; every call needs the password) ----

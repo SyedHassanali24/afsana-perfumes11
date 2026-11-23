@@ -4,6 +4,8 @@ const { isAllowedImageUrl } = require('../services/mediaRules');
 // picture address: normal https link OR one of our own uploads (/api/media/<id>)
 const imageAddress = z.string().trim().max(500).refine(isAllowedImageUrl, 'Enter a valid picture address');
 const uploadBody = z.object({ filename: z.string().trim().max(120).optional(), contentType: z.string().max(40), data: z.string().min(100).max(980000) });
+const videoUploadStartBody = z.object({ filename: z.string().trim().min(1).max(120), contentType: z.enum(['video/mp4', 'video/webm']), size: z.number().int().min(1).max(250 * 1024 * 1024) });
+const videoUploadChunkBody = z.object({ data: z.string().min(4).max(5592408) });
 const { normalizePhone } = require('../services/phone');
 
 // ---------- auth ----------
@@ -419,7 +421,7 @@ const backupPictures = z.object({ after: z.string().trim().max(40).optional(), l
 module.exports = {
   settingsStore, settingsBank, settingsShipping, settingsReturns,
   backupOverview, backupData, backupPictures,
-  uploadBody,
+  uploadBody, videoUploadStartBody, videoUploadChunkBody,
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery, manualJournalEntryBody, referralPartnerBody, referralPartnerPatch,

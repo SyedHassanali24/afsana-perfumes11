@@ -10,6 +10,7 @@ import { cmsApi } from '../../src/services';
 import useApi from '../../src/hooks/useApi';
 import { HOMEPAGE_SECTION_TYPES } from '../../src/services/mappers/cms';
 import ImageUploadButton from '../components/ImageUploadButton';
+import VideoUploadButton from '../components/VideoUploadButton';
 
 const defaults = (type) => ({
   eyebrow: '', subtitle: '', body: '', imageUrl: '', mobileImageUrl: '', videoUrl: '', posterUrl: '', templateSlot: 'home',
@@ -57,6 +58,25 @@ export default function HomepageBuilder() {
   const set = (k, v) => setForm((s) => ({ ...s, [k]: v }));
   const setConfig = (k, v) => setForm((s) => ({ ...s, config: { ...s.config, [k]: v } }));
 
+  const currentVideoItems = form.type === 'video_grid' ? parseItems(form.config.items) : [];
+  const updateVideoItem = (index, key, value) => setForm((state) => {
+    const items = parseItems(state.config.items);
+    if (!items[index]) return state;
+    items[index] = { ...items[index], [key]: value };
+    return { ...state, config: { ...state.config, items: itemText(items) } };
+  });
+  const addVideoItem = () => setForm((state) => {
+    const items = parseItems(state.config.items);
+    if (items.length >= 4) return state;
+    items.push({ title: `Campaign film 0${items.length + 1}`, text: '', image: '', link: '' });
+    return { ...state, config: { ...state.config, items: itemText(items) } };
+  });
+  const removeVideoItem = (index) => setForm((state) => {
+    const items = parseItems(state.config.items);
+    items.splice(index, 1);
+    return { ...state, config: { ...state.config, items: itemText(items) } };
+  });
+
   const open = (item) => {
     if (item) {
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
@@ -102,7 +122,7 @@ export default function HomepageBuilder() {
     catch (e) { setNotice(e.message || 'Could not duplicate section.'); } finally { setBusy(false); }
   };
 
-  const common = ['hero','video_banner','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
+  const common = ['hero','video_banner','video_grid','image_banner','split_story','rich_text','cinematic_statement','lookbook'].includes(form.type);
   const itemTypes = ['benefits','testimonials','blog_grid','post_grid','category_tiles','marquee','trust_grid','values_grid','video_grid'];
   return <div className="space-y-5">
     <div className="rounded-2xl border border-[#b4bf41]/35 bg-[#eef2e5] p-5">
@@ -172,14 +192,36 @@ export default function HomepageBuilder() {
 
         {common && <><Field label="Eyebrow"><Input value={form.config.eyebrow || ''} onChange={(e) => setConfig('eyebrow', e.target.value)} /></Field><Field label="Subtitle"><Input value={form.config.subtitle || ''} onChange={(e) => setConfig('subtitle', e.target.value)} /></Field><Field label="Body copy"><Textarea rows={5} value={form.config.body || ''} onChange={(e) => setConfig('body', e.target.value)} /></Field></>}
         {['hero','image_banner','split_story','lookbook'].includes(form.type) && <><Field label="Image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} placeholder="Paste an image URL or upload below" /><div className="mt-2 flex items-center gap-3">{form.config.imageUrl && <img src={form.config.imageUrl} alt="" className="h-16 w-24 rounded-lg object-cover border border-[#263e0e]/10" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}<ImageUploadButton onUploaded={(url) => setConfig('imageUrl', url)} /></div></Field><Field label="Mobile image URL"><Input value={form.config.mobileImageUrl || ''} onChange={(e) => setConfig('mobileImageUrl', e.target.value)} placeholder="Optional mobile image" /><div className="mt-2"><ImageUploadButton label="Upload mobile image" onUploaded={(url) => setConfig('mobileImageUrl', url)} /></div></Field></>}
-        {['video_banner','video_grid'].includes(form.type) && <><Field label="Video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="https://…/video.mp4" /></Field><Field label="Poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} placeholder="Optional video poster image" /><div className="mt-2"><ImageUploadButton label="Upload poster image" onUploaded={(url) => setConfig('posterUrl', url)} /></div></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
+        {form.type === 'video_banner' && <><Field label="Video URL"><Input value={form.config.videoUrl || ''} onChange={(e) => setConfig('videoUrl', e.target.value)} placeholder="https://…/video.mp4" /></Field><Field label="Poster image URL"><Input value={form.config.posterUrl || ''} onChange={(e) => setConfig('posterUrl', e.target.value)} placeholder="Optional video poster image" /><div className="mt-2"><ImageUploadButton label="Upload poster image" onUploaded={(url) => setConfig('posterUrl', url)} /></div></Field><div className="grid grid-cols-3 gap-2"><Check label="Autoplay" checked={form.config.autoplay !== false} onChange={(v) => setConfig('autoplay', v)} /><Check label="Muted" checked={form.config.muted !== false} onChange={(v) => setConfig('muted', v)} /><Check label="Controls" checked={!!form.config.controls} onChange={(v) => setConfig('controls', v)} /></div></>}
         {['hero','video_banner','image_banner','split_story','promo_timer','offer_timer','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','cinematic_statement'].includes(form.type) && <div className="grid grid-cols-2 gap-3"><Field label="Button text"><Input value={form.config.buttonText || ''} onChange={(e) => setConfig('buttonText', e.target.value)} /></Field><Field label="Button link"><Input value={form.config.buttonLink || ''} onChange={(e) => setConfig('buttonLink', e.target.value)} placeholder="/shop" /></Field></div>}
         {['featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','blog_grid'].includes(form.type) && <><Field label="Collection / query hint"><Input value={form.config.query || ''} onChange={(e) => setConfig('query', e.target.value)} placeholder="Optional category / collection / query" /></Field><Field label="Number of items"><Input type="number" min="1" max="12" value={form.config.limit ?? 4} onChange={(e) => setConfig('limit', Number(e.target.value))} /></Field></>}
         {form.type === 'testimonials' && <div className="rounded-xl border border-[#b4bf41]/35 bg-[#f4f6eb] p-4 text-sm leading-6 text-[#5f654f]">
           <strong className="text-[#263e0e]">Reviews are managed centrally.</strong>
           <p>Use CMS → Reviews Manager to add, edit or remove review cards. Your changes sync to every existing testimonials placement, including Home and product pages. This section editor is only for placement and layout.</p>
         </div>}
-        {itemTypes.includes(form.type) && form.type !== 'testimonials' && <Field label="Items" hint="One per line: Title|Description|Image URL|Link. Video grid uses Title|Description|Video URL|Poster URL."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
+        {form.type === 'video_grid' ? <div className="space-y-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div><h3 className="text-sm font-semibold text-[#263e0e]">Moving Image videos</h3><p className="text-xs text-[#5f654f]">Upload one MP4 or WebM for each card. Videos are uploaded in secure chunks and stored with AFSANA's existing database media; no R2 setup is required.</p></div>
+            <span className="text-xs text-[#5f654f]">{currentVideoItems.length} / 4 cards</span>
+          </div>
+          {currentVideoItems.map((item, index) => <div key={index} className="space-y-3 rounded-2xl border border-[#263e0e]/10 bg-[#faf8f4] p-4">
+            <div className="flex items-center justify-between gap-3"><strong className="text-sm text-[#263e0e]">Video {String(index + 1).padStart(2, '0')}</strong><button type="button" onClick={() => removeVideoItem(index)} className="text-xs font-medium text-[#9b3f3f] hover:underline">Remove card</button></div>
+            <Field label="Card title"><Input value={item.title} onChange={(e) => updateVideoItem(index, 'title', e.target.value)} placeholder="e.g. Atmosphere" /></Field>
+            <Field label="Card description"><Input value={item.text} onChange={(e) => updateVideoItem(index, 'text', e.target.value)} placeholder="A moving story from the house" /></Field>
+            <Field label="Video file or direct URL">
+              <Input value={item.image} onChange={(e) => updateVideoItem(index, 'image', e.target.value)} placeholder="Upload an MP4/WebM or paste a direct video URL" />
+              <div className="mt-2"><VideoUploadButton label={item.image ? 'Replace video file' : 'Upload video file'} onUploaded={(url) => updateVideoItem(index, 'image', url)} /></div>
+              {item.image && <video src={item.image} poster={item.link || undefined} controls muted playsInline preload="metadata" className="mt-3 aspect-video w-full max-w-sm rounded-xl bg-[#201632] object-cover" />}
+            </Field>
+            <Field label="Poster image URL">
+              <Input value={item.link} onChange={(e) => updateVideoItem(index, 'link', e.target.value)} placeholder="Optional still image shown before the video loads" />
+              <div className="mt-2"><ImageUploadButton label={item.link ? 'Replace poster image' : 'Upload poster image'} onUploaded={(url) => updateVideoItem(index, 'link', url)} /></div>
+              {item.link && <img src={item.link} alt="" className="mt-2 h-20 w-32 rounded-lg border border-[#263e0e]/10 object-cover" />}
+            </Field>
+          </div>)}
+          {currentVideoItems.length < 4 && <button type="button" onClick={addVideoItem} className="w-full rounded-xl border border-dashed border-[#263e0e]/25 bg-white px-4 py-3 text-sm font-medium text-[#263e0e] hover:bg-[#eef2e5]">+ Add video card</button>}
+          <p className="text-xs leading-5 text-[#5f654f]">Supported formats: MP4 / WebM · Maximum file size: 250 MiB per video. Upload each card, then press Save section to publish all changes.</p>
+        </div> : itemTypes.includes(form.type) && form.type !== 'testimonials' && <Field label="Items" hint="One per line: Title|Description|Image URL|Link."><Textarea rows={10} value={typeof form.config.items === 'string' ? form.config.items : ''} onChange={(e) => setConfig('items', e.target.value)} /></Field>}
         {['promo_timer','offer_timer'].includes(form.type) && <><Field label="Offer label"><Input value={form.config.label || ''} onChange={(e) => setConfig('label', e.target.value)} /></Field><Field label="Offer end (ISO/date-time)"><Input type="datetime-local" value={form.config.endAt || ''} onChange={(e) => setConfig('endAt', e.target.value)} /></Field><Field label="Offer text"><Textarea rows={3} value={form.config.offerText || ''} onChange={(e) => setConfig('offerText', e.target.value)} /></Field></>}
         {form.type === 'muse_scene' && <><Field label="Character image URL"><Input value={form.config.characterImageUrl || ''} onChange={(e) => setConfig('characterImageUrl', e.target.value)} placeholder="Upload/host an editorial character image" /></Field><p className="text-xs text-[#5f654f]">Best result: transparent PNG/WebP of the AFSANA Muse. The storefront adds cinematic glow and motion.</p></>}
         {form.type === 'product_3d_showcase' && <><Field label="Product slug (optional)"><Input value={form.config.productSlug || ''} onChange={(e) => setConfig('productSlug', e.target.value)} placeholder="e.g. signature-oud" /></Field><Field label="Fallback bottle image URL"><Input value={form.config.imageUrl || ''} onChange={(e) => setConfig('imageUrl', e.target.value)} /></Field><p className="text-xs text-[#5f654f]">The homepage theatre uses the product media already stored in Products. Add multiple product images in Admin → Products for the strongest 360° effect.</p></>}
