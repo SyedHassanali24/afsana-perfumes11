@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { onRequest as handleApiRequest } from "./api-router.js";
 import { connectMongo, dbHealth } from "./mongodb.js";
 import {
+  getPublicApiCacheEpoch,
   readPublicApiCache,
   writePublicApiCache,
   clearPublicApiCache
@@ -57,9 +58,13 @@ export class MongoDBConnection extends DurableObject {
       try {
         // Small, explicitly-public storefront reads are persisted inside this
         // Durable Object so subsequent visitors do not wait on another MongoDB read.
+        let cacheEpoch;
         if (isRead) {
           try {
-            const cached = await readPublicApiCache(this.state.storage, request);
+            // Capture the generation before the database read. If a write completes
+            // while this GET is in flight, its response cannot repopulate the new cache.
+            cacheEpoch = await getPublicApiCacheEpoch(this.state.storage);
+            const cached = await readPublicApiCache(this.state.storage, request, Date.now(), cacheEpoch);
             if (cached) return cached;
           } catch (cacheError) {
             console.warn("[afsana-cache] public read cache unavailable:", cacheError?.message || cacheError);
@@ -85,7 +90,7 @@ export class MongoDBConnection extends DurableObject {
           }
         } else if (isRead && response.status === 200) {
           try {
-            await writePublicApiCache(this.state.storage, request, response);
+            await writePublicApiCache(this.state.storage, request, response, Date.now(), cacheEpoch);
           } catch (cacheError) {
             console.warn("[afsana-cache] public response cache write skipped:", cacheError?.message || cacheError);
           }
