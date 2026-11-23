@@ -987,12 +987,6 @@ function FilmCard({ film, index, autoplay = true }) {
   const source = String(film.image || '').trim();
   const poster = String(film.link || '').trim();
   const labels = ['CAMPAIGN FILM 01','THE INGREDIENT EDIT','INSIDE THE HOUSE','THE EMOTION SERIES'];
-  const accents = [
-    'from-purple-500/55 via-fuchsia-400/10 to-transparent',
-    'from-sky-400/55 via-blue-400/10 to-transparent',
-    'from-pink-400/55 via-rose-400/10 to-transparent',
-    'from-amber-300/55 via-yellow-300/10 to-transparent'
-  ];
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !source) return undefined;
@@ -1019,8 +1013,6 @@ function FilmCard({ film, index, autoplay = true }) {
     {source
       ? <video ref={videoRef} key={source} src={nearViewport ? source : undefined} poster={poster || undefined} autoPlay={false} muted={muted} loop playsInline preload="none" controls={false} onError={(e)=>{e.currentTarget.dataset.videoError='true';}} className="absolute inset-0 h-full w-full object-cover saturate-[1.08] contrast-[1.04] transition duration-[1200ms] group-hover:scale-110 group-hover:saturate-[1.2]"/>
       : poster ? <img src={poster} alt={film.title || 'AFSANA fragrance'} width="1000" height="1300" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-contain bg-[#173d26] p-7"/> : <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#173d26] via-[#214d32] to-[#102b1a] px-5 text-center text-[9px] font-bold uppercase tracking-[.22em] text-[#ffbd37]">AFSANA / THE ART OF SCENT</div>}
-    <div aria-hidden="true" className={'pointer-events-none absolute inset-0 bg-gradient-to-br '+(accents[index] || accents[0])}/>
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#160d2d]/95 via-[#211638]/16 to-[#1d1230]/10"/>
     <div aria-hidden="true" className="pointer-events-none absolute inset-[10px] rounded-[15px] border border-white/25 transition duration-700 group-hover:inset-[15px] group-hover:border-white/45"/>
     {source && <button type="button" className="absolute right-5 top-5 z-20 grid h-10 w-10 place-items-center rounded-full border border-white/45 bg-white/20 text-white shadow-lg backdrop-blur-xl transition hover:scale-110 hover:border-[#ffe66d] hover:bg-[#ffe66d] hover:text-[#241638] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300" aria-label={muted ? 'Unmute video' : 'Mute video'} title={muted ? 'Unmute video' : 'Mute video'} onClick={() => setMuted((value) => !value)}>{muted ? <VolumeX className="h-4 w-4"/> : <Volume2 className="h-4 w-4"/>}</button>}
     <span aria-hidden="true" className="absolute left-1/2 top-1/2 z-10 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/70 bg-white/20 pl-1 text-lg text-white shadow-[0_0_0_8px_rgba(255,255,255,.08),0_12px_30px_rgba(0,0,0,.2)] backdrop-blur-xl transition duration-500 group-hover:scale-110 group-hover:border-[#ffe66d] group-hover:bg-[#ffe66d] group-hover:text-[#241638] sm:h-16 sm:w-16">▶</span>
