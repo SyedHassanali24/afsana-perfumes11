@@ -48,7 +48,10 @@ test("keeps legal pages indexable and order/data utility pages noindex", () => {
 
 test("runs the Worker for SEO document routes but not hashed static assets", () => {
   const config = readFileSync(new URL("./wrangler.toml", import.meta.url), "utf8");
-  const routeBlock = config.match(/run_worker_first\\s*=\\s*\\[([\\s\\S]*?)\\]/)?.[1] || "";
+  const start = config.indexOf("run_worker_first = [");
+  const end = config.indexOf("]", start);
+  assert.ok(start >= 0 && end > start, "Worker-first route list must exist");
+  const routeBlock = config.slice(start, end);
   for (const route of [
     "/api/*",
     "/",
