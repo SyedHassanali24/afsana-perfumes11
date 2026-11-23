@@ -1,0 +1,19 @@
+{
+  "entries": [
+    {
+      "@context": "https://agenticresourcediscovery.org/context/v1",
+      "identifier": "urn:air:afsanaperfumes.store:skill:public-brand-guide",
+      "displayName": "AFSANA public brand and product guide",
+      "type": "application/ai-skill+md",
+      "url": "https://afsanaperfumes.store/afsana-agent-guide.md",
+      "description": "A static, read-only reference to AFSANA's public perfume catalogue, scent discovery, gifting and fragrance guides. It does not provide order placement, customer-account access or a live agent endpoint.",
+      "representativeQueries": [
+        "What perfumes are listed in the AFSANA collection?",
+        "Where can I explore AFSANA scent discovery and perfume gifting?",
+        "Where can I find official AFSANA product and customer information?"
+      ],
+      "version": "1.0",
+      "updatedAt": "2026-11-23T00:00:00Z"
+    }
+  ]
+}
