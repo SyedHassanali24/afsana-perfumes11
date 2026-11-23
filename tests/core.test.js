@@ -126,12 +126,16 @@ test('public API cache: only approved public GET routes are cacheable and origin
   const PublicApiCache = await import('../cloudflare/public-api-cache.js');
   const shopRequest = new Request('https://afsanaperfumes.store/api/cms/public');
   const wwwRequest = new Request('https://afsanaperfumes.store/api/cms/public', { headers: { Origin: 'https://www.afsanaperfumes.store' } });
+  const untrustedOriginRequest = new Request('https://afsanaperfumes.store/api/cms/public', { headers: { Origin: 'https://untrusted.example' } });
+  const queryVariantRequest = new Request('https://afsanaperfumes.store/api/cms/public?cacheBust=arbitrary');
   const settingsRequest = new Request('https://afsanaperfumes.store/api/settings/public');
   const productListRequest = new Request('https://afsanaperfumes.store/api/products?sort=popular');
   const postRequest = new Request('https://afsanaperfumes.store/api/cms/public', { method: 'POST' });
 
   assert.ok(PublicApiCache.publicApiCacheKey(shopRequest));
   assert.notEqual(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(wwwRequest));
+  assert.equal(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(untrustedOriginRequest), 'untrusted origins do not create cache variants');
+  assert.equal(PublicApiCache.publicApiCacheKey(shopRequest), PublicApiCache.publicApiCacheKey(queryVariantRequest), 'ignored query strings do not create cache variants');
   assert.ok(PublicApiCache.publicApiCacheKey(settingsRequest));
   assert.equal(PublicApiCache.publicApiCacheKey(productListRequest), null, 'live product lists are never cached here');
   assert.equal(PublicApiCache.publicApiCacheKey(postRequest), null, 'mutations are never cached');
