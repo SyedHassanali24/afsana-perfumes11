@@ -11,6 +11,14 @@ const CACHEABLE_PATHS = new Set([
   '/api/products/featured',
 ]);
 
+// Only storefront origins that receive CORS access get independent cache entries.
+// Untrusted or absent Origin values share one variant to prevent cache-key amplification.
+const CACHEABLE_ORIGINS = new Set([
+  'https://afsanaperfumes.store',
+  'https://www.afsanaperfumes.store',
+  'https://afsana-perfumes11.eastwala12.workers.dev',
+]);
+
 async function getPublicApiCacheEpoch(storage) {
   return (await storage.get(EPOCH_KEY)) || INITIAL_EPOCH;
 }
@@ -20,10 +28,12 @@ function publicApiCacheKey(request, epoch = INITIAL_EPOCH) {
   const url = new URL(request.url);
   if (!CACHEABLE_PATHS.has(url.pathname)) return null;
 
-  // The API handler can attach an origin-specific CORS header. Keep origins isolated.
+  // These allowlisted handlers do not read query parameters, so omit them to
+  // keep the number of stored cache variants bounded.
+  const requestOrigin = request.headers.get('Origin') || '';
+  const origin = CACHEABLE_ORIGINS.has(requestOrigin) ? requestOrigin : '';
   // The epoch prevents an older in-flight GET from repopulating cache after a write.
-  const origin = request.headers.get('Origin') || '';
-  return PREFIX + encodeURIComponent(epoch) + ':' + encodeURIComponent(origin) + ':' + encodeURIComponent(url.pathname + url.search);
+  return PREFIX + encodeURIComponent(epoch) + ':' + encodeURIComponent(origin) + ':' + encodeURIComponent(url.pathname);
 }
 
 function publicApiCacheTtlMs(response) {
@@ -94,6 +104,7 @@ export {
   EPOCH_KEY,
   INITIAL_EPOCH,
   CACHEABLE_PATHS,
+  CACHEABLE_ORIGINS,
   INTERNAL_TTL_MS,
   getPublicApiCacheEpoch,
   publicApiCacheKey,
