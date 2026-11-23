@@ -137,6 +137,10 @@ test('public API cache: only approved public GET routes are cacheable and origin
   assert.equal(PublicApiCache.publicApiCacheKey(postRequest), null, 'mutations are never cached');
 
   assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60' } })), true);
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=120' } })), 120000, 'CMS max-age is respected');
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60' } })), 60000, 'featured max-age is respected');
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=300' } })), 300000, 'settings max-age is respected');
+  assert.equal(PublicApiCache.publicApiCacheTtlMs(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=900' } })), 300000, 'internal TTL caps longer public freshness');
   assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'private, max-age=60' } })), false);
   assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, no-store, max-age=60' } })), false);
   assert.equal(PublicApiCache.publicApiCacheable(new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60', 'Set-Cookie': 'session=secret' } })), false);
@@ -158,6 +162,8 @@ test('public API cache: persists small responses, expires, and clears only its o
   });
 
   assert.equal(await PublicApiCache.writePublicApiCache(storage, request, response, 1000), true);
+  const cacheKey = PublicApiCache.publicApiCacheKey(request);
+  assert.equal(rows.get(cacheKey).expiresAt, 61000, 'internal cache never exceeds the response max-age');
   const hit = await PublicApiCache.readPublicApiCache(storage, request, 2000);
   assert.deepEqual(await hit.json(), { success: true, product: { name: 'Dastan' } });
   assert.equal(await PublicApiCache.readPublicApiCache(storage, request, 302000), null, 'expired response is deleted');
