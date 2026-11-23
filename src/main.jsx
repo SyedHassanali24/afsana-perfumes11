@@ -17,8 +17,8 @@ import "./styles/afsana-reference-storefront.css";
 // HashRouter keeps every storefront/admin route working on GitHub Pages without server rewrites.
 const Router = import.meta.env.BASE_URL === "/" ? BrowserRouter : HashRouter;
 
-// Start homepage data reads before React mounts. The API client deduplicates
-// these with the same requests made by ShopLayout and AfsanaSignatureHome.
+// Start homepage CMS and featured-product reads before React mounts. The
+// featured-product GET is shared with AfsanaSignatureHome through the API cache.
 // When the CMS data arrives, preload its first visible campaign/hero image
 // before React inserts the corresponding image element into the page.
 function preloadHomepageImage(source, sizes = "100vw", quality = 68) {
