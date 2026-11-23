@@ -20,35 +20,6 @@ const img={
  story:'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1000&q=74'
 };
 const video='https://videos.pexels.com/video-files/853801/853801-hd_1920_1080_30fps.mp4';
-function HeroBackgroundVideo() {
-  const videoRef = useRef(null);
-  useEffect(() => {
-    const element = videoRef.current;
-    if (!element) return undefined;
-    let cancelled = false;
-    let timer = null;
-    const onPageLoad = () => {
-      if (cancelled) return;
-      if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches || navigator.connection?.saveData) return;
-      timer = window.setTimeout(() => {
-        const target = videoRef.current;
-        if (cancelled || !target || target.hasAttribute('src')) return;
-        target.src = video;
-        target.load();
-        target.play().catch(() => {});
-      }, 1200);
-    };
-    if (document.readyState === 'complete') onPageLoad();
-    else window.addEventListener('load', onPageLoad, { once: true });
-    return () => {
-      cancelled = true;
-      window.removeEventListener('load', onPageLoad);
-      if (timer !== null) window.clearTimeout(timer);
-      if (videoRef.current) videoRef.current.pause();
-    };
-  }, []);
-  return <video ref={videoRef} className="absolute inset-0 -z-20 h-full w-full object-cover" muted loop playsInline preload="none" aria-hidden="true"/>;
-}
 // The public catalogue is the only source for perfume product imagery on editorial pages.
 const isCatalogueImageUrl = (url) => {
   const path = String(url || '').split(/[?#]/, 1)[0].toLowerCase();
@@ -114,8 +85,7 @@ function DeferredBackgroundVideo({ src, poster, autoPlay = true, muted = true, c
 
 function Hero(){
  return <section className="hero relative isolate min-h-[760px] sm:min-h-[900px] overflow-hidden bg-[#080a07] text-white">
-  <img src={img.hero} srcSet={responsiveUnsplashSrcSet(img.hero, 68)} sizes="100vw" alt="" fetchPriority="high" loading="eager" decoding="async" className="absolute inset-0 -z-20 h-full w-full object-cover"/>
-  <HeroBackgroundVideo/>
+  <video className="absolute inset-0 -z-20 h-full w-full object-cover" autoPlay muted loop playsInline poster={img.hero}><source src={video} type="video/mp4"/></video>
   <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_38%,rgba(163,197,233,.28),transparent_22%),radial-gradient(circle_at_18%_72%,rgba(123,0,58,.24),transparent_26%),linear-gradient(90deg,rgba(8,10,7,.98),rgba(38,62,14,.80),rgba(8,10,7,.42))]"/>
   <div className="hero-light"/><div className="hero-light two"/>
   <div className="container-xl hero-content"><div className="grid w-full items-center lg:grid-cols-[1.08fr_.92fr] gap-12">
@@ -133,7 +103,7 @@ function Hero(){
    <div className="hero-side hidden lg:block luxury-reveal">
     <div className="hero-card relative mx-auto hero-card-magical">
       <div className="absolute -top-4 -right-4 z-10 rounded-full border border-[#d6a84f]/40 bg-[#070807]/70 px-4 py-2 text-[8px] uppercase tracking-[.28em] text-[#ffe500] backdrop-blur">01 • Signature</div>
-      <div className="hero-card-image"><img src={img.signature} srcSet={responsiveUnsplashSrcSet(img.signature)} sizes="(max-width: 700px) 90vw, 34vw" alt="Afsana fragrance" width="960" height="1200" loading="lazy" decoding="async"/></div>
+      <div className="hero-card-image"><img src={img.signature} srcSet={responsiveUnsplashSrcSet(img.signature)} sizes="(max-width: 700px) 90vw, 34vw" alt="Afsana fragrance" width="960" height="1200"/></div>
       <div className="text-left mt-4"><Eyebrow light>THE SIGNATURE</Eyebrow><p className="mt-4 font-display text-2xl">Citrus, saffron & a magnetic trail.</p></div>
     </div>
    </div>
