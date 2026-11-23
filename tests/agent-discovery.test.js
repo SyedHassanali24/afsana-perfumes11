@@ -19,7 +19,7 @@ test('ARD manifest contains a valid, domain-anchored static skill entry', () => 
   const [entry] = manifest.entries;
   assert.ok(entry.identifier.startsWith('urn:air:afsanaperfumes.store:'));
   assert.ok(entry.displayName);
-  assert.equal(entry.type, 'application/ai-skill+md');
+  assert.equal(entry.type, 'application/agent-skills+md');
   assert.ok(entry.url.startsWith('https://afsanaperfumes.store/'));
   assert.equal(Number(Boolean(entry.url)) + Number(Boolean(entry.data)), 1);
   assert.ok(Array.isArray(entry.representativeQueries));
