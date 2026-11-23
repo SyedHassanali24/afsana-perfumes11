@@ -1,7 +1,6 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-
-const {
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
   MEDIA_CHUNK_BYTES,
   MEDIA_MAX_BYTES,
   CHUNKED_VIDEO_TYPES,
@@ -9,7 +8,7 @@ const {
   expectedMediaChunkBytes,
   isValidChunkedMediaSignature,
   parseMediaByteRange,
-} = await import('../shared/mediaLimits.mjs');
+} from '../shared/mediaLimits.mjs';
 
 test('video media: upload chunk counts and final chunk lengths are exact', () => {
   assert.deepEqual(CHUNKED_VIDEO_TYPES, ['video/mp4', 'video/webm']);
