@@ -130,6 +130,14 @@ export const emailMarketingApi = {
   processNext: (id) => api(`/email-marketing/admin/campaigns/${id}/process`, { method: 'POST', body: {} }),
   getCampaign: (id) => api(`/email-marketing/admin/campaigns/${id}`),
 };
+export const whatsappMarketingApi = {
+  summary: () => api('/whatsapp-marketing/admin/summary'),
+  campaigns: () => api('/whatsapp-marketing/admin/campaigns'),
+  getCampaign: (id) => api(`/whatsapp-marketing/admin/campaigns/${id}`),
+  createCampaign: (body) => api('/whatsapp-marketing/admin/campaigns', { method: 'POST', body }),
+  startCampaign: (id) => api(`/whatsapp-marketing/admin/campaigns/${id}/start`, { method: 'POST', body: {} }),
+  processBatch: (id) => api(`/whatsapp-marketing/admin/campaigns/${id}/process`, { method: 'POST', body: {} }),
+};
 export const shippingApi = { // Phase 9 (admin). admin() -> { couriers, rates, shipments }; create/update shipment -> { shipment, orderSync: { changed, message } }
   admin: () => api('/shipping/admin'),
   createCourier: (body) => api('/shipping/admin/couriers', { method: 'POST', body }),

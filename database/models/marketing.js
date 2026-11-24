@@ -68,6 +68,22 @@ const campaignRecipientSchema = new Schema({
 campaignRecipientSchema.index({ campaignId: 1, status: 1, createdAt: 1 });
 storeScoped(campaignRecipientSchema);
 
+const whatsappCampaignRecipientSchema = new Schema({
+  campaignId: { type: ObjectId, ref: 'Campaign', required: true, index: true },
+  contactType: { type: String, enum: ['customer', 'offerLead'], required: true },
+  contactId: { type: ObjectId, required: true },
+  phone: { type: String, required: true, trim: true },
+  name: { type: String, default: '' },
+  status: { type: String, enum: ['Pending', 'Sending', 'Sent', 'Failed', 'Skipped'], default: 'Pending', index: true },
+  attempts: { type: Number, default: 0 },
+  sentAt: Date,
+  messageId: String,
+  error: String,
+}, { timestamps: true });
+whatsappCampaignRecipientSchema.index({ campaignId: 1, status: 1, createdAt: 1 });
+whatsappCampaignRecipientSchema.index({ campaignId: 1, phone: 1 }, { unique: true });
+storeScoped(whatsappCampaignRecipientSchema);
+
 const offerLeadSchema = new Schema({
   email: { type: String, required: true, lowercase: true, trim: true },
   phone: { type: String, required: true, trim: true },
@@ -121,5 +137,6 @@ module.exports = {
   Coupon: model('Coupon', couponSchema), OfferLead: model('OfferLead', offerLeadSchema), AffiliatePartner: model('AffiliatePartner', affiliatePartnerSchema), FlashSale: model('FlashSale', flashSaleSchema),
   Campaign: model('Campaign', campaignSchema), CustomerEmail: model('CustomerEmail', customerEmailSchema),
   CampaignRecipient: model('CampaignRecipient', campaignRecipientSchema),
+  WhatsAppCampaignRecipient: model('WhatsAppCampaignRecipient', whatsappCampaignRecipientSchema),
   GiftCard: model('GiftCard', giftCardSchema), LoyaltyTransaction: model('LoyaltyTransaction', loyaltyTxSchema),
 };

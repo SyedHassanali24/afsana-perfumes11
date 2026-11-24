@@ -87,6 +87,7 @@ const checkoutBody = z.object({
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
   emailMarketingOptIn: z.boolean().optional().default(false),
+  whatsappMarketingOptIn: z.boolean().optional().default(false),
   whatsappOrderUpdatesOptIn: z.boolean().optional().default(false),
   couponCode: z.string().trim().max(40).optional(),
   referralCode: z.string().trim().max(30).optional(),
@@ -302,6 +303,16 @@ const emailCampaignBody = z.object({
 }).superRefine((v, ctx) => {
   if (v.ctaUrl && !v.ctaText) ctx.addIssue({ code: 'custom', path: ['ctaText'], message: 'Add button text for the CTA link.' });
 });
+
+const whatsappCampaignBody = z.object({
+  name: z.string().trim().min(2).max(100),
+  message: z.string().trim().min(5).max(500),
+  promoCode: z.string().trim().max(40).optional().default(''),
+  ctaUrl: z.string().trim().url().max(500)
+    .refine((v) => /^https:\/\/(?:www\.)?afsanaperfumes\.store(?:[/:?#]|$)/i.test(v), 'Use the official AFSANA shop domain')
+    .optional()
+    .default('https://afsanaperfumes.store/shop'),
+});
 // ---- finance & expenses (dates are Pakistan calendar days written YYYY-MM-DD) ----
 const FIN = require('../services/financeRules');
 const dayKey = z.string().trim().refine(FIN.isRealDate, 'Use a real date like 2026-10-31');
@@ -426,7 +437,7 @@ module.exports = {
   cmsBody, cmsPatch, cmsActiveBody, homepageSectionShape, homepageSectionPatch,
   couponBody, couponPatch, couponActiveBody, couponQuery,
   financeQuery, expenseBody, expensePatch, expenseQuery, manualJournalEntryBody, referralPartnerBody, referralPartnerPatch,
-  customerQuery, customerPatch, emailContactsQuery, emailMarketingSubscribeBody, emailCampaignBody,
+  customerQuery, customerPatch, emailContactsQuery, emailMarketingSubscribeBody, emailCampaignBody, whatsappCampaignBody,
   reviewBody, publicReviewsQuery, adminReviewsQuery, reviewStatusBody,
   courierBody, courierPatch, shippingRateBody, shippingRatePatch, shipmentBody, shipmentPatch,
   returnCreate, returnStatusBody, refundBody, returnsQuery, myReturnsQuery,
