@@ -309,7 +309,7 @@ const whatsappCampaignBody = z.object({
   message: z.string().trim().min(5).max(500),
   promoCode: z.string().trim().max(40).optional().default(''),
   ctaUrl: z.string().trim().url().max(500)
-    .refine((v) => /^https:\/\/(?:www\\.)?afsanaperfumes\\.store(?:[/:?#]|$)/i.test(v), 'Use the official AFSANA shop domain')
+    .refine((v) => /^https:\/\/(?:www\.)?afsanaperfumes\.store(?:[/:?#]|$)/i.test(v), 'Use the official AFSANA shop domain')
     .optional()
     .default('https://afsanaperfumes.store/shop'),
 });
