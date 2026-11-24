@@ -73,7 +73,7 @@ Create and get this template approved as **UTILITY** (English US):
 ### 3. Website admin alert — `afsana_site_alert`
 
 Body:
-`AFSANA website alert: {{1}}. {{2}}. Open dashboard: {{3}}`
+`AFSANA website alert: {{1}}. {{2}}. Open dashboard: {{3}}. Please review this alert.`
 
 Parameters are the alert title, a short detail, and the dashboard link.
 
