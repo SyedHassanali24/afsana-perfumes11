@@ -55,7 +55,7 @@ async function notifyAdmin({ type = 'security_alert', title, body = '', link = '
         language: process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US',
         parameters: [
           String(title || 'AFSANA website alert').slice(0, 160),
-          String(body || 'Open the AFSANA dashboard for details').replace(/[\\r\\n\\t]+/g, ' ').slice(0, 600),
+          String(body || 'Open the AFSANA dashboard for details').replace(/[\r\n\t]+/g, ' ').slice(0, 600),
           'https://afsanaperfumes.store' + safeLink,
         ],
       });
