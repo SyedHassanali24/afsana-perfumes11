@@ -74,7 +74,7 @@ export default function WhatsAppMarketingPage() {
 
       let batches = 0;
       while (current.status === 'Active' && !current.paused && (current.pendingCount || 0) > 0 && batches < 700) {
-        await sleep(4500);
+        await sleep(6000);
         current = await whatsappMarketingApi.processBatch(campaign.id);
         setProgress(current);
         batches += 1;
@@ -121,6 +121,20 @@ export default function WhatsAppMarketingPage() {
         <Metric icon={Users} label="Eligible WhatsApp audience" value={summaryQuery.loading ? '…' : audienceCount.toLocaleString('en-PK')} detail="Unique numbers with active marketing consent" />
         <Metric icon={MessageCircle} label="WhatsApp sender" value={senderReady ? 'Configured' : 'Setup required'} detail={senderReady ? 'Cloud API credentials are present' : 'Check Worker credentials before sending'} />
       </div>
+
+      <Card>
+        <div className="flex items-start gap-3">
+          <span className="rounded-xl bg-[#e7ead9] p-2 text-[#263e0e]"><ShieldCheck className="h-5 w-5" /></span>
+          <div>
+            <h2 className="text-sm font-semibold text-[#182308]">Automatic website alerts</h2>
+            <p className="mt-1 text-xs leading-5 text-[#5f654f]">
+              AFSANA dashboard alerts are automatically routed to the configured admin WhatsApp. New orders use
+              <strong> afsana_new_order_alert</strong>; low-stock, review, return and staff/profile alerts use the
+              approved UTILITY template <strong>afsana_site_alert</strong>. The existing dashboard bell and email alerts stay enabled.
+            </p>
+          </div>
+        </div>
+      </Card>
 
       {!senderReady && (
         <Card className="border border-amber-200">
