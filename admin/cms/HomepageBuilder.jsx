@@ -355,7 +355,8 @@ export default function HomepageBuilder() {
           const orderIndex = orderRows.findIndex((entry) => entry.id === item.id);
           const canReorder = activePage !== 'all' && !searchTerm.trim() && typeFilter === 'all';
           const title = item.title || config.eyebrow || meta?.label || item.type;
-          const cardItems = Array.isArray(config.items) ? config.items : parseItems(config.items);\n          const detail = config.subtitle || config.body || cardItems[0]?.text || cardItems[0]?.title || '';
+          const cardItems = Array.isArray(config.items) ? config.items : parseItems(config.items);
+          const detail = config.subtitle || config.body || cardItems[0]?.text || cardItems[0]?.title || '';
           return <article key={item.id} draggable={can('homepage.edit') && canReorder} onDragStart={() => setDragId(item.id)} onDragOver={(e) => { if (canReorder) e.preventDefault(); }} onDrop={() => reorder(dragId, item.id)} className="group flex flex-col gap-4 rounded-3xl border border-[#263e0e]/10 bg-white p-3 shadow-[var(--shadow-card)] transition hover:border-[#748e40]/40 hover:shadow-[var(--shadow-hover)] sm:flex-row sm:items-center sm:p-4">
             <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-2xl bg-[#f3f1e9] sm:h-28 sm:w-40">
               <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_35%,rgba(180,191,65,.18),transparent_55%),linear-gradient(145deg,#f3f1e9,#e8ede5)]"><div className="text-center text-[#526d35]"><PreviewIcon className="mx-auto h-8 w-8"/><span className="mt-2 block text-[9px] font-semibold uppercase tracking-[.18em]">{meta?.label || item.type}</span><span className="mt-1 block text-[8px] text-[#7b8375]">Section preview</span></div></div>
