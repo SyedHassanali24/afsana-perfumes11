@@ -14,12 +14,12 @@ const VIDEO_FILES = "afsana_video_files";
 const VIDEO_CHUNKS = "afsana_video_chunks";
 
 function isWhatsAppMarketingOptOut(value) {
-  const text = String(value || "").trim().toUpperCase().replace(/[.!?]+$/g, "").replace(/\\s+/g, " ");
+  const text = String(value || "").trim().toUpperCase().replace(/[.!?]+$/g, "").replace(/\s+/g, " ");
   return /^(?:STOP|STOP ALL|STOP OFFERS|STOP PROMOTIONS|UNSUBSCRIBE|CANCEL|END|QUIT)$/.test(text);
 }
 
 function whatsappPhoneTailRegex(value) {
-  const digits = String(value || "").replace(/\\D/g, "");
+  const digits = String(value || "").replace(/\D/g, "");
   const tail = digits.slice(-10);
   if (tail.length !== 10) return null;
   return new RegExp(tail.split("").join("[^0-9]*"));
