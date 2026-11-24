@@ -269,7 +269,7 @@ export default function HomepageBuilder() {
           <h2 className="mt-2 font-display text-3xl text-[#263e0e] sm:text-4xl">Your website, page by page.</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5f654f]">Choose a page, find its sections, and edit the content in one clear workspace. Each page keeps its own sections and order.</p>
         </div>
-        {can('homepage.create') && <Button icon={Plus} onClick={() => open(null, activePageConfig.defaultSlot)}>Add section</Button>}
+        {can('homepage.create') && activePage !== 'all' && <Button icon={Plus} onClick={() => open(null, activePageConfig.defaultSlot)}>Add section</Button>}
       </div>
       <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
         <div className="rounded-2xl border border-[#263e0e]/10 bg-white p-3 sm:p-4"><p className="text-[10px] uppercase tracking-[.13em] text-[#748e40]">Total sections</p><p className="mt-1 font-display text-2xl text-[#263e0e] sm:text-3xl">{rows.length}</p></div>
@@ -342,7 +342,7 @@ export default function HomepageBuilder() {
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#eef2e5] text-[#526d35]"><Layers className="h-6 w-6"/></span>
           <h4 className="mt-4 font-display text-2xl text-[#263e0e]">{searchTerm || typeFilter !== 'all' ? 'No matching sections' : 'No sections on ' + activePageConfig.label + ' yet'}</h4>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#687363]">{searchTerm || typeFilter !== 'all' ? 'Try another search or clear the filters. Your other page content remains untouched.' : 'Add a section here and it will be assigned to this page—not mixed into another page.'}</p>
-          {searchTerm || typeFilter !== 'all' ? <Button variant="secondary" className="mt-4" onClick={() => { setSearchTerm(''); setTypeFilter('all'); }}>Clear filters</Button> : can('homepage.create') && <Button icon={Plus} className="mt-4" onClick={() => open(null, activePageConfig.defaultSlot)}>Add first section</Button>}
+          {searchTerm || typeFilter !== 'all' ? <Button variant="secondary" className="mt-4" onClick={() => { setSearchTerm(''); setTypeFilter('all'); }}>Clear filters</Button> : can('homepage.create') && activePage !== 'all' ? <Button icon={Plus} className="mt-4" onClick={() => open(null, activePageConfig.defaultSlot)}>Add first section</Button> : <p className="mt-4 text-xs font-medium text-[#748e40]">Choose a specific page to add a section there.</p>}
         </div>}
 
         {!loading && !error && visibleRows.map((item) => {
@@ -355,7 +355,7 @@ export default function HomepageBuilder() {
           const orderIndex = orderRows.findIndex((entry) => entry.id === item.id);
           const canReorder = activePage !== 'all' && !searchTerm.trim() && typeFilter === 'all';
           const title = item.title || config.eyebrow || meta?.label || item.type;
-          const detail = config.subtitle || config.body || (Array.isArray(config.items) ? config.items[0]?.text : '') || '';
+          const cardItems = Array.isArray(config.items) ? config.items : parseItems(config.items);\n          const detail = config.subtitle || config.body || cardItems[0]?.text || cardItems[0]?.title || '';
           return <article key={item.id} draggable={can('homepage.edit') && canReorder} onDragStart={() => setDragId(item.id)} onDragOver={(e) => { if (canReorder) e.preventDefault(); }} onDrop={() => reorder(dragId, item.id)} className="group flex flex-col gap-4 rounded-3xl border border-[#263e0e]/10 bg-white p-3 shadow-[var(--shadow-card)] transition hover:border-[#748e40]/40 hover:shadow-[var(--shadow-hover)] sm:flex-row sm:items-center sm:p-4">
             <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-2xl bg-[#f3f1e9] sm:h-28 sm:w-40">
               <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_35%,rgba(180,191,65,.18),transparent_55%),linear-gradient(145deg,#f3f1e9,#e8ede5)]"><div className="text-center text-[#526d35]"><PreviewIcon className="mx-auto h-8 w-8"/><span className="mt-2 block text-[9px] font-semibold uppercase tracking-[.18em]">{meta?.label || item.type}</span><span className="mt-1 block text-[8px] text-[#7b8375]">Section preview</span></div></div>
