@@ -3,7 +3,7 @@
 const { recipientDigits } = require('./whatsappService');
 
 function isMarketingOptOutMessage(value) {
-  const text = String(value || '').trim().toUpperCase().replace(/[.!?]+$/g, '').replace(/\\s+/g, ' ');
+  const text = String(value || '').trim().toUpperCase().replace(/[.!?]+$/g, '').replace(/\s+/g, ' ');
   return /^(?:STOP|STOP ALL|STOP OFFERS|STOP PROMOTIONS|UNSUBSCRIBE|CANCEL|END|QUIT)$/.test(text);
 }
 
