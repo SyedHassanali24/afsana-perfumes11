@@ -56,7 +56,7 @@ const CMS_PAGE_GROUPS = [
   { key: 'cart', label: 'Cart', path: '/cart', description: 'Content around the shopping cart page.', icon: ShoppingCart, defaultSlot: 'cart-before', preview: true },
   { key: 'checkout', label: 'Checkout', path: '/checkout', description: 'Content around the secure checkout page.', icon: CreditCard, defaultSlot: 'checkout-before', preview: true },
   { key: 'track', label: 'Track order', path: '/track', description: 'Content around the order tracking page.', icon: Truck, defaultSlot: 'track-before', preview: true },
-  { key: 'shared', label: 'Site-wide', description: 'Shared navigation, header and footer content.', icon: Globe2, defaultSlot: 'site-header-after' },
+  { key: 'shared', label: 'Site-wide', path: '/', description: 'Shared navigation, header and footer content.', icon: Globe2, defaultSlot: 'site-header-after', preview: true },
 ];
 
 const sectionSlot = (item) => {
@@ -100,7 +100,7 @@ const sectionPreviewImage = (item) => {
     config.imageUrl, config.desktopImageUrl, config.mobileImageUrl, config.posterUrl,
     config.characterImageUrl, config.thumbnailUrl, config.journalImage1Url,
     config.journalImage2Url, config.journalImage3Url,
-    ...entries.map((entry) => entry?.image || entry?.imageUrl || entry?.posterUrl || ''),
+    ...entries.map((entry) => entry?.image || entry?.imageUrl || entry?.posterUrl || (item?.type === 'video_grid' ? entry?.link : '') || ''),
   ];
   return candidates.find((value) => {
     if (typeof value !== 'string' || !value.trim()) return false;
@@ -358,7 +358,8 @@ export default function HomepageBuilder() {
           const detail = config.subtitle || config.body || (Array.isArray(config.items) ? config.items[0]?.text : '') || '';
           return <article key={item.id} draggable={can('homepage.edit') && canReorder} onDragStart={() => setDragId(item.id)} onDragOver={(e) => { if (canReorder) e.preventDefault(); }} onDrop={() => reorder(dragId, item.id)} className="group flex flex-col gap-4 rounded-3xl border border-[#263e0e]/10 bg-white p-3 shadow-[var(--shadow-card)] transition hover:border-[#748e40]/40 hover:shadow-[var(--shadow-hover)] sm:flex-row sm:items-center sm:p-4">
             <div className="relative h-36 w-full shrink-0 overflow-hidden rounded-2xl bg-[#f3f1e9] sm:h-28 sm:w-40">
-              {image ? <img src={image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover"/> : <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_50%_35%,rgba(180,191,65,.18),transparent_55%),linear-gradient(145deg,#f3f1e9,#e8ede5)]"><div className="text-center text-[#526d35]"><PreviewIcon className="mx-auto h-8 w-8"/><span className="mt-2 block text-[9px] font-semibold uppercase tracking-[.18em]">{meta?.label || item.type}</span><span className="mt-1 block text-[8px] text-[#7b8375]">Section preview</span></div></div>}
+              <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_35%,rgba(180,191,65,.18),transparent_55%),linear-gradient(145deg,#f3f1e9,#e8ede5)]"><div className="text-center text-[#526d35]"><PreviewIcon className="mx-auto h-8 w-8"/><span className="mt-2 block text-[9px] font-semibold uppercase tracking-[.18em]">{meta?.label || item.type}</span><span className="mt-1 block text-[8px] text-[#7b8375]">Section preview</span></div></div>
+              {image && <img src={image} alt="" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="absolute inset-0 h-full w-full object-cover"/>}
               <span className="absolute left-2 top-2 rounded-lg bg-white/90 px-2 py-1 text-[9px] font-bold text-[#526d35]">#{String(orderIndex + 1).padStart(2,'0')}</span>
             </div>
             <div className="min-w-0 flex-1">
