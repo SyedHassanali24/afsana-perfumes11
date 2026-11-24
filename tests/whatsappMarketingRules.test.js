@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const { isMarketingOptOutMessage, phoneTailRegex } = require('../services/whatsappMarketingRules');
 
 test('WhatsApp marketing opt-out recognises explicit stop phrases only', () => {
-  for (const phrase of ['STOP', 'stop offers', 'UNSUBSCRIBE', 'CANCEL', 'STOP PROMOTIONS']) {
+  for (const phrase of ['STOP', 'stop offers', 'UNSUBSCRIBE', 'CANCEL', 'STOP PROMOTIONS', ' STOP   ALL ']) {
     assert.equal(isMarketingOptOutMessage(phrase), true, phrase);
   }
   assert.equal(isMarketingOptOutMessage('Please stop sending me offers!'), false);
