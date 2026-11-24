@@ -89,6 +89,10 @@ function sectionPageKey(section) {
   if (slot === 'collection-after' || slot.startsWith('collection-after-')) return 'collection_after';
   if (slot === 'contact-before' || slot.startsWith('contact-before-')) return 'contact_before';
   if (slot === 'contact-after' || slot.startsWith('contact-after-')) return 'contact_after';
+  for (const page of ['product','cart','checkout','track']) {
+    if (slot === `${page}-before` || slot.startsWith(`${page}-before-`)) return `${page}_before`;
+    if (slot === `${page}-after` || slot.startsWith(`${page}-after-`)) return `${page}_after`;
+  }
   const prefix = slot.split('-')[0];
   if (['home', 'house', 'journal', 'gifting', 'discover'].includes(prefix)) return prefix;
   return 'home';
