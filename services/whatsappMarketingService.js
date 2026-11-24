@@ -12,7 +12,7 @@ const MAX_RECIPIENTS = 5000;
 const BATCH_SIZE = 8;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const cleanText = (value, max = 500) => String(value == null ? '' : value)
-  .replace(/[\\r\\n\\t]+/g, ' ').trim().slice(0, max);
+  .replace(/[\r\n\t]+/g, ' ').trim().slice(0, max);
 
 async function eligibleAudience() {
   const [customers, leads] = await Promise.all([
