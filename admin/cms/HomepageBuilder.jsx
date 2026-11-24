@@ -55,7 +55,13 @@ const CMS_PAGE_GROUPS = [
   { key: 'shared', label: 'Site-wide', description: 'Shared navigation, header and footer content.', icon: Globe2, defaultSlot: 'site-header-after' },
 ];
 
-const sectionSlot = (item) => String(item?.config?.templateSlot || 'home').trim().toLowerCase() || 'home';
+const sectionSlot = (item) => {
+  const type = String(item?.type || '');
+  if (type === 'footer_showcase' || type === 'custom_footer') return 'site-footer';
+  if (type === 'nav_menu') return 'site-navigation';
+  if (type === 'whatsapp_float' || type === 'ai_concierge') return 'site-footer-before';
+  return String(item?.config?.templateSlot || 'home').trim().toLowerCase() || 'home';
+};
 const sectionPageGroup = (item) => {
   const slot = sectionSlot(item);
   if (slot === 'site-navigation' || slot === 'site-header-after' || slot.startsWith('site-header-after-') || slot === 'site-footer-before' || slot.startsWith('site-footer-before-') || slot === 'site-footer') return 'shared';
@@ -180,6 +186,9 @@ export default function HomepageBuilder() {
   const open = (item, targetSlot = CMS_PAGE_GROUPS.find((page) => page.key === activePage)?.defaultSlot || 'home') => {
     if (item) {
       const cfg = { ...defaults(item.type), ...(item.config || {}) };
+      if (['footer_showcase','custom_footer'].includes(item.type)) cfg.templateSlot = 'site-footer';
+      if (item.type === 'nav_menu') cfg.templateSlot = 'site-navigation';
+      if (['whatsapp_float','ai_concierge'].includes(item.type)) cfg.templateSlot = 'site-footer-before';
       if (item.type === 'testimonials') cfg.items = Array.isArray(cfg.items) ? cfg.items : parseTestimonialItems(cfg.items);
       else cfg.items = itemText(cfg.items);
       setForm({ type: item.type, title: item.title || '', config: cfg, isEnabled: item.isEnabled !== false });
