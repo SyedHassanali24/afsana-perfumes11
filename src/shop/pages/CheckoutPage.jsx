@@ -34,6 +34,7 @@ export default function CheckoutPage() {
   const quoteUpdating = loading || !!(q && String(q.delivery?.city || '').trim().toLowerCase() !== f.city.trim().toLowerCase());
   const [pay, setPay] = useState('COD');
   const [whatsappMarketingOptIn, setWhatsappMarketingOptIn] = useState(false);
+  const [whatsappOrderUpdatesOptIn, setWhatsappOrderUpdatesOptIn] = useState(false);
   const [emailMarketingOptIn, setEmailMarketingOptIn] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -62,7 +63,7 @@ export default function CheckoutPage() {
     setErrors({}); setFormError('');
     const checkoutPayload = {
       items, couponCode: couponCode || undefined, referralCode: getReferralCode() || undefined,
-      whatsappMarketingOptIn, emailMarketingOptIn, paymentMethod: pay, turnstileToken,
+      whatsappMarketingOptIn, whatsappOrderUpdatesOptIn, emailMarketingOptIn, paymentMethod: pay, turnstileToken,
       customer: { name: f.name.trim(), phone: f.phone.trim(), email: f.email.trim() || undefined },
       shippingAddress: { fullName: f.name.trim(), phone: f.phone.trim(), line1: f.line1.trim(), line2: f.line2.trim() || undefined, city: f.city.trim(), postalCode: f.postalCode.trim() || undefined },
     };
@@ -103,6 +104,10 @@ export default function CheckoutPage() {
                   <Field label="Phone" error={errors['customer.phone']} hint="We call or message this number about your order."><Input required inputMode="tel" autoComplete="tel" value={f.phone} onChange={set('phone')} placeholder="0300 1234567" error={errors['customer.phone']} /></Field>
                   <Field label="Email" error={errors['customer.email']}><Input required type="email" autoComplete="email" value={f.email} onChange={set('email')} placeholder="you@example.com" error={errors['customer.email']} /></Field>
                 </div>
+                <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
+                  <input type="checkbox" checked={whatsappOrderUpdatesOptIn} onChange={(e) => setWhatsappOrderUpdatesOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
+                  <span><strong className="font-medium text-[#263e0e]">Send my order confirmation on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. AFSANA will use this number for this order confirmation only. Marketing offers are a separate choice.</span></span>
+                </label>
                 <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
                   <input type="checkbox" checked={whatsappMarketingOptIn} onChange={(e) => setWhatsappMarketingOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
                   <span><strong className="font-medium text-[#263e0e]">Send my Afsana first-purchase reward on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. You agree to receive your welcome coupon and occasional Afsana offers on this number. Contact Afsana support to withdraw consent.</span></span>
