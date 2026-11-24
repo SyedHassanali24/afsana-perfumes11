@@ -214,7 +214,20 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
       if (!usedPartner) throw E.badRequest('This referral code has reached its usage limit.');
     }
     await Payment.create([{ orderId: o._id, method: input.paymentMethod, amount: total, status: 'Pending' }], { session });
-    await Customer.updateOne({ _id: customer._id }, { $inc: { 'stats.ordersCount': 1 }, $set: { 'stats.lastOrderAt': new Date() } }, { session });
+    const customerSet = { 'stats.lastOrderAt': new Date() };
+    if (input.whatsappMarketingOptIn === true) {
+      Object.assign(customerSet, {
+        whatsappMarketingConsent: true,
+        whatsappMarketingConsentAt: new Date(),
+        whatsappMarketingConsentSource: 'checkout',
+        whatsappMarketingUnsubscribedAt: null,
+      });
+    }
+    await Customer.updateOne(
+      { _id: customer._id },
+      { $inc: { 'stats.ordersCount': 1 }, $set: customerSet },
+      { session },
+    );
 
     // Keep every checkout email in the private archive. Marketing permission is only
     // promoted when the shopper actively ticks the separate email-offers checkbox.
