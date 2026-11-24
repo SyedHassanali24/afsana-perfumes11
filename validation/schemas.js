@@ -87,6 +87,7 @@ const checkoutBody = z.object({
   shippingAddress: z.object({ fullName: z.string().trim().max(100).optional(), line1: z.string().trim().min(5).max(200), line2: z.string().max(200).optional(), city: z.string().trim().min(2).max(80), postalCode: z.string().max(12).optional(), phone: phone.optional() }),
   paymentMethod: z.enum(C.PAYMENT_METHODS),
   emailMarketingOptIn: z.boolean().optional().default(false),
+  whatsappOrderUpdatesOptIn: z.boolean().optional().default(false),
   couponCode: z.string().trim().max(40).optional(),
   referralCode: z.string().trim().max(30).optional(),
 });
