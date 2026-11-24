@@ -8,14 +8,14 @@ import ReviewsManager from "./ReviewsManager";
 // /admin/cms — Banners, FAQs and Announcements as tabs; a tab shows only if the role can view that module.
 export default function CmsPage() {
   const { can } = useAuth();
-  const tabs = [can('homepage.view') ? { key: 'homepage', tab: 'Homepage builder', module: 'homepage' } : null, can('homepage.view') ? { key: 'reviews', tab: 'Reviews Manager', module: 'homepage' } : null, ...RESOURCE_KEYS.map((k) => SECTIONS[k]).filter((s) => can(`${s.module}.view`))].filter(Boolean);
+  const tabs = [can('homepage.view') ? { key: 'homepage', tab: 'Page workspace', module: 'homepage' } : null, can('homepage.view') ? { key: 'reviews', tab: 'Reviews Manager', module: 'homepage' } : null, ...RESOURCE_KEYS.map((k) => SECTIONS[k]).filter((s) => can(`${s.module}.view`))].filter(Boolean);
   const [active, setActive] = useState(tabs[0]?.key);
   const section = tabs.find((t) => t.key === active) || tabs[0];
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl text-[#182308]">Content</h1>
-        <p className="text-sm text-[#182308]-muted mt-1">Manage page layouts, shared customer testimonials, banners, FAQs and announcements.</p>
+        <h1 className="font-display text-2xl text-[#182308]">Website content studio</h1>
+        <p className="text-sm text-[#182308]-muted mt-1">Manage each website page separately, plus shared reviews, banners, FAQs and announcements.</p>
       </div>
       {!section ? <p className="text-sm text-[#182308]-muted">You do not have access to any content sections.</p> : (<>
         <div className="flex gap-2 overflow-x-auto border-b border-[#263e0e]/10" role="tablist">

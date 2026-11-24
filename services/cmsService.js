@@ -83,10 +83,16 @@ function sectionPageKey(section) {
   const slot = String(section.config?.templateSlot || '').trim().toLowerCase();
   if (slot === 'site-navigation' || type === 'nav_menu') return 'site_navigation';
   if (slot === 'site-footer' || type === 'custom_footer' || type === 'footer_showcase') return 'site_footer';
-  if (slot.startsWith('site-footer-before-') || ['whatsapp_float', 'ai_concierge'].includes(type)) return 'site_footer_before';
+  if (slot === 'site-footer-before' || slot.startsWith('site-footer-before-') || ['whatsapp_float', 'ai_concierge'].includes(type)) return 'site_footer_before';
   if (slot.startsWith('site-header-after-') || slot === 'site-header-after') return 'site_header_after';
   if (slot === 'collection-before' || slot.startsWith('collection-before-')) return 'collection_before';
   if (slot === 'collection-after' || slot.startsWith('collection-after-')) return 'collection_after';
+  if (slot === 'contact-before' || slot.startsWith('contact-before-')) return 'contact_before';
+  if (slot === 'contact-after' || slot.startsWith('contact-after-')) return 'contact_after';
+  for (const page of ['product','cart','checkout','track']) {
+    if (slot === `${page}-before` || slot.startsWith(`${page}-before-`)) return `${page}_before`;
+    if (slot === `${page}-after` || slot.startsWith(`${page}-after-`)) return `${page}_after`;
+  }
   const prefix = slot.split('-')[0];
   if (['home', 'house', 'journal', 'gifting', 'discover'].includes(prefix)) return prefix;
   return 'home';

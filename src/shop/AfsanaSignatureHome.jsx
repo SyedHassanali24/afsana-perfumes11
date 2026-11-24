@@ -1104,7 +1104,7 @@ function readCmsPreview() {
     const query = new URLSearchParams(window.location.search);
     if (query.get('afsanaPreview') !== '1') return null;
     const current = JSON.parse(localStorage.getItem('afsana_cms_preview_v3') || 'null');
-    if (current && Array.isArray(current.sections)) return current;
+    if (current && (Array.isArray(current.sections) || (current.layouts && typeof current.layouts === 'object'))) return current;
     const legacy = JSON.parse(localStorage.getItem('afsana_cms_preview_v1') || 'null');
     return legacy && Array.isArray(legacy.sections) ? { pageKey: 'home', sections: legacy.sections } : null;
   } catch { return null; }

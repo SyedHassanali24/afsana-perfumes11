@@ -16,3 +16,22 @@ test('CMS API accepts all premium homepage section types offered by the builder'
     assert.equal(homepageSectionShape.safeParse({ type, title: '', config: {}, sortOrder: 0, isEnabled: true }).success, true, type);
   }
 });
+
+const { sectionPageKey } = require('../services/cmsService');
+
+test('CMS routes Contact page sections into independent before and after areas', () => {
+  assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'contact-before' } }), 'contact_before');
+  assert.equal(sectionPageKey({ type: 'rich_text', config: { templateSlot: 'contact-after' } }), 'contact_after');
+});
+
+test('CMS keeps existing page routing and shared footer section behaviour', () => {
+  assert.equal(sectionPageKey({ type: 'post_grid', config: { templateSlot: 'journal' } }), 'journal');
+  assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'collection-before' } }), 'collection_before');
+  assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'product-after' } }), 'product_after');
+  assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'cart-before' } }), 'cart_before');
+  assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'checkout-after' } }), 'checkout_after');
+  assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'track-before' } }), 'track_before');
+  assert.equal(sectionPageKey({ type: 'footer_showcase', config: { templateSlot: 'home' } }), 'site_footer');
+  assert.equal(sectionPageKey({ type: 'rich_text', config: { templateSlot: 'site-footer-before' } }), 'site_footer_before');
+  assert.equal(sectionPageKey({ type: 'hero', config: {} }), 'home');
+});
