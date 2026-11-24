@@ -179,6 +179,7 @@ async function processBatch(ctx, id) {
   }
 
   let paused = false;
+  let pauseReason = '';
   for (let index = 0; index < BATCH_SIZE; index += 1) {
     const staleBefore = new Date(Date.now() - 5 * 60 * 1000);
     const recipient = await WhatsAppCampaignRecipient.findOneAndUpdate(
@@ -221,10 +222,18 @@ async function processBatch(ctx, id) {
     } catch (error) {
       const reason = cleanText(error?.message || error, 220);
       const rateLimited = /HTTP 429|80008|130429|131056|rate.?limit/i.test(reason);
+      const providerSetupError = /HTTP (400|401|403)|132000|132001|132012|132015|131047|template/i.test(reason);
+      const shouldPause = rateLimited || providerSetupError;
       await WhatsAppCampaignRecipient.updateOne({ _id: recipient._id }, {
-        $set: { status: rateLimited ? 'Pending' : 'Failed', error: reason },
+        $set: { status: shouldPause ? 'Pending' : 'Failed', error: reason },
       });
-      if (rateLimited) { paused = true; break; }
+      if (shouldPause) {
+        paused = true;
+        pauseReason = rateLimited
+          ? 'Meta is rate limiting this campaign. It has been paused safely; resume later.'
+          : 'Meta rejected the template or sender setup. Check that the template is approved and the sender is active, then resume this campaign.';
+        break;
+      }
     }
     if (index < BATCH_SIZE - 1) await sleep(180);
   }
@@ -236,7 +245,7 @@ async function processBatch(ctx, id) {
       newValue: { sent: result.sentCount, failed: result.failedCount, skipped: result.skippedCount, pending: result.pendingCount },
     }).catch(() => {});
   }
-  return { ...result, ...(paused ? { paused: true, pauseReason: 'Meta is rate limiting the campaign. It has been paused safely; resume later from campaign history.' } : {}) };
+  return { ...result, ...(paused ? { paused: true, pauseReason } : {}) };
 }
 
 async function getCampaign(id) {
