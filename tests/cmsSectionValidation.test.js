@@ -28,5 +28,6 @@ test('CMS keeps existing page routing and shared footer section behaviour', () =
   assert.equal(sectionPageKey({ type: 'post_grid', config: { templateSlot: 'journal' } }), 'journal');
   assert.equal(sectionPageKey({ type: 'hero', config: { templateSlot: 'collection-before' } }), 'collection_before');
   assert.equal(sectionPageKey({ type: 'footer_showcase', config: { templateSlot: 'home' } }), 'site_footer');
+  assert.equal(sectionPageKey({ type: 'rich_text', config: { templateSlot: 'site-footer-before' } }), 'site_footer_before');
   assert.equal(sectionPageKey({ type: 'hero', config: {} }), 'home');
 });
