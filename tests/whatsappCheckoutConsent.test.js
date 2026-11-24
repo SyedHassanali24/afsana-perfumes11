@@ -28,3 +28,11 @@ test('checkout: separate WhatsApp marketing consent is preserved', () => {
   assert.equal(parsed.whatsappMarketingOptIn, true);
   assert.equal(parsed.whatsappOrderUpdatesOptIn, false);
 });
+
+test('WhatsApp campaign: defaults the AFSANA shop link and rejects external domains', () => {
+  const parsed = S.whatsappCampaignBody.parse({ name: 'Weekend offer', message: 'Save on selected scents.' });
+  assert.equal(parsed.ctaUrl, 'https://afsanaperfumes.store/shop');
+  assert.throws(() => S.whatsappCampaignBody.parse({
+    name: 'External link', message: 'A special offer for you.', ctaUrl: 'https://example.com/offer',
+  }));
+});
