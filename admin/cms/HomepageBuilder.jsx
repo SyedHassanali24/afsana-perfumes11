@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles, ArrowUp, ArrowDown, Copy, LayoutGrid, AlignLeft, AlignCenter, AlignRight, Search, Home, ShoppingBag, Compass, BookOpen, Building2, Gift, Mail, Globe2, Layers } from 'lucide-react';
+import { GripVertical, Pencil, Plus, Power, Trash2, Video, Image as ImageIcon, Sparkles, ArrowUp, ArrowDown, Copy, LayoutGrid, AlignLeft, AlignCenter, AlignRight, Search, Home, ShoppingBag, Compass, BookOpen, Building2, Gift, Mail, Globe2, Layers, ShoppingCart, CreditCard, Truck } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Drawer from '../components/Drawer';
@@ -52,6 +52,10 @@ const CMS_PAGE_GROUPS = [
   { key: 'house', label: 'The house', path: '/about', description: 'The House story, brand values and editorial sections.', icon: Building2, defaultSlot: 'house', preview: true },
   { key: 'gifting', label: 'Gifting', path: '/gifting', description: 'Gift collections, guidance and gifting stories.', icon: Gift, defaultSlot: 'gifting', preview: true },
   { key: 'contact', label: 'Contact', path: '/contact', description: 'Content placed before and after the contact form.', icon: Mail, defaultSlot: 'contact-before', preview: true },
+  { key: 'product', label: 'Product details', description: 'Shared sections above and below every product detail page.', icon: ShoppingBag, defaultSlot: 'product-before' },
+  { key: 'cart', label: 'Cart', path: '/cart', description: 'Content around the shopping cart page.', icon: ShoppingCart, defaultSlot: 'cart-before', preview: true },
+  { key: 'checkout', label: 'Checkout', path: '/checkout', description: 'Content around the secure checkout page.', icon: CreditCard, defaultSlot: 'checkout-before', preview: true },
+  { key: 'track', label: 'Track order', path: '/track', description: 'Content around the order tracking page.', icon: Truck, defaultSlot: 'track-before', preview: true },
   { key: 'shared', label: 'Site-wide', description: 'Shared navigation, header and footer content.', icon: Globe2, defaultSlot: 'site-header-after' },
 ];
 
@@ -67,6 +71,7 @@ const sectionPageGroup = (item) => {
   if (slot === 'site-navigation' || slot === 'site-header-after' || slot.startsWith('site-header-after-') || slot === 'site-footer-before' || slot.startsWith('site-footer-before-') || slot === 'site-footer') return 'shared';
   if (slot === 'collection-before' || slot.startsWith('collection-before-') || slot === 'collection-after' || slot.startsWith('collection-after-')) return 'collection';
   if (slot === 'contact-before' || slot.startsWith('contact-before-') || slot === 'contact-after' || slot.startsWith('contact-after-')) return 'contact';
+  for (const page of ['product','cart','checkout','track']) if (slot.startsWith(page + '-before') || slot.startsWith(page + '-after')) return page;
   if (slot === 'discover' || slot.startsWith('discover-')) return 'discover';
   if (slot === 'journal' || slot.startsWith('journal-')) return 'journal';
   if (slot === 'house' || slot.startsWith('house-')) return 'house';
@@ -79,6 +84,10 @@ const sectionSlotLabel = (item) => {
     home: 'Home page', discover: 'Scent finder page', journal: 'Journal page', house: 'The House page', gifting: 'Gifting page',
     'collection-before': 'Collection · Above products', 'collection-after': 'Collection · Below products',
     'contact-before': 'Contact · Above form', 'contact-after': 'Contact · Below form',
+    'product-before': 'Product · Above details', 'product-after': 'Product · Below details',
+    'cart-before': 'Cart · Above cart', 'cart-after': 'Cart · Below cart',
+    'checkout-before': 'Checkout · Above form', 'checkout-after': 'Checkout · Below form',
+    'track-before': 'Order tracking · Above form', 'track-after': 'Order tracking · Below form',
     'site-navigation': 'Shared · Navigation', 'site-header-after': 'Shared · Below navigation',
     'site-footer-before': 'Shared · Above footer', 'site-footer': 'Shared · Footer',
   };
@@ -121,6 +130,10 @@ const previewLayoutKey = (item) => {
   if (slot.startsWith('collection-after')) return 'collection_after';
   if (slot.startsWith('contact-before')) return 'contact_before';
   if (slot.startsWith('contact-after')) return 'contact_after';
+  for (const page of ['product','cart','checkout','track']) {
+    if (slot.startsWith(page + '-before')) return page + '_before';
+    if (slot.startsWith(page + '-after')) return page + '_after';
+  }
   if (slot === 'site-navigation') return 'site_navigation';
   if (slot === 'site-header-after') return 'site_header_after';
   if (slot.startsWith('site-footer-before')) return 'site_footer_before';
@@ -392,6 +405,14 @@ export default function HomepageBuilder() {
             <option value="gifting">Gifting page</option>
             <option value="contact-before">Contact page — above the form</option>
             <option value="contact-after">Contact page — below the form</option>
+            <option value="product-before">Product page — above details</option>
+            <option value="product-after">Product page — below details</option>
+            <option value="cart-before">Cart page — above cart</option>
+            <option value="cart-after">Cart page — below cart</option>
+            <option value="checkout-before">Checkout page — above form</option>
+            <option value="checkout-after">Checkout page — below form</option>
+            <option value="track-before">Track order — above form</option>
+            <option value="track-after">Track order — below form</option>
             <option value="discover">Scent finder page</option>
             <option value="site-navigation">Shared — navigation</option>
             <option value="site-header-after">Shared — below the navigation</option>
