@@ -119,7 +119,7 @@ const sectionTypeKind = (type = '') => {
 const sectionSearchText = (item) => {
   const config = item?.config || {};
   const meta = HOMEPAGE_SECTION_TYPES.find((entry) => entry.key === item?.type);
-  const values = [item?.title, item?.type, meta?.label, sectionSlotLabel(item), config.eyebrow, config.subtitle, config.body, config.buttonText, config.buttonLink];
+  const values = [item?.title, item?.type, meta?.label, sectionSlotLabel(item), config.eyebrow, config.subtitle, config.body, config.description, config.label, config.name, config.buttonText, config.buttonLink];
   const entries = Array.isArray(config.items) ? config.items : parseItems(config.items);
   entries.forEach((entry) => values.push(entry?.title, entry?.text, entry?.name, entry?.product, entry?.link));
   return values.filter(Boolean).join(' ').toLowerCase();
@@ -389,7 +389,7 @@ export default function HomepageBuilder() {
         })}
       </main>
     </div>
-    <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit homepage section' : 'Add homepage section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
+    <Drawer open={drawer.open} onClose={close} title={drawer.item ? 'Edit page section' : 'Add page section'} footer={<><Button variant="secondary" type="button" onClick={close}>Cancel</Button><Button type="submit" form="homepage-section-form" disabled={busy}>{busy ? 'Saving…' : 'Save section'}</Button></>}>
       <form id="homepage-section-form" onSubmit={save} className="space-y-4">
         <Field label="Section type"><Select value={form.type} disabled={!!drawer.item} onChange={(e) => setForm((s) => ({ ...s, type: e.target.value, config: { ...defaults(e.target.value), templateSlot: s.config.templateSlot || activePageConfig.defaultSlot } }))}>{HOMEPAGE_SECTION_TYPES.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}</Select></Field>
         {form.type === 'testimonials'
@@ -502,6 +502,6 @@ export default function HomepageBuilder() {
         <Check label="Show this section on the storefront" checked={form.isEnabled} onChange={(v) => set('isEnabled', v)} />
       </form>
     </Drawer>
-    <ConfirmDialog open={!!del} danger title="Delete this section?" message="The section will disappear from the homepage. You can add another section later." confirmLabel="Delete" onClose={() => setDel(null)} onConfirm={async () => { await api.remove(del.id); setDel(null); setNotice('Section deleted.'); reload(); }} />
+    <ConfirmDialog open={!!del} danger title="Delete this section?" message="The section will no longer appear on its assigned page. You can add another section later." confirmLabel="Delete" onClose={() => setDel(null)} onConfirm={async () => { await api.remove(del.id); setDel(null); setNotice('Section deleted.'); reload(); }} />
   </div>;
 }
