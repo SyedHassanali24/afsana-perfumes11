@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageCircle, RefreshCw, Send, Users, ShieldCheck, Tag, Link2 } from 'lucide-react';
+import { MessageCircle, RefreshCw, Send, Users, Tag } from 'lucide-react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import StatusPill from '../components/StatusPill';
