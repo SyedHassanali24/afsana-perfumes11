@@ -87,6 +87,8 @@ function sectionPageKey(section) {
   if (slot.startsWith('site-header-after-') || slot === 'site-header-after') return 'site_header_after';
   if (slot === 'collection-before' || slot.startsWith('collection-before-')) return 'collection_before';
   if (slot === 'collection-after' || slot.startsWith('collection-after-')) return 'collection_after';
+  if (slot === 'contact-before' || slot.startsWith('contact-before-')) return 'contact_before';
+  if (slot === 'contact-after' || slot.startsWith('contact-after-')) return 'contact_after';
   const prefix = slot.split('-')[0];
   if (['home', 'house', 'journal', 'gifting', 'discover'].includes(prefix)) return prefix;
   return 'home';
