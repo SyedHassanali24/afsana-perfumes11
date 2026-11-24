@@ -7,15 +7,15 @@ const DEFAULT_LANGUAGE = 'en_US';
 
 function recipientDigits(value) {
   const normalized = normalizePhone(String(value || '').trim());
-  const digits = normalized.replace(/\\D/g, '');
-  if (!/^[1-9]\\d{7,14}$/.test(digits)) {
+  const digits = normalized.replace(/\D/g, '');
+  if (!/^[1-9]\d{7,14}$/.test(digits)) {
     throw new Error('WhatsApp recipient phone number is invalid.');
   }
   return digits;
 }
 
 function templateText(value) {
-  return String(value == null ? '' : value).replace(/[\\r\\n\\t]+/g, ' ').trim().slice(0, 1024) || '—';
+  return String(value == null ? '' : value).replace(/[\r\n\t]+/g, ' ').trim().slice(0, 1024) || '—';
 }
 
 /**
@@ -38,7 +38,7 @@ async function sendWhatsAppTemplate(
   const name = String(templateName || '').trim();
   if (!/^[a-z0-9_]{3,80}$/.test(name)) throw new Error('WhatsApp message template is not configured.');
   const version = String(env.WHATSAPP_API_VERSION || DEFAULT_API_VERSION).trim();
-  if (!/^v\\d+\\.\\d+$/.test(version)) throw new Error('WhatsApp API version is invalid.');
+  if (!/^v\d+\.\d+$/.test(version)) throw new Error('WhatsApp API version is invalid.');
   const toDigits = recipientDigits(to);
   const bodyParameters = parameters.map((value) => ({ type: 'text', text: templateText(value) }));
   const template = {
