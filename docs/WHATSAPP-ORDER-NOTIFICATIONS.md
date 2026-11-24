@@ -15,7 +15,7 @@ Add these as Worker secrets (never put the access token or recipient phone numbe
 
 | Name | Value |
 |---|---|
-| \`WHATSAPP_ADMIN_PHONE\` | Admin WhatsApp recipient, international format, digits only. For the admin number supplied for AFSANA, use \`923252032321\`. |
+| \`WHATSAPP_ADMIN_PHONE\` | Admin WhatsApp recipient, international format, digits only. For the admin number supplied for AFSANA, use \`<admin WhatsApp number in international digits-only format>\`. |
 | \`WHATSAPP_ACCESS_TOKEN\` | Existing Meta WhatsApp Cloud API access token |
 | \`WHATSAPP_PHONE_NUMBER_ID\` | Phone Number ID of the approved AFSANA business sender |
 
