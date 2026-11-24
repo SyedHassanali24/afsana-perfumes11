@@ -13,6 +13,18 @@ import {
 const VIDEO_FILES = "afsana_video_files";
 const VIDEO_CHUNKS = "afsana_video_chunks";
 
+function isWhatsAppMarketingOptOut(value) {
+  const text = String(value || "").trim().toUpperCase().replace(/[.!?]+$/g, "").replace(/\\s+/g, " ");
+  return /^(?:STOP|STOP ALL|STOP OFFERS|STOP PROMOTIONS|UNSUBSCRIBE|CANCEL|END|QUIT)$/.test(text);
+}
+
+function whatsappPhoneTailRegex(value) {
+  const digits = String(value || "").replace(/\\D/g, "");
+  const tail = digits.slice(-10);
+  if (tail.length !== 10) return null;
+  return new RegExp(tail.split("").join("[^0-9]*"));
+}
+
 function videoChunkBuffer(value) {
   if (Buffer.isBuffer(value)) return value;
   if (value && typeof value.value === "function") return Buffer.from(value.value(true));
@@ -53,7 +65,34 @@ export class MongoDBConnection extends DurableObject {
       receivedAt: new Date(),
       signatureVerified: true
     });
-    return { stored: true };
+
+    let optOuts = 0;
+    const messages = (payload.entry || []).flatMap((entry) =>
+      (entry.changes || []).flatMap((change) => change.value && change.value.messages || [])
+    );
+    for (const message of messages) {
+      const text = message.text && message.text.body
+        || message.button && message.button.text
+        || message.interactive && message.interactive.button_reply && message.interactive.button_reply.title
+        || message.interactive && message.interactive.list_reply && message.interactive.list_reply.title
+        || "";
+      if (!isWhatsAppMarketingOptOut(text)) continue;
+      const phoneRegex = whatsappPhoneTailRegex(message.from);
+      if (!phoneRegex) continue;
+      const now = new Date();
+      const [customers, leads] = await Promise.all([
+        db.collection("customers").updateMany(
+          { phone: { $regex: phoneRegex } },
+          { $set: { whatsappMarketingConsent: false, whatsappMarketingUnsubscribedAt: now } }
+        ),
+        db.collection("offerleads").updateMany(
+          { phone: { $regex: phoneRegex } },
+          { $set: { marketingConsent: false, status: "Unsubscribed" } }
+        )
+      ]);
+      optOuts += Number(customers.modifiedCount || 0) + Number(leads.modifiedCount || 0);
+    }
+    return { stored: true, optOuts };
   }
 
   async serveVideo(request, id) {
