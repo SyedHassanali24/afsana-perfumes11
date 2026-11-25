@@ -286,47 +286,8 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
         console.error('[order-followup] admin notification failed:', err?.message || err);
       }
 
-      const whatsappLanguage = String(process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US').trim() || 'en_US';
-      const { sendWhatsAppTemplate } = require('./whatsappService');
-      const adminWhatsApp = String(process.env.WHATSAPP_ADMIN_PHONE || '').trim();
-      if (adminWhatsApp) {
-        try {
-          await sendWhatsAppTemplate({
-            to: adminWhatsApp,
-            templateName: process.env.WHATSAPP_ADMIN_ORDER_TEMPLATE || 'afsana_new_order_alert',
-            language: whatsappLanguage,
-            parameters: [
-              order.orderNumber,
-              String(input.customer && input.customer.name || '—'),
-              String(input.customer && input.customer.phone || '—'),
-              itemSummary.slice(0, 600) || '—',
-              'PKR ' + Number(total).toLocaleString('en-PK'),
-              String(input.paymentMethod || '—'),
-            ],
-          });
-        } catch (err) {
-          console.error('[admin-whatsapp] order alert failed:', err?.message || err);
-        }
-      }
-
-      if (input.whatsappOrderUpdatesOptIn === true && input.customer && input.customer.phone) {
-        try {
-          await sendWhatsAppTemplate({
-            to: input.customer.phone,
-            templateName: process.env.WHATSAPP_CUSTOMER_ORDER_TEMPLATE || 'afsana_order_confirmation',
-            language: whatsappLanguage,
-            parameters: [
-              String(input.customer.name || 'Valued customer'),
-              order.orderNumber,
-              'PKR ' + Number(total).toLocaleString('en-PK'),
-              String(input.paymentMethod || '—'),
-              'https://afsanaperfumes.store/track-order',
-            ],
-          });
-        } catch (err) {
-          console.error('[customer-whatsapp] order confirmation failed:', err?.message || err);
-        }
-      }
+      // Zero-cost mode: automatic WhatsApp order/admin messages are disabled.
+      // The order confirmation email and dashboard notification continue below.
 
       const customerEmail = String(input.customer && input.customer.email || '').trim();
       if (!customerEmail) return;
