@@ -11,7 +11,7 @@ export default function ContactPage() {
   const store = settings?.store || {};
   const address = String(store.address || '').trim();
   const phone = String(store.phone || '').trim();
-  const whatsapp = String(store.whatsapp || '').trim();
+  const whatsapp = '923132956206';
   const email = String(store.email || '').trim();
   const socials = [
     ['Instagram', store.instagram, Instagram],

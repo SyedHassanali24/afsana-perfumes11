@@ -5,7 +5,7 @@ const {
 } = require('../database/models');
 const { E } = require('../middleware/errors');
 const { audit } = require('./audit');
-const { recipientDigits, sendWhatsAppTemplate } = require('./whatsappService');
+const { recipientDigits } = require('./whatsappService');
 
 const CAMPAIGN_TYPE = 'whatsapp';
 const MAX_RECIPIENTS = 5000;
@@ -54,14 +54,16 @@ async function summary() {
   const [audience, campaigns] = await Promise.all([
     eligibleAudience(),
     Campaign.find({ storeId: 'main', type: CAMPAIGN_TYPE }).sort({ createdAt: -1 }).limit(20)
-      .select('name status recipientCount sentCount failedCount skippedCount createdAt startedAt completedAt').lean(),
+      .select('name content status recipientCount sentCount failedCount skippedCount createdAt startedAt completedAt').lean(),
   ]);
   return {
     eligibleCount: audience.length,
     maxRecipients: MAX_RECIPIENTS,
-    senderConfigured: Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID),
+    senderConfigured: false,
+    automaticSendingEnabled: false,
+    manualMode: true,
     campaigns: campaigns.map((c) => ({
-      id: String(c._id), name: c.name, status: c.status,
+      id: String(c._id), name: c.name, message: c.content?.message || '', promoCode: c.content?.promoCode || '', ctaUrl: c.content?.ctaUrl || 'https://afsanaperfumes.store/shop', status: c.status,
       recipientCount: c.recipientCount || 0, sentCount: c.sentCount || 0,
       failedCount: c.failedCount || 0, skippedCount: c.skippedCount || 0,
       createdAt: c.createdAt, startedAt: c.startedAt, completedAt: c.completedAt,
@@ -70,9 +72,6 @@ async function summary() {
 }
 
 async function createCampaign(ctx, body) {
-  if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
-    throw E.badRequest('WhatsApp Cloud API is not configured. No campaign was created.');
-  }
   const audience = await eligibleAudience();
   if (!audience.length) throw E.badRequest('There are no customers with active WhatsApp marketing permission yet.');
   const campaign = await Campaign.create({
@@ -133,9 +132,9 @@ async function progress(id) {
 
 async function listCampaigns() {
   const campaigns = await Campaign.find({ storeId: 'main', type: CAMPAIGN_TYPE }).sort({ createdAt: -1 }).limit(30)
-    .select('name status recipientCount sentCount failedCount skippedCount createdAt startedAt completedAt').lean();
+    .select('name content status recipientCount sentCount failedCount skippedCount createdAt startedAt completedAt').lean();
   return { campaigns: campaigns.map((c) => ({
-    id: String(c._id), name: c.name, status: c.status,
+    id: String(c._id), name: c.name, message: c.content?.message || '', promoCode: c.content?.promoCode || '', ctaUrl: c.content?.ctaUrl || 'https://afsanaperfumes.store/shop', status: c.status,
     recipientCount: c.recipientCount || 0, sentCount: c.sentCount || 0,
     failedCount: c.failedCount || 0, skippedCount: c.skippedCount || 0,
     createdAt: c.createdAt, startedAt: c.startedAt, completedAt: c.completedAt,
@@ -143,19 +142,7 @@ async function listCampaigns() {
 }
 
 async function startCampaign(id) {
-  const campaign = await Campaign.findOne({ _id: id, storeId: 'main', type: CAMPAIGN_TYPE });
-  if (!campaign) throw E.notFound('WhatsApp campaign not found.');
-  if (campaign.status === 'Completed' || campaign.status === 'Cancelled') {
-    throw E.badRequest('This campaign can no longer be started.');
-  }
-  if (campaign.status === 'Draft') {
-    const active = await Campaign.exists({ storeId: 'main', type: CAMPAIGN_TYPE, status: 'Active', _id: { $ne: id } });
-    if (active) throw E.conflict('Another WhatsApp campaign is already active. Resume or finish it first.');
-    campaign.status = 'Active';
-    campaign.startedAt = new Date();
-    await campaign.save();
-  }
-  return progress(id);
+  throw E.badRequest('Automatic WhatsApp delivery is disabled in AFSANA zero-cost mode. Open the campaign and share it manually in WhatsApp.');
 }
 
 async function currentContact(recipient) {
@@ -171,81 +158,7 @@ async function currentContact(recipient) {
 }
 
 async function processBatch(ctx, id) {
-  const campaign = await Campaign.findOne({ _id: id, storeId: 'main', type: CAMPAIGN_TYPE }).lean();
-  if (!campaign) throw E.notFound('WhatsApp campaign not found.');
-  if (campaign.status !== 'Active') return progress(id);
-  if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
-    throw E.badRequest('WhatsApp Cloud API is not configured. Campaign remains paused.');
-  }
-
-  let paused = false;
-  let pauseReason = '';
-  for (let index = 0; index < BATCH_SIZE; index += 1) {
-    const staleBefore = new Date(Date.now() - 5 * 60 * 1000);
-    const recipient = await WhatsAppCampaignRecipient.findOneAndUpdate(
-      {
-        campaignId: id, storeId: 'main',
-        $or: [{ status: 'Pending' }, { status: 'Sending', updatedAt: { $lt: staleBefore } }],
-      },
-      { $set: { status: 'Sending', error: '' }, $inc: { attempts: 1 } },
-      { new: true, sort: { createdAt: 1 } },
-    );
-    if (!recipient) break;
-
-    const contact = await currentContact(recipient);
-    let currentDigits = '';
-    try { currentDigits = recipientDigits(contact && contact.phone); } catch { /* stale / missing phone */ }
-    if (!contact || currentDigits !== recipient.phone) {
-      await WhatsAppCampaignRecipient.updateOne({ _id: recipient._id }, {
-        $set: { status: 'Skipped', error: 'Marketing permission was withdrawn or the phone number changed.' },
-      });
-      continue;
-    }
-
-    try {
-      const result = await sendWhatsAppTemplate({
-        to: currentDigits,
-        templateName: campaign.content?.templateName || 'afsana_sale_offer',
-        language: campaign.content?.language || 'en_US',
-        parameters: [
-          cleanText(contact.name || recipient.name || 'AFSANA customer', 100),
-          cleanText(campaign.name, 100),
-          cleanText(campaign.content?.message || '', 500),
-          cleanText(campaign.content?.promoCode || 'No code required', 40),
-          campaign.content?.ctaUrl || 'https://afsanaperfumes.store/shop',
-        ],
-      });
-      if (result.skipped) throw new Error('WhatsApp Cloud API configuration is missing.');
-      await WhatsAppCampaignRecipient.updateOne({ _id: recipient._id }, {
-        $set: { status: 'Sent', sentAt: new Date(), messageId: result.messageId || '' },
-      });
-    } catch (error) {
-      const reason = cleanText(error?.message || error, 220);
-      const rateLimited = /HTTP 429|80008|130429|131056|rate.?limit/i.test(reason);
-      const providerSetupError = /HTTP (400|401|403)|132000|132001|132012|132015|131047|template/i.test(reason);
-      const shouldPause = rateLimited || providerSetupError;
-      await WhatsAppCampaignRecipient.updateOne({ _id: recipient._id }, {
-        $set: { status: shouldPause ? 'Pending' : 'Failed', error: reason },
-      });
-      if (shouldPause) {
-        paused = true;
-        pauseReason = rateLimited
-          ? 'Meta is rate limiting this campaign. It has been paused safely; resume later.'
-          : 'Meta rejected the template or sender setup. Check that the template is approved and the sender is active, then resume this campaign.';
-        break;
-      }
-    }
-    if (index < BATCH_SIZE - 1) await sleep(180);
-  }
-
-  const result = await progress(id);
-  if (ctx && ctx.user) {
-    await audit(ctx, {
-      action: 'whatsapp_campaign.batch_processed', module: 'campaigns', recordId: String(id),
-      newValue: { sent: result.sentCount, failed: result.failedCount, skipped: result.skippedCount, pending: result.pendingCount },
-    }).catch(() => {});
-  }
-  return { ...result, ...(paused ? { paused: true, pauseReason } : {}) };
+  throw E.badRequest('Automatic WhatsApp delivery is disabled in AFSANA zero-cost mode. Share the campaign manually from the WhatsApp Marketing page.');
 }
 
 async function getCampaign(id) {

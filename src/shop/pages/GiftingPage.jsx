@@ -14,7 +14,7 @@ export default function GiftingPage() {
   const { data: featuredData, loading: featuredLoading } = useApi(() => productsApi.list({ q: 'Astral Drift', limit: 8 }), []);
   const products = (data?.products || []).filter((product) => product?.image?.url);
   const astralDrift = (featuredData?.products || []).find((product) => String(product?.name || '').toLowerCase().includes('astral drift') && product?.image?.url) || null;
-  const whatsapp = 'https://wa.me/923252032321?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like help choosing an AFSANA perfume as a gift.');
+  const whatsapp = 'https://wa.me/923132956206?text=' + encodeURIComponent('Assalam-o-Alaikum! I would like help choosing an AFSANA perfume as a gift.');
   return <div className="bg-[#f7f4ed] text-[#173d26]">
     <section className="relative overflow-hidden bg-[#173d26] text-white">
       <Container className="relative grid min-h-[500px] items-center gap-8 pt-5 pb-16 sm:pt-6 sm:pb-20 lg:grid-cols-[1.05fr_.95fr]">
