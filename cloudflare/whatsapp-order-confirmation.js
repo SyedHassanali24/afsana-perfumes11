@@ -98,6 +98,16 @@ export async function handleAfsanaOrderConfirmation({
   const orderNumber = parseAfsanaOrderConfirmation(message?.text?.body);
   if (!orderNumber || !message?.id || !message?.from) return { handled: false };
 
+  // Meta service replies are permitted only while the inbound customer's
+  // 24-hour service window is open. Never send a delayed webhook reply.
+  const inboundAt = Number(message.timestamp) * 1000;
+  if (!Number.isFinite(inboundAt) || inboundAt <= 0 || now.getTime() < inboundAt - 5 * 60 * 1000) {
+    return { handled: true, sent: false, reason: "invalid_message_timestamp" };
+  }
+  if (now.getTime() - inboundAt > 24 * 60 * 60 * 1000) {
+    return { handled: true, sent: false, reason: "service_window_expired" };
+  }
+
   const from = phoneDigits(message.from);
   if (!/^[1-9]\d{7,14}$/.test(from)) return { handled: false, reason: "invalid_sender" };
 
@@ -112,10 +122,8 @@ export async function handleAfsanaOrderConfirmation({
     return { handled: false, reason: "sender_order_mismatch" };
   }
 
-  await orders.updateOne(
-    { _id: order._id },
-    { $set: { whatsappOrderUpdatesOptIn: true, whatsappOrderUpdatesConsentAt: now } }
-  );
+  // The customer's inbound request authorizes this one confirmation reply only.
+  // It does not opt the customer into marketing or ongoing order updates.
 
   const accessToken = String(env.WHATSAPP_ACCESS_TOKEN || "").trim();
   const phoneNumberId = String(env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
