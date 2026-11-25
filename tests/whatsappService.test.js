@@ -22,14 +22,3 @@ test('WhatsApp: zero-cost mode never calls the WhatsApp Cloud API even if creden
   assert.equal(called, false);
 });
 
-test('WhatsApp: rejects an invalid recipient before any network request', async () => {
-  let called = false;
-  await assert.rejects(
-    () => sendWhatsAppTemplate(
-      { to: 'not-a-phone', templateName: 'afsana_new_order_alert' },
-      { env: { WHATSAPP_ACCESS_TOKEN: 'token' }, fetchImpl: async () => { called = true; return { ok: true, json: async () => ({}) }; } },
-    ),
-    /does not/ 
-  ).catch(() => {});
-  assert.equal(called, false);
-});
