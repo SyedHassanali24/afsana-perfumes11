@@ -88,7 +88,7 @@ test("a matching customer gets one non-template reply and order updates consent 
   const db = fakeDb();
   let request;
   const result = await handleAfsanaOrderConfirmation({
-    db, message: inbound(), env,
+    db, message: inbound(), inboundPhoneNumberId: "123456789", env,
     fetchImpl: async (url, options) => {
       request = { url, options };
       return { ok: true, status: 200, json: async () => ({ messages: [{ id: "wamid.out.1" }] }) };
@@ -109,7 +109,7 @@ test("a different phone number cannot read or receive an order confirmation", as
   const db = fakeDb();
   let called = false;
   const result = await handleAfsanaOrderConfirmation({
-    db, message: inbound("wamid.mismatch", "923001112233"), env,
+    db, message: inbound("wamid.mismatch", "923001112233"), inboundPhoneNumberId: "123456789", env,
     fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
     now: new Date("2026-11-25T08:00:00.000Z")
   });
@@ -122,7 +122,7 @@ test("the system refuses the 1,001st monthly reply before calling WhatsApp", asy
   const db = fakeDb({ count: FREE_SERVICE_REPLY_LIMIT });
   let called = false;
   const result = await handleAfsanaOrderConfirmation({
-    db, message: inbound("wamid.over-limit"), env,
+    db, message: inbound("wamid.over-limit"), inboundPhoneNumberId: "123456789", env,
     fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
     now: new Date("2026-11-25T08:00:00.000Z")
   });
@@ -135,7 +135,7 @@ test("duplicate webhook delivery does not consume a second free slot or send aga
   const db = fakeDb();
   let calls = 0;
   const options = {
-    db, message: inbound("wamid.duplicate"), env,
+    db, message: inbound("wamid.duplicate"), inboundPhoneNumberId: "123456789", env,
     fetchImpl: async () => { calls += 1; return { ok: true, status: 200, json: async () => ({}) }; },
     now: new Date("2026-11-25T08:00:00.000Z")
   };
@@ -152,11 +152,24 @@ test("an expired 24-hour service window never sends a late reply", async () => {
   let called = false;
   const oldMessage = { ...inbound("wamid.expired"), timestamp: "1795500000" };
   const result = await handleAfsanaOrderConfirmation({
-    db, message: oldMessage, env,
+    db, message: oldMessage, inboundPhoneNumberId: "123456789", env,
     fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
     now: new Date("2026-11-25T08:00:00.000Z")
   });
   assert.equal(result.reason, "service_window_expired");
+  assert.equal(called, false);
+  assert.equal(db.inspect.counters.size, 0);
+});
+
+test("a message delivered to a different AFSANA phone-number ID cannot trigger a reply", async () => {
+  const db = fakeDb();
+  let called = false;
+  const result = await handleAfsanaOrderConfirmation({
+    db, message: inbound("wamid.wrong-business-number"), inboundPhoneNumberId: "999999999", env,
+    fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
+    now: new Date("2026-11-25T08:00:00.000Z")
+  });
+  assert.equal(result.reason, "business_number_mismatch");
   assert.equal(called, false);
   assert.equal(db.inspect.counters.size, 0);
 });
