@@ -10,13 +10,6 @@ AFSANA is configured to operate WhatsApp with **no paid WhatsApp Cloud API sendi
 - Checkout can record optional consent for manual order contact and manually shared offers.
 - The admin WhatsApp Marketing page can save offer drafts for contacts who explicitly opted in. It shows the consent-based audience count and provides a WhatsApp share link. The admin selects the recipient or broadcast list and presses Send manually in WhatsApp.
 
-## Zero-cost order and admin email notifications
-
-- Customer order confirmation emails and admin new-order alert emails use the configured Gmail API OAuth mailbox only.
-- Order/admin transactional notifications do not fall back to OpenMail, EmailJS, or Resend, so they do not trigger those providers' plans or charges.
-- Gmail API standard use has no additional API charge, but Gmail account sending limits still apply. The customer's checkout email is required for the customer confirmation; the admin alert uses `OWNER_EMAIL`.
-- If Gmail OAuth is unavailable or reaches a sending limit, the dashboard order alert remains the in-site fallback and the email failure is logged. No paid provider is called as a fallback.
-
 ## What is disabled
 
 - No automatic admin WhatsApp alerts.
