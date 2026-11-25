@@ -581,8 +581,8 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
     const email = String(c.email || store.email || '').trim();
     const phone = String(c.phone || store.phone || '').trim();
     const address = String(c.address || store.address || '').trim();
-    const whatsappDisplay = String(c.whatsapp || store.whatsapp || '+92 325 2032321').trim();
-    const whatsappNumber = whatsappDisplay.replace(/[^\d]/g, '') || '923252032321';
+    const whatsappDisplay = '+92 313 2956206';
+    const whatsappNumber = '923132956206';
     const whatsappHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('Assalam-o-Alaikum! I need help with AFSANA fragrances or an order.')}`;
     const year = new Date().getFullYear();
     const careLinks = [
@@ -654,7 +654,7 @@ function CmsSection({ section, products, faq, referenceAssets = {}, shopSettings
   }
   if (section.type === 'reference_assets' || section.type === 'nav_menu') return null;
   if (section.type === 'whatsapp_float') {
-    const phone = '923252032321';
+    const phone = '923132956206';
     if (!phone) return null;
     const href = `https://wa.me/${phone}?text=${encodeURIComponent(c.message || 'Assalam-o-alaikum, I need help with AFSANA fragrances.')}`;
     return <a href={href} target="_blank" rel="noreferrer" aria-label="Chat with AFSANA on WhatsApp" title="Chat with AFSANA on WhatsApp" className="fixed bottom-24 right-6 z-[86] isolate inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#20c768] p-0 text-white shadow-2xl transition hover:-translate-y-1 hover:scale-105">
@@ -1083,7 +1083,7 @@ function CmsSectionList({ sections, faq, inheritedAssets = {}, pageKey = 'home' 
   const referenceAssets = {
     ...inheritedAssets,
     ...(safe.find((s) => s?.type === 'reference_assets')?.config || {}),
-    publicWhatsapp: '923252032321'
+    publicWhatsapp: '923132956206'
   };
   return <div className="bg-[#f7f4ed] text-[#100d24]">
     {safe.map((s) =>
