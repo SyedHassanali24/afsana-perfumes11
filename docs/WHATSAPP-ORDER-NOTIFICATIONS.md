@@ -31,7 +31,7 @@ If the order number or phone does not match, AFSANA does not disclose order info
 - Optional **WHATSAPP_BILLING_TIME_ZONE**: defaults to **Asia/Karachi**; set this to the WhatsApp Business Account's billing timezone if it differs.
 
 Webhook callback URL:
-https://afsanaperfumes.store/api/whatsapp/webhook
+https://afsana-perfumes11.eastwala12.workers.dev/api/whatsapp/webhook
 
 Subscribe to the WhatsApp **messages** webhook field. The existing webhook route validates X-Hub-Signature-256 before processing events.
 
