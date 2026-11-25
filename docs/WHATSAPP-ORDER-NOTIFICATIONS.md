@@ -7,7 +7,7 @@ AFSANA keeps WhatsApp transactional replies separate from marketing and bulk cam
 1. The customer places an order on AFSANA.
 2. The order success page shows **Confirm on WhatsApp** with a prefilled message: **Confirm AFSANA order AFS-...**.
 3. The customer opens WhatsApp and presses **Send**.
-4. The Cloudflare webhook receives that customer message. The Worker matches the order number and verifies that the WhatsApp sender is the phone saved on that order.
+4. The Cloudflare webhook receives that customer message. The Worker verifies that the inbound webhook's business phone-number ID matches the configured AFSANA sender, then matches the order number and verifies that the WhatsApp sender is the phone saved on that order.
 5. Only for a matching order, AFSANA sends one plain-text, non-template reply inside the customer-initiated 24-hour service window. This customer-initiated request authorizes that confirmation reply only; it does not enrol the customer in marketing or ongoing order-update messages.
 6. The existing admin dashboard notification and email alert remain unchanged.
 
@@ -24,7 +24,7 @@ If the order number or phone does not match, AFSANA does not disclose order info
 ## Required Cloudflare Worker secrets / variables
 
 - **WHATSAPP_ACCESS_TOKEN**: a valid System User access token with whatsapp_business_messaging permission.
-- **WHATSAPP_PHONE_NUMBER_ID**: the numeric ID of the connected AFSANA WhatsApp Business Platform sender number (not the visible phone number).
+- **WHATSAPP_PHONE_NUMBER_ID**: the numeric ID of the exact AFSANA WhatsApp Business Platform sender number customers message at +92 313 2956206 (not the visible phone number and not the WABA ID). The handler rejects inbound events addressed to a different number ID.
 - **META_APP_SECRET**: verifies Meta webhook signatures.
 - **WHATSAPP_VERIFY_TOKEN**: validates the Meta webhook subscription.
 - Optional **WHATSAPP_GRAPH_API_VERSION**: defaults to **v26.0** (the current Meta Graph API version as of November 25, 2026).
