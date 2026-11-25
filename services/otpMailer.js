@@ -169,6 +169,28 @@ async function sendTransactionalEmail({ to, subject, html, text = '', params = {
 }
 
 
+/**
+ * Strict zero-cost transactional delivery for customer orders and admin alerts.
+ * Uses only the already-configured Gmail API OAuth account. It deliberately
+ * does not fall back to OpenMail, EmailJS, or Resend, which may have paid plans.
+ */
+async function sendFreeTransactionalEmail({ to, subject, html, text = '' }, { env = process.env, fetchImpl = globalThis.fetch } = {}) {
+  const recipient = String(to || '').trim().toLowerCase();
+  if (!validEmail(recipient)) throw new Error('Transactional email recipient is invalid.');
+  if (!env.GMAIL_CLIENT_ID || !env.GMAIL_CLIENT_SECRET || !env.GMAIL_REFRESH_TOKEN) {
+    throw new Error('Free Gmail API delivery is not configured. Existing dashboard alerts remain available.');
+  }
+  await sendGmailOtp({
+    to: recipient,
+    subject: String(subject || 'AFSANA order notification'),
+    html: String(html || text || ''),
+    env,
+    fetchImpl,
+  });
+  return { sent: true, provider: 'gmail' };
+}
+
+
 async function sendOpenMail({ to, subject, html, text = '', idempotencyKey, env, fetchImpl }) {
   const apiKey = String(env.OPENMAIL_API_KEY || '').trim();
   const inboxId = String(env.OPENMAIL_INBOX_ID || '').trim();
@@ -194,4 +216,4 @@ async function sendOpenMail({ to, subject, html, text = '', idempotencyKey, env,
   return { sent: true, provider: 'openmail', messageId: data.messageId || null, threadId: data.threadId || null, status: data.status || 'sent' };
 }
 
-module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendTransactionalEmail, sendResendOtp, sendOpenMail };
+module.exports = { sendOtpWithFallback, otpContent, sendGmailOtp, sendGmailTemplate, sendTransactionalEmail, sendFreeTransactionalEmail, sendResendOtp, sendOpenMail };
