@@ -134,7 +134,7 @@ async function listCampaigns() {
   const campaigns = await Campaign.find({ storeId: 'main', type: CAMPAIGN_TYPE }).sort({ createdAt: -1 }).limit(30)
     .select('name content status recipientCount sentCount failedCount skippedCount createdAt startedAt completedAt').lean();
   return { campaigns: campaigns.map((c) => ({
-    id: String(c._id), name: c.name, status: c.status,
+    id: String(c._id), name: c.name, message: c.content?.message || '', promoCode: c.content?.promoCode || '', ctaUrl: c.content?.ctaUrl || 'https://afsanaperfumes.store/shop', status: c.status,
     recipientCount: c.recipientCount || 0, sentCount: c.sentCount || 0,
     failedCount: c.failedCount || 0, skippedCount: c.skippedCount || 0,
     createdAt: c.createdAt, startedAt: c.startedAt, completedAt: c.completedAt,
