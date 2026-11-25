@@ -74,6 +74,7 @@ const inbound = (id = "wamid.test.1", from = "923132956206") => ({
   id,
   from,
   type: "text",
+  timestamp: "1795593600",
   text: { body: "Confirm AFSANA order AFS-000123" }
 });
 
@@ -100,7 +101,7 @@ test("a matching customer gets one non-template reply and order updates consent 
   assert.equal(body.type, "text");
   assert.equal(body.to, "923132956206");
   assert.match(body.text.body, /AFS-000123/);
-  assert.equal(db.inspect.order.whatsappOrderUpdatesOptIn, true);
+  assert.equal(db.inspect.order.whatsappOrderUpdatesOptIn, undefined);
   assert.equal(db.inspect.counters.get("123456789:2026-11").count, 1);
 });
 
@@ -143,4 +144,18 @@ test("duplicate webhook delivery does not consume a second free slot or send aga
   assert.equal(second.reason, "duplicate_inbound_message");
   assert.equal(calls, 1);
   assert.equal(db.inspect.counters.get("123456789:2026-11").count, 1);
+});
+
+test("an expired 24-hour service window never sends a late reply", async () => {
+  const db = fakeDb();
+  let called = false;
+  const oldMessage = { ...inbound("wamid.expired"), timestamp: "1795500000" };
+  const result = await handleAfsanaOrderConfirmation({
+    db, message: oldMessage, env,
+    fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
+    now: new Date("2026-11-25T08:00:00.000Z")
+  });
+  assert.equal(result.reason, "service_window_expired");
+  assert.equal(called, false);
+  assert.equal(db.inspect.counters.size, 0);
 });
