@@ -91,6 +91,7 @@ function formatOrderReply(order) {
 export async function handleAfsanaOrderConfirmation({
   db,
   message,
+  inboundPhoneNumberId,
   env = {},
   fetchImpl = fetch,
   now = new Date()
@@ -110,6 +111,13 @@ export async function handleAfsanaOrderConfirmation({
 
   const from = phoneDigits(message.from);
   if (!/^[1-9]\d{7,14}$/.test(from)) return { handled: false, reason: "invalid_sender" };
+
+  const configuredPhoneNumberId = String(env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
+  const receivedPhoneNumberId = String(inboundPhoneNumberId || "").trim();
+  if (!configuredPhoneNumberId || !/^\d+$/.test(configuredPhoneNumberId) ||
+      receivedPhoneNumberId !== configuredPhoneNumberId) {
+    return { handled: true, sent: false, reason: "business_number_mismatch" };
+  }
 
   const orders = db.collection("orders");
   const order = await orders.findOne({ orderNumber });
