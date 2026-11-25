@@ -9,6 +9,7 @@ import {
   writePublicApiCache,
   clearPublicApiCache
 } from "./public-api-cache.js";
+import { handleAfsanaOrderConfirmation } from "./whatsapp-order-confirmation.js";
 
 const VIDEO_FILES = "afsana_video_files";
 const VIDEO_CHUNKS = "afsana_video_chunks";
@@ -70,29 +71,45 @@ export class MongoDBConnection extends DurableObject {
     const messages = (payload.entry || []).flatMap((entry) =>
       (entry.changes || []).flatMap((change) => change.value && change.value.messages || [])
     );
+    let serviceReplies = 0;
     for (const message of messages) {
       const text = message.text && message.text.body
         || message.button && message.button.text
         || message.interactive && message.interactive.button_reply && message.interactive.button_reply.title
         || message.interactive && message.interactive.list_reply && message.interactive.list_reply.title
         || "";
-      if (!isWhatsAppMarketingOptOut(text)) continue;
-      const phoneRegex = whatsappPhoneTailRegex(message.from);
-      if (!phoneRegex) continue;
-      const now = new Date();
-      const [customers, leads] = await Promise.all([
-        db.collection("customers").updateMany(
-          { phone: { $regex: phoneRegex } },
-          { $set: { whatsappMarketingConsent: false, whatsappMarketingUnsubscribedAt: now } }
-        ),
-        db.collection("offerleads").updateMany(
-          { phone: { $regex: phoneRegex } },
-          { $set: { marketingConsent: false, status: "Unsubscribed" } }
-        )
-      ]);
-      optOuts += Number(customers.modifiedCount || 0) + Number(leads.modifiedCount || 0);
+      if (isWhatsAppMarketingOptOut(text)) {
+        const phoneRegex = whatsappPhoneTailRegex(message.from);
+        if (phoneRegex) {
+          const now = new Date();
+          const [customers, leads] = await Promise.all([
+            db.collection("customers").updateMany(
+              { phone: { $regex: phoneRegex } },
+              { $set: { whatsappMarketingConsent: false, whatsappMarketingUnsubscribedAt: now } }
+            ),
+            db.collection("offerleads").updateMany(
+              { phone: { $regex: phoneRegex } },
+              { $set: { marketingConsent: false, status: "Unsubscribed" } }
+            )
+          ]);
+          optOuts += Number(customers.modifiedCount || 0) + Number(leads.modifiedCount || 0);
+        }
+        continue;
+      }
+
+      try {
+        const result = await handleAfsanaOrderConfirmation({
+          db,
+          message,
+          env: this.env,
+          now: new Date()
+        });
+        if (result?.sent) serviceReplies += 1;
+      } catch (error) {
+        console.error("[afsana-whatsapp] order confirmation reply failed:", error?.message || error);
+      }
     }
-    return { stored: true, optOuts };
+    return { stored: true, optOuts, serviceReplies };
   }
 
   async serveVideo(request, id) {

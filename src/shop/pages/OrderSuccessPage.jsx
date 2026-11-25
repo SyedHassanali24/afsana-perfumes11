@@ -29,9 +29,11 @@ export default function OrderSuccessPage() {
         )}
         <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
           <Link className="w-full sm:w-auto" to={status === 'authed' ? `/account/orders/${orderNumber}` : `/track?order=${orderNumber}`}><Button className="w-full">Track this order</Button></Link>
-          <a className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4] px-4 py-2.5 text-sm font-medium text-[#182308] transition-all duration-200 hover:bg-[#f3f1e9] hover:border-[#b4bf41]/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#263e0e]/30" href={`https://wa.me/923132956206?text=${encodeURIComponent('Assalam-o-Alaikum AFSANA, I need help with order ' + orderNumber + '.')}`} target="_blank" rel="noreferrer">Ask about this order on WhatsApp</a>
+          <a className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4] px-4 py-2.5 text-sm font-medium text-[#182308] transition-all duration-200 hover:bg-[#f3f1e9] hover:border-[#b4bf41]/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#263e0e]/30" href={"https://wa.me/923132956206?text=" + encodeURIComponent("Confirm AFSANA order " + orderNumber)} target="_blank" rel="noreferrer">Confirm on WhatsApp</a>
+          <a className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[#263e0e]/10 bg-[#faf8f4] px-4 py-2.5 text-sm font-medium text-[#182308] transition-all duration-200 hover:bg-[#f3f1e9] hover:border-[#b4bf41]/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#263e0e]/30" href={"https://wa.me/923132956206?text=" + encodeURIComponent("Assalam-o-Alaikum AFSANA, I need help with order " + orderNumber + ".")} target="_blank" rel="noreferrer">Ask about this order</a>
           <Link className="w-full sm:w-auto" to="/shop"><Button className="w-full" variant="secondary">Continue shopping</Button></Link>
         </div>
+        <p className="text-xs text-[#5f654f]">WhatsApp will open with your order confirmation message. Press Send in WhatsApp to receive AFSANA’s reply.</p>
         {status !== 'authed' && <p className="text-xs text-[#5f654f] pt-4"><Link to="/register" className="underline">Create an account</Link> to check out faster next time.</p>}
       </div>
     </Container>

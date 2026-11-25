@@ -1,38 +1,47 @@
-# AFSANA WhatsApp — zero-cost manual mode
+# AFSANA WhatsApp — customer-initiated order confirmation
 
-AFSANA is configured to operate WhatsApp with **no paid WhatsApp Cloud API sending**.
+AFSANA keeps WhatsApp transactional replies separate from marketing and bulk campaigns. There is no paid provider or unofficial WhatsApp Web automation.
 
-## What stays available
+## Customer order confirmation flow
 
-- The admin notification bell remains active.
-- Existing admin and customer email notifications remain active.
-- The website Contact, Gifting, login-help and floating WhatsApp links open a manual WhatsApp chat to the AFSANA support number **+92 313 2956206**.
-- Checkout can record optional consent for manual order contact and manually shared offers.
-- The admin WhatsApp Marketing page can save offer drafts for contacts who explicitly opted in. It shows the consent-based audience count and provides a WhatsApp share link. The admin selects the recipient or broadcast list and presses Send manually in WhatsApp.
+1. The customer places an order on AFSANA.
+2. The order success page shows **Confirm on WhatsApp** with a prefilled message: **Confirm AFSANA order AFS-...**.
+3. The customer opens WhatsApp and presses **Send**.
+4. The Cloudflare webhook receives that customer message. The Worker matches the order number and verifies that the WhatsApp sender is the phone saved on that order.
+5. Only for a matching order, AFSANA sends one plain-text, non-template reply inside the customer-initiated 24-hour service window. This customer-initiated request authorizes that confirmation reply only; it does not enrol the customer in marketing or ongoing order-update messages.
+6. The existing admin dashboard notification and email alert remain unchanged.
 
-## What is disabled
+If the order number or phone does not match, AFSANA does not disclose order information and does not send a reply.
 
-- No automatic admin WhatsApp alerts.
-- No automatic customer order-confirmation messages.
-- No WhatsApp Cloud API calls from the application.
-- No automated or bulk campaign sending from the server.
-- Campaign start/process API routes reject automatic sending in zero-cost mode.
+## Monthly free service-message hard limit
 
-The application-side WhatsApp sender returns `manual_only` without making a network request, even if old credentials are present. The Cloudflare Worker credentials `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` should be removed from the Worker to prevent accidental API use.
+- The application reserves a maximum of **1,000 automated service-reply attempts per business phone number per billing month**. This local cap is conservative and may stop earlier than Meta's delivered-message count when an API attempt fails.
+- The monthly counter is keyed by the WhatsApp Business phone-number ID and uses **WHATSAPP_BILLING_TIME_ZONE** (defaults to **Asia/Karachi**).
+- A slot is reserved before calling Meta. This is intentionally conservative: failed API attempts also use a local slot so the application cannot accidentally exceed its own 1,000-attempt cap.
+- At 1,000 reservations, the Worker stops sending automated replies until the next billing month. There is no paid fallback, no template send, and no payment method is added.
+- This local hard limit controls AFSANA's automated confirmation replies. Do not send other API service messages from the same business phone number outside this integration unless their usage is also counted.
 
-## Manual offer sharing
+## Required Cloudflare Worker secrets / variables
 
-1. Open Admin → WhatsApp Marketing.
-2. Create and save an offer draft.
-3. In Offer draft history, click **Open WhatsApp to share**.
-4. In WhatsApp choose the recipient or broadcast list, review the message and press Send yourself.
+- **WHATSAPP_ACCESS_TOKEN**: a valid System User access token with whatsapp_business_messaging permission.
+- **WHATSAPP_PHONE_NUMBER_ID**: the numeric ID of the connected AFSANA WhatsApp Business Platform sender number (not the visible phone number).
+- **META_APP_SECRET**: verifies Meta webhook signatures.
+- **WHATSAPP_VERIFY_TOKEN**: validates the Meta webhook subscription.
+- Optional **WHATSAPP_GRAPH_API_VERSION**: defaults to **v26.0** (the current Meta Graph API version as of November 25, 2026).
+- Optional **WHATSAPP_BILLING_TIME_ZONE**: defaults to **Asia/Karachi**; set this to the WhatsApp Business Account's billing timezone if it differs.
 
-Only contacts with stored WhatsApp marketing consent are counted for the draft audience. Creating a draft does not send a message or start a campaign.
+Webhook callback URL:
+https://afsanaperfumes.store/api/whatsapp/webhook
 
-## Costs
+Subscribe to the WhatsApp **messages** webhook field. The existing webhook route validates X-Hub-Signature-256 before processing events.
 
-AFSANA does not pay Meta WhatsApp Cloud API message charges in this mode. WhatsApp manual sharing uses the normal internet/mobile data connection already available to the sender. No payment method is required for the AFSANA website to create a draft or open a WhatsApp share link.
+## What remains manual
 
-## Webhook
+- WhatsApp marketing campaigns and offer sharing remain manual.
+- No automatic admin WhatsApp alert is sent to the sender number itself.
+- The dashboard bell and email alerts remain active.
+- The app never sends templates or messages outside the 24-hour window.
 
-The existing webhook route may remain available for inbound Meta events and consent opt-out handling. It does not send outbound WhatsApp messages.
+## Safety and delivery notes
+
+The API reply is attempted only after a fresh inbound customer message. Meta must accept the number, token, app mode and webhook subscription. If credentials are missing or invalid, no outbound request is made or the API error is recorded; the app never switches to a paid vendor.
