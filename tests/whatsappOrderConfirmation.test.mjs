@@ -110,7 +110,8 @@ test("a different phone number cannot read or receive an order confirmation", as
   let called = false;
   const result = await handleAfsanaOrderConfirmation({
     db, message: inbound("wamid.mismatch", "923001112233"), env,
-    fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; }
+    fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
+    now: new Date("2026-11-25T08:00:00.000Z")
   });
   assert.equal(result.reason, "sender_order_mismatch");
   assert.equal(called, false);
