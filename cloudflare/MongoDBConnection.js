@@ -69,10 +69,17 @@ export class MongoDBConnection extends DurableObject {
 
     let optOuts = 0;
     const messages = (payload.entry || []).flatMap((entry) =>
-      (entry.changes || []).flatMap((change) => change.value && change.value.messages || [])
+      (entry.changes || []).flatMap((change) => {
+        const value = change.value || {};
+        return (value.messages || []).map((message) => ({
+          message,
+          phoneNumberId: value.metadata && value.metadata.phone_number_id || ""
+        }));
+      })
     );
     let serviceReplies = 0;
-    for (const message of messages) {
+    for (const incoming of messages) {
+      const message = incoming.message;
       const text = message.text && message.text.body
         || message.button && message.button.text
         || message.interactive && message.interactive.button_reply && message.interactive.button_reply.title
@@ -101,6 +108,7 @@ export class MongoDBConnection extends DurableObject {
         const result = await handleAfsanaOrderConfirmation({
           db,
           message,
+          inboundPhoneNumberId: incoming.phoneNumberId,
           env: this.env,
           now: new Date()
         });
