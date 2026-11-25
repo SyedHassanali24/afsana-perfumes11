@@ -29,6 +29,7 @@ export default function OrderSuccessPage() {
         )}
         <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
           <Link className="w-full sm:w-auto" to={status === 'authed' ? `/account/orders/${orderNumber}` : `/track?order=${orderNumber}`}><Button className="w-full">Track this order</Button></Link>
+          <a className="w-full sm:w-auto" href={`https://wa.me/923132956206?text=${encodeURIComponent('Assalam-o-Alaikum AFSANA, I need help with order ' + orderNumber + '.')}`} target="_blank" rel="noreferrer"><Button className="w-full" variant="secondary">Ask about this order on WhatsApp</Button></a>
           <Link className="w-full sm:w-auto" to="/shop"><Button className="w-full" variant="secondary">Continue shopping</Button></Link>
         </div>
         {status !== 'authed' && <p className="text-xs text-[#5f654f] pt-4"><Link to="/register" className="underline">Create an account</Link> to check out faster next time.</p>}
