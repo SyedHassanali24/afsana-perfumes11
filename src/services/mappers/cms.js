@@ -104,6 +104,7 @@ export const HOMEPAGE_SECTION_TYPES = [
   { key: 'fragrance_dna', label: 'Interactive Fragrance DNA' },
   { key: 'interactive_gallery', label: 'Cinematic interactive gallery' },
   { key: 'scent_finder', label: 'Scent finder' },
+  { key: 'ai_concierge', label: 'AI Scent Concierge' },
   { key: 'faq', label: 'FAQ' },
   { key: 'newsletter', label: 'Newsletter' },
   { key: 'instagram', label: 'Social / Instagram' },
