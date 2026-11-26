@@ -13,6 +13,7 @@ const { audit } = require('./audit');
 const R = require('./orderRules');
 const { normalizeCode, validatePartner, discountFor } = require('./affiliateRules');
 const { sendTransactionalEmail } = require('./otpMailer');
+const { sendWhatsAppTemplate } = require('./whatsappService');
 
 let emailArchiveIndexesPromise;
 async function ensureEmailArchiveIndexes() {
@@ -286,8 +287,28 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
         console.error('[order-followup] admin notification failed:', err?.message || err);
       }
 
-      // Zero-cost mode: automatic WhatsApp order/admin messages are disabled.
-      // The order confirmation email and dashboard notification continue below.
+      // WhatsApp order confirmation is an explicitly consented Utility template.
+      // Sending is disabled by default and has no paid-provider fallback.
+      if (input.whatsappOrderUpdatesOptIn === true) {
+        try {
+          const result = await sendWhatsAppTemplate({
+            to: input.customer && input.customer.phone,
+            customerName: input.customer && input.customer.name,
+            orderNumber: order.orderNumber,
+            total,
+          }, { env: process.env });
+          const status = result.sent ? 'sent' : (result.skipped ? 'not_configured' : 'failed');
+          await Order.updateOne({ _id: order._id }, {
+            $set: {
+              whatsappOrderConfirmationStatus: status,
+              ...(result.sent ? { whatsappOrderConfirmationSentAt: new Date(), whatsappOrderConfirmationMessageId: result.messageId || null } : {}),
+            },
+          });
+        } catch (err) {
+          await Order.updateOne({ _id: order._id }, { $set: { whatsappOrderConfirmationStatus: 'failed' } }).catch(() => {});
+          console.error('[whatsapp-order-confirmation] delivery failed:', err?.code || 'send_failed');
+        }
+      }
 
       const customerEmail = String(input.customer && input.customer.email || '').trim();
       if (!customerEmail) return;
