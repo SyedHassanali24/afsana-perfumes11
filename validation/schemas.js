@@ -92,6 +92,13 @@ const checkoutBody = z.object({
   couponCode: z.string().trim().max(40).optional(),
   referralCode: z.string().trim().max(30).optional(),
 });
+const conciergeBody = z.object({
+  message: z.string().trim().min(1).max(1200),
+  history: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    text: z.string().trim().min(1).max(1200),
+  })).max(8).optional().default([]),
+});
 const trackQuery = z.object({ phone });
 const ordersQuery = z.object({
   q: z.string().trim().max(80).optional(), status: z.enum(C.ORDER_STATUSES).optional(),
@@ -446,7 +453,7 @@ module.exports = {
   changePasswordBody, staffQuery, staffCreate, staffPatch, staffProfile, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
   registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, verifyForgotBody, resetBody, offerLeadBody, offerLeadQuery,
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,
-  adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
+  adjustBody, inventoryQuery, historyQuery, checkoutBody, conciergeBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
 };
 
 const turnstileTokenBody = { turnstileToken: z.string().max(2048).optional() };
