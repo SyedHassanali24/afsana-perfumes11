@@ -287,8 +287,26 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
         console.error('[order-followup] admin notification failed:', err?.message || err);
       }
 
-      // WhatsApp order confirmation is an explicitly consented Utility template.
-      // Sending is disabled by default and has no paid-provider fallback.
+      const customerEmail = String(input.customer && input.customer.email || '').trim();
+      if (!customerEmail) return;
+      try {
+        const customerName = String(input.customer.name || 'Valued customer');
+        const itemRows = lines.map((line) => '<tr><td style="padding:10px;border-bottom:1px solid #3b3325">'+escapeEmailHtml(line.name)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">× '+Number(line.quantity)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">PKR '+Number(line.lineTotal).toLocaleString('en-PK')+'</td></tr>').join('');
+        const logo = '<div style="text-align:center"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="max-width:150px;height:auto"></div>';
+        const html = '<div style="max-width:640px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:30px;border:1px solid #b99552">'+logo+'<p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p><h2 style="color:#e6c77e">Thank you for your order, '+escapeEmailHtml(customerName)+'!</h2><p>We have received your order and our team will process it shortly.</p><h3>Order '+escapeEmailHtml(order.orderNumber)+'</h3><p>Status: '+escapeEmailHtml(order.status || 'New')+' · Payment: '+escapeEmailHtml(order.paymentMethod || '')+'</p><table style="width:100%;border-collapse:collapse;color:#f6edda">'+itemRows+'</table><p>Subtotal: PKR '+Number(subtotal).toLocaleString('en-PK')+'<br>Delivery: PKR '+Number(shipping).toLocaleString('en-PK')+'<br>Discount: PKR '+Number(discount).toLocaleString('en-PK')+'<br><strong>Order total: PKR '+Number(total).toLocaleString('en-PK')+'</strong></p><h3>Delivery details</h3><p>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.name || customerName)+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.address || input.shippingAddress && input.shippingAddress.line1 || '')+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.city || '')+'</p><p>Order tracking reference: <strong>'+escapeEmailHtml(order.orderNumber)+'</strong></p><p>Your courier tracking number will be emailed separately as soon as your parcel is dispatched.</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store/track-order">Track your order</a></p><p style="margin-top:30px;color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
+        await sendTransactionalEmail({
+          to: customerEmail,
+          subject: 'Thank you for your AFSANA order ' + order.orderNumber,
+          idempotencyKey: 'afsana-customer-order-' + order.orderNumber,
+          text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Order tracking reference: '+order.orderNumber+'. Your courier tracking number will be emailed after dispatch. Track: https://afsanaperfumes.store/track-order. Regards, AFSANA Perfumes Team.',
+          html
+        });
+      } catch (err) {
+        console.error('[customer-email] order confirmation delivery failed:', err?.message || err);
+      }
+
+      // Keep the existing customer email delivery independent and ahead of WhatsApp.
+      // This is an explicitly consented Utility template, disabled by default.
       if (input.whatsappOrderUpdatesOptIn === true) {
         try {
           const result = await sendWhatsAppTemplate({
@@ -308,24 +326,6 @@ async function placeOrder(input, cust, idempotencyKey, { scheduleBackground } = 
           await Order.updateOne({ _id: order._id }, { $set: { whatsappOrderConfirmationStatus: 'failed' } }).catch(() => {});
           console.error('[whatsapp-order-confirmation] delivery failed:', err?.code || 'send_failed');
         }
-      }
-
-      const customerEmail = String(input.customer && input.customer.email || '').trim();
-      if (!customerEmail) return;
-      try {
-        const customerName = String(input.customer.name || 'Valued customer');
-        const itemRows = lines.map((line) => '<tr><td style="padding:10px;border-bottom:1px solid #3b3325">'+escapeEmailHtml(line.name)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">× '+Number(line.quantity)+'</td><td style="padding:10px;border-bottom:1px solid #3b3325;text-align:right">PKR '+Number(line.lineTotal).toLocaleString('en-PK')+'</td></tr>').join('');
-        const logo = '<div style="text-align:center"><img src="https://afsanaperfumes.store/afsana-email-logo.jpg" alt="AFSANA Perfumes" width="150" style="max-width:150px;height:auto"></div>';
-        const html = '<div style="max-width:640px;margin:24px auto;background:#0b0a08;color:#f6edda;font-family:Arial,sans-serif;padding:30px;border:1px solid #b99552">'+logo+'<p style="text-align:center;letter-spacing:3px;color:#d8b66f">AFSANA · THE ART OF SCENT</p><h2 style="color:#e6c77e">Thank you for your order, '+escapeEmailHtml(customerName)+'!</h2><p>We have received your order and our team will process it shortly.</p><h3>Order '+escapeEmailHtml(order.orderNumber)+'</h3><p>Status: '+escapeEmailHtml(order.status || 'New')+' · Payment: '+escapeEmailHtml(order.paymentMethod || '')+'</p><table style="width:100%;border-collapse:collapse;color:#f6edda">'+itemRows+'</table><p>Subtotal: PKR '+Number(subtotal).toLocaleString('en-PK')+'<br>Delivery: PKR '+Number(shipping).toLocaleString('en-PK')+'<br>Discount: PKR '+Number(discount).toLocaleString('en-PK')+'<br><strong>Order total: PKR '+Number(total).toLocaleString('en-PK')+'</strong></p><h3>Delivery details</h3><p>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.name || customerName)+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.address || input.shippingAddress && input.shippingAddress.line1 || '')+'<br>'+escapeEmailHtml(input.shippingAddress && input.shippingAddress.city || '')+'</p><p>Order tracking reference: <strong>'+escapeEmailHtml(order.orderNumber)+'</strong></p><p>Your courier tracking number will be emailed separately as soon as your parcel is dispatched.</p><p><a style="color:#e6c77e" href="https://afsanaperfumes.store/track-order">Track your order</a></p><p style="margin-top:30px;color:#d8c8a5">Regards,<br><strong>AFSANA Perfumes Team</strong></p></div>';
-        await sendTransactionalEmail({
-          to: customerEmail,
-          subject: 'Thank you for your AFSANA order ' + order.orderNumber,
-          idempotencyKey: 'afsana-customer-order-' + order.orderNumber,
-          text: 'Thank you for your AFSANA order '+order.orderNumber+'. Total PKR '+total+'. Order tracking reference: '+order.orderNumber+'. Your courier tracking number will be emailed after dispatch. Track: https://afsanaperfumes.store/track-order. Regards, AFSANA Perfumes Team.',
-          html
-        });
-      } catch (err) {
-        console.error('[customer-email] order confirmation delivery failed:', err?.message || err);
       }
     })();
 
