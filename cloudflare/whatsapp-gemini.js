@@ -88,7 +88,7 @@ export async function handleAfsanaGeminiReply({
     const existing = await conversations.findOne({ _id: key, expireAt: { $gt: now } });
     const history = (existing?.messages || []).slice(-8);
     const products = await db.collection('products')
-      .find({ status: 'Active', isDeleted: false }, {
+      .find({ storeId: 'main', status: 'Active', isDeleted: false }, {
         projection: { name: 1, slug: 1, priceFrom: 1, tags: 1, fragrance: 1, notes: 1, 'content.shortDescription': 1 },
       })
       .sort({ ratingCount: -1 })
