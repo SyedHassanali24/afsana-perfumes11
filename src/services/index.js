@@ -1,6 +1,10 @@
 import { api } from './api';
 export { api, ApiError } from './api';
 
+export const aiConciergeApi = {
+  chat: (body) => api('/ai/chat', { method: 'POST', body }),
+};
+
 export const authApi = {
   login: (email, password, deviceId, turnstileToken) => api('/auth/login', { method: 'POST', body: { email, password, deviceId, turnstileToken } }),
   verifyLoginOtp: (email, challengeId, otp, deviceId, turnstileToken) => api('/auth/login/2fa/verify', { method: 'POST', body: { email, challengeId, otp, deviceId, turnstileToken } }),
