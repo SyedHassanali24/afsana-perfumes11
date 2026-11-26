@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, X, Instagram, Facebook, Youtube, Music2, Pin, Volume2, VolumeX } from 'lucide-react';
 import useApi from '../hooks/useApi';
-import { productsApi, cmsPublicApi, reviewsApi } from '../services';
+import { productsApi, cmsPublicApi, reviewsApi, aiConciergeApi } from '../services';
 import useShopSettings from './useShopSettings';
 import ProductCard from './ProductCard';
 import NewsletterSubscription from './components/NewsletterSubscription';
@@ -479,14 +479,68 @@ function PremiumFooterShowcase({ section }) {
 }
 function ConciergeFloat({ section }) {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const choices = [['Fresh & clean', 'fresh'], ['Warm & sensual', 'amber'], ['Dark & woody', 'oud'], ['Soft & floral', 'floral']];
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+  const [messages, setMessages] = useState([{
+    role: 'model',
+    text: "Assalam-o-Alaikum! I'm AFSANA's private scent concierge. Ask me about our perfumes, fragrance notes, scent moods or gifting."
+  }]);
+  const messageEndRef = useRef(null);
+
+  useEffect(() => {
+    if (open) messageEndRef.current?.scrollIntoView?.({ block: 'end', behavior: 'smooth' });
+  }, [messages, open, sending]);
+
+  const send = async (value) => {
+    const message = String(value || '').trim();
+    if (!message || sending) return;
+    const history = messages.slice(-8).map((item) => ({ role: item.role, text: item.text }));
+    setMessages((current) => [...current, { role: 'user', text: message }]);
+    setDraft('');
+    setSending(true);
+    try {
+      const result = await aiConciergeApi.chat({ message, history });
+      setMessages((current) => [...current, {
+        role: 'model',
+        text: String(result.reply || 'I could not prepare an answer. Please try again.'),
+      }]);
+    } catch (error) {
+      const note = error?.status === 429
+        ? 'The free AI usage limit is temporarily reached. Please try again later.'
+        : 'I cannot connect right now. Please try again or contact AFSANA support.';
+      setMessages((current) => [...current, { role: 'model', text: note }]);
+    } finally {
+      setSending(false);
+    }
+  };
+
   return <div className="fixed bottom-6 right-6 z-[85]">
-    {open && <div className="mb-3 w-[min(330px,calc(100vw-32px))] rounded-3xl border border-white/15 bg-[#100d24] p-5 text-white shadow-2xl">
-      <div className="flex items-start justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.24em] text-[#d9ff55]">AFSANA PRIVATE CONCIERGE</p><h3 className="mt-2 font-display text-2xl">Find your scent mood.</h3><p className="mt-2 text-xs text-white/60">Choose the feeling you want your fragrance to leave.</p></div><button type="button" onClick={() => setOpen(false)} aria-label="Close concierge"><X className="h-4 w-4"/></button></div>
-      <div className="mt-4 grid grid-cols-2 gap-2">{choices.map(([label,value]) => <button key={value} type="button" onClick={() => navigate('/shop?q='+encodeURIComponent(value))} className="rounded-xl border border-white/15 px-3 py-3 text-left text-xs hover:border-[#d9ff55] hover:bg-white/5">{label}</button>)}</div>
-    </div>}
-    <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 rounded-full bg-[#d9ff55] px-5 py-3 text-xs font-semibold text-[#100d24] shadow-xl hover:scale-105"><Sparkles className="h-4 w-4"/>{section.config?.label || 'Scent Concierge'}</button>
+    {open && <section role="dialog" aria-label="AFSANA AI scent concierge" className="mb-3 flex max-h-[min(680px,78vh)] w-[min(360px,calc(100vw-32px))] flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#100d24] text-white shadow-2xl">
+      <div className="flex items-start justify-between gap-3 border-b border-white/10 p-4">
+        <div>
+          <p className="text-[9px] uppercase tracking-[.24em] text-[#d9ff55]">AFSANA PRIVATE CONCIERGE</p>
+          <h3 className="mt-2 font-display text-2xl">Find your signature scent.</h3>
+          <p className="mt-1 text-xs text-white/55">Fragrance guidance, shaped around AFSANA.</p>
+        </div>
+        <button type="button" onClick={() => setOpen(false)} aria-label="Close concierge" className="rounded-full p-2 hover:bg-white/10"><X className="h-4 w-4"/></button>
+      </div>
+      <div className="min-h-[180px] flex-1 space-y-3 overflow-y-auto p-4">
+        {messages.map((item, index) => <div key={index} className={item.role === 'user' ? 'ml-8 rounded-2xl rounded-br-sm bg-[#d9ff55] px-3 py-2.5 text-sm text-[#100d24]' : 'mr-5 rounded-2xl rounded-bl-sm border border-white/10 bg-white/[.07] px-3 py-2.5 text-sm leading-6 text-white/90'}>
+          <p className="whitespace-pre-wrap">{item.text}</p>
+        </div>)}
+        {sending && <div className="mr-8 rounded-2xl border border-white/10 bg-white/[.07] px-3 py-2 text-xs text-white/55">AFSANA is thinking…</div>}
+        {messages.length === 1 && <div className="flex flex-wrap gap-2 pt-1">
+          {['Recommend a daily-wear scent', 'Something warm and woody', 'Help me choose a gift'].map((suggestion) => <button key={suggestion} type="button" disabled={sending} onClick={() => send(suggestion)} className="rounded-full border border-white/15 px-3 py-2 text-[10px] text-white/75 transition hover:border-[#d9ff55] hover:text-[#d9ff55]">{suggestion}</button>)}
+        </div>}
+        <div ref={messageEndRef}/>
+      </div>
+      <form onSubmit={(event) => { event.preventDefault(); send(draft); }} className="flex items-end gap-2 border-t border-white/10 p-3">
+        <input value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={1200} placeholder="Ask about a fragrance…" aria-label="Message AFSANA Concierge" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-[#d9ff55]" />
+        <button type="submit" disabled={sending || !draft.trim()} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#d9ff55] text-[#100d24] disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message"><ArrowRight className="h-4 w-4"/></button>
+      </form>
+      <p className="px-4 pb-3 text-[9px] leading-4 text-white/35">AI powered by Gemini's free tier. Your message and public AFSANA catalogue details are processed by Google. Please do not share personal, order, address or payment information.</p>
+    </section>}
+    <button type="button" onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full bg-[#d9ff55] px-5 py-3 text-xs font-semibold text-[#100d24] shadow-xl transition hover:scale-105"><Sparkles className="h-4 w-4"/>{section.config?.label || 'Scent Concierge'}</button>
   </div>;
 }
 
