@@ -1,5 +1,6 @@
 const handlerLoaders = {
   account: () => import("./api/account/index.js"),
+  ai: () => import("./api/ai/index.js"),
   analytics: () => import("./api/analytics/index.js"),
   audit: () => import("./api/audit/index.js"),
   auth: () => import("./api/auth/index.js"),
@@ -160,6 +161,14 @@ export async function onRequest(context) {
   process.env.GOOGLE_OAUTH_CLIENT_SECRET = env.GOOGLE_OAUTH_CLIENT_SECRET || "";
   process.env.FACEBOOK_APP_ID = env.FACEBOOK_APP_ID || "";
   process.env.FACEBOOK_APP_SECRET = env.FACEBOOK_APP_SECRET || "";
+  process.env.GEMINI_API_KEY = env.GEMINI_API_KEY || "";
+  process.env.GEMINI_MODEL = env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  process.env.WHATSAPP_ACCESS_TOKEN = env.WHATSAPP_ACCESS_TOKEN || "";
+  process.env.WHATSAPP_PHONE_NUMBER_ID = env.WHATSAPP_PHONE_NUMBER_ID || "";
+  process.env.WHATSAPP_GRAPH_API_VERSION = env.WHATSAPP_GRAPH_API_VERSION || "v27.0";
+  process.env.WHATSAPP_ORDER_CONFIRMATION_ENABLED = env.WHATSAPP_ORDER_CONFIRMATION_ENABLED || "";
+  process.env.WHATSAPP_ORDER_TEMPLATE_NAME = env.WHATSAPP_ORDER_TEMPLATE_NAME || "";
+  process.env.WHATSAPP_ORDER_TEMPLATE_LANGUAGE = env.WHATSAPP_ORDER_TEMPLATE_LANGUAGE || "en_US";
 
   if (env.COOKIE_SAMESITE) process.env.COOKIE_SAMESITE = env.COOKIE_SAMESITE;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
