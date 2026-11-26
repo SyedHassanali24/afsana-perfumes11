@@ -4,7 +4,7 @@ The storefront Scent Concierge and incoming WhatsApp customer conversations use 
 
 ## Configuration
 
-Add `GEMINI_API_KEY` as a Cloudflare Worker secret and optionally set `GEMINI_MODEL=gemini-2.5-flash-lite`. The free-tier model is the default. The integration does not enable billing, use Google Search grounding, or fall back to a paid model. If Gemini returns a rate-limit response, the assistant stops and asks the visitor to try later.
+Add `GEMINI_API_KEY` as a Cloudflare Worker secret and optionally set `GEMINI_MODEL=gemini-3.5-flash-lite`. The free-tier model is the default. The integration does not enable billing, use Google Search grounding, or fall back to a paid model. If Gemini returns a rate-limit response, the assistant stops and asks the visitor to try later.
 
 The Gemini free tier may use submitted content to improve Google's products. The assistant therefore receives only public AFSANA catalogue details plus the visitor's message; email addresses, Pakistani phone numbers and AFSANA order references are redacted. Visitors are warned not to share personal, payment or delivery information. Do not send customer records, orders, addresses, email or phone data to Gemini.
 
