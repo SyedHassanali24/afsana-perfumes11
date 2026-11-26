@@ -30,7 +30,7 @@ async function markAttempt(attempts, messageId, values) {
   await attempts.updateOne({ _id: messageId }, { $set: values });
 }
 
-async function reserveFreeReplySlot(db, { phoneNumberId, messageId, from, now, timeZone }) {
+export async function reserveFreeReplySlot(db, { phoneNumberId, messageId, from, now, timeZone }) {
   const attempts = db.collection("whatsapp_service_reply_attempts");
   try {
     await attempts.insertOne({
@@ -150,7 +150,7 @@ export async function handleAfsanaOrderConfirmation({
     return { handled: true, sent: false, reason: reservation.reason, month: reservation.month };
   }
 
-  const version = String(env.WHATSAPP_GRAPH_API_VERSION || "v26.0").trim();
+  const version = String(env.WHATSAPP_GRAPH_API_VERSION || "v27.0").trim();
   if (!/^v\d+\.\d+$/.test(version)) {
     await markAttempt(db.collection("whatsapp_service_reply_attempts"), message.id, {
       status: "configuration_error",
