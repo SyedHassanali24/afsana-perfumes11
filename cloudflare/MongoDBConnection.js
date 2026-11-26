@@ -10,6 +10,7 @@ import {
   clearPublicApiCache
 } from "./public-api-cache.js";
 import { handleAfsanaOrderConfirmation } from "./whatsapp-order-confirmation.js";
+import { handleAfsanaGeminiReply } from "./whatsapp-gemini.js";
 
 const VIDEO_FILES = "afsana_video_files";
 const VIDEO_CHUNKS = "afsana_video_chunks";
@@ -112,9 +113,22 @@ export class MongoDBConnection extends DurableObject {
           env: this.env,
           now: new Date()
         });
-        if (result?.sent) serviceReplies += 1;
+        if (result?.sent) {
+          serviceReplies += 1;
+          continue;
+        }
+        if (result?.handled) continue;
+        const aiResult = await handleAfsanaGeminiReply({
+          db,
+          message,
+          text,
+          inboundPhoneNumberId: incoming.phoneNumberId,
+          env: this.env,
+          now: new Date()
+        });
+        if (aiResult?.sent) serviceReplies += 1;
       } catch (error) {
-        console.error("[afsana-whatsapp] order confirmation reply failed:", error?.message || error);
+        console.error("[afsana-whatsapp] customer reply failed:", error?.code || "processing_error");
       }
     }
     return { stored: true, optOuts, serviceReplies };

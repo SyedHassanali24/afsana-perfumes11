@@ -23,6 +23,9 @@ const orderSchema = new Schema({
   customer: { name: String, phone: String, email: String },       // snapshot at purchase time
   whatsappOrderUpdatesOptIn: { type: Boolean, default: false },
   whatsappOrderUpdatesConsentAt: Date,
+  whatsappOrderConfirmationStatus: { type: String, enum: ['not_requested', 'pending', 'sent', 'not_configured', 'failed'], default: 'not_requested' },
+  whatsappOrderConfirmationSentAt: Date,
+  whatsappOrderConfirmationMessageId: String,
   shippingAddress: { fullName: String, phone: String, line1: String, line2: String, city: String, postalCode: String },
   subtotal: Number, shipping: { type: Number, default: 0 }, discount: { type: Number, default: 0 }, total: Number,
   couponCode: String,

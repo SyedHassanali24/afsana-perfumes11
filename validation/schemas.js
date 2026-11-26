@@ -92,6 +92,13 @@ const checkoutBody = z.object({
   couponCode: z.string().trim().max(40).optional(),
   referralCode: z.string().trim().max(30).optional(),
 });
+const conciergeBody = z.object({
+  message: z.string().trim().min(1).max(1200),
+  history: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    text: z.string().trim().min(1).max(1200),
+  })).max(8).optional().default([]),
+});
 const trackQuery = z.object({ phone });
 const ordersQuery = z.object({
   q: z.string().trim().max(80).optional(), status: z.enum(C.ORDER_STATUSES).optional(),
@@ -401,7 +408,7 @@ const cmsShape = {
   announcements: z.object({ text: z.string().trim().max(160), link: cUrl, startsAt: optDate, endsAt: optDate, isActive: z.boolean().optional() }),
 };
 // ---------- visual homepage builder ----------
-const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement','lookbook','values_grid','blog_grid','post_grid','promo_timer','offer_timer','community_pulse','footer_showcase','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','rich_text','faq','spacer'];
+const homepageSectionTypes = ['hero','featured_collection','best_sellers','new_arrivals','under_2000','gift_boxes','testimonials','instagram','newsletter','video_banner','video_grid','image_banner','split_story','benefits','category_tiles','marquee','trust_grid','cinematic_statement','lookbook','values_grid','blog_grid','post_grid','promo_timer','offer_timer','community_pulse','footer_showcase','muse_scene','product_3d_showcase','fragrance_dna','interactive_gallery','scent_finder','ai_concierge','rich_text','faq','spacer'];
 const homepageConfig = z.record(z.string(), z.any()).optional();
 const homepageSectionShape = z.object({ type: z.enum(homepageSectionTypes), title: cText(120), config: homepageConfig, sortOrder: cSort, isEnabled: z.boolean().optional() });
 const homepageSectionPatch = homepageSectionShape.partial();
@@ -446,7 +453,7 @@ module.exports = {
   changePasswordBody, staffQuery, staffCreate, staffPatch, staffProfile, staffPasswordBody, overrideBody, roleCreate, roleUpdate, historyQuery2, auditQuery,
   registerBody, customerLoginBody, profilePatch, customerChangePassword, forgotBody, verifyForgotBody, resetBody, offerLeadBody, offerLeadQuery,
   loginBody, productCreate, productPatch, variantCreate, variantPatch, publicProductsQuery, adminProductsQuery,
-  adjustBody, inventoryQuery, historyQuery, checkoutBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
+  adjustBody, inventoryQuery, historyQuery, checkoutBody, conciergeBody, trackQuery, ordersQuery, statusBody, noteBody, paymentBody,
 };
 
 const turnstileTokenBody = { turnstileToken: z.string().max(2048).optional() };
