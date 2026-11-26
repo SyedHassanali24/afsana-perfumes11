@@ -106,7 +106,7 @@ export default function CheckoutPage() {
                 </div>
                 <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
                   <input type="checkbox" checked={whatsappOrderUpdatesOptIn} onChange={(e) => setWhatsappOrderUpdatesOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
-                  <span><strong className="font-medium text-[#263e0e]">Allow manual WhatsApp contact about my order.</strong><span className="block mt-1 text-xs">Optional. The AFSANA team may contact you manually about this order if needed. To request an automatic confirmation, use the separate Confirm on WhatsApp button after checkout. Marketing offers are a separate choice.</span></span>
+                  <span><strong className="font-medium text-[#263e0e]">Send my order confirmation on WhatsApp.</strong><span className="block mt-1 text-xs">Optional. If selected, AFSANA will send one order-confirmation message to the phone number above after your order is placed. This is not promotional messaging; WhatsApp message charges may apply. Marketing offers are a separate choice.</span></span>
                 </label>
                 <label className="flex items-start gap-3 rounded-xl border border-[#263e0e]/10 bg-white/70 p-3 text-sm text-[#5f654f]">
                   <input type="checkbox" checked={whatsappMarketingOptIn} onChange={(e) => setWhatsappMarketingOptIn(e.target.checked)} className="mt-1 accent-[#263e0e]" />
