@@ -15,7 +15,7 @@ test('Gemini concierge uses the configured free-tier model and keeps the API key
       return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: 'Try Amber Story for a warm evening scent.' }] } }] }) };
     },
   });
-  assert.equal(DEFAULT_MODEL, 'gemini-2.5-flash-lite');
+  assert.equal(DEFAULT_MODEL, 'gemini-3.5-flash-lite');
   assert.match(request.url, /gemini-2\.5-flash-lite:generateContent$/);
   assert.equal(new URL(request.url).search, '');
   assert.equal(request.options.headers['x-goog-api-key'], 'test-secret');
