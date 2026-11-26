@@ -17,7 +17,7 @@ const routes = [
       if (!process.env.GEMINI_API_KEY) {
         return res(503, { error: { code: 'AI_NOT_CONFIGURED', message: 'AFSANA Concierge is being connected. Please try again soon.' } });
       }
-      const products = await Product.find({ status: 'Active', isDeleted: false })
+      const products = await Product.find({ storeId: 'main', status: 'Active', isDeleted: false })
         .select('name slug priceFrom tags fragrance notes content.shortDescription')
         .sort({ ratingCount: -1 })
         .limit(30)
