@@ -477,6 +477,36 @@ function PremiumFooterShowcase({ section }) {
     </div>
   </section>;
 }
+function ConciergeAvatar({ compact = false }) {
+  return <span className={compact ? 'afsana-concierge-avatar afsana-concierge-avatar-compact' : 'afsana-concierge-avatar'} aria-hidden="true">
+    <img src="/afsana-private-concierge.webp" alt="" width="512" height="512" decoding="async"/>
+    <span className="afsana-concierge-eyelid afsana-concierge-eyelid-left"/>
+    <span className="afsana-concierge-eyelid afsana-concierge-eyelid-right"/>
+    <span className="afsana-concierge-avatar-glint"/>
+  </span>;
+}
+
+function ConciergeMessageText({ text }) {
+  const lines = String(text || '').split(/\r?\n/);
+  const productUrl = /(https:\/\/afsanaperfumes\.store\/product\/[a-z0-9-]+)/gi;
+  const renderLine = (line) => line.split(productUrl).map((part, index) => {
+    if (/^https:\/\/afsanaperfumes\.store\/product\/[a-z0-9-]+$/i.test(part)) {
+      return <Link key={index} to={part.replace('https://afsanaperfumes.store', '')} className="afsana-concierge-product-link">Explore this fragrance <ArrowRight className="h-3 w-3"/></Link>;
+    }
+    return part.replace(/\*\*(.*?)\*\*/g, '$1');
+  });
+  return <div className="afsana-concierge-message-copy">
+    {lines.map((line, index) => {
+      if (!line.trim()) return <span key={index} className="block h-1.5"/>;
+      const bullet = /^\s*[-•]\s+(.+)$/.exec(line);
+      if (bullet) return <div key={index} className="afsana-concierge-message-bullet"><span aria-hidden="true"/> <p>{renderLine(bullet[1])}</p></div>;
+      const heading = /^\s*\*\*(.+?)\*\*:?\s*$/.exec(line);
+      if (heading) return <p key={index} className="afsana-concierge-message-heading">{heading[1]}</p>;
+      return <p key={index}>{renderLine(line)}</p>;
+    })}
+  </div>;
+}
+
 function ConciergeFloat({ section }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState('');
@@ -507,43 +537,75 @@ function ConciergeFloat({ section }) {
     } catch (error) {
       const note = error?.status === 429
         ? 'The free AI usage limit is temporarily reached. Please try again later.'
-        : 'I cannot connect right now. Please try again or contact AFSANA support.';
-      setMessages((current) => [...current, { role: 'model', text: note }]);
+        : error?.code === 'NETWORK' || error?.status === 0
+          ? 'I am having trouble with the connection. Please check your internet and try again.'
+          : error?.status === 503
+            ? 'I cannot reach the fragrance assistant right now. Please try again in a moment, or contact AFSANA support.'
+            : 'I could not complete that reply. Please try again in a moment.';
+      setMessages((current) => [...current, { role: 'model', text: note, retryText: message }]);
     } finally {
       setSending(false);
     }
   };
 
-  return <div className="fixed bottom-6 right-6 z-[85]">
-    {open && <section role="dialog" aria-label="AFSANA AI scent concierge" className="mb-3 flex max-h-[min(680px,78vh)] w-[min(360px,calc(100vw-32px))] flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#100d24] text-white shadow-2xl">
-      <div className="flex items-start justify-between gap-3 border-b border-white/10 p-4">
-        <div>
-          <p className="text-[9px] uppercase tracking-[.24em] text-[#d9ff55]">AFSANA PRIVATE CONCIERGE</p>
-          <h3 className="mt-2 font-display text-2xl">Find your signature scent.</h3>
-          <p className="mt-1 text-xs text-white/55">Fragrance guidance, shaped around AFSANA.</p>
+  return <div className="afsana-concierge-root">
+    {open && <section role="dialog" aria-label="AFSANA AI scent concierge" aria-modal="false" className="afsana-concierge-panel">
+      <header className="afsana-concierge-header">
+        <ConciergeAvatar compact/>
+        <div className="afsana-concierge-heading-copy">
+          <p className="afsana-concierge-kicker">AFSANA PRIVATE CONCIERGE</p>
+          <h3>Find your signature scent.</h3>
+          <p>Personal fragrance guidance, shaped around AFSANA.</p>
+          <span className="afsana-concierge-status"><i/> Your fragrance assistant</span>
         </div>
-        <button type="button" onClick={() => setOpen(false)} aria-label="Close concierge" className="rounded-full p-2 hover:bg-white/10"><X className="h-4 w-4"/></button>
-      </div>
-      <div className="min-h-[180px] flex-1 space-y-3 overflow-y-auto p-4">
-        {messages.map((item, index) => <div key={index} className={item.role === 'user' ? 'ml-8 rounded-2xl rounded-br-sm bg-[#d9ff55] px-3 py-2.5 text-sm text-[#100d24]' : 'mr-5 rounded-2xl rounded-bl-sm border border-white/10 bg-white/[.07] px-3 py-2.5 text-sm leading-6 text-white/90'}>
-          <p className="whitespace-pre-wrap">{item.text}</p>
-        </div>)}
-        {sending && <div className="mr-8 rounded-2xl border border-white/10 bg-white/[.07] px-3 py-2 text-xs text-white/55">AFSANA is thinking…</div>}
-        {messages.length === 1 && <div className="flex flex-wrap gap-2 pt-1">
-          {['Recommend a daily-wear scent', 'Something warm and woody', 'Help me choose a gift'].map((suggestion) => <button key={suggestion} type="button" disabled={sending} onClick={() => send(suggestion)} className="rounded-full border border-white/15 px-3 py-2 text-[10px] text-white/75 transition hover:border-[#d9ff55] hover:text-[#d9ff55]">{suggestion}</button>)}
+        <button type="button" onClick={() => setOpen(false)} aria-label="Close concierge" className="afsana-concierge-close"><X className="h-4 w-4"/></button>
+      </header>
+
+      <div className="afsana-concierge-messages" aria-live="polite">
+        {messages.map((item, index) => item.role === 'user'
+          ? <div key={index} className="afsana-concierge-user-row">
+              <div className="afsana-concierge-user-bubble"><ConciergeMessageText text={item.text}/></div>
+              <span className="afsana-concierge-you-label">YOU</span>
+            </div>
+          : <div key={index} className="afsana-concierge-assistant-row">
+              <ConciergeAvatar compact/>
+              <div className="afsana-concierge-assistant-bubble">
+                <span className="afsana-concierge-message-label">AFSANA CONCIERGE</span>
+                <ConciergeMessageText text={item.text}/>
+                {item.retryText && <button type="button" onClick={() => send(item.retryText)} disabled={sending} className="afsana-concierge-retry">Try again <ArrowRight className="h-3 w-3"/></button>}
+              </div>
+            </div>)}
+
+        {sending && <div className="afsana-concierge-assistant-row">
+          <ConciergeAvatar compact/>
+          <div className="afsana-concierge-typing" aria-label="AFSANA is preparing a reply">
+            <span/><span/><span/>
+          </div>
+        </div>}
+
+        {messages.length === 1 && <div className="afsana-concierge-suggestions">
+          <span>YOU CAN ASK</span>
+          {['A long-lasting evening scent', 'A fresh everyday perfume', 'Help me choose a gift'].map((suggestion) =>
+            <button key={suggestion} type="button" disabled={sending} onClick={() => send(suggestion)}>{suggestion}<ArrowRight className="h-3 w-3"/></button>
+          )}
         </div>}
         <div ref={messageEndRef}/>
       </div>
-      <form onSubmit={(event) => { event.preventDefault(); send(draft); }} className="flex items-end gap-2 border-t border-white/10 p-3">
-        <input value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={1200} placeholder="Ask about a fragrance…" aria-label="Message AFSANA Concierge" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-[#d9ff55]" />
-        <button type="submit" disabled={sending || !draft.trim()} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#d9ff55] text-[#100d24] disabled:cursor-not-allowed disabled:opacity-40" aria-label="Send message"><ArrowRight className="h-4 w-4"/></button>
+
+      <form onSubmit={(event) => { event.preventDefault(); send(draft); }} className="afsana-concierge-composer">
+        <input value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={1200} placeholder="Ask about a fragrance…" aria-label="Message AFSANA Concierge"/>
+        <button type="submit" disabled={sending || !draft.trim()} aria-label="Send message"><ArrowRight className="h-4 w-4"/></button>
       </form>
-      <p className="px-4 pb-3 text-[9px] leading-4 text-white/35">AI powered by Gemini's free tier. Your message and public AFSANA catalogue details are processed by Google. Please do not share personal, order, address or payment information.</p>
+      <p className="afsana-concierge-disclaimer">AI powered by Gemini's free tier. Your message and public AFSANA catalogue details are processed by Google. Please do not share personal, order, address or payment information.</p>
     </section>}
-    <button type="button" onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 rounded-full bg-[#d9ff55] px-5 py-3 text-xs font-semibold text-[#100d24] shadow-xl transition hover:scale-105"><Sparkles className="h-4 w-4"/>{section.config?.label || 'Scent Concierge'}</button>
+
+    <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? 'Close AFSANA Concierge' : 'Open AFSANA Concierge'} className="afsana-concierge-launch">
+      <span className="afsana-concierge-launch-avatar"><ConciergeAvatar/></span>
+      <span className="afsana-concierge-launch-copy"><strong>Ask AFSANA</strong><small>Private scent concierge</small></span>
+      <span className="afsana-concierge-launch-arrow"><ArrowRight className="h-4 w-4"/></span>
+    </button>
   </div>;
 }
-
 function ReferenceHero({ section, config, products }) {
   if (config.layout === 'inner') {
     const featuredProduct = catalogProductForEditorialPage(products, section.pageKey);
