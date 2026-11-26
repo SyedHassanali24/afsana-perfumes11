@@ -599,10 +599,8 @@ function ConciergeFloat({ section }) {
       <p className="afsana-concierge-disclaimer">AI powered by Gemini's free tier. Your message and public AFSANA catalogue details are processed by Google. Please do not share personal, order, address or payment information.</p>
     </section>}
 
-    <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? 'Close AFSANA Concierge' : 'Open AFSANA Concierge'} className="afsana-concierge-launch">
+    <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label={open ? 'Close AFSANA Concierge' : 'Open AFSANA Concierge'} title={open ? 'Close AFSANA Concierge' : 'Ask AFSANA'} className="afsana-concierge-launch">
       <span className="afsana-concierge-launch-avatar"><ConciergeAvatar/></span>
-      <span className="afsana-concierge-launch-copy"><strong>Ask AFSANA</strong><small>Private scent concierge</small></span>
-      <span className="afsana-concierge-launch-arrow"><ArrowRight className="h-4 w-4"/></span>
     </button>
   </div>;
 }

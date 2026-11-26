@@ -108,3 +108,50 @@ body{overflow-x:hidden}
 @keyframes afsana-concierge-panel-in{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:480px){.afsana-concierge-root{right:12px;bottom:12px}.afsana-concierge-launch{min-height:66px;gap:9px}.afsana-concierge-launch-avatar{width:58px;height:58px}.afsana-concierge-launch-avatar .afsana-concierge-avatar{width:54px;height:54px}.afsana-concierge-launch-copy{min-width:118px}.afsana-concierge-panel{width:calc(100vw - 24px);max-height:calc(100dvh - 92px);border-radius:23px}.afsana-concierge-header{gap:10px;padding:15px 13px}.afsana-concierge-header>.afsana-concierge-avatar{width:50px;height:50px}.afsana-concierge-heading-copy h3{font-size:19px}.afsana-concierge-messages{padding:14px 12px;gap:12px}}
 @media(prefers-reduced-motion:reduce){.afsana-concierge-avatar,.afsana-concierge-eyelid,.afsana-concierge-typing span,.afsana-concierge-panel{animation:none!important}.afsana-concierge-launch,.afsana-concierge-launch-arrow{transition:none!important}}
+
+
+/* Compact AFSANA concierge launcher: treat the bot as an app icon, not a large pill. */
+.afsana-concierge-launch{
+  display:grid;
+  place-items:center;
+  width:54px;
+  min-width:54px;
+  height:54px;
+  min-height:54px;
+  padding:2px;
+  border:1px solid rgba(112,78,184,.24);
+  border-radius:50%;
+  background:linear-gradient(145deg,#fff,#f7f3ff);
+  box-shadow:0 7px 24px rgba(31,22,57,.17),0 0 0 4px rgba(255,255,255,.72);
+  backdrop-filter:blur(12px);
+}
+.afsana-concierge-launch:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(31,22,57,.2),0 0 0 4px rgba(255,255,255,.82)}
+.afsana-concierge-launch-avatar{
+  display:grid;
+  place-items:center;
+  width:50px;
+  height:50px;
+  padding:1px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#7b46e5,#d18bfb 48%,#45c7ee);
+}
+.afsana-concierge-launch-avatar .afsana-concierge-avatar{
+  width:48px;
+  height:48px;
+  border:1px solid #fff;
+  box-shadow:none;
+}
+@media(max-width:640px){
+  .afsana-concierge-root{right:12px;bottom:12px}
+  .afsana-concierge-launch{
+    width:46px;
+    min-width:46px;
+    height:46px;
+    min-height:46px;
+    padding:1px;
+    box-shadow:0 5px 18px rgba(31,22,57,.17),0 0 0 3px rgba(255,255,255,.78);
+  }
+  .afsana-concierge-launch-avatar{width:42px;height:42px;padding:1px}
+  .afsana-concierge-launch-avatar .afsana-concierge-avatar{width:40px;height:40px}
+  .afsana-concierge-launch:hover{transform:none}
+}
