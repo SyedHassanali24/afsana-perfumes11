@@ -162,7 +162,7 @@ export async function onRequest(context) {
   process.env.FACEBOOK_APP_ID = env.FACEBOOK_APP_ID || "";
   process.env.FACEBOOK_APP_SECRET = env.FACEBOOK_APP_SECRET || "";
   process.env.GEMINI_API_KEY = env.GEMINI_API_KEY || "";
-  process.env.GEMINI_MODEL = env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+  process.env.GEMINI_MODEL = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
   process.env.WHATSAPP_ACCESS_TOKEN = env.WHATSAPP_ACCESS_TOKEN || "";
   process.env.WHATSAPP_PHONE_NUMBER_ID = env.WHATSAPP_PHONE_NUMBER_ID || "";
   process.env.WHATSAPP_GRAPH_API_VERSION = env.WHATSAPP_GRAPH_API_VERSION || "v27.0";
